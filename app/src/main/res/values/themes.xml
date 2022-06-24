@@ -1,7 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Audiofy" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+    <!-- Base application theme. -->
+    <style name="Theme.Player" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <!--<item name="android:windowLightStatusBar" tools:targetApi="m">true</item>-->
+        <!-- Customize your theme here. -->
     </style>
 </resources>
