@@ -168,7 +168,7 @@ fun Settings(padding: State<PaddingValues>, viewModel: SettingsViewModel) {
                     advertiser.show(true)
                 }
 
-                val microphonePermission =
+               /* val microphonePermission =
                     rememberPermissionState(Manifest.permission.RECORD_AUDIO)
                 val showVisualizer by showVisualizer.collectAsState()
                 SwitchPreference(
@@ -187,7 +187,7 @@ fun Settings(padding: State<PaddingValues>, viewModel: SettingsViewModel) {
                     }
                     advertiser.show(true)
                 }
-
+*/
                 // about section.
                 AboutUs()
 

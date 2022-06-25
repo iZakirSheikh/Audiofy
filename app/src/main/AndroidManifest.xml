@@ -21,12 +21,16 @@
         android:name="android.permission.ACCESS_WIFI_STATE"
         tools:node="remove" />
 
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
 
     <!--Samsung permission-->
     <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY" />
 
+    <!--Currently the app is only supported./tested on devices with below dimensions-->
+    <supports-screens
+        android:requiresSmallestWidthDp="300"
+        android:largestWidthLimitDp="420"
+        />
 
     <application
         android:allowBackup="true"
