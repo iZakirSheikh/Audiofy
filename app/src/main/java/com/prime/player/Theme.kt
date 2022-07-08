@@ -1,64 +1,330 @@
 package com.prime.player
 
-
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.prime.player.extended.*
-import com.prime.player.preferences.*
+import androidx.compose.ui.unit.sp
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.prime.player.settings.FontFamily
+import com.prime.player.settings.GlobalKeys
+import com.primex.core.hsl
+import com.primex.preferences.LocalPreferenceStore
+import com.primex.ui.*
 import kotlinx.coroutines.flow.map
+import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
 
-val Shapes = Shapes(
-    small = RoundedCornerShape(4.dp),
-    medium = RoundedCornerShape(4.dp),
-    large = RoundedCornerShape(0.dp)
+private const val TAG = "Theme"
+
+typealias Material = MaterialTheme
+
+/**
+ * An Extra font family.
+ */
+val ProvidedFontFamily =
+    AndroidFontFamily(
+        //light
+        Font(R.font.lato_light, FontWeight.Light),
+        //normal
+        Font(R.font.lato_regular, FontWeight.Normal),
+        //bold
+        Font(R.font.lato_bold, FontWeight.Bold),
+    )
+
+/**
+ * Constructs the typography with the [fontFamily] provided with support for capitalizing.
+ */
+private fun Typography(fontFamily: AndroidFontFamily): Typography {
+    return Typography(
+        defaultFontFamily = fontFamily,
+        button = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            letterSpacing = 1.25.sp,
+            // a workaround for capitalizing
+            fontFeatureSettings = "c2sc, smcp"
+        ),
+        overline = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 10.sp,
+            letterSpacing = 1.5.sp,
+            // a workaround for capitalizing
+            fontFeatureSettings = "c2sc, smcp"
+        )
+    )
+}
+
+/**
+ * A variant of caption.
+ */
+private val caption2 = TextStyle(
+    fontWeight = FontWeight.Normal,
+    fontSize = 10.sp,
+    letterSpacing = 0.4.sp
 )
 
-@Composable
-fun PlayerTheme(darkTheme: Boolean, content: @Composable() () -> Unit) {
+// Setup animation related default things
 
-    val context = LocalContext.current
-    val preferences = Preferences.get(context = context)
+typealias Anim = AnimationConstants
 
-    val primary by with(preferences) { getPrimaryColor().collectAsState() }
-    val secondary by with(preferences) { getSecondaryColor().collectAsState() }
+private const val LONG_DURATION_TIME = 500L
+val Anim.LongDurationMills get() = LONG_DURATION_TIME
 
-    val fontFamily by with(preferences) {
-        getDefaultFont().map { font ->
-            when (font) {
-                Font.SYSTEM_DEFAULT -> FontFamily.Default
-                Font.PROVIDED -> FontFamily(
-                    androidx.compose.ui.text.font.Font(R.font.lato_bold, FontWeight.Bold),
-                    androidx.compose.ui.text.font.Font(
-                        R.font.lato_regular,
-                        FontWeight.Normal
-                    ),
-                    androidx.compose.ui.text.font.Font(R.font.lato_light, FontWeight.Light),
-                )
-                Font.SAN_SERIF -> FontFamily.SansSerif
-                Font.SARIF -> FontFamily.Serif
-                Font.CURSIVE -> FontFamily.Cursive
-            }
-        }.collectAsState()
+private const val MEDIUM_DURATION_TIME = 400L
+val Anim.MediumDurationMills get() = MEDIUM_DURATION_TIME
+
+private const val SHORT_DURATION_TIME = 200L
+val Anim.ShortDurationMills get() = SHORT_DURATION_TIME
+
+private const val ACTIVITY_SHORT_DURATION = 150L
+val Anim.ActivityShortDurationMills get() = ACTIVITY_SHORT_DURATION
+
+private const val ACTIVITY_LONG_DURATION = 220L
+val Anim.ActivityLongDurationMills get() = ACTIVITY_LONG_DURATION
+
+
+/**
+ * Access to [AnimationConstants] through theme
+ */
+val Material.anim: Anim get() = AnimationConstants
+
+
+object Padding {
+    /**
+     * A small 4 [Dp] Padding
+     */
+    val Small: Dp = 4.dp
+
+    /**
+     * A Medium 8 [Dp] Padding
+     */
+    val Medium: Dp = 8.dp
+
+    /**
+     * Normal 16 [Dp] Padding
+     */
+    val Normal: Dp = 16.dp
+
+    /**
+     * Large 32 [Dp] Padding
+     */
+    val Large: Dp = 32.dp
+}
+
+/**
+ * A set of Standard [Padding]s
+ */
+val Material.padding get() = Padding
+
+/**
+ * The recommended divider Alpha
+ */
+val ContentAlpha.Divider get() = com.prime.player.Divider
+private const val Divider = 0.12f
+
+
+/**
+ * The recommended LocalIndication Alpha
+ */
+val ContentAlpha.Indication get() = com.prime.player.Indication
+private const val Indication = 0.1f
+
+/**
+ * The Standard Elevation Values.
+ */
+object Elevation {
+    /**
+     * Zero Elevation.
+     */
+    val None = 0.dp
+
+    /**
+     * Elevation of 6 [Dp]
+     */
+    val Low = 6.dp
+
+    /**
+     * Elevation of 12 [Dp]
+     */
+    val Medium = 12.dp
+
+    /**
+     * Elevation of 20 [Dp]
+     */
+    val High = 20.dp
+
+    /**
+     * Elevation of 30 [Dp]
+     */
+    val ExtraHigh = 30.dp
+}
+
+
+/**
+ * A set of Standard [Padding]s
+ */
+val Material.elevation get() = Elevation
+
+/**
+ * A variant of caption
+ */
+val Typography.caption2 get() = com.prime.player.caption2
+
+
+val LocalSystemUiController = staticCompositionLocalOf<SystemUiController> {
+    error("No ui controller defined!!")
+}
+
+
+/**
+ * The alpha of the container colors.
+ */
+val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
+
+/**
+ * The default [Color] change Spec
+ */
+private val DefaultColorAnimSpec = tween<Color>(750)
+
+/**
+ * checks If [GlobalKeys.FORCE_COLORIZE]
+ */
+val MaterialTheme.forceColorize
+    @Composable inline get() = LocalPreferenceStore.current.run {
+        get(GlobalKeys.FORCE_COLORIZE).observeAsState().value
     }
 
+private val small2 = RoundedCornerShape(8.dp)
+
+/**
+ * A variant of MaterialTheme shape with coroner's 8 dp
+ */
+val Shapes.small2 get() = com.prime.player.small2
+
+/**
+ * returns [primary] if [requires] is met else [elze].
+ * @param requires The condition for primary to return. default value is [requiresAccent]
+ * @param elze The color to return if [requires] is  not met The default value is [surface]
+ */
+@Composable
+fun Colors.primary(requires: Boolean = MaterialTheme.forceColorize, elze: Color = colors.surface) =
+    if (requires) MaterialTheme.colors.primary else elze
+
+/**
+ * returns [onPrimary] if [requires] is met else [otherwise].
+ * @param requires The condition for onPrimary to return. default value is [requiresAccent]
+ * @param otherwise The color to return if [requires] is  not met The default value is [onSurface]
+ */
+@Composable
+fun Colors.onPrimary(
+    requires: Boolean = MaterialTheme.forceColorize,
+    elze: Color = colors.onSurface
+) =
+    if (requires) MaterialTheme.colors.onPrimary else elze
+
+/**
+ * @see primary()
+ */
+@Composable
+fun Colors.secondary(
+    requires: Boolean = MaterialTheme.forceColorize,
+    elze: Color = colors.surface
+) =
+    if (requires) colors.secondary else elze
+
+/**
+ * @see onPrimary()
+ */
+@Composable
+fun Colors.onSecondary(
+    requires: Boolean = MaterialTheme.forceColorize,
+    elze: Color = colors.onSurface
+) =
+    if (requires) MaterialTheme.colors.onSecondary else elze
+
+val Colors.surfaceVariant
+    @Composable inline get() = colors.surface.hsl(lightness = if (isLight) 0.94f else 0.01f)
+
+/**
+ * Primary container is applied to elements needing less emphasis than primary
+ */
+val Colors.primaryContainer
+    @Composable inline get() = colors.primary.copy(MaterialTheme.CONTAINER_COLOR_ALPHA)
+
+/**
+ * On-primary container is applied to content (icons, text, etc.) that sits on top of primary container
+ */
+val Colors.onPrimaryContainer @Composable inline get() = colors.primary
+
+val Colors.secondaryContainer
+    @Composable inline get() = colors.secondary.copy(MaterialTheme.CONTAINER_COLOR_ALPHA)
+
+val Colors.onSecondaryContainer @Composable inline get() = colors.secondary
+
+val Colors.errorContainer
+    @Composable inline get() = colors.error.copy(MaterialTheme.CONTAINER_COLOR_ALPHA)
+
+val Colors.onErrorContainer @Composable inline get() = colors.error
+
+/**
+ * Observes the coloring [GlobalKeys.COLOR_STATUS_BAR] of status Bar.
+ */
+val MaterialTheme.colorStatusBar
+    @Composable inline get() = LocalPreferenceStore.current.run {
+        get(GlobalKeys.COLOR_STATUS_BAR).observeAsState().value
+    }
+
+inline val Colors.overlay
+    @Composable get() = (if (isLight) Color.Black else Color.White).copy(0.04f)
+
+val Colors.onOverlay
+    @Composable inline get() =
+        (colors.onBackground).copy(alpha = ContentAlpha.medium)
+
+val Colors.lightShadowColor
+    @Composable inline get() =
+        if (isLight) Color.White.copy(0.8f) else Color.White.copy(0.025f)
+
+val Colors.darkShadowColor
+    @Composable inline get() =
+        if (isLight) Color(0xFFA6B4C8).copy(0.7f) else Color.Black.copy(0.6f)
+
+
+private val defaultPrimaryColor = Color.MetroGreen
+private val defaultSecondaryColor = Color.SkyBlue
+
+private val defaultThemeShapes =
+    Shapes(
+        small = RoundedCornerShape(4.dp),
+        medium = RoundedCornerShape(4.dp),
+        large = RoundedCornerShape(0.dp)
+    )
+
+@Composable
+fun Material(isDark: Boolean, content: @Composable () -> Unit) {
+
+    val preferences = LocalPreferenceStore.current
+
     val background by animateColorAsState(
-        targetValue = if (darkTheme) Color.Black else Color.SignalWhite,
-        animationSpec = tween(Anim.DURATION_LONG)
+        targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFECF0F3),
+        animationSpec = tween(750)
     )
 
     val surface by animateColorAsState(
-        targetValue = if (darkTheme) Color.TrafficBlack else  Color.White,
-        animationSpec = tween(Anim.DURATION_LONG)
+        targetValue = if (isDark) Color.TrafficBlack else Color.White,
+        animationSpec = tween(750)
     )
+
+    val primary = defaultPrimaryColor
+    val secondary = defaultSecondaryColor
 
     val colors = Colors(
         primary = primary,
@@ -68,57 +334,30 @@ fun PlayerTheme(darkTheme: Boolean, content: @Composable() () -> Unit) {
         primaryVariant = primary.blend(Color.Black, 0.2f),
         secondaryVariant = secondary.blend(Color.Black, 0.2f),
         onPrimary = Color.SignalWhite,
-        onSurface = if (darkTheme) Color.SignalWhite else  Color.UmbraGrey,
-        onBackground = if (darkTheme) Color.SignalWhite else  Color.UmbraGrey,
+        onSurface = if (isDark) Color.SignalWhite else Color.UmbraGrey,
+        onBackground = if (isDark) Color.SignalWhite else Color.UmbraGrey,
         error = Color.OrientRed,
         onSecondary = Color.SignalWhite,
         onError = Color.SignalWhite,
-        isLight = !darkTheme
+        isLight = !isDark
     )
+
+    val fontFamily by with(preferences) {
+        preferences[GlobalKeys.FONT_FAMILY].map { font ->
+            when (font) {
+                FontFamily.SYSTEM_DEFAULT -> AndroidFontFamily.Default
+                FontFamily.PROVIDED -> ProvidedFontFamily
+                FontFamily.SAN_SERIF -> AndroidFontFamily.SansSerif
+                FontFamily.SARIF -> AndroidFontFamily.Serif
+                FontFamily.CURSIVE -> AndroidFontFamily.Cursive
+            }
+        }.observeAsState()
+    }
 
     MaterialTheme(
         colors = colors,
-        typography = Typography(
-            defaultFontFamily = fontFamily
-        ),
-        shapes = Shapes,
+        typography = Typography(fontFamily),
+        shapes = defaultThemeShapes,
         content = content
     )
 }
-
-/**
- * Alternate to [MaterialTheme] allowing us to add our own theme systems (e.g. [LocalFixedElevation]) or to
- * extend [MaterialTheme]'s types e.g. return our own [Colors] extension
- */
-object PlayerTheme {
-
-    /**
-     * Proxy to [MaterialTheme]
-     */
-    val colors: Colors
-        @Composable
-        get() = MaterialTheme.colors
-
-    /**
-     * Proxy to [MaterialTheme]
-     */
-    val typography: Typography
-        @Composable
-        get() = MaterialTheme.typography
-
-    /**
-     * Proxy to [MaterialTheme]
-     */
-    val shapes: Shapes
-        @Composable
-        get() = MaterialTheme.shapes
-
-    /**
-     * Retrieves the current [Images] at the call site's position in the hierarchy.
-     */
-    /*val images: Images
-        @Composable
-        get() = LocalImages.current*/
-}
-
-

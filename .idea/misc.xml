@@ -4,7 +4,16 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/avd_delete.xml" value="0.1425" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/avd_heard_beat.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/avd_heart_fill.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/avd_pause_to_play.xml" value="0.1445" />
         <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_album.xml" value="0.1425" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_app.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_artist.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_delete_white_24dp.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_play_arrow.xml" value="0.1445" />
+        <entry key="..\:/Users/sheik/AndroidStudioProjects/Audiofy/app/src/main/res/drawable/ic_splash.xml" value="0.1445" />
       </map>
     </option>
   </component>
