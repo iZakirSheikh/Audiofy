@@ -10,12 +10,13 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.prime.player.common.Artwork
 import com.prime.player.common.FileUtils
+import com.prime.player.common.MediaUtil
 import com.prime.player.common.getAlbumArt
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
@@ -24,6 +25,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext as using
 
 private const val TAG = "SyncWorker"
@@ -237,7 +239,7 @@ class SyncWorker @AssistedInject constructor(
         val bitmaps = ArrayList<Bitmap>()
         albums.forEach { album ->
             // compute uri using the album id
-            val uri = Artwork(album.id)
+            val uri = MediaUtil.composeAlbumArtUri(album.id)
             //fetch the artwork
             val artwork = context.getAlbumArt(uri = uri, POSTER_ARTWORK_SIZE)?.toBitmap()
             //add to list
@@ -282,6 +284,11 @@ class SyncWorker @AssistedInject constructor(
         val db = audioDb
 
         val retriever = MediaMetadataRetriever()
+
+        kotlinx.coroutines.withContext(Dispatchers.Main){
+            Toast.makeText(context, "Generating local cache. Please wait!.", Toast.LENGTH_SHORT).show()
+        }
+
         val list = resolver.request(
             uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection = AUDIO_PROJECTION,
@@ -293,6 +300,7 @@ class SyncWorker @AssistedInject constructor(
             },
             transform = { Audio(it, retriever) },
         )
+
         if (!list.isNullOrEmpty()) {
             db.insert(list)
             // now recompute the audio poster.

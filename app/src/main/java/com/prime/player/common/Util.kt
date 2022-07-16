@@ -1,38 +1,37 @@
 package com.prime.player.common
 
-import android.Manifest
-import android.content.ContentUris
+
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.Intent
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.provider.MediaStore
+import android.os.StrictMode
 import android.text.format.DateUtils.*
-import android.util.Log
 import android.util.TypedValue
+import android.widget.Toast
 import androidx.annotation.WorkerThread
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.app.ActivityCompat
-import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.Coil
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.prime.player.R
+import com.prime.player.core.Audio
+import com.primex.core.Text
+import com.primex.core.TextPlural
 import com.primex.core.runCatching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import org.jetbrains.annotations.Contract
-import java.io.Closeable
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -90,7 +89,10 @@ object Utils {
         FORMAT_ABBREV_RELATIVE
     ) as String
 
-    fun toDuration(mills: Long): String {
+    /**
+     * @return mills formated as hh:mm:ss
+     */
+    fun formatAsDuration(mills: Long): String {
         var minutes: Long = mills / 1000 / 60
         val seconds: Long = mills / 1000 % 60
         return if (minutes < 60) {
@@ -102,6 +104,10 @@ object Utils {
         }
     }
 
+
+    fun formatAsDuration(mills: Int): String =
+        formatAsDuration(mills.toLong())
+
     /**
      * Return given duration in a human-friendly format. For example, "4
      * minutes" or "1 second". Returns only largest meaningful unit of time,
@@ -109,7 +115,8 @@ object Utils {
      *
      * @hide
      */
-    fun toDuration(context: Context, mills: Long): String {
+    @Deprecated(message = "Use toDuration(mills) with Text return ", level = DeprecationLevel.ERROR)
+    fun formatAsDuration(context: Context, mills: Long): String {
         val res = context.resources
         return when {
             mills >= HOUR_IN_MILLIS -> {
@@ -129,6 +136,29 @@ object Utils {
                 res.getQuantityString(
                     R.plurals.duration_seconds, seconds, seconds
                 )
+            }
+        }
+    }
+
+
+    /**
+     * Return given duration in a human-friendly format. For example, "4
+     * minutes" or "1 second". Returns only largest meaningful unit of time,
+     * from seconds up to hours.
+     */
+    fun formatAsDuration2(mills: Long): Text {
+        return when {
+            mills >= HOUR_IN_MILLIS -> {
+                val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
+                TextPlural(R.plurals.duration_hours, hours, hours)
+            }
+            mills >= MINUTE_IN_MILLIS -> {
+                val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
+                TextPlural(R.plurals.duration_minutes, minutes, minutes)
+            }
+            else -> {
+                val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
+                TextPlural(R.plurals.duration_seconds, seconds, seconds)
             }
         }
     }
@@ -200,9 +230,75 @@ suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
 
 
 context (ViewModel) @Suppress("NOTHING_TO_INLINE")
-inline fun <T> Flow<T>.toComposeState(initial: T): State<T> {
+inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
     val state = mutableStateOf(initial)
     onEach { state.value = it }
         .launchIn(viewModelScope)
     return state
 }
+
+
+@WorkerThread
+fun Context.share(audios: List<Audio>) {
+    try {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND_MULTIPLE
+            putExtra(Intent.EXTRA_SUBJECT, "Sharing audio files.")
+            val list = ArrayList<Uri>()
+            audios.forEach {
+                list.add(Uri.parse("file:///" + it.path))
+            }
+            putParcelableArrayListExtra(Intent.EXTRA_STREAM, list)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            type = "audio/*"
+            //addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        startActivity(Intent.createChooser(shareIntent, "Sharing audio files..."))
+    } catch (e: IllegalArgumentException) {
+        // TODO the path is most likely not like /storage/emulated/0/... but something like /storage/28C7-75B0/...
+        e.printStackTrace()
+        Toast.makeText(
+            this,
+            "Could not share files.,",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+@WorkerThread
+fun Context.share(audio: Audio) {
+    try {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///" + audio.path))
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            type = "audio/*"
+        }
+        val builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        startActivity(Intent.createChooser(shareIntent, "Sharing " + audio.title))
+    } catch (e: IllegalArgumentException) {
+        // TODO the path is most likely not like /storage/emulated/0/... but something like /storage/28C7-75B0/...
+        e.printStackTrace()
+        Toast.makeText(
+            this,
+            "Could not share this file,",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+@Stable
+fun Modifier.padding(horizontal: Dp, top: Dp = 0.dp, bottom: Dp = 0.dp) =
+    this.then(
+        Modifier.padding(
+            start = horizontal,
+            end = horizontal,
+            top = top,
+            bottom = bottom
+        )
+    )
+
+

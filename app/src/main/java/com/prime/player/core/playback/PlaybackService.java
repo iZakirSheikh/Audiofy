@@ -44,7 +44,7 @@ import androidx.core.app.NotificationCompat;
 import com.prime.player.App;
 import com.prime.player.MainActivity;
 import com.prime.player.R;
-import com.prime.player.common.MediaUtilsKt;
+import com.prime.player.common.MediaUtil;
 import com.prime.player.core.Audio;
 import com.prime.player.core.Repository;
 
@@ -217,7 +217,7 @@ public class PlaybackService extends Service implements Player.EventListener {
 
         PendingIntent
                 mediaButtonReceiverPendingIntent =
-                PendingIntent.getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
+                getBroadcast(getApplicationContext(), 0, mediaButtonIntent, 0);
 
         mMediaSessionCompat =
                 new MediaSessionCompat(this,
@@ -451,7 +451,7 @@ public class PlaybackService extends Service implements Player.EventListener {
         mMediaPlayer.reset();
         try {
             if (trackId != -1) {
-                Uri trackUri = MediaUtilsKt.Track(trackId);
+                Uri trackUri = MediaUtil.composeAudioTrackUri(trackId);
                 mMediaPlayer.setDataSource(this, trackUri);
             } else
                 mMediaPlayer.setDataSource(audio.path);
@@ -725,24 +725,24 @@ public class PlaybackService extends Service implements Player.EventListener {
     }
 
     private Notification initNotification() {
-        PendingIntent mSkipToPrev = PendingIntent.getBroadcast(this,
+        PendingIntent mSkipToPrev = getBroadcast(this,
                 1,
                 new Intent(ACTION_SKIP_TO_PREV), FLAG_UPDATE_CURRENT);
-        PendingIntent mSkipToNext = PendingIntent.getBroadcast(this,
+        PendingIntent mSkipToNext = getBroadcast(this,
                 1,
                 new Intent(ACTION_SKIP_TO_NEXT), FLAG_UPDATE_CURRENT);
-        PendingIntent mPlayPause = PendingIntent.getBroadcast(this,
+        PendingIntent mPlayPause = getBroadcast(this,
                 1,
                 new Intent(ACTION_PLAY_PAUSE), FLAG_UPDATE_CURRENT);
-        PendingIntent mAddToFav = PendingIntent.getBroadcast(this,
+        PendingIntent mAddToFav = getBroadcast(this,
                 1,
                 new Intent(ACTION_ADD_TO_FAV), FLAG_UPDATE_CURRENT);
-        PendingIntent swipeToDeleteIntent = PendingIntent.getBroadcast(this,
+        PendingIntent swipeToDeleteIntent = getBroadcast(this,
                 1,
                 new Intent(ACTION_DELETE), FLAG_UPDATE_CURRENT);
         PendingIntent
                 appIntent =
-                PendingIntent.getActivity(this,
+                getActivity(this,
                         0,
                         new Intent(this, MainActivity.class),
                         FLAG_UPDATE_CURRENT);
@@ -1053,6 +1053,23 @@ public class PlaybackService extends Service implements Player.EventListener {
         // set it to false
         mNeedsRefresh = false;
         return refresh;
+    }
+
+    private static PendingIntent getBroadcast(Context context,
+                                              int requestCode,
+                                              Intent intent,
+                                              int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.getBroadcast(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
+        } else
+            return PendingIntent.getBroadcast(context, requestCode, intent, flags);
+    }
+
+    private PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.getActivity(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
+        } else
+            return PendingIntent.getActivity(context, requestCode, intent, flags);
     }
 
     public Audio getNextTrack() {

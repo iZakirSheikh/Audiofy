@@ -406,7 +406,7 @@ interface Playlists {
      * @return [List][Audio]s of [Playlist] represented by [playlistId]
      */
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id WHERE playlist_id = :playlistId ORDER BY file_id ASC")
+    @Query("SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id WHERE playlist_id = :playlistId ORDER BY play_order ASC")
     suspend fun getAudios(playlistId: Long): List<Audio>
 
     /**
@@ -422,6 +422,7 @@ interface Playlists {
 }
 
 
+//TODO: Split each View/Table into repective Dao
 @Dao
 interface Audios {
 
@@ -431,7 +432,7 @@ interface Audios {
     @Insert
     fun insert(audio: Audio): Long
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(values: List<Audio>): List<Long>
 
     @Query("DELETE FROM tbl_audios WHERE audio_id == :id")
@@ -493,7 +494,8 @@ interface Audios {
     fun bucket(path: String): Flow<Audio.Bucket?>
 
     fun bucket2(path: String): Flow<Pair<Audio.Bucket, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE parent_path == '$path'")
+        val query =
+            SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE parent_path == ?", arrayOf(path))
         return bucket(path).map { bucket ->
             when (bucket == null) {
                 true -> null
@@ -513,7 +515,7 @@ interface Audios {
     fun artist(name: String): Flow<Audio.Artist?>
 
     fun artist2(name: String): Flow<Pair<Audio.Artist, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE artist == '$name'")
+        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE artist == ?", arrayOf(name))
         return artist(name).map { artist ->
             when (artist == null) {
                 true -> null
@@ -533,7 +535,7 @@ interface Audios {
     fun album(name: String): Flow<Audio.Album?>
 
     fun albums2(name: String): Flow<Pair<Audio.Album, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE album == '$name'")
+        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE album == ?", arrayOf(name))
         return album(name).map { album ->
             when (album == null) {
                 true -> null
@@ -553,7 +555,7 @@ interface Audios {
     fun genre(name: String): Flow<Audio.Genre?>
 
     fun genre2(name: String): Flow<Pair<Audio.Genre, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE genre == '$name'")
+        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE genre == ?", arrayOf(name))
         return genre(name).map { genre ->
             when (genre == null) {
                 true -> null

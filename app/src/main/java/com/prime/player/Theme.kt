@@ -1,22 +1,21 @@
 package com.prime.player
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.systemuicontroller.SystemUiController
 import com.prime.player.settings.FontFamily
 import com.prime.player.settings.GlobalKeys
-import com.primex.core.hsl
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import kotlinx.coroutines.flow.map
@@ -29,7 +28,7 @@ typealias Material = MaterialTheme
 /**
  * An Extra font family.
  */
-val ProvidedFontFamily =
+private val ProvidedFontFamily =
     AndroidFontFamily(
         //light
         Font(R.font.lato_light, FontWeight.Light),
@@ -71,118 +70,10 @@ private val caption2 = TextStyle(
     letterSpacing = 0.4.sp
 )
 
-// Setup animation related default things
-
-typealias Anim = AnimationConstants
-
-private const val LONG_DURATION_TIME = 500L
-val Anim.LongDurationMills get() = LONG_DURATION_TIME
-
-private const val MEDIUM_DURATION_TIME = 400L
-val Anim.MediumDurationMills get() = MEDIUM_DURATION_TIME
-
-private const val SHORT_DURATION_TIME = 200L
-val Anim.ShortDurationMills get() = SHORT_DURATION_TIME
-
-private const val ACTIVITY_SHORT_DURATION = 150L
-val Anim.ActivityShortDurationMills get() = ACTIVITY_SHORT_DURATION
-
-private const val ACTIVITY_LONG_DURATION = 220L
-val Anim.ActivityLongDurationMills get() = ACTIVITY_LONG_DURATION
-
-
-/**
- * Access to [AnimationConstants] through theme
- */
-val Material.anim: Anim get() = AnimationConstants
-
-
-object Padding {
-    /**
-     * A small 4 [Dp] Padding
-     */
-    val Small: Dp = 4.dp
-
-    /**
-     * A Medium 8 [Dp] Padding
-     */
-    val Medium: Dp = 8.dp
-
-    /**
-     * Normal 16 [Dp] Padding
-     */
-    val Normal: Dp = 16.dp
-
-    /**
-     * Large 32 [Dp] Padding
-     */
-    val Large: Dp = 32.dp
-}
-
-/**
- * A set of Standard [Padding]s
- */
-val Material.padding get() = Padding
-
-/**
- * The recommended divider Alpha
- */
-val ContentAlpha.Divider get() = com.prime.player.Divider
-private const val Divider = 0.12f
-
-
-/**
- * The recommended LocalIndication Alpha
- */
-val ContentAlpha.Indication get() = com.prime.player.Indication
-private const val Indication = 0.1f
-
-/**
- * The Standard Elevation Values.
- */
-object Elevation {
-    /**
-     * Zero Elevation.
-     */
-    val None = 0.dp
-
-    /**
-     * Elevation of 6 [Dp]
-     */
-    val Low = 6.dp
-
-    /**
-     * Elevation of 12 [Dp]
-     */
-    val Medium = 12.dp
-
-    /**
-     * Elevation of 20 [Dp]
-     */
-    val High = 20.dp
-
-    /**
-     * Elevation of 30 [Dp]
-     */
-    val ExtraHigh = 30.dp
-}
-
-
-/**
- * A set of Standard [Padding]s
- */
-val Material.elevation get() = Elevation
-
 /**
  * A variant of caption
  */
 val Typography.caption2 get() = com.prime.player.caption2
-
-
-val LocalSystemUiController = staticCompositionLocalOf<SystemUiController> {
-    error("No ui controller defined!!")
-}
-
 
 /**
  * The alpha of the container colors.
@@ -190,16 +81,20 @@ val LocalSystemUiController = staticCompositionLocalOf<SystemUiController> {
 val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
 
 /**
- * The default [Color] change Spec
- */
-private val DefaultColorAnimSpec = tween<Color>(750)
-
-/**
  * checks If [GlobalKeys.FORCE_COLORIZE]
  */
 val MaterialTheme.forceColorize
     @Composable inline get() = LocalPreferenceStore.current.run {
-        get(GlobalKeys.FORCE_COLORIZE).observeAsState().value
+        get(GlobalKeys.FORCE_COLORIZE).observeAsState()
+    }
+
+
+/**
+ * checks If [GlobalKeys.FORCE_COLORIZE]
+ */
+val MaterialTheme.colorStatusBar
+    @Composable inline get() = LocalPreferenceStore.current.run {
+        get(GlobalKeys.COLOR_STATUS_BAR).observeAsState()
     }
 
 private val small2 = RoundedCornerShape(8.dp)
@@ -208,50 +103,6 @@ private val small2 = RoundedCornerShape(8.dp)
  * A variant of MaterialTheme shape with coroner's 8 dp
  */
 val Shapes.small2 get() = com.prime.player.small2
-
-/**
- * returns [primary] if [requires] is met else [elze].
- * @param requires The condition for primary to return. default value is [requiresAccent]
- * @param elze The color to return if [requires] is  not met The default value is [surface]
- */
-@Composable
-fun Colors.primary(requires: Boolean = MaterialTheme.forceColorize, elze: Color = colors.surface) =
-    if (requires) MaterialTheme.colors.primary else elze
-
-/**
- * returns [onPrimary] if [requires] is met else [otherwise].
- * @param requires The condition for onPrimary to return. default value is [requiresAccent]
- * @param otherwise The color to return if [requires] is  not met The default value is [onSurface]
- */
-@Composable
-fun Colors.onPrimary(
-    requires: Boolean = MaterialTheme.forceColorize,
-    elze: Color = colors.onSurface
-) =
-    if (requires) MaterialTheme.colors.onPrimary else elze
-
-/**
- * @see primary()
- */
-@Composable
-fun Colors.secondary(
-    requires: Boolean = MaterialTheme.forceColorize,
-    elze: Color = colors.surface
-) =
-    if (requires) colors.secondary else elze
-
-/**
- * @see onPrimary()
- */
-@Composable
-fun Colors.onSecondary(
-    requires: Boolean = MaterialTheme.forceColorize,
-    elze: Color = colors.onSurface
-) =
-    if (requires) MaterialTheme.colors.onSecondary else elze
-
-val Colors.surfaceVariant
-    @Composable inline get() = colors.surface.hsl(lightness = if (isLight) 0.94f else 0.01f)
 
 /**
  * Primary container is applied to elements needing less emphasis than primary
@@ -274,16 +125,11 @@ val Colors.errorContainer
 
 val Colors.onErrorContainer @Composable inline get() = colors.error
 
-/**
- * Observes the coloring [GlobalKeys.COLOR_STATUS_BAR] of status Bar.
- */
-val MaterialTheme.colorStatusBar
-    @Composable inline get() = LocalPreferenceStore.current.run {
-        get(GlobalKeys.COLOR_STATUS_BAR).observeAsState().value
-    }
-
 inline val Colors.overlay
     @Composable get() = (if (isLight) Color.Black else Color.White).copy(0.04f)
+
+inline val Colors.outline
+    get() = (if (isLight) Color.Black else Color.White).copy(0.12f)
 
 val Colors.onOverlay
     @Composable inline get() =
@@ -291,15 +137,15 @@ val Colors.onOverlay
 
 val Colors.lightShadowColor
     @Composable inline get() =
-        if (isLight) Color.White.copy(0.8f) else Color.White.copy(0.025f)
+        if (isLight) Color.White else Color.White.copy(0.025f)
 
 val Colors.darkShadowColor
     @Composable inline get() =
-        if (isLight) Color(0xFFA6B4C8).copy(0.7f) else Color.Black.copy(0.6f)
+        if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
 
 
-private val defaultPrimaryColor = Color.MetroGreen
-private val defaultSecondaryColor = Color.SkyBlue
+private val defaultPrimaryColor = Color(0xFF5600E8)
+private val defaultSecondaryColor = Color.Rose
 
 private val defaultThemeShapes =
     Shapes(
@@ -314,13 +160,13 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
     val preferences = LocalPreferenceStore.current
 
     val background by animateColorAsState(
-        targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFECF0F3),
-        animationSpec = tween(750)
+        targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
+        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
     )
 
     val surface by animateColorAsState(
         targetValue = if (isDark) Color.TrafficBlack else Color.White,
-        animationSpec = tween(750)
+        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
     )
 
     val primary = defaultPrimaryColor
@@ -335,7 +181,7 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
         secondaryVariant = secondary.blend(Color.Black, 0.2f),
         onPrimary = Color.SignalWhite,
         onSurface = if (isDark) Color.SignalWhite else Color.UmbraGrey,
-        onBackground = if (isDark) Color.SignalWhite else Color.UmbraGrey,
+        onBackground = if (isDark) Color.SignalWhite else Color.Black,
         error = Color.OrientRed,
         onSecondary = Color.SignalWhite,
         onError = Color.SignalWhite,

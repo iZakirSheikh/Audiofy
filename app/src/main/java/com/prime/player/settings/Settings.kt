@@ -1,274 +1,323 @@
 package com.prime.player.settings
 
-import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
+import androidx.lifecycle.viewModelScope
 import com.prime.player.*
+import com.prime.player.BuildConfig
 import com.prime.player.R
 import com.prime.player.common.compose.*
-import com.primex.core.fadeEdge
-import com.primex.preferences.LocalPreferenceStore
+import com.primex.core.activity
+import com.primex.core.drawHorizontalDivider
+import com.primex.core.stringHtmlResource
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
-import cz.levinzonr.saferoute.core.annotations.RouteNavGraph
 import kotlinx.coroutines.launch
 
-private val RESERVE_PADDING = 48.dp
+
+private val RESERVE_PADDING = 56.dp
 
 private const val FONT_SCALE_LOWER_BOUND = 0.5f
 private const val FONT_SCALE_UPPER_BOUND = 2.0f
-
 private const val SLIDER_STEPS = 15
 
+private val FontSliderRange = FONT_SCALE_LOWER_BOUND..FONT_SCALE_UPPER_BOUND
+
 @Composable
-private fun PrefHeader(text: String) {
+private inline fun PrefHeader(text: String) {
     val primary = MaterialTheme.colors.secondary
-    val modifier =
-        Modifier
-            .padding(
-                start = RESERVE_PADDING,
-                top = Padding.Normal,
-                end = Padding.Large,
-                bottom = Padding.Medium
-            )
-            .fillMaxWidth()
-            .drawVerticalDivider(color = primary)
-            .padding(bottom = Padding.Medium)
     Label(
         text = text,
-        modifier = modifier,
         fontWeight = FontWeight.SemiBold,
         maxLines = 2,
-        color = primary
-    )
-}
+        color = primary,
 
-@Composable
-private inline fun ColumnScope.AboutUs() {
-    PrefHeader(text = "Feedback")
-
-    // val feedbackCollector = LocalFeedbackCollector.current
-    val onRequestFeedback = {
-        // TODO: Handle feedback
-    }
-
-    Preference(
-        title = stringResource(R.string.feedback),
-        summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
-        icon = Icons.Outlined.Feedback,
-        modifier = Modifier.clickable(onClick = onRequestFeedback)
-    )
-
-
-    val onRequestRateApp = {
-        // TODO: Handle rate app.
-    }
-    Preference(
-        title = stringResource(R.string.rate_us),
-        summery = stringResource(id = R.string.review_msg),
-        icon = Icons.Outlined.Star,
-        modifier = Modifier.clickable(onClick = onRequestRateApp)
-    )
-
-    val onRequestShareApp = {
-        // TODO: Share app.
-    }
-    Preference(
-        title = stringResource(R.string.spread_the_word),
-        summery = stringResource(R.string.spread_the_word_summery),
-        icon = Icons.Outlined.Share,
-        modifier = Modifier.clickable(onClick = onRequestShareApp)
-    )
-
-    PrefHeader(text = stringResource(R.string.about_us))
-    Text(
-        text = stringHtmlResource(R.string.about_us_desc),
-        style = MaterialTheme.typography.body2,
         modifier = Modifier
-            .padding(start = RESERVE_PADDING, end = Padding.Large)
-            .padding(vertical = Padding.Small),
-        color = LocalContentColor.current.copy(ContentAlpha.medium)
-    )
-
-    val context = LocalContext.current
-    val version = remember {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionName
-    }
-    //val updateNotifier = LocalUpdateNotifier.current
-    val scope = rememberCoroutineScope()
-    val onCheckUpdate: () -> Unit = {
-        scope.launch {
-            //TODO: Check for update.
-        }
-    }
-    Preference(
-        title = stringResource(R.string.app_version),
-        summery = "$version \nClick to check for updates.",
-        icon = Icons.Outlined.TouchApp,
-        modifier = Modifier.clickable(onClick = onCheckUpdate)
+            .padding(
+                start = RESERVE_PADDING,
+                top = ContentPadding.normal,
+                end = ContentPadding.large,
+                bottom = ContentPadding.medium
+            )
+            .fillMaxWidth()
+            .drawHorizontalDivider(color = primary)
+            .padding(bottom = ContentPadding.medium),
     )
 }
 
+
+private val FontFamilyList =
+    listOf(
+        "Lato" to FontFamily.PROVIDED,
+        "Cursive" to FontFamily.CURSIVE,
+        "San serif" to FontFamily.SAN_SERIF,
+        "serif" to FontFamily.SARIF,
+        "System default" to FontFamily.SYSTEM_DEFAULT
+    )
+
+
+@Route
 @Composable
-private fun TopAppBar(modifier: Modifier = Modifier) {
-    val navigator = LocalNavController.current
-    RoundedCornerToolbar(
-        title = { Label(text = stringResource(R.string.settings)) },
-        modifier = modifier.padding(top = Padding.Medium),
-        navigationIcon = {
-            IconButton(
-                onClick = { navigator.navigateUp() },
-                imageVector = Icons.Outlined.ReplyAll,
-                contentDescription = null
+fun Settings(
+    viewModel: SettingsViewModel
+) {
+    Scaffold(
+
+        topBar = {
+            val colorize by Material.colorStatusBar
+            val bgColor = if (colorize) Material.colors.primaryVariant else Color.Transparent
+            val navigator = LocalNavController.current
+
+            NeumorphicTopAppBar(
+                title = { Label(text = stringResource(R.string.settings)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigator.navigateUp() },
+                        imageVector = Icons.Outlined.ReplyAll,
+                        contentDescription = null
+                    )
+                },
+                shape = CircleShape,
+                lightShadowColor = Material.colors.lightShadowColor,
+                darkShadowColor = Material.colors.darkShadowColor,
+                elevation = ContentElevation.low,
+                modifier = Modifier
+                    .statusBarsPadding2(
+                        color = bgColor,
+                        darkIcons = !colorize && Material.colors.isLight
+                    )
+                    .drawHorizontalDivider(color = Material.colors.onSurface)
+                    .padding(vertical = ContentPadding.medium),
             )
         },
-        elevation = Elevation.Low,
-    )
-}
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Route(navGraph = RouteNavGraph())
-@Composable
-fun Settings(viewModel: SettingsViewModel) {
-    with(viewModel){
-        val topBar =
-            @Composable {
-                val colorStatusBar by with(LocalPreferenceStore.current) {
-                    this[GlobalKeys.COLOR_STATUS_BAR].observeAsState()
-                }
-                val primaryOrTransparent = Material.colors.primary(colorStatusBar, Color.Transparent)
-                TopAppBar(
-                    modifier = Modifier
-                        .statusBarsPadding2(
-                            color = primaryOrTransparent,
-                            darkIcons = !colorStatusBar && Material.colors.isLight
-                        )
-                        .drawVerticalDivider(color = Material.colors.onSurface)
-                        .padding(bottom = Padding.Medium)
-                )
-            }
-
-        Scaffold(topBar = topBar) {
+        content = {
             val state = rememberScrollState()
-            val color = if (MaterialTheme.colors.isLight) Color.White else Color.Black
+            //val color = if (MaterialTheme.colors.isLight) Color.White else Color.Black
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .fadeEdge(state = state, length = 16.dp, horizontal = false, color = color)
+                    //FixMe: Creates a issue between Theme changes
+                    // needs to be study properly
+                    // disabling for now
+                    //.fadeEdge(state = state, length = 16.dp, horizontal = false, color = color)
                     .verticalScroll(state),
             ) {
-                PrefHeader(text = stringResource(R.string.appearence))
+                with(viewModel) {
 
-                //dark mode
-                val darkTheme by darkUiMode
+                    PrefHeader(text = stringResource(R.string.appearance))
 
-                val onCheckedChange = { new: Boolean ->
-                    set(GlobalKeys.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
+                    //dark mode
+                    val darkTheme by darkUiMode
+                    SwitchPreference(
+                        checked = darkTheme.value,
+                        title = stringResource(res = darkTheme.title),
+                        summery = stringResource(res = darkTheme.summery),
+                        icon = darkTheme.vector,
+                        onCheckedChange = { new: Boolean ->
+                            set(GlobalKeys.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
+                        }
+                    )
+
+
+                    //font
+                    val font by font
+                    DropDownPreference(
+                        title = stringResource(res = font.title),
+                        entries = FontFamilyList,
+                        defaultValue = font.value,
+                        icon = font.vector,
+                        onRequestChange = { family: FontFamily ->
+                            viewModel.set(GlobalKeys.FONT_FAMILY, family)
+                        }
+                    )
+
+
+                    // app font scale
+                    val scale by fontScale
+                    SliderPreference(
+                        defaultValue = scale.value,
+                        title = stringResource(res = scale.title),
+                        summery = stringResource(res = scale.summery),
+                        valueRange = FontSliderRange,
+                        steps = SLIDER_STEPS,
+                        icon = scale.vector,
+                        iconChange = Icons.Outlined.TextFormat,
+                        onValueChange = { value: Float ->
+                            set(GlobalKeys.FONT_SCALE, value)
+                        }
+                    )
+
+                    //force accent
+                    val forceAccent by forceAccent
+                    SwitchPreference(
+                        checked = forceAccent.value,
+                        title = stringResource(res = forceAccent.title),
+                        summery = stringResource(res = forceAccent.summery),
+                        onCheckedChange = { should: Boolean ->
+                            set(GlobalKeys.FORCE_COLORIZE, should)
+                            if (should)
+                                set(GlobalKeys.COLOR_STATUS_BAR, true)
+                        }
+                    )
+
+                    //color status bar
+                    val colorStatusBar by colorStatusBar
+                    SwitchPreference(
+                        checked = colorStatusBar.value,
+                        title = stringResource(res = colorStatusBar.title),
+                        summery = stringResource(res = colorStatusBar.summery),
+                        enabled = !forceAccent.value,
+                        onCheckedChange = { should: Boolean ->
+                            set(GlobalKeys.COLOR_STATUS_BAR, should)
+                        }
+                    )
+
+
+                    //hide status bar
+                    val hideStatusBar by hideStatusBar
+                    SwitchPreference(
+                        checked = hideStatusBar.value,
+                        title = stringResource(res = hideStatusBar.title),
+                        summery = stringResource(res = hideStatusBar.summery),
+                        onCheckedChange = { should: Boolean ->
+                            set(GlobalKeys.HIDE_STATUS_BAR, should)
+                            //TODO: Add statusBar Hide/Show logic.
+                        }
+                    )
+
+                    //mini player progress bar
+                    val showProgressInMini by showProgressInMini
+                    SwitchPreference(
+                        checked = showProgressInMini.value,
+                        title = stringResource(res = showProgressInMini.title),
+                        summery = stringResource(res = showProgressInMini.summery),
+                        onCheckedChange = { should: Boolean ->
+                            set(GlobalKeys.SHOW_MINI_PROGRESS_BAR, should)
+                            //TODO: Add statusBar Hide/Show logic.
+                        }
+                    )
+
+                    PrefHeader(text = "Feedback")
+                    val context = LocalContext.current
+                    Preference(
+                        title = stringResource(R.string.feedback),
+                        summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
+                        icon = Icons.Outlined.Feedback,
+                        modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
+                    )
+
+                    Preference(
+                        title = stringResource(R.string.rate_us),
+                        summery = stringResource(id = R.string.review_msg),
+                        icon = Icons.Outlined.Star,
+                        modifier = Modifier.clickable(
+                            onClick = { context.launchPlayStore() }
+                        )
+                    )
+
+                    Preference(
+                        title = stringResource(R.string.spread_the_word),
+                        summery = stringResource(R.string.spread_the_word_summery),
+                        icon = Icons.Outlined.Share,
+                        modifier = Modifier.clickable(
+                            onClick = {
+                                context.shareApp()
+                            }
+                        )
+                    )
+
+                    PrefHeader(text = stringResource(R.string.about_us))
+                    Text(
+                        text = stringHtmlResource(R.string.about_us_desc),
+                        style = MaterialTheme.typography.body2,
+                        modifier = Modifier
+                            .padding(start = RESERVE_PADDING, end = ContentPadding.large)
+                            .padding(vertical = ContentPadding.small),
+                        color = LocalContentColor.current.copy(ContentAlpha.medium)
+                    )
+
+
+                    // The app versiona and check for updates.
+                    val version = BuildConfig.VERSION_NAME
+                    val updateManager = LocalAppUpdateManager.current
+                    val channel = LocalSnackDataChannel.current
+                    val activity = context.activity!!
+                    Preference(
+                        title = stringResource(R.string.app_version),
+                        summery = "$version \nClick to check for updates.",
+                        icon = Icons.Outlined.TouchApp,
+                        modifier = Modifier.clickable(
+                            onClick = {
+                                viewModel.viewModelScope.launch {
+                                    updateManager.check(
+                                        channel = channel,
+                                        activity = activity,
+                                        report = true
+                                    )
+                                }
+                            }
+                        )
+                    )
+
+                    // Add the necessary padding.
+                    val padding = LocalWindowPadding.current
+                    Spacer(
+                        modifier = Modifier
+                            .animateContentSize()
+                            .padding(padding),
+                    )
                 }
-
-                SwitchPreference(
-                    checked = darkTheme.value,
-                    title = darkTheme.title,
-                    summery = darkTheme.summery,
-                    icon = darkTheme.vector,
-                    onCheckedChange = onCheckedChange
-                )
-
-                //font
-                val font by font
-                val familyList = listOf(
-                    "Roboto" to FontFamily.PROVIDED,
-                    "Cursive" to FontFamily.CURSIVE,
-                    "San serif" to FontFamily.SAN_SERIF,
-                    "serif" to FontFamily.SARIF,
-                    "System default" to FontFamily.SYSTEM_DEFAULT
-                )
-                val onRequestChange = { family: FontFamily ->
-                    viewModel.set(GlobalKeys.FONT_FAMILY, family)
-                }
-                DropDownPreference(
-                    title = font.title,
-                    entries = familyList,
-                    defaultValue = font.value,
-                    icon = font.vector,
-                    onRequestChange = onRequestChange
-                )
-
-                val scale by fontScale
-                val onValueChange = { value: Float ->
-                    set(GlobalKeys.FONT_SCALE, value)
-                }
-                SliderPreference(
-                    defaultValue = scale.value,
-                    title = scale.title,
-                    summery = scale.summery,
-                    valueRange = FONT_SCALE_LOWER_BOUND..FONT_SCALE_UPPER_BOUND,
-                    steps = SLIDER_STEPS,
-                    icon = scale.vector,
-                    onValueChange = onValueChange,
-                    iconChange = Icons.Outlined.TextFormat
-                )
-
-                //force accent
-                val forceAccent by forceAccent
-                val onRequestForceAccent = { should: Boolean ->
-                    set(GlobalKeys.FORCE_COLORIZE, should)
-                    if (should)
-                        set(GlobalKeys.COLOR_STATUS_BAR, true)
-                }
-                SwitchPreference(
-                    checked = forceAccent.value,
-                    title = forceAccent.title,
-                    summery = forceAccent.summery,
-                    onCheckedChange = onRequestForceAccent
-                )
-
-                //color status bar
-                val colorStatusBar by colorStatusBar
-                val onRequestColorChange = { should: Boolean ->
-                    set(GlobalKeys.COLOR_STATUS_BAR, should)
-                }
-                SwitchPreference(
-                    checked = colorStatusBar.value,
-                    title = colorStatusBar.title,
-                    summery = colorStatusBar.summery,
-                    onCheckedChange = onRequestColorChange,
-                    enabled = !forceAccent.value
-                )
-
-                //hide status bar
-                val hideStatusBar by hideStatusBar
-                val onRequestHideStatusBar = { should: Boolean ->
-                    set(GlobalKeys.HIDE_STATUS_BAR, should)
-                }
-                SwitchPreference(
-                    checked = hideStatusBar.value,
-                    title = hideStatusBar.title,
-                    summery = hideStatusBar.summery,
-                    onCheckedChange = onRequestHideStatusBar
-                )
-
-                //About us section.
-                AboutUs()
             }
         }
+    )
+}
+
+
+private fun Context.shareApp() {
+    ShareCompat.IntentBuilder(this)
+        .setType("text/plain")
+        .setChooserTitle(getString(R.string.app_name))
+        .setText("Let me recommend you this application ${Tokens.GOOGLE_STORE}")
+        .startChooser()
+}
+
+
+private fun Context.launchPlayStore() {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Tokens.GOOGLE_STORE)).apply {
+            setPackage(Tokens.PKG_GOOGLE_PLAY_STORE)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NO_HISTORY or
+                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT or
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+            )
+        }
+        startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Tokens.FALLBACK_GOOGLE_STORE)))
     }
 }

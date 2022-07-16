@@ -3,6 +3,7 @@ package com.prime.player.core
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.annotation.WorkerThread
+import com.prime.player.Tokens
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,8 +16,6 @@ private const val TAG = "Repository"
 
 private const val PLAYLIST_UNIQUE_TAG = "local_audios"
 
-private const val PLAYLIST_FAVOURITES = "_favourites"
-
 private const val PLAYLIST_RECENT = "_recent"
 
 private const val CAROUSEL_LIMIT = 30
@@ -27,13 +26,15 @@ class Repository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val audiosDb: Audios,
     private val playlistsDb: Playlists,
-    private val preferences: Preferences
+    preferences: Preferences
 ) {
+
     init {
-        //Run Sync Worker once the app is launched for the first time.
-        // TODO: Find better way to launch trigger SyncWorker.
+        // run after every cold start
+        //TODO: I guess required only if API < N
         SyncWorker.run(context)
     }
+
 
     /**
      * The reel is a [Pair ] of Duration and Bitmap.
@@ -79,27 +80,56 @@ class Repository @Inject constructor(
      * The favourite playlist.
      */
     val favourite =
-        playlistsDb.observe2(PLAYLIST_FAVOURITES, PLAYLIST_UNIQUE_TAG)
+        playlistsDb.observe2(Tokens.Audio.PLAYLIST_FAVOURITES, PLAYLIST_UNIQUE_TAG)
+
+    /**
+     * A second favorite that returns only the audio files in the [Playlist]
+     */
+    val favouriteList =
+        favourite.map {
+            if (it == null)
+                return@map emptyList()
+            it.second
+        }
 
     /**
      * The playlists excluding the special ones like [PLAYLIST_RECENT] etc.
      */
     val playlists =
         playlistsDb.observe().map { playlists ->
-
             // drop system default playlists.
             playlists.dropWhile {
-                it.name == PLAYLIST_FAVOURITES || it.name == PLAYLIST_RECENT
+                it.name == Tokens.Audio.PLAYLIST_FAVOURITES || it.name == PLAYLIST_RECENT
             }
         }
 
-    /**
-     * @return [Flow]able list of [Audio] matched against [query]
-     */
-    fun audios(query: String? = null) = audiosDb.observe(query)
 
     /**
-     * @return [Flow]able list of [Audio] matched against [query]
+     * Returns all the buckets
+     */
+    val folders =
+        audiosDb.buckets()
+
+    /**
+     * Returns a [Flow]able list of all [Artist]s
+     */
+    val artists =
+        audiosDb.artists()
+
+    /**
+     * Returns a [Flow]able list of all [Album]s
+     */
+    val albums =
+        audiosDb.albums()
+
+    /**
+     * Returns a [Flow]able list of all [Genre]s
+     */
+    val genres =
+        audiosDb.genres()
+
+    /**
+     * @return [Flow]able list of [Audio] matched against [query] paired with [Audio.Info]
      */
     fun audios2(query: String? = null) =
         audiosDb.observe(query = query).map {
@@ -107,25 +137,39 @@ class Repository @Inject constructor(
             info to it
         }
 
-    fun folder(path: String) = audiosDb.bucket2(path)
-    val folders =
-        audiosDb.buckets()
-    val artists =
-        audiosDb.artists()
-    val albums =
-        audiosDb.albums()
-    val genres =
-        audiosDb.genres()
+    /**
+     * @return [Flow]able list of [Audio] matched against [query]
+     */
+    fun audios(query: String? = null) =
+        audiosDb.observe(query)
 
+    /**
+     * Returns [Bucket] represented by [path] paired with its content
+     */
+    fun folder(path: String) =
+        audiosDb.bucket2(path)
+
+    /**
+     * Returns a [Flow]able pair of [Genre] paired with its content.
+     */
     fun genre(name: String) =
         audiosDb.genre2(name)
 
+    /**
+     * Returns a [Flow]able pair of [Audio.Artist] paired with its content.
+     */
     fun artist(name: String) =
         audiosDb.artist2(name)
 
+    /**
+     * Returns a [Flow]able pair of [Audio.Album] paired with its content.
+     */
     fun album(title: String) =
         audiosDb.albums2(title)
 
+    /**
+     * Returns a [Flow]able pair of [Playlist] paired with its content.
+     */
     fun playlist(name: String) =
         playlistsDb.observe2(name, PLAYLIST_UNIQUE_TAG)
 
@@ -138,8 +182,13 @@ class Repository @Inject constructor(
 
     @WorkerThread
     fun isFavourite(audioID: Long): Boolean =
-        runBlocking { playlistsDb.exists(PLAYLIST_FAVOURITES, PLAYLIST_UNIQUE_TAG, "$audioID") }
-
+        runBlocking {
+            playlistsDb.exists(
+                Tokens.Audio.PLAYLIST_FAVOURITES,
+                PLAYLIST_UNIQUE_TAG,
+                "$audioID"
+            )
+        }
 
     /**
      * Remove from playlist if first [Playlist] found and then if successfully removed.
@@ -147,14 +196,18 @@ class Repository @Inject constructor(
     fun removeFromPlaylist(name: String, audioID: Long): Int =
         runBlocking {
             val playlist = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name) ?: return@runBlocking 0
-            playlistsDb.delete(playlist.id, "$audioID")
+            playlistsDb.delete(playlist.id, "$audioID").also {
+                if (it == 1)
+                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+            }
         }
 
+    @WorkerThread
     fun toggleFav(audioID: Long) {
         if (isFavourite(audioID = audioID))
-            removeFromPlaylist(PLAYLIST_FAVOURITES, audioID)
+            removeFromPlaylist(Tokens.Audio.PLAYLIST_FAVOURITES, audioID)
         else
-            addToPlaylist(audioID, PLAYLIST_FAVOURITES)
+            addToPlaylist(audioID, Tokens.Audio.PLAYLIST_FAVOURITES)
     }
 
     @WorkerThread
@@ -172,19 +225,24 @@ class Repository @Inject constructor(
         }
     }
 
-
+    @WorkerThread
     fun addToPlaylist(audioID: Long, name: String) {
         runBlocking {
             val id = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name)?.id ?: createPlaylist(name)!!
+
             //TODO: Update dateModified.
             val older = playlistsDb.lastPlayOrder(id) ?: 0
             playlistsDb.insert(
                 Playlist.Member(id, "$audioID", order = older + 1)
-            )
+            ).also {
+                val playlist = playlistsDb.get(id) ?: return@runBlocking
+                if (it != -1L)
+                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+            }
         }
     }
 
-
+    @WorkerThread
     fun addToPlaylist(audios: List<Long>, name: String) {
         runBlocking {
             val id = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name)?.id ?: createPlaylist(name)!!
@@ -197,12 +255,21 @@ class Repository @Inject constructor(
         }
     }
 
+
+    suspend fun exists(playlistName: String): Boolean =
+        playlistsDb.get(PLAYLIST_UNIQUE_TAG, playlistName) != null
+
+    @WorkerThread
     fun deletePlaylist(playlist: Playlist): Boolean {
         return runBlocking {
             playlistsDb.delete(playlist) > 0
         }
     }
 
+    suspend fun updatePlaylist(value: Playlist): Boolean =
+        playlistsDb.update(value) == 1
+
+    @WorkerThread
     fun addToRecent(audioID: Long) {
         runBlocking {
             //TODO: Update Working.

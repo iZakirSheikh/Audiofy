@@ -6,29 +6,36 @@ import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material.icons.outlined.ZoomIn
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prime.player.common.asComposeState
+import com.primex.core.Text
 import com.primex.preferences.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+@Immutable
 data class Preference<out P>(
     val value: P,
-    val title: String,
+    @JvmField
+    val title: Text,
     val vector: ImageVector? = null,
-    val summery: String? = null,
+    @JvmField
+    val summery: Text? = null,
 )
 
+
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val preferences: Preferences) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val preferences: Preferences
+) : ViewModel() {
 
     val darkUiMode =
         with(preferences) {
@@ -38,11 +45,11 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                         NightMode.YES -> true
                         else -> false
                     },
-                    title = "Dark Mode",
-                    summery = "Click to change the app night/light mode.",
+                    title = Text("Dark Mode"),
+                    summery = Text("Click to change the app night/light mode."),
                     vector = Icons.Outlined.Lightbulb
                 )
-            }.toComposeState()
+            }.asComposeState()
         }
 
     val font =
@@ -50,11 +57,11 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
             preferences[GlobalKeys.FONT_FAMILY].map {
                 Preference(
                     vector = Icons.Default.TextFields,
-                    title = "Font",
-                    summery = "Choose font to better reflect your desires.",
+                    title = Text("Font"),
+                    summery = Text("Choose font to better reflect your desires."),
                     value = it
                 )
-            }.toComposeState()
+            }.asComposeState()
         }
 
     val colorStatusBar =
@@ -63,12 +70,12 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                 .map {
                     Preference(
                         vector = null,
-                        title = "Color Status Bar",
-                        summery = "Force color status bar.",
+                        title = Text("Color Status Bar"),
+                        summery = Text("Force color status bar."),
                         value = it
                     )
                 }
-                .toComposeState()
+                .asComposeState()
         }
 
     val hideStatusBar =
@@ -77,12 +84,12 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                 .map {
                     Preference(
                         value = it,
-                        title = "Hide Status Bar",
-                        summery = "hide status bar for immersive view",
+                        title = Text("Hide Status Bar"),
+                        summery = Text("hide status bar for immersive view"),
                         vector = Icons.Outlined.HideImage
                     )
                 }
-                .toComposeState()
+                .asComposeState()
         }
 
     val forceAccent =
@@ -91,11 +98,11 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                 .map {
                     Preference(
                         value = it,
-                        title = "Force Accent Color",
-                        summery = "Normally the app follows the rule of using 10% accent color. But if this setting is toggled it can make it use  more than 30%"
+                        title = Text("Force Accent Color"),
+                        summery = Text("Normally the app follows the rule of using 10% accent color. But if this setting is toggled it can make it use  more than 30%")
                     )
                 }
-                .toComposeState()
+                .asComposeState()
         }
 
 
@@ -105,12 +112,12 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                 .map {
                     Preference(
                         value = it,
-                        title = "Font Scale",
-                        summery = "Zoom in or out the text shown on the screen.",
+                        title = Text("Font Scale"),
+                        summery = Text("Zoom in or out the text shown on the screen."),
                         vector = Icons.Outlined.ZoomIn
                     )
                 }
-                .toComposeState()
+                .asComposeState()
         }
 
     val showProgressInMini =
@@ -119,12 +126,12 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
                 .map {
                     Preference(
                         value = it,
-                        title = "MiniPlayer Progress Bar",
-                        summery = "Show/Hide progress bar in MiniPlayer.",
+                        title = Text("MiniPlayer Progress Bar"),
+                        summery = Text("Show/Hide progress bar in MiniPlayer."),
                         vector = Icons.Outlined.Report
                     )
                 }
-                .toComposeState()
+                .asComposeState()
         }
 
 
@@ -153,10 +160,8 @@ class SettingsViewModel @Inject constructor(private val preferences: Preferences
     }
 }
 
-
-context (Preferences, ViewModel) private fun <T> Flow<T>.toComposeState(): State<T> {
-    val state = mutableStateOf(obtain())
-    onEach { state.value = it }
-        .launchIn(viewModelScope)
-    return state
-}
+context (Preferences, ViewModel)
+        private fun <T> Flow<T>.asComposeState(): State<T> =
+    asComposeState(
+        obtain()
+    )
