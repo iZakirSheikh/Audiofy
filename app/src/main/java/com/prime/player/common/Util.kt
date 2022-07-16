@@ -1,5 +1,6 @@
 package com.prime.player.common
 
+
 import android.Manifest
 import android.content.ContentUris
 import android.content.Context
@@ -25,6 +26,8 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.prime.player.R
+import com.prime.player.common.compose.Plural
+import com.prime.player.common.compose.Text
 import com.primex.core.runCatching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -90,7 +93,10 @@ object Utils {
         FORMAT_ABBREV_RELATIVE
     ) as String
 
-    fun toDuration(mills: Long): String {
+    /**
+     * @return mills formated as hh:mm:ss
+     */
+    fun formatAsDuration(mills: Long): String {
         var minutes: Long = mills / 1000 / 60
         val seconds: Long = mills / 1000 % 60
         return if (minutes < 60) {
@@ -102,6 +108,10 @@ object Utils {
         }
     }
 
+
+    fun formatAsDuration(mills: Int): String =
+        formatAsDuration(mills.toLong())
+
     /**
      * Return given duration in a human-friendly format. For example, "4
      * minutes" or "1 second". Returns only largest meaningful unit of time,
@@ -109,7 +119,8 @@ object Utils {
      *
      * @hide
      */
-    fun toDuration(context: Context, mills: Long): String {
+    @Deprecated(message = "Use toDuration(mills) with Text return ", level = DeprecationLevel.ERROR)
+    fun formatAsDuration(context: Context, mills: Long): String {
         val res = context.resources
         return when {
             mills >= HOUR_IN_MILLIS -> {
@@ -129,6 +140,29 @@ object Utils {
                 res.getQuantityString(
                     R.plurals.duration_seconds, seconds, seconds
                 )
+            }
+        }
+    }
+
+
+    /**
+     * Return given duration in a human-friendly format. For example, "4
+     * minutes" or "1 second". Returns only largest meaningful unit of time,
+     * from seconds up to hours.
+     */
+    fun formatAsDuration2(mills: Long): Text {
+        return when {
+            mills >= HOUR_IN_MILLIS -> {
+                val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
+                Plural(R.plurals.duration_hours, hours, hours)
+            }
+            mills >= MINUTE_IN_MILLIS -> {
+                val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
+                Plural(R.plurals.duration_minutes, minutes, minutes)
+            }
+            else -> {
+                val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
+                Plural(R.plurals.duration_seconds, seconds, seconds)
             }
         }
     }
@@ -198,9 +232,12 @@ suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
     }
 }
 
+inline fun <reified T> castTo(anything: Any): T {
+    return anything as T
+}
 
 context (ViewModel) @Suppress("NOTHING_TO_INLINE")
-inline fun <T> Flow<T>.toComposeState(initial: T): State<T> {
+inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
     val state = mutableStateOf(initial)
     onEach { state.value = it }
         .launchIn(viewModelScope)

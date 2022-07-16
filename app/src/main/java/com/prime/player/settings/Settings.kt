@@ -1,12 +1,11 @@
 package com.prime.player.settings
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -21,14 +20,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.prime.player.*
+import com.prime.player.Material
 import com.prime.player.R
+import com.prime.player.audio.Type
+import com.prime.player.audio.tracks.TracksRoute
 import com.prime.player.common.compose.*
-import com.primex.core.fadeEdge
+import com.prime.player.primary
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
 import cz.levinzonr.saferoute.core.annotations.RouteNavGraph
+import cz.levinzonr.saferoute.core.navigateTo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val RESERVE_PADDING = 48.dp
@@ -39,19 +42,19 @@ private const val FONT_SCALE_UPPER_BOUND = 2.0f
 private const val SLIDER_STEPS = 15
 
 @Composable
-private fun PrefHeader(text: String) {
+private inline fun PrefHeader(text: String) {
     val primary = MaterialTheme.colors.secondary
     val modifier =
         Modifier
             .padding(
                 start = RESERVE_PADDING,
-                top = Padding.Normal,
-                end = Padding.Large,
-                bottom = Padding.Medium
+                top = ContentPadding.normal,
+                end = ContentPadding.large,
+                bottom = ContentPadding.medium
             )
             .fillMaxWidth()
-            .drawVerticalDivider(color = primary)
-            .padding(bottom = Padding.Medium)
+            .drawHorizontalDivider(color = primary)
+            .padding(bottom = ContentPadding.medium)
     Label(
         text = text,
         modifier = modifier,
@@ -103,8 +106,8 @@ private inline fun ColumnScope.AboutUs() {
         text = stringHtmlResource(R.string.about_us_desc),
         style = MaterialTheme.typography.body2,
         modifier = Modifier
-            .padding(start = RESERVE_PADDING, end = Padding.Large)
-            .padding(vertical = Padding.Small),
+            .padding(start = RESERVE_PADDING, end = ContentPadding.large)
+            .padding(vertical = ContentPadding.small),
         color = LocalContentColor.current.copy(ContentAlpha.medium)
     )
 
@@ -127,20 +130,23 @@ private inline fun ColumnScope.AboutUs() {
     )
 }
 
+
 @Composable
 private fun TopAppBar(modifier: Modifier = Modifier) {
     val navigator = LocalNavController.current
-    RoundedCornerToolbar(
+
+    NeumorphicTopAppBar(
         title = { Label(text = stringResource(R.string.settings)) },
-        modifier = modifier.padding(top = Padding.Medium),
+        modifier = modifier.padding(top = ContentPadding.medium),
         navigationIcon = {
             IconButton(
-                onClick = { navigator.navigateUp() },
+                onClick = {  navigator.navigateUp() },
                 imageVector = Icons.Outlined.ReplyAll,
                 contentDescription = null
             )
         },
-        elevation = Elevation.Low,
+        shape = CircleShape,
+        elevation = ContentElevation.low,
     )
 }
 
@@ -148,49 +154,50 @@ private fun TopAppBar(modifier: Modifier = Modifier) {
 @Route(navGraph = RouteNavGraph())
 @Composable
 fun Settings(viewModel: SettingsViewModel) {
-    with(viewModel){
+    with(viewModel) {
         val topBar =
             @Composable {
-                val colorStatusBar by with(LocalPreferenceStore.current) {
-                    this[GlobalKeys.COLOR_STATUS_BAR].observeAsState()
-                }
-                val primaryOrTransparent = Material.colors.primary(colorStatusBar, Color.Transparent)
+                val (colorStatusBar, _, _, _) = colorStatusBar.value
+                val primaryOrTransparent =
+                    Material.colors.primary(colorStatusBar, Color.Transparent)
                 TopAppBar(
                     modifier = Modifier
                         .statusBarsPadding2(
                             color = primaryOrTransparent,
                             darkIcons = !colorStatusBar && Material.colors.isLight
                         )
-                        .drawVerticalDivider(color = Material.colors.onSurface)
-                        .padding(bottom = Padding.Medium)
+                        .drawHorizontalDivider(color = Material.colors.onSurface)
+                        .padding(bottom = ContentPadding.medium)
                 )
             }
-
         Scaffold(topBar = topBar) {
             val state = rememberScrollState()
-            val color = if (MaterialTheme.colors.isLight) Color.White else Color.Black
+            //val color = if (MaterialTheme.colors.isLight) Color.White else Color.Black
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .fadeEdge(state = state, length = 16.dp, horizontal = false, color = color)
+                    //FixMe: Creates a issue between Theme changes
+                    // needs to be study properly
+                    // disabling for now
+                    //.fadeEdge(state = state, length = 16.dp, horizontal = false, color = color)
                     .verticalScroll(state),
             ) {
-                PrefHeader(text = stringResource(R.string.appearence))
+
+                PrefHeader(text = stringResource(R.string.appearance))
 
                 //dark mode
                 val darkTheme by darkUiMode
-
                 val onCheckedChange = { new: Boolean ->
                     set(GlobalKeys.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
                 }
-
                 SwitchPreference(
                     checked = darkTheme.value,
-                    title = darkTheme.title,
-                    summery = darkTheme.summery,
+                    title = darkTheme.rawTitle,
+                    summery = darkTheme.rawSummery,
                     icon = darkTheme.vector,
                     onCheckedChange = onCheckedChange
                 )
+
 
                 //font
                 val font by font
@@ -205,21 +212,22 @@ fun Settings(viewModel: SettingsViewModel) {
                     viewModel.set(GlobalKeys.FONT_FAMILY, family)
                 }
                 DropDownPreference(
-                    title = font.title,
+                    title = font.rawTitle,
                     entries = familyList,
                     defaultValue = font.value,
                     icon = font.vector,
                     onRequestChange = onRequestChange
                 )
 
+                // app font scale
                 val scale by fontScale
                 val onValueChange = { value: Float ->
                     set(GlobalKeys.FONT_SCALE, value)
                 }
                 SliderPreference(
                     defaultValue = scale.value,
-                    title = scale.title,
-                    summery = scale.summery,
+                    title = scale.rawTitle,
+                    summery = scale.rawSummery,
                     valueRange = FONT_SCALE_LOWER_BOUND..FONT_SCALE_UPPER_BOUND,
                     steps = SLIDER_STEPS,
                     icon = scale.vector,
@@ -236,8 +244,8 @@ fun Settings(viewModel: SettingsViewModel) {
                 }
                 SwitchPreference(
                     checked = forceAccent.value,
-                    title = forceAccent.title,
-                    summery = forceAccent.summery,
+                    title = forceAccent.rawTitle,
+                    summery = forceAccent.rawSummery,
                     onCheckedChange = onRequestForceAccent
                 )
 
@@ -248,8 +256,8 @@ fun Settings(viewModel: SettingsViewModel) {
                 }
                 SwitchPreference(
                     checked = colorStatusBar.value,
-                    title = colorStatusBar.title,
-                    summery = colorStatusBar.summery,
+                    title = colorStatusBar.rawTitle,
+                    summery = colorStatusBar.rawSummery,
                     onCheckedChange = onRequestColorChange,
                     enabled = !forceAccent.value
                 )
@@ -261,13 +269,21 @@ fun Settings(viewModel: SettingsViewModel) {
                 }
                 SwitchPreference(
                     checked = hideStatusBar.value,
-                    title = hideStatusBar.title,
-                    summery = hideStatusBar.summery,
+                    title = hideStatusBar.rawTitle,
+                    summery = hideStatusBar.rawSummery,
                     onCheckedChange = onRequestHideStatusBar
                 )
 
                 //About us section.
                 AboutUs()
+
+                val padding = LocalWindowPadding.current
+                // The necessary padding as suggested by the LocalWindowPadding
+                Spacer(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .padding(padding),
+                )
             }
         }
     }

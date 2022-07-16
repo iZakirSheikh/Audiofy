@@ -2,17 +2,18 @@ package com.prime.player.common.compose
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prime.player.Material
-import com.prime.player.Padding
 import com.primex.ui.ProvideTextStyle
 
 private val PLACE_HOLDER_ICON_BOX_SIZE = 192.dp
+private val PLACE_HOLDER_ICON_BOX_DEFAULT_SIZE = 56.dp
 
 @Composable
 fun VPlaceholder(
@@ -24,23 +25,27 @@ fun VPlaceholder(
 ) {
     Column(
         modifier = Modifier
+
             // optional full max size
             .fillMaxSize()
+
             // add a padding normal
-            .padding(horizontal = Padding.Large, vertical = Padding.Normal)
+            .padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal)
             .then(modifier),
+
         // The Placeholder will be Placed in the middle of the available space
         // both h/v
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         // place icon if available
         if (icon != null) {
             Box(
                 modifier = Modifier
-                    .padding(bottom = Padding.Normal)
+                    .padding(bottom = ContentPadding.normal)
                     //  .align(Alignment.CenterHorizontally)
-                    .requiredSize(PLACE_HOLDER_ICON_BOX_SIZE),
+                    .size(PLACE_HOLDER_ICON_BOX_SIZE),
                 propagateMinConstraints = true
             ) {
                 icon()
@@ -49,16 +54,16 @@ fun VPlaceholder(
 
         // Place Title
         ProvideTextStyle(
-            style = Material.typography.h4,
+            style = MaterialTheme.typography.h4,
             content = title,
             textAlign = TextAlign.Center
         )
 
         //Message
         if (message != null) {
-            Spacer(modifier = Modifier.padding(vertical = Padding.Medium))
+            Spacer(modifier = Modifier.padding(vertical = ContentPadding.medium))
             ProvideTextStyle(
-                style = Material.typography.body2,
+                style = MaterialTheme.typography.body2,
                 alpha = ContentAlpha.medium,
                 content = message,
                 textAlign = TextAlign.Center
@@ -67,7 +72,7 @@ fun VPlaceholder(
 
         //Action
         if (action != null) {
-            Spacer(modifier = Modifier.padding(vertical = Padding.Large))
+            Spacer(modifier = Modifier.padding(vertical = ContentPadding.large))
             action()
         }
     }
@@ -86,7 +91,7 @@ fun HPlaceholder(
             // optional full max size
             .fillMaxSize()
             // add a padding normal
-            .padding(horizontal = Padding.Large, vertical = Padding.Normal)
+            .padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal)
             .then(modifier),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -96,21 +101,21 @@ fun HPlaceholder(
 
         Column(
             modifier = Modifier
-                .padding(end = Padding.Large)
+                .padding(end = ContentPadding.large)
                 .weight(0.7f, fill = false)
         ) {
 
             // Place Title
             ProvideTextStyle(
-                value = Material.typography.h4,
+                value = MaterialTheme.typography.h4,
                 content = title
             )
 
             //Message
             if (message != null) {
-                Spacer(modifier = Modifier.padding(vertical = Padding.Medium))
+                Spacer(modifier = Modifier.padding(vertical = ContentPadding.medium))
                 ProvideTextStyle(
-                    style = Material.typography.body2,
+                    style = MaterialTheme.typography.body2,
                     alpha = ContentAlpha.medium,
                     content = message
                 )
@@ -118,7 +123,7 @@ fun HPlaceholder(
 
             //Action
             if (action != null) {
-                Spacer(modifier = Modifier.padding(top = Padding.Large))
+                Spacer(modifier = Modifier.padding(top = ContentPadding.large))
                 action()
             }
         }
@@ -127,9 +132,9 @@ fun HPlaceholder(
         if (icon != null) {
             Box(
                 modifier = Modifier
-                    .padding(bottom = Padding.Normal)
+                    .padding(bottom = ContentPadding.normal)
                     //  .align(Alignment.CenterHorizontally)
-                    .requiredSize(PLACE_HOLDER_ICON_BOX_SIZE),
+                    .size(PLACE_HOLDER_ICON_BOX_SIZE),
                 propagateMinConstraints = true
             ) {
                 icon()
@@ -141,6 +146,7 @@ fun HPlaceholder(
 }
 
 @Composable
+@NonRestartableComposable
 fun Placeholder(
     modifier: Modifier = Modifier,
     vertical: Boolean,

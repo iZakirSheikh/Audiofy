@@ -14,8 +14,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.prime.player.common.Artwork
 import com.prime.player.common.FileUtils
+import com.prime.player.common.MediaUtil
 import com.prime.player.common.getAlbumArt
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
@@ -237,7 +237,7 @@ class SyncWorker @AssistedInject constructor(
         val bitmaps = ArrayList<Bitmap>()
         albums.forEach { album ->
             // compute uri using the album id
-            val uri = Artwork(album.id)
+            val uri = MediaUtil.composeAlbumArtUri(album.id)
             //fetch the artwork
             val artwork = context.getAlbumArt(uri = uri, POSTER_ARTWORK_SIZE)?.toBitmap()
             //add to list

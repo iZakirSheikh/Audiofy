@@ -1,5 +1,6 @@
 package com.prime.player.common.compose
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -222,7 +223,6 @@ fun NeumorphicButton(
 ) {
     val contentColor by colors.contentColor(enabled)
     val depth by elevation.elevation(enabled = enabled, interactionSource = interactionSource)
-
     Neumorphic(
         onClick = onClick,
         modifier = modifier,

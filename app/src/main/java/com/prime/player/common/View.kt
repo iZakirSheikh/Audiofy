@@ -62,7 +62,6 @@ fun Ticker(
         }) {
         it.setCharacterLists(charList)
         it.textColor = color.toArgb()
-        it.textSize = sizePx
         it.animationDuration = duration
         it.setPreferredScrollingDirection(prefScrollingDirection)
         it.textSize = sizePx
@@ -95,6 +94,11 @@ fun KenBurns(
     )
 }
 
+
+@Deprecated(
+    message = "Don't use it!!",
+    level = DeprecationLevel.HIDDEN
+)
 @Composable
 fun Seekbar(
     modifier: Modifier = Modifier,

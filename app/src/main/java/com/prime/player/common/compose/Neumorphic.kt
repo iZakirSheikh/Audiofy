@@ -82,7 +82,7 @@ fun Neumorphic(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: CornerBasedShape = DefaultNeumorphicShape,
-    color: Color = MaterialTheme.colors.background,
+    color: Color = Material.colors.background,
     contentColor: Color = contentColorFor(color),
     border: BorderStroke? = null,
     elevation: Dp = 0.dp,

@@ -82,11 +82,20 @@ class Repository @Inject constructor(
         playlistsDb.observe2(PLAYLIST_FAVOURITES, PLAYLIST_UNIQUE_TAG)
 
     /**
+     * A second favorite that returns only the audio files in the [Playlist]
+     */
+    val favouriteList =
+        favourite.map {
+            if (it == null)
+                return@map emptyList()
+            it.second
+        }
+
+    /**
      * The playlists excluding the special ones like [PLAYLIST_RECENT] etc.
      */
     val playlists =
         playlistsDb.observe().map { playlists ->
-
             // drop system default playlists.
             playlists.dropWhile {
                 it.name == PLAYLIST_FAVOURITES || it.name == PLAYLIST_RECENT
@@ -147,7 +156,10 @@ class Repository @Inject constructor(
     fun removeFromPlaylist(name: String, audioID: Long): Int =
         runBlocking {
             val playlist = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name) ?: return@runBlocking 0
-            playlistsDb.delete(playlist.id, "$audioID")
+            playlistsDb.delete(playlist.id, "$audioID").also {
+                if (it == 1)
+                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+            }
         }
 
     fun toggleFav(audioID: Long) {
@@ -176,11 +188,16 @@ class Repository @Inject constructor(
     fun addToPlaylist(audioID: Long, name: String) {
         runBlocking {
             val id = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name)?.id ?: createPlaylist(name)!!
+
             //TODO: Update dateModified.
             val older = playlistsDb.lastPlayOrder(id) ?: 0
             playlistsDb.insert(
                 Playlist.Member(id, "$audioID", order = older + 1)
-            )
+            ).also {
+                val playlist = playlistsDb.get(id) ?: return@runBlocking
+                if (it != -1L)
+                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+            }
         }
     }
 
@@ -197,11 +214,18 @@ class Repository @Inject constructor(
         }
     }
 
+
+    suspend fun exists(playlistName: String): Boolean =
+        playlistsDb.get(PLAYLIST_UNIQUE_TAG, playlistName) != null
+
     fun deletePlaylist(playlist: Playlist): Boolean {
         return runBlocking {
             playlistsDb.delete(playlist) > 0
         }
     }
+
+    suspend fun updatePlaylist(value: Playlist): Boolean =
+        playlistsDb.update(value) == 1
 
     fun addToRecent(audioID: Long) {
         runBlocking {

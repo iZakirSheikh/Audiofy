@@ -406,7 +406,7 @@ interface Playlists {
      * @return [List][Audio]s of [Playlist] represented by [playlistId]
      */
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id WHERE playlist_id = :playlistId ORDER BY file_id ASC")
+    @Query("SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id WHERE playlist_id = :playlistId ORDER BY play_order ASC")
     suspend fun getAudios(playlistId: Long): List<Audio>
 
     /**

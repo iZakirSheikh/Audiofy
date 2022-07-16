@@ -44,7 +44,7 @@ import androidx.core.app.NotificationCompat;
 import com.prime.player.App;
 import com.prime.player.MainActivity;
 import com.prime.player.R;
-import com.prime.player.common.MediaUtilsKt;
+import com.prime.player.common.MediaUtil;
 import com.prime.player.core.Audio;
 import com.prime.player.core.Repository;
 
@@ -451,7 +451,7 @@ public class PlaybackService extends Service implements Player.EventListener {
         mMediaPlayer.reset();
         try {
             if (trackId != -1) {
-                Uri trackUri = MediaUtilsKt.Track(trackId);
+                Uri trackUri = MediaUtil.composeAudioTrackUri(trackId);
                 mMediaPlayer.setDataSource(this, trackUri);
             } else
                 mMediaPlayer.setDataSource(audio.path);
