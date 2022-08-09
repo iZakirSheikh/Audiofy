@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="unity_app_id">4388193</string>
-
-    <string name="console_banner_id">banner_console</string>
-    <string name="library_banner_id">Banner_Android</string>
-    <string name="interstitial_ad_id">Interstitial_Android</string>
-</resources>

@@ -1,22 +1,33 @@
 package com.prime.player.audio.tracks
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prime.player.audio.GroupOf
-import com.prime.player.core.AudioRepo
-import com.prime.player.core.models.*
+import com.prime.player.R
+import com.prime.player.Tokens
+import com.prime.player.audio.Type
+import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
+import com.prime.player.common.MediaUtil
+import com.prime.player.common.Utils
+import com.prime.player.common.asComposeState
+import com.prime.player.common.compose.SnackDataChannel
+import com.prime.player.common.compose.send
+import com.prime.player.common.share
+import com.prime.player.core.Audio
+import com.prime.player.core.Playlist
+import com.prime.player.core.Repository
+import com.prime.player.core.name
 import com.prime.player.core.playback.PlaybackService
-import com.prime.player.extended.*
-import com.prime.player.utils.share
+import com.primex.core.Result
+import com.primex.core.Text
+import com.primex.core.buildResult
+import com.primex.core.raw
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,20 +35,34 @@ import org.json.JSONArray
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
-private const val TAG = "TracksViewModel"
+typealias TrackFilter = Pair<GroupBy, Boolean>
+typealias TrackResult = Map<Text, List<Audio>>
 
 
-typealias Filter = Triple<String, GroupBy, Boolean>
-typealias TracksResult = Resource<State<Pair<String, Map<String, List<Audio>>>?>>
+private const val DEBOUNCE_MIN_DELAY = 300L //ms
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
-class TracksViewModel @Inject constructor(private val context: Application) : ViewModel() {
-    private val repo = AudioRepo.get(context = context)
+class TracksViewModel @Inject constructor(
+    handle: SavedStateHandle,
+    private val repository: Repository
+) : ViewModel() {
 
-    private lateinit var arg: Pair<GroupOf, String>
+    private val args = TracksRouteArgsFactory.fromSavedStateHandle(handle = handle)
+
+    // extract all the args from the saved state handle.
+    val type = args.type.let { Type.valueOf(it) }
+
+    /**
+     * The unique id used to extract the contents of the particular bucket.
+     */
+    private val uuid: String = args.id
+
+    val query = args.query?.let { if (it == "@null") null else it }
+
+    val title: State<Text> = mutableStateOf(Text(""))
+
+    val header: State<Header?> = mutableStateOf(null)
 
     /**
      *  The Selected Audios
@@ -45,43 +70,9 @@ class TracksViewModel @Inject constructor(private val context: Application) : Vi
     val selected = mutableStateListOf<Long>()
 
     /**
-     * Search channel
-     * Query [String], Ascending [Boolean],
+     * Toggles the selection of the given ID.
      */
-    val channel: StateFlow<Filter> = MutableStateFlow(Filter("", GroupBy.NAME, true))
-
-    /**
-     * The title of this screen.
-     */
-    val title: StateFlow<String> = MutableStateFlow("")
-
-    /**
-     * The favourite list
-     */
-    val favourite = repo.playlists.transform {
-        val playlist = it.find {
-            it.name == AudioRepo.PLAYLIST_FAVORITES
-        }
-        emit(playlist)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    val result: TracksResult = TracksResult(mutableStateOf(null))
-
-    private fun toAudioList(list: List<Long>): List<Audio> {
-        val audios = ArrayList<Audio>()
-        list.forEach { id ->
-            repo.getAudioById(id)?.let {
-                audios.add(it)
-            }
-        }
-        return audios
-    }
-
-    fun toggleFav(id: Long) {
-        repo.toggleFav(id)
-    }
-
-    fun toggleSelection(id: Long) {
+    fun select(id: Long) {
         viewModelScope.launch {
             if (selected.contains(id))
                 selected.remove(id)
@@ -90,90 +81,103 @@ class TracksViewModel @Inject constructor(private val context: Application) : Vi
         }
     }
 
-    fun sortBy(groupBy: GroupBy, messenger: Messenger) {
+    /**
+     * Search channel
+     * Query [String], Ascending [Boolean],
+     */
+    val filter: StateFlow<TrackFilter> =
+        MutableStateFlow(TrackFilter(GroupBy.NAME, true))
+
+    /**
+     * Filter the results of the list.
+     */
+    fun filter(
+        value: GroupBy,
+        ascending: Boolean,
+        channel: SnackDataChannel? = null
+    ) {
         viewModelScope.launch {
-            val old = channel.value
-            if (old.second != groupBy) {
-                (channel as MutableStateFlow).emit(Filter(old.first, groupBy, old.third))
-                val msg = when (groupBy) {
-                    GroupBy.NAME -> "Grouping list by Name"
-                    GroupBy.ARTIST -> "Grouping list by artist"
-                    GroupBy.ALBUM -> "Grouping list by album"
-                    GroupBy.DURATION -> "Grouping list by duration."
-                    GroupBy.NONE -> "No grouping strategy set."
+            val old = filter.value
+            val new = old.copy(first = value, second = ascending)
+            (filter as MutableStateFlow).emit(new)
+            // TODO: Publish to channel
+        }
+    }
+
+    /**
+     * The favourite list
+     */
+    val favourite =
+        repository
+            .favouriteList
+            .map { list -> list.map { it.id } }
+            .asComposeState(emptyList())
+
+    /**
+     * Toggle the favourite state of the audio file.
+     */
+    fun toggleFav(
+        id: Long,
+        channel: SnackDataChannel? = null
+    ) {
+        viewModelScope.launch {
+            repository.toggleFav(id)
+            // TODO: Publish to channel
+        }
+    }
+
+    /**
+     * Share the [selected] items fro the available list.
+     */
+    fun share(
+        context: Context,
+        channel: SnackDataChannel? = null
+    ) {
+        viewModelScope.launch {
+            val list = ArrayList<Audio>()
+            selected.forEach {
+                val audio = repository.getAudioById(it)
+                audio?.let {
+                    list.add(it)
                 }
-                messenger.send(msg)
             }
+            context.share(list)
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getPlaylist(id: Long): Flow<Playlist> {
-        return repo.playlists.transformLatest { playlists ->
-            val playlist = playlists.find { playlist ->
-                playlist.id == id
-            }!!
-            emit(playlist)
-        }
-    }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getFolder(name: String): Flow<Folder> {
-        return repo.folders.transformLatest { folders ->
-            val folder = folders.find { folder ->
-                folder.name == name
-            }!!
-            emit(folder)
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getGenre(id: Long): Flow<Genre> {
-        return repo.genres.transformLatest { genres ->
-            val genre = genres.find { genre ->
-                genre.id == id
-            }!!
-            emit(genre)
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getArtist(id: Long): Flow<Artist> {
-        return repo.artists.transformLatest { artists ->
-            val artist = artists.find { artist ->
-                artist.id == id
-            }!!
-            emit(artist)
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getAlbum(id: Long): Flow<Album> {
-        return repo.albums.transformLatest { albums ->
-            val album = albums.find { album ->
-                album.id == id
-            }!!
-            emit(album)
-        }
-    }
-
-    fun onRequestPlay(indexOf: Audio?, shuffle: Boolean, messenger: Messenger) {
+    /**
+     * Create [Play], [Intent] adn launches [PlaybackService] with the intent
+     */
+    fun onRequestPlay(
+        context: Context,
+        shuffle: Boolean = false,
+        indexOf: Audio? = null,
+        channel: SnackDataChannel? = null
+    ) {
         viewModelScope.launch {
 
             val list = ArrayList<Audio>()
-            val map = result.data.value!!.second
+            val map = result.data.value.entries
             map.forEach {
                 list.addAll(it.value)
             }
             val index = indexOf?.let { list.indexOf(it) } ?: 0
 
-            messenger.send(
-                message = "Playing queue ${title.value}"
+            val title = title.value.let {
+                if (it.raw is String)
+                    it.raw as String
+                else
+                    context.getString(it.raw as Int)
+            }
+
+            channel?.send(
+                message = "Playing queue $title"
             )
 
             val intent = Intent(context, PlaybackService::class.java).apply {
                 action = PlaybackService.ACTION_LOAD_LIST
-                putExtra(PlaybackService.PARAM_NAME, title.value)
+                putExtra(PlaybackService.PARAM_NAME, title)
                 putExtra(PlaybackService.PARAM_SHUFFLE, shuffle)
                 putExtra(PlaybackService.PARAM_FROM_INDEX, index)
                 putExtra(PlaybackService.PARAM_START_PLAYING, true)
@@ -188,120 +192,230 @@ class TracksViewModel @Inject constructor(private val context: Application) : Vi
         }
     }
 
-    fun share(context: Context) {
+    @OptIn(FlowPreview::class)
+    private val observable: Flow<Pair<Any, List<Audio>>?> =
+        when (type) {
+            Type.AUDIOS -> repository.audios2(query)
+            Type.PLAYLISTS -> repository.playlist(uuid)
+            Type.FOLDERS -> repository.folder(uuid)
+            Type.ARTISTS -> repository.artist(uuid)
+            Type.ALBUMS -> repository.album(uuid)
+            Type.GENRES -> repository.genre(uuid)
+        }
+            .debounce(DEBOUNCE_MIN_DELAY)
+
+
+    fun addToPlaylist(playlist: Playlist, ids: List<Long>){
         viewModelScope.launch {
-            val list = ArrayList<Audio>()
-            selected.forEach {
-                val audio = repo.getAudioById(it)
-                audio?.let {
-                    list.add(it)
-                }
-            }
-            context.share(list)
+            repository.addToPlaylist(
+                name = playlist.name,
+                audios = ids
+            )
         }
     }
 
+    val playlists = repository.playlists
 
-    /**
-     * Must be called exactly after obtaining the instance
-     * @param group: The group it belongs to
-     * @param uniqueID: The id of the group.
-     */
-    fun init(group: GroupOf, uniqueID: String) {
-        if (::arg.isInitialized)
-            return
-        arg = group to uniqueID
-        viewModelScope.launch {
-            channel
-                .debounce(300)
+
+    @OptIn(FlowPreview::class)
+    val result: Result<TrackResult> =
+        buildResult(emptyMap()) {
+            // collect the flow here
+            filter
+                .debounce(DEBOUNCE_MIN_DELAY)
                 .distinctUntilChanged()
-                .combineTransform(
-                    when (group) {
-                        GroupOf.AUDIOS -> repo.audios
-                        GroupOf.PLAYLISTS -> getPlaylist(uniqueID.toLong())
-                        GroupOf.FOLDERS -> getFolder(uniqueID)
-                        GroupOf.ARTISTS -> getArtist(uniqueID.toLong())
-                        GroupOf.ALBUMS -> getAlbum(uniqueID.toLong())
-                        GroupOf.GENRES -> getGenre(uniqueID.toLong())
-                    }
-                ) { filter, from ->
+                .combine(observable) { (groupBy, ascending), data ->
 
-                    val (query, groupBy, ascending) = filter
-
-                    val (audios, title) = when (from) {
-                        is Artist -> from.audioList to from.name
-                        is Album -> from.audioList to from.title
-                        is Playlist -> toAudioList(from.audios) to from.name
-                        is Folder -> from.audios to from.name
-                        is Genre -> from.audios to from.name
-                        else -> castTo<List<Audio>>(from) to "Audios"
+                    if (data == null) {
+                        //this.emit(null)
+                        return@combine null
                     }
 
-                    //emit title
-                    (this@TracksViewModel.title as MutableStateFlow).emit(title)
+                    val (info, list) = data
 
-                    val filteredList = if (query.isEmpty()) audios else audios.filter { audio ->
-                        audio.title.lowercase(Locale.ROOT).contains(query)
-                    }
-
-                    val grouped = when (groupBy) {
-
-                        GroupBy.NONE -> mapOf(
-                            "" to filteredList
-                        )
-
-                        GroupBy.NAME -> filteredList.groupBy { audio ->
-                            audio.title.uppercase(Locale.ROOT)[0].toString()
+                    val filteredList =
+                        if (query.isNullOrEmpty()) list else list.filter { audio ->
+                            audio.title.lowercase().contains(query)
                         }
-                        GroupBy.ARTIST -> filteredList.groupBy { audio ->
-                            audio.artist?.name ?: "Unknown"
-                        }
-                        GroupBy.ALBUM -> filteredList.groupBy { audio ->
-                            audio.album?.title ?: "Unknown"
-                        }
-                        else -> filteredList.groupBy { audio ->
-                            when {
-                                audio.duration < TimeUnit.MINUTES.toMillis(2) -> "Less 2 Min"
-                                audio.duration < TimeUnit.MINUTES.toMillis(5) -> "Less than 5 Min"
-                                audio.duration < TimeUnit.MINUTES.toMillis(10) -> "Less than 10 Min"
-                                else -> "Greater than 10 Min"
-                            }
-                        }
-                    }
+                    val grouped =
+                        when (groupBy) {
+                            // just return the list
+                            // mapped with empty string
+                            GroupBy.NONE -> mapOf(Text("") to filteredList)
 
-                    var duration = 0L
-                    filteredList.forEach {
-                        duration += it.duration
-                    }
+                            // sort the filtered list
+                            // then reverse it may be
+                            // then group it according to the firstTitleChar
+                            GroupBy.NAME -> filteredList
+                                .sortedBy { it.title }
+                                .let { if (ascending) it else it.asReversed() }
+                                .groupBy { audio -> Text(audio.firstTitleChar) }
 
-                    val subtitle = "${filteredList.size} tracks -  ${
-                        com.prime.player.utils.toDuration(
-                            context,
-                            duration
-                        )
-                    } of playback"
 
-                    emit(
-                        subtitle to if (!ascending) grouped.toSortedMap(reverseOrder()) else grouped.toSortedMap(),
-                    )
+                            GroupBy.ARTIST -> filteredList
+                                .sortedBy { it.title }
+                                .let { if (ascending) it else it.asReversed() }
+                                .groupBy { audio -> Text(audio.artist) }
+
+
+                            GroupBy.ALBUM -> filteredList
+                                .sortedBy { it.title }
+                                .let { if (ascending) it else it.asReversed() }
+                                .groupBy { audio -> Text(audio.album) }
+
+
+                            GroupBy.DURATION -> filteredList
+                                .sortedBy { it.duration }
+                                .let { if (ascending) it else it.asReversed() }
+                                .groupBy { audio ->
+                                    when {
+                                        audio.duration < TimeUnit.MINUTES.toMillis(2) ->
+                                            Text(R.string.list_title_less_then_2_mins)
+
+                                        audio.duration < TimeUnit.MINUTES.toMillis(5) ->
+                                            Text(R.string.list_title_less_than_5_mins)
+
+                                        audio.duration < TimeUnit.MINUTES.toMillis(10) ->
+                                            Text(R.string.list_title_less_than_10_mins)
+
+                                        else -> Text(R.string.list_title_greater_than_10_mins)
+                                    }
+                                }
+                        }
+
+                    // emit the pair of original info and grouped items.
+                    info to grouped
                 }
-                .catch { e ->
-                    Log.i(TAG, "init: ${e.message}")
-                    result.error("An unknown error occurred!!. ")
+                .onEach { pair ->
+                    val first = pair?.first
+                    val data = pair?.second
+
+                    // convert first/header to its Ui Model
+                    // also emit the title.
+                    val info =
+                        when (first) {
+                            null -> null
+                            is Audio.Artist -> first.asListInfo to first.title
+                            is Audio.Album -> first.asListInfo to first.title2
+                            is Audio.Genre -> first.asListInfo to first.title
+                            is Audio.Bucket -> first.asListInfo to first.title
+                            is Audio.Info -> first.asListInfo to first.title
+                            is Playlist -> first.asListInfo to first.title
+                            else -> error("TrackResult: Unknown type")
+                        }
+
+                    // emit data
+                    // emit title & header
+                    emit(data ?: emptyMap())
+                    (this@TracksViewModel.title as MutableState).value = info?.second ?: Text("")
+                    (this@TracksViewModel.header as MutableState).value = info?.first
+
+                    // emit state of this result
+                    // FixMe - Maybe it's good to emit Text as error value
+                    //  as we are here dealing with UI.
+                    if (data == null)
+                        emit(Result.State.Error(null))
+                    else if (data.isEmpty())
+                        emit(Result.State.Empty)
+
+                    Log.i("TracksViewModel", "count: ")
                 }
-                .collect {
-                    when (it.second.isEmpty()) {
-                        true -> result.empty("Empty!! No Items in bucket")
-                        else -> result.success(it)
-                    }
-                }
+                // emit the error maybe.
+                .catch { emit(Result.State.Error(null)) }
+                .launchIn(viewModelScope)
         }
-    }
-
-    companion object {
-        private const val TAG = "TracksViewModel"
-        const val UNIQUE_ID = "unique_key"
-        const val FROM = "from_group"
-    }
-
 }
+
+@Immutable
+@Stable
+data class Header(
+    val subtitle: Text? = null,
+    val artwork: Uri? = null,
+    val cardinality: Int,
+    val duration: Int,
+    val size: Long
+)
+
+private val Audio.Info.asListInfo
+    get() = Header(
+        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
+        subtitle = Text("Last Modified: ${Utils.formatAsRelativeTimeSpan(value.dateModified)}"),
+        cardinality = cardinality,
+        duration = duration,
+        size = size.toLong(),
+    )
+
+private val Audio.Info.title inline get() = Text("Audios")
+
+private val Audio.Genre.asListInfo
+    get() = Header(
+        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
+        subtitle = null,
+        cardinality = tracks,
+        duration = duration,
+        size = size,
+    )
+
+private val Audio.Genre.title
+    inline get() = Text(name)
+
+
+private val Audio.Album.asListInfo
+    get() = Header(
+        artwork = MediaUtil.composeAlbumArtUri(id),
+        subtitle = Text("First Year: $firstYear | Last Year $lastYear"),
+        cardinality = tracks,
+        duration = duration,
+        size = size,
+    )
+
+private val Audio.Album.title2
+    inline get() = Text(title)
+
+private val Audio.Bucket.asListInfo
+    get() = Header(
+        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
+        subtitle = null,
+        cardinality = cardinality,
+        duration = -1,
+        size = value.size,
+    )
+
+private val Audio.Bucket.title
+    inline get() = Text(name)
+
+private val Audio.Artist.asListInfo
+    get() = Header(
+        subtitle = null,
+        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
+        cardinality = tracks,
+        size = value.size,
+        duration = value.duration,
+    )
+
+private val Audio.Artist.title
+    inline get() = Text(name)
+
+private val Playlist.asListInfo
+    get() = Header(
+        subtitle = Text(
+            "Date Created: ${Utils.formatAsRelativeTimeSpan(dateCreated)} \nDate Modified ${
+                Utils.formatAsRelativeTimeSpan(
+                    dateModified
+                )
+            }"
+        ),
+        artwork = null,
+        cardinality = -1,
+        size = -1,
+        duration = -1,
+    )
+
+private val Playlist.title
+    inline get() = Text(
+        name.let { if (it == Tokens.Audio.PLAYLIST_FAVOURITES) "Favourites" else name }
+    )
+
+
+private val Audio.firstTitleChar
+    inline get() = title.uppercase(Locale.ROOT)[0].toString()

@@ -1,95 +1,73 @@
 package com.prime.player.audio
 
-import android.annotation.SuppressLint
-import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.widget.Toast
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timer3
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
-import com.airbnb.lottie.LottieDrawable
-import com.google.accompanist.insets.statusBarsPadding
-import com.prime.player.App
-import com.prime.player.PlayerTheme
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.prime.player.*
 import com.prime.player.R
-import com.prime.player.core.AudioRepo
-import com.prime.player.core.models.Audio
-import com.prime.player.core.models.Playlist
-import com.prime.player.extended.*
-import com.prime.player.preferences.Preferences
-import com.prime.player.preferences.requiresAccentThoroughly
-import com.prime.player.preferences.requiresColoringStatusBar
-import com.prime.player.utils.getAlbumArtUri
-import com.prime.player.utils.toDuration
-import com.prime.player.utils.toRelativeTimeSpan
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.prime.player.common.MediaUtil
+import com.prime.player.common.Utils
+import com.prime.player.common.compose.*
+import com.prime.player.core.Audio
+import com.prime.player.core.Playlist
+import com.primex.core.Result
+import com.primex.ui.*
 
 
 @Composable
-fun resolveAccentColor(): Color {
-    val prefs = Preferences.get(LocalContext.current)
-    val requires by with(prefs) { requiresAccentThoroughly().collectAsState() }
-    return when {
-        requires -> PlayerTheme.colors.primary
-        else -> if (isLight()) PlayerTheme.colors.background else Color.JetBlack
-    }
-}
-
-@OptIn(ExperimentalCoilApi::class)
-@Composable
-fun AlbumArt(
-    modifier: Modifier = Modifier,
-    contentDescription: String?,
-    contentScale: ContentScale = ContentScale.Crop,
-    error: Bitmap = App.DEFUALT_ALBUM_ART,
-    alignment: Alignment = Alignment.Center,
-    durationMillis: Int = Anim.DURATION_MEDIUM,
+@NonRestartableComposable
+fun Image(
     albumId: Long,
+    modifier: Modifier = Modifier,
+    fallback: Painter? = painterResource(id = R.drawable.default_art),
+    contentScale: ContentScale = ContentScale.Crop,
+    alignment: Alignment = Alignment.Center,
+    fadeMills: Int = AnimationConstants.DefaultDurationMillis,
 ) {
-    val errorD by remember(error) {
-        lazy {
-            BitmapDrawable(Resources.getSystem(), error)
+    val context = LocalContext.current
+    val request =
+        remember(albumId) {
+            ImageRequest.Builder(context)
+                .data(MediaUtil.composeAlbumArtUri(albumId))
+                .crossfade(fadeMills)
+                .build()
         }
-    }
-    Image(
-        painter = rememberImagePainter(
-            getAlbumArtUri(albumId),
-            builder = {
-                error(errorD)
-            }
-        ),
-        contentDescription = contentDescription,
+
+    AsyncImage(
+        model = request,
+        contentDescription = null,
+        error = fallback,
+        placeholder = fallback,
         modifier = modifier,
         contentScale = contentScale,
         alignment = alignment,
@@ -98,16 +76,44 @@ fun AlbumArt(
 
 
 @Composable
-fun AlbumArt(
+@NonRestartableComposable
+fun Image(
+    data: Any?,
     modifier: Modifier = Modifier,
-    contentDescription: String?,
+    fallback: Painter = painterResource(id = R.drawable.default_art),
+    contentScale: ContentScale = ContentScale.Crop,
+    alignment: Alignment = Alignment.Center,
+    fadeMills: Int = AnimationConstants.DefaultDurationMillis,
+) {
+    val context = LocalContext.current
+    val request =
+        remember(data) {
+            ImageRequest.Builder(context)
+                .data(data)
+                .crossfade(fadeMills)
+                .build()
+        }
+
+    AsyncImage(
+        model = request,
+        contentDescription = null,
+        error = fallback,
+        placeholder = fallback,
+        modifier = modifier,
+        contentScale = contentScale,
+        alignment = alignment,
+    )
+}
+
+@Composable
+fun Image(
+    bitmap: Bitmap?,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
     error: Bitmap = App.DEFUALT_ALBUM_ART,
     alignment: Alignment = Alignment.Center,
-    durationMillis: Int = Anim.DURATION_LONG,
-    bitmap: Bitmap?
+    durationMillis: Int = AnimationConstants.DefaultDurationMillis,
 ) {
-
     val value = bitmap ?: error
 
     Crossfade(
@@ -117,7 +123,7 @@ fun AlbumArt(
     ) { value ->
         Image(
             bitmap = value.asImageBitmap(),
-            contentDescription = contentDescription,
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = contentScale,
             alignment = alignment,
@@ -127,342 +133,264 @@ fun AlbumArt(
 
 
 @Composable
-fun Track(
-    modifier: Modifier = Modifier,
-    overline: String? = null,
+private fun Property(
     title: String,
     subtitle: String,
-    albumID: Long,
-    playing: Boolean = false,
+    icon: ImageVector
 ) {
-
-    val icon = @Composable {
-        Frame(
-            modifier = Modifier.requiredSize(60.dp),
-            shape = CircleShape,
-            border = BorderStroke(3.dp, Color.White),
-            elevation = Elevation.MEDIUM
-        ) {
-            AlbumArt(contentDescription = null, albumId = albumID)
-            if (playing)
-                Lottie(
-                    res = R.raw.playback_indicator,
-                    modifier = Modifier.requiredSize(24.dp),
-                    repeatX = LottieDrawable.INFINITE
-                )
-        }
-    }
-
-    val overliner: @Composable() (() -> Unit)? = overline?.let {
-        @Composable {
-            Label(text = it)
-        }
-    }
-
-    val text = @Composable {
-        Label(
-            text = title,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-
-    val secondary = @Composable {
-        Label(
-            text = subtitle,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-
-    ListItem(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(modifier)
-            .padding(horizontal = Padding.LARGE, vertical = Padding.MEDIUM),
-        icon = icon,
-        overlineText = overliner,
-        text = text,
-        secondaryText = secondary
-    )
-}
-
-
-@Composable
-private fun Property(title: String, subtitle: String, icon: ImageVector) {
-    ListItem(
+    ListTile(
         secondaryText = {
             Label(
                 text = subtitle,
                 maxLines = 3,
-                modifier = Modifier.padding(start = Padding.LARGE),
+                modifier = Modifier.padding(start = ContentPadding.normal),
                 fontWeight = FontWeight.SemiBold
             )
         },
-        icon = {
-            Icon(imageVector = icon, contentDescription = null)
-        },
-        modifier = Modifier.padding(top = Padding.MEDIUM)
-    ) {
-        Caption(
-            text = title,
-            modifier = Modifier.padding(start = Padding.LARGE),
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-}
-
-@Composable
-fun TrackInfo(of: Audio, onDismissRequest: () -> Unit) {
-    PrimeDialog(
-        title = "Properties",
-        onDismissRequest = onDismissRequest,
-        vectorIcon = Icons.Outlined.Info,
-        button2 = stringResource(id = R.string.dismiss) to onDismissRequest,
-    ) {
-        Column(modifier = Modifier.padding(horizontal = Padding.LARGE, vertical = Padding.MEDIUM)) {
-            Property(title = "Title", subtitle = of.title, icon = Icons.Outlined.Title)
-            Property(
-                title = "Path",
-                subtitle = of.path ?: "Not available",
-                icon = Icons.Outlined.LocationCity
-            )
-            Property(
-                title = "Album",
-                subtitle = of.album?.title ?: stringResource(id = R.string.unknown),
-                icon = Icons.Outlined.Album
-            )
-            Property(
-                title = "Artist",
-                subtitle = of.artist?.name ?: stringResource(id = R.string.unknown),
-                icon = Icons.Outlined.Person
-            )
-            Property(
-                title = "Track number",
-                subtitle = "${of.trackNumber}",
-                icon = Icons.Outlined.FormatListNumbered
-            )
-            Property(title = "Year", subtitle = "${of.year}", icon = Icons.Outlined.DateRange)
-            Property(
-                title = "Duration",
-                subtitle = toDuration(of.duration),
-                icon = Icons.Default.Timer3
-            )
-            Property(
-                title = "Date Modified",
-                subtitle = toRelativeTimeSpan(of.dateModified).toString(),
-                icon = Icons.Outlined.Update
+        centreVertically = true,
+        leading = { Icon(imageVector = icon, contentDescription = null) },
+        text = {
+            Caption(
+                text = title,
+                modifier = Modifier.padding(start = ContentPadding.normal),
+                fontWeight = FontWeight.SemiBold
             )
         }
-    }
+    )
 }
 
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * A [Dialog] to show the properties of the [Audio] file.
+ */
 @Composable
-fun AddToPlaylist(audios: List<Long>, onDismissRequest: () -> Unit) {
-    val context = LocalContext.current
-    val repo = AudioRepo.get(context = context)
-    val playlists by repo.playlists.collectAsState()
-    val scope = rememberCoroutineScope()
-    val iDialog = memorize {
-        TextInputDialog(
-            title = "Create Playlist",
-            vectorIcon = Icons.Outlined.Edit,
-            label = "Enter playlist name."
-        ) { value ->
-            value?.let { new ->
-                scope.launch {
-                    val msg = when {
-                        playlists.find { new == it.name } != null -> "Playlist $new already exists"
-                        else -> {
-                            val id = repo.createPlaylist(new)
-                            if (id == null)
-                                "An error occurred while creating playlist $new!"
-                            else
-                                "Playlist $new created successfully!"
-                        }
-                    }
-                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-                    hide()
-                }
-            } ?: run {
-                //just dismiss it
-                hide()
-            }
-        }
-    }
-
-    if (!iDialog.isVisible())
+fun Audio.Properties(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    val audio = this
+    if (expanded) {
         PrimeDialog(
-            title = "Add to Playlist",
+            title = "Properties",
             onDismissRequest = onDismissRequest,
-            vectorIcon = Icons.Outlined.PlaylistAdd,
+            vectorIcon = Icons.Outlined.Info,
             button2 = stringResource(id = R.string.dismiss) to onDismissRequest,
-            subtitle = "Click to add tracks to playlist.",
+            topBarBackgroundColor = Material.colors.overlay,
+            topBarContentColor = Material.colors.onSurface,
         ) {
-            Scaffold(
-                modifier = Modifier.heightIn(
-                    max = with(LocalDensity.current) { displayHeight * 0.4f },
-                    min = 200.dp
-                ),
-                backgroundColor = Color.Transparent,
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { iDialog.show() },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "add new playlist"
-                        )
-                    }
-                }
+            Column(
+                modifier = Modifier.padding(
+                    horizontal = ContentPadding.normal,
+                    vertical = ContentPadding.medium
+                )
             ) {
-                Crossfade(targetState = playlists) {
-                    when {
-                        it.isEmpty() -> PlaceHolder(
-                            message = "No Playlist available",
-                            lottieResource = R.raw.empty,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        else -> PlaylistGrid(playlists = it) {
-                            Toast.makeText(
-                                context,
-                                "Adding tracks to Playlist ${it.name}.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            repo.addToPlaylist(audios, name = it.name)
-                        }
-                    }
-                }
+                Property(
+                    title = "Title",
+                    subtitle = audio.title,
+                    icon = Icons.Outlined.Title
+                )
+
+                Property(
+                    title = "Path",
+                    subtitle = audio.path,
+                    icon = Icons.Outlined.LocationCity
+                )
+
+                Property(
+                    title = "Album",
+                    subtitle = audio.album,
+                    icon = Icons.Outlined.Album
+                )
+
+                Property(
+                    title = "Artist",
+                    subtitle = audio.artist,
+                    icon = Icons.Outlined.Person
+                )
+
+                Property(
+                    title = "Track number",
+                    subtitle = "${audio.track}",
+                    icon = Icons.Outlined.FormatListNumbered
+                )
+
+                Property(
+                    title = "Year",
+                    subtitle = "${audio.year}",
+                    icon = Icons.Outlined.DateRange
+                )
+
+                Property(
+                    title = "Duration",
+                    subtitle = Utils.formatAsDuration(audio.duration),
+                    icon = Icons.Default.Timer3
+                )
+
+                Property(
+                    title = "Date Modified",
+                    subtitle = Utils.formatAsRelativeTimeSpan(audio.dateModified).toString(),
+                    icon = Icons.Outlined.Update
+                )
             }
-        }
-}
-
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun PlaylistGrid(playlists: List<Playlist>, onClick: (Playlist) -> Unit) {
-    val repo = AudioRepo.get(LocalContext.current)
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        contentPadding = PaddingValues(vertical = Padding.LARGE)
-    ) {
-        items(playlists) { playlist ->
-            val last = playlist.audios.lastOrNull()
-            val albumID = last?.let { repo.getAudioById(it) }?.album?.id ?: -1
-            Playlist(albumID = albumID, title = playlist.name, modifier = Modifier.clickable {
-                onClick(playlist)
-            })
         }
     }
 }
 
-/*
-* Representing recent Item
-* */
 
 @Composable
 private fun Playlist(
+    value: Playlist,
+    onPlaylistClick: () -> Unit,
     modifier: Modifier = Modifier,
-    albumID: Long,
-    title: String
 ) {
-    val circle = CircleShape
-    val elevationPx = with(LocalDensity.current) { 8.dp.toPx() }
     Column(
-        modifier = modifier.width(70.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            // clip the ripple
+            .clip(Material.shapes.medium)
+            .clickable(onClick = onPlaylistClick)
+            // add padding after size.
+            .padding(
+                vertical = 6.dp,
+                horizontal = 10.dp
+            )           // add preferred size with min/max width
+            .then(Modifier.sizeIn(110.dp, 80.dp))
+            // wrap the height of the content
+            .wrapContentHeight()
+            .then(modifier),
     ) {
 
-        val forceAccent by with(Preferences.get(LocalContext.current)) { requiresAccentThoroughly().collectAsState() }
-        val color = if (forceAccent) PlayerTheme.colors.primary else PlayerTheme.colors.onSurface
-
-        AlbumArt(
-            contentDescription = "Artwork",
-            albumId = albumID,
+        // place here the icon
+        Neumorphic(
+            shape = RoundedCornerShape(20),
             modifier = Modifier
-                //.padding(8.dp)
-                .graphicsLayer {
-                    this.shadowElevation = elevationPx
-                    shape = circle
+                .sizeIn(maxWidth = 70.dp)
+                .aspectRatio(1.0f),
+            elevation = ContentElevation.low,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
+
+            content = {
+                Icon(
+                    imageVector = Icons.Outlined.PlaylistPlay,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .requiredSize(40.dp)
+                        .wrapContentSize(Alignment.Center)
+                )
+            }
+        )
+
+        // title
+        Label(
+            text = value.name,
+            maxLines = 2,
+            modifier = Modifier.padding(top = ContentPadding.medium),
+            style = Material.typography.caption,
+        )
+
+        // Subtitle
+        Label(
+            text = "Modified - ${Utils.formatAsRelativeTimeSpan(value.dateModified)}",
+            style = Material.typography.caption2
+        )
+    }
+}
+
+
+
+/**
+ * A [Dialog] to show the available [Playlist]s and register [onPlaylistClick] event on any or dismiss.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Playlists(
+    value: List<Playlist>,
+    expanded: Boolean,
+    onPlaylistClick: (id: Playlist?) -> Unit
+) {
+    if (expanded) {
+        val onDismissRequest = {
+            onPlaylistClick(null)
+        }
+        PrimeDialog(
+            title = "Properties",
+            onDismissRequest = onDismissRequest,
+            vectorIcon = Icons.Outlined.Info,
+            button2 = stringResource(id = R.string.dismiss) to onDismissRequest,
+            topBarBackgroundColor = Material.colors.overlay,
+            topBarContentColor = Material.colors.onSurface,
+        ) {
+            Crossfade(
+                targetState = value.isEmpty(),
+                modifier = Modifier.heightIn(max = 350.dp),
+            ) {
+                when(it){
+                    false -> {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(80.dp + (4.dp * 2)),
+                            contentPadding = PaddingValues(
+                                vertical = ContentPadding.medium,
+                                horizontal = ContentPadding.normal
+                            )
+                        ){
+                            items(value, key = {it.id}){value ->
+                                Playlist(
+                                    value = value,
+                                    onPlaylistClick = {onPlaylistClick(value) },
+                                    modifier = Modifier.animateItemPlacement()
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        Placeholder(
+                            iconResId = R.raw.lt_empty_box,
+                            title = "Oops Empty!!",
+                            message = "Please go to Playlists to new ones."
+                        )
+                    }
                 }
-                .border(width = 2.dp, color = color, shape = circle)
-                .padding(Padding.SMALL)
-                .clip(circle)
-                .verticalGradient()
-                .requiredSize(50.dp)
-        )
-
-        Caption(
-            text = title,
-            modifier = Modifier
-                .padding(vertical = Padding.SMALL)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            maxLines = 2
-        )
+            }
+        }
     }
 }
 
 
 @Composable
-fun Toolbar(
-    title: String,
-    actions: @Composable RowScope.() -> Unit = {},
+inline fun <T> Placeholder(
+    value: Result<T>,
+    modifier: Modifier = Modifier,
+    crossinline success: @Composable (data: T) -> Unit,
 ) {
-    val prefs = Preferences.get(LocalContext.current)
-
-    val forceUtilizeAccent by with(prefs) { requiresAccentThoroughly().collectAsState() }
-    val colorizeStatusBar by with(prefs) { requiresColoringStatusBar().collectAsState() }
-
-    val statusBg by animateColorAsState(
-        targetValue = if (colorizeStatusBar) PlayerTheme.colors.primary else PlayerTheme.colors.surface
-    )
-    val barBg by animateColorAsState(
-        targetValue = if (forceUtilizeAccent) PlayerTheme.colors.primaryVariant else PlayerTheme.colors.surface
-    )
-
-    val darkIcons = isLight() && !colorizeStatusBar
-
-    val systemUI = LocalSystemUiController.current
-
-    //TODO: Fix Problem with SideEffect
-    LaunchedEffect(key1 = darkIcons) {
-        delay(200)
-        systemUI.setStatusBarColor(Color.Transparent, darkIcons)
-    }
-
-    //Status Bar background
-    Spacer(
-        modifier = Modifier
-            .zIndex(1f)
-            .background(statusBg)
-            .fillMaxWidth()
-            .statusBarsPadding()
-    )
-
-
-    val iNavActions = LocalNavActionProvider.current
-
-    TopAppBar(
-        modifier = Modifier
-            .zIndex(0.5f)
-            .statusBarsPadding(),
-        title = {
-            Label(text = title)
-        },
-        backgroundColor = barBg,
-        navigationIcon = {
-            IconButton(onClick = { iNavActions.navigateUp() }) {
-                Icon(
-                    imageVector = Icons.Outlined.Reply,
-                    contentDescription = "navigate back"
+    val (state, data) = value
+    Crossfade(
+        targetState = state,
+        animationSpec = tween(Anim.ActivityLongDurationMills),
+        modifier = modifier
+    ) {
+        when (it) {
+            Result.State.Loading ->
+                Placeholder(
+                    iconResId = R.raw.lt_loading_dots_blue,
+                    title = "Loading",
                 )
-            }
-        },
-        contentColor = suggestContentColorFor(barBg),
-        elevation = Elevation.MEDIUM,
-        actions = actions
-    )
+            is Result.State.Processing ->
+                Placeholder(
+                    iconResId = R.raw.lt_loading_hand,
+                    title = "Processing."
+                )
+            is Result.State.Error ->
+                Placeholder(
+                    iconResId = R.raw.lt_error,
+                    title = "Error"
+                )
+            Result.State.Empty ->
+                Placeholder(
+                    iconResId = R.raw.lt_empty_box,
+                    title = "Oops Empty!!"
+                )
+            Result.State.Success -> success(data)
+        }
+    }
 }
+

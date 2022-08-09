@@ -44,9 +44,9 @@ import androidx.core.app.NotificationCompat;
 import com.prime.player.App;
 import com.prime.player.MainActivity;
 import com.prime.player.R;
-import com.prime.player.core.AudioRepo;
-import com.prime.player.core.models.Audio;
-import com.prime.player.utils.MediaUtilsKt;
+import com.prime.player.common.MediaUtil;
+import com.prime.player.core.Audio;
+import com.prime.player.core.Repository;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,6 +62,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+
+@AndroidEntryPoint
 public class PlaybackService extends Service implements Player.EventListener {
 
     // playback intent
@@ -149,7 +155,9 @@ public class PlaybackService extends Service implements Player.EventListener {
     private NotificationManager mNotificationManager;
     @Nullable
     private EventListener mListener;
-    private AudioRepo mLibrary;
+
+    @Inject
+    Repository mLibrary;
     private final AudioManager.OnAudioFocusChangeListener
             mAudioFocusListener = focusChange -> {
         handle(FOCUS_CHANGE, focusChange);
@@ -295,21 +303,21 @@ public class PlaybackService extends Service implements Player.EventListener {
 
     private void updateMediaSessionMetaData() {
         final Audio audio = getCurrentTrack();
-        if (audio.getId() == -1) {
+        if (audio.id == -1) {
             mMediaSessionCompat.setMetadata(null);
             return;
         }
         final MediaMetadataCompat.Builder metaData = new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
-                        audio.getArtist() != null ? audio.getArtist().getName() : "Unknown")
+                        audio.artist != null ? audio.artist : "Unknown")
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST,
-                        audio.getArtist() != null ? audio.getArtist().getName() : "Unknown")
+                        audio.artist != null ? audio.artist : "Unknown")
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM,
-                        audio.getAlbum() != null ? audio.getAlbum().getTitle() : "Unknown")
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, audio.getTitle())
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, audio.getDuration())
+                        audio.album != null ? audio.album : "Unknown")
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, audio.title)
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, audio.duration)
                 .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, mTrackPos + 1)
-                .putLong(MediaMetadataCompat.METADATA_KEY_YEAR, audio.getYear())
+                .putLong(MediaMetadataCompat.METADATA_KEY_YEAR, audio.year)
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, null);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -357,7 +365,7 @@ public class PlaybackService extends Service implements Player.EventListener {
     public long getQueueDurationMillis(int position) {
         long duration = 0;
         for (int i = position + 1; i < mList.size(); i++)
-            duration += mList.get(i).getDuration();
+            duration += mList.get(i).duration;
         return duration;
     }
 
@@ -439,14 +447,14 @@ public class PlaybackService extends Service implements Player.EventListener {
     }
 
     private void prepare(@NonNull final Audio audio) {
-        long trackId = audio.getId();
+        long trackId = audio.id;
         mMediaPlayer.reset();
         try {
             if (trackId != -1) {
-                Uri trackUri = MediaUtilsKt.getTrackUri(trackId);
+                Uri trackUri = MediaUtil.composeAudioTrackUri(trackId);
                 mMediaPlayer.setDataSource(this, trackUri);
             } else
-                mMediaPlayer.setDataSource(audio.getPath());
+                mMediaPlayer.setDataSource(audio.path);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
@@ -488,7 +496,7 @@ public class PlaybackService extends Service implements Player.EventListener {
                 mMediaPlayer.pause();
                 handle(STATE_CHANGED);
             }
-        } catch (IllegalStateException e) {
+        }catch (IllegalStateException e){
             Log.i(TAG, "pause: " + e.getMessage());
         }
     }
@@ -532,11 +540,11 @@ public class PlaybackService extends Service implements Player.EventListener {
                 parcel.put(KEY_PLAYLIST_NAME, mPlaylistName);
                 JSONArray originalList = new JSONArray();
                 for (Audio audio : mOriginalList)
-                    originalList.put(audio.getId());
+                    originalList.put(audio.id);
                 parcel.put(KEY_ORIGINAL_LIST, originalList);
                 JSONArray shuffledList = new JSONArray();
                 for (Audio audio : mList)
-                    shuffledList.put(audio.getId());
+                    shuffledList.put(audio.id);
                 parcel.put(KEY_SHUFFLED_LIST, shuffledList);
             } catch (JSONException e) {
                 // do nothing
@@ -568,14 +576,14 @@ public class PlaybackService extends Service implements Player.EventListener {
             }
             //may be the original array is empty
             //just return without doing anything.
-            if (mOriginalList.isEmpty())
+            if(mOriginalList.isEmpty())
                 return;
 
             array = sJSON.getJSONArray(KEY_SHUFFLED_LIST);
             int index = -1;
             for (int i = 0; i < array.length(); i++) {
                 int key = array.getInt(i);
-                Audio audio = ListUtils.findU(mOriginalList, key, Audio::getId);
+                Audio audio = ListUtils.findU(mOriginalList, key, Audio::component1);
                 // don;t add null values
                 if (audio == null)
                     continue;
@@ -678,12 +686,12 @@ public class PlaybackService extends Service implements Player.EventListener {
             shuffleList(mList, mTrackPos);
             mTrackPos = 0;
         } else {
-            long currentTrackId = getCurrentTrack().getId();
+            long currentTrackId = getCurrentTrack().id;
             mList.clear();
             mList.addAll(mOriginalList);
             int newPosition = 0;
             for (Audio audio : mList) {
-                if (audio.getId() == currentTrackId) {
+                if (audio.id == currentTrackId) {
                     newPosition = mList.indexOf(audio);
                 }
             }
@@ -740,11 +748,11 @@ public class PlaybackService extends Service implements Player.EventListener {
                         FLAG_UPDATE_CURRENT);
         Audio audio = getCurrentTrack();
         Bitmap art = null;
-        if (audio.getAlbum() != null)
-            art = getAlbumArt(audio.getAlbum().getId());
+        if (audio.album != null)
+            art = getAlbumArt(audio.albumId);
         if (art == null)
             art = DEFUALT_ALBUM_ART;
-        String title = audio.getTitle();
+        String title = audio.title;
         SpannableStringBuilder builder = new SpannableStringBuilder(title);
         builder.setSpan(new StyleSpan(Typeface.BOLD),
                 0,
@@ -756,8 +764,8 @@ public class PlaybackService extends Service implements Player.EventListener {
         nBuilder.setOngoing(mMediaPlayer.isPlaying() || mMediaPlayer.isPreparing())
                 .setLargeIcon(art)
                 .setSubText(mPlaylistName)
-                .setContentText(audio.getAlbum() != null
-                        ? audio.getAlbum().getTitle()
+                .setContentText(audio.album != null
+                        ? audio.album
                         : "Unknown")
                 //.setContentText(mPlaylistName)
                 .setContentTitle(builder)
@@ -877,7 +885,7 @@ public class PlaybackService extends Service implements Player.EventListener {
                 // update track position
                 mTrackPos = arg;
                 // update current track id
-                mTrackID = getCurrentTrack().getId();
+                mTrackID = getCurrentTrack().id;
                 // prepare current track
                 prepare(arg);
                 // prepare next track
@@ -895,7 +903,7 @@ public class PlaybackService extends Service implements Player.EventListener {
                 updateMediaSessionMetaData();
                 track = getCurrentTrack();
                 //Save in history
-                mLibrary.addToRecent(track.getId());
+                mLibrary.addToRecent(track.id);
                 if (mListener != null)
                     mListener.onTrackChanged(track, isFavourite());
                 break;
@@ -916,7 +924,8 @@ public class PlaybackService extends Service implements Player.EventListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        mLibrary = AudioRepo.get(this);
+        // will be injected
+        //mLibrary = AudioRepo.get(this);
         UIHandler handler = UIHandler.get();
         mMediaPlayer = new Player(handler);
         mMediaPlayer.registerEventListener(this);
@@ -1046,6 +1055,23 @@ public class PlaybackService extends Service implements Player.EventListener {
         return refresh;
     }
 
+    private static PendingIntent getBroadcast(Context context,
+                                              int requestCode,
+                                              Intent intent,
+                                              int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.getBroadcast(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
+        } else
+            return PendingIntent.getBroadcast(context, requestCode, intent, flags);
+    }
+
+    private PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return PendingIntent.getActivity(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
+        } else
+            return PendingIntent.getActivity(context, requestCode, intent, flags);
+    }
+
     public Audio getNextTrack() {
         return getTrackAt(mNextTrackPos);
     }
@@ -1086,23 +1112,6 @@ public class PlaybackService extends Service implements Player.EventListener {
             e.printStackTrace();
         }
         return art;
-    }
-
-    private static PendingIntent getBroadcast(Context context,
-                                             int requestCode,
-                                             Intent intent,
-                                             int flags) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return PendingIntent.getBroadcast(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
-        } else
-            return PendingIntent.getBroadcast(context, requestCode, intent, flags);
-    }
-
-    private PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return PendingIntent.getActivity(context, requestCode, intent, flags | PendingIntent.FLAG_IMMUTABLE);
-        } else
-            return PendingIntent.getActivity(context, requestCode, intent, flags);
     }
 
     public interface EventListener {

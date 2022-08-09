@@ -1,47 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Audiofy</string>
 
-    <string name="unplayable_file">can\'t play the audio file</string>
-    <string name="message_audio_focus_denied">Audio focus denied</string>
-    <string name="tag_line">Dance to the rhythm of your heart.</string>
-
-    <string name="library_tag_line">Let\'s make the magic happen.</string>
-    <string name="collections">Collections</string>
-    <string name="collections_secondary">Locally available audio collections.</string>
-
-
-    <string name="artists">Artists</string>
-    <string name="albums">Albums</string>
-    <string name="audios">Audios</string>
-    <string name="genres">Genres</string>
-    <string name="playlists">Playlists</string>
-    <string name="folders">Folders</string>
-
-    <string name="recent">Recent</string>
-    <string name="recent_secondary">Recently played audio track.</string>
-
-    <string name="now_playing">Now Playing</string>
-    <string name="up_next">Up Next</string>
-
-    <string name="welcome">Welcome to Rhythm</string>
-    <string name="intro_welcome_msg">We\'ll ask a few questions to help personalize your app. \nExperience audio like never before. Listen to your favourite track with Rhythm. Explore Artists, Genres, Albums and play whatever you like. Intelligently refreshes store, wherever addition, updation or deletion of tracks take place. Intelligent, software optimization allows to save battery life. Includes both Light and Dark ( for Amoled screens) themes.</string>
-
-
-    <string name="one_last_thing">One last thing</string>
-    <string name="one_last_thing_summery">To display/play, audios files, Rhythm needs access to your device\'s storage.</string>
-    <string name="one_last_thing_summery_force">The storage access is vital for the app to run. Without it, I am afraid you will not be able to proceed further.</string>
-    <string name="storage_access_available">The storage access has been granted. \nPlease press below button to proceed further.</string>
-
-    <string name="light_dark_mode">Light/Dark Modes</string>
-    <string name="settings">Settings</string>
-    <string name="settings_summery">In the preference section of the app the user can customize different settings like App themes, fonts, etc.</string>
-    <string name="light_dark_summery">Switch between Light and Dark Modes. \nLight mode, however, is the default setting but using settings you can customize how the app theme should behave.</string>
-    <string name="permission_rationale">Permission Rationale</string>
+    <string name="storage_permission_message">In order to work properly the app requires permission to your devices storage (Photos, Media and Files).</string>
+    <string name="storage_permission">Storage\nPermission</string>
     <string name="dismiss">Dismiss</string>
-    <string name="grant">Grant</string>
-    <string name="lets_go">Let\'s Go</string>
-    <string name="allow_access">Allow Access</string>
-    <string name="unknown">Unknown</string>
+
+    <plurals name="item">
+        <item quantity="zero">empty</item>
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+
+    <plurals name="file">
+        <item quantity="zero">empty</item>
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+
+    <string name="empty">empty</string>
+
+    <string name="library">Library</string>
+    <string name="search_placeholder">Type here to search.</string>
+    <string name="search">Search</string>
+    <string name="show">Show</string>
+    <string name="error_msg">Oops some unknown error has occurred.</string>
+    <string name="loading">Loading</string>
 
     <plurals name="duration_hours">
         <item quantity="one">%d hour</item>
@@ -56,59 +41,36 @@
         <item quantity="other">%d seconds</item>
     </plurals>
 
-    <plurals name="item">
-        <item quantity="zero">no items</item>
-        <item quantity="one">%d item</item>
-        <item quantity="other">%d items</item>
-    </plurals>
+    <string name="message_audio_focus_denied">Audio focus denied</string>
 
-    <plurals name="track">
-        <item quantity="zero">no items</item>
-        <item quantity="one">%d track</item>
-        <item quantity="other">%d tracks</item>
-    </plurals>
+    <string name="unplayable_file">can\'t play the audio file</string>
 
-    <string name="color_primary">Color Primary</string>
-    <string name="color_primary_desc">The color displayed most frequently across your app\'s screens and components.</string>
-
-    <string name="color_secondary">Color Secondary</string>
-    <string name="color_secondary_desc">The secondary color provides more ways to accent
-        and distinguish your app. Secondary colors are applied on:
-            Floating action buttonsSelection controls, like checkboxes and radio buttons
-            Highlighting selected text
-            Links and headlines
-    </string>
-
-    <string name="color_status_bar">Color status bar</string>
-    <string name="status_bar">Status bar</string>
-
-
-    <string name="app_theme">App Theme</string>
-
-    <string name="app_font">App Font</string>
-    <string name="force_use_accent_color">Force use accent color</string>
-    <string name="force_use_accent_color_summery">By default the app is built to use accent moderately. By turning this setting on accent will be utilized frequently in painting like status bar strips, toolbars etc.  </string>
-
-    <string name="show_progress_in_mini_player">MiniPlayer Progress Bar</string>
-    <string name="show_progress_in_mini_player_desc">Show/Hide progress bar in MiniPlayer.</string>
-
-    <string name="audio_visualizer">Audio Visualizer</string>
-    <string name="audio_visualizer_desc">Show/Hide audio visualizer</string>
-
-    <string name="hide_status_bar">Hide status bar</string>
-
-    <string name="label_settings">Settings</string>
-    <string name="appearance">Appearance</string>
-
-    <string name="audio_player">Audio Player</string>
     <string name="msg_fav_added">Added to favourite.</string>
     <string name="msg_fav_removed">Removed from favourite.</string>
 
-    <string name="new_update_msg">Rhythm recommends that you update to the latest version. By downloading the latest version you will get latest features bug fixes, performance improvements etc.</string>
-    <string name="feedback_dialog_placeholder">Have feedback? We\'d love to hear it, but please don\'t share sensitive information.</string>
-    <string name="feedback_dialog_label">Enter feedback text.</string>
+    <string name="unknown">Unknown</string>
 
-    <string name="review_msg">if you enjoy using Rhythm, please take a moment and rate it 5 stars on app store. Thanks for your support</string>
+
+    <string name="review_msg">if you enjoy using Audiofy, please take a moment and rate it 5 stars on app store. Thanks for your support \nTap to rate.</string>
     <string name="feedback_mail_subject">Feedback of %1$s</string>
+    <string name="new_update_msg">Audiofy recommends that you update to the latest version. By downloading the latest version you will get latest features bug fixes, performance improvements etc.</string>
+
+    <string name="feedback_dialog_placeholder">Have feedback? We\'d love to hear it, but please don\'t share sensitive information.</string>
+    <string name="about_us_desc">Hello, I am  <b><i>Zakir Sheikh</i></b> . I Love to develop apps. I like my apps to be useful plus <b>aesthetically beautiful</b> . Send me your precious <b>feedback</b> to keep me informed about you requirements. Please don\'t forget to rate the app <b>5 Star</b> , because this keeps me motivated. </string>
+    <string name="feedback">Feedback</string>
+    <string name="rate_us">Rate Us</string>
+    <string name="spread_the_word">Spread the word</string>
+    <string name="spread_the_word_summery">\" As the saying goes \'Sharing is caring\'. Please help the app grow by sharing it with friends, family and WhatsApp groups etc.\"</string>
+    <string name="about_us">About Us</string>
+    <string name="app_version">App Version</string>
+    <string name="settings">Settings</string>
+    <string name="appearance">Appearance</string>
+
+    <!--Title to the audio library screen-->
+    <string name="title_audio_library_html">Audio <b>Library</b>\n<font size="10">Let\'s make the magic happen.</font></string>
+    <string name="list_title_less_then_2_mins">Less 2 Min</string>
+    <string name="list_title_less_than_5_mins">Less than 5 Min</string>
+    <string name="list_title_less_than_10_mins">Less than 10 Min</string>
+    <string name="list_title_greater_than_10_mins">Greater than 10 Min</string>
 
 </resources>

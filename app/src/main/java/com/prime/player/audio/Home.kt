@@ -1,127 +1,210 @@
 package com.prime.player.audio
 
-
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.google.accompanist.insets.navigationBarsPadding
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.player.PlayerTheme
+import com.prime.player.Material
 import com.prime.player.R
+import com.prime.player.Tokens
+import com.prime.player.audio.buckets.Buckets
+import com.prime.player.audio.buckets.BucketsViewModel
 import com.prime.player.audio.console.Console
-import com.prime.player.extended.LocalMessenger
-import com.prime.player.extended.ProvideNavActions
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
+import com.prime.player.audio.console.ConsoleViewModel
+import com.prime.player.audio.library.Library
+import com.prime.player.audio.library.LibraryViewModel
+import com.prime.player.audio.tracks.Tracks
+import com.prime.player.audio.tracks.TracksViewModel
+import com.prime.player.common.compose.LocalNavController
+import com.prime.player.common.compose.LocalSnackDataChannel
+import com.prime.player.common.compose.LocalWindowPadding
+import com.prime.player.common.compose.stringResource
+import com.prime.player.settings.MainGraphRoutes
+import com.prime.player.settings.Settings
+import com.prime.player.settings.SettingsViewModel
+import com.primex.core.rememberState
+import cz.levinzonr.saferoute.core.ProvideRouteSpecArgs
+import cz.levinzonr.saferoute.core.RouteSpec
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalAnimationApi::class)
+private val EnterTransition = scaleIn(
+    initialScale = 0.96f,
+    animationSpec = tween(180, delayMillis = 90)
+) + fadeIn()
 
-/**
- * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]
- */
-val AUDIO_BOTTOM_SHEET_PEEK_HEIGHT = 70.dp
+private val ExitTransition = fadeOut()
 
-@ExperimentalAnimationApi
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun Home(viewModel: HomeViewModel) {
-    val controller: NavHostController = rememberAnimatedNavController()
-    val actions = remember {
-        AudioNavigationActions(controller)
-    }
+fun Home() {
+    // Currently; supports only 1 Part
+    // add others in future
+    // including support for more tools, like direction, prime factorization etc.
+    // also support for navGraph.
+    val controller = rememberAnimatedNavController()
+    val scope = rememberCoroutineScope()
+    val consoleViewModel = hiltViewModel<ConsoleViewModel>()
 
-    // A message channel
-    val channel = remember {
-        Channel<Pair<List<String>, (() -> Unit)?>>(Channel.CONFLATED)
+    //FixMe - Needs to be corrected.
+    val connected by consoleViewModel.connected
+    LaunchedEffect(key1 = connected) {
+        //delay(1000)
+        consoleViewModel.connect()
     }
+    val show = consoleViewModel.current.value != null
 
-    val snackbarHostState = remember {
-        SnackbarHostState()
-    }
-
+    // The state of the Snackbar
+    val snackbar = remember(::SnackbarHostState)
     //Handle messages etc.
-    val state = rememberBottomSheetScaffoldState(snackbarHostState = snackbarHostState)
-    val dismiss = stringResource(id = R.string.dismiss)
+    val state =
+        rememberBottomSheetScaffoldState(snackbarHostState = snackbar)
+
+    // observe the channel
+    // emit the updates
+    val channel = LocalSnackDataChannel.current
+    val resource = LocalContext.current.resources
     LaunchedEffect(key1 = channel) {
-        channel.receiveAsFlow().collect { (com, action) ->
-            val label = com[0]
-            val msg = com[1]
-            val res = snackbarHostState.showSnackbar(
-                message = msg,
-                actionLabel = if (label.isBlank()) dismiss else label,
-                duration = SnackbarDuration.Short
+        channel.receiveAsFlow().collect { (label, message, duration, action) ->
+            // dismantle the given snack and use the corresponding components
+            val result = snackbar.showSnackbar(
+                message = resource.stringResource(message).text,
+                actionLabel = resource.stringResource(label)?.text
+                    ?: resource.getString(R.string.dismiss),
+                duration = duration
             )
-            when (res) {
+            // action based on
+            when (result) {
                 SnackbarResult.ActionPerformed -> action?.invoke()
-                SnackbarResult.Dismissed -> {
-                    //do nothing
+                SnackbarResult.Dismissed -> { /*do nothing*/
                 }
             }
         }
     }
 
-    ProvideNavActions(actions = actions) {
-        with(viewModel) {
-            val scope = rememberCoroutineScope()
-
-            val connected by connected
-            LaunchedEffect(key1 = connected) {
-                //delay(1000)
-                connect()
+    BackHandler(state.bottomSheetState.isExpanded) {
+        if (state.bottomSheetState.isExpanded)
+            scope.launch {
+                state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Collapsed)
             }
+    }
 
-            // hide bottom sheet when service is not initialized
-            val hide = current.value == null
+    var windowPadding by rememberState(initial = PaddingValues(0.dp))
+    CompositionLocalProvider(
+        LocalWindowPadding provides windowPadding,
+        LocalNavController provides controller,
+    ) {
+        //Bottom sheet
+        BottomSheetScaffold(
+            backgroundColor = Material.colors.background,
+            scaffoldState = state,
+            sheetElevation = 0.dp,
+            sheetGesturesEnabled = false,
+            sheetBackgroundColor = androidx.compose.ui.graphics.Color.Transparent,
+            sheetPeekHeight = if (show) Tokens.Audio.MINI_PLAYER_HEIGHT else 0.dp,
 
-            val sheetContent = @Composable {
-                Console(viewModel = viewModel) {
+            sheetContent = {
+                Console(
+                    viewModel = consoleViewModel,
+                    expanded = state.bottomSheetState.isExpanded
+                ) {
                     scope.launch {
                         if (state.bottomSheetState.isExpanded) {
                             state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Collapsed)
-                            expanded.value = false
                         } else {
                             state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Expanded)
-                            expanded.value = true
                         }
                     }
                 }
-            }
+            },
 
-            BackHandler(state.bottomSheetState.isExpanded) {
-                if (state.bottomSheetState.isExpanded)
-                    scope.launch {
-                        state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Collapsed)
-                        expanded.value = false
-                    }
-            }
-
-            //Bottom sheet
-            BottomSheetScaffold(
-                backgroundColor = PlayerTheme.colors.background,
-                scaffoldState = state,
-                sheetElevation = 0.dp,
-                sheetGesturesEnabled = false,
-                sheetBackgroundColor = Color.Transparent,
-                sheetPeekHeight = if (!hide) AUDIO_BOTTOM_SHEET_PEEK_HEIGHT else 0.dp,
-                sheetContent = {
-                    CompositionLocalProvider(LocalMessenger provides channel) {
-                        sheetContent()
-                    }
-                }
-            ) { inner ->
-                val padding = remember { mutableStateOf(inner) }.also { it.value = inner }
-                CompositionLocalProvider(LocalMessenger provides channel) {
-                    NavGraph(padding = padding)
-                }
-            }
-        }
+            content = { inner ->
+                // update window padding when ever it changes.
+                windowPadding = inner
+                Box(
+                    Modifier.fillMaxSize(),
+                    content = { NavGraph() }
+                )
+            },
+        )
     }
 }
+
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun NavGraph() {
+    AnimatedNavHost(
+        navController = LocalNavController.current,
+        startDestination = MainGraphRoutes.Library.route,
+        modifier = Modifier,
+        enterTransition = { EnterTransition },
+        exitTransition = { ExitTransition },
+        builder = {
+
+            composable(MainGraphRoutes.Library) {
+                val viewModel = hiltViewModel<LibraryViewModel>()
+                Library(viewModel = viewModel)
+            }
+
+            composable(MainGraphRoutes.Buckets) {
+                val viewModel = hiltViewModel<BucketsViewModel>()
+                Buckets(viewModel = viewModel)
+            }
+
+            composable(MainGraphRoutes.Tracks) {
+                val viewModel = hiltViewModel<TracksViewModel>()
+                Tracks(viewModel = viewModel)
+            }
+
+            composable(MainGraphRoutes.Settings) {
+                val viewModel = hiltViewModel<SettingsViewModel>()
+                Settings(viewModel = viewModel)
+            }
+
+        }
+    )
+}
+
+
+///missing fun
+@OptIn(ExperimentalAnimationApi::class)
+private fun NavGraphBuilder.composable(
+    spec: RouteSpec<*>,
+    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+    popEnterTransition: (
+    AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?
+    )? = enterTransition,
+    popExitTransition: (
+    AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?
+    )? = exitTransition,
+    content: @Composable (NavBackStackEntry) -> Unit
+) = composable(
+    spec.route,
+    spec.navArgs,
+    spec.deepLinks,
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
+    popEnterTransition = popEnterTransition,
+    popExitTransition = popExitTransition
+) {
+    ProvideRouteSpecArgs(spec = spec, entry = it) {
+        content.invoke(it)
+    }
+}
+
