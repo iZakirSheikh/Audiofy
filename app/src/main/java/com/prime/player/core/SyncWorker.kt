@@ -30,74 +30,6 @@ import kotlinx.coroutines.withContext as using
 
 private const val TAG = "SyncWorker"
 
-/**
- * This functions does the job of making sure the [MediaStore] and Local Cache remains in Sync.
- * The function does two things.
- * * First it returns all the keys in the MediaStore ; which the caller can use to delete all from Local
- * cache which are not in keys.
- * * 2nd ly the function returns the newly added/updated files.
- */
-private suspend inline fun <T> ContentResolver.request(
-    uri: Uri,
-    projection: Array<String>,
-    bridge: (keys: String) -> Long?,
-    crossinline transform: (cursor: Cursor) -> T
-): List<T>? {
-
-    // check what has been removed for store
-    // retrieve all ids from MediaStore
-    val keys = kotlin.run {
-        //language=SQL
-        val proj = arrayOf("GROUP_CONCAT(${MediaStore.MediaColumns._ID}, ''',''')")
-        query(uri, proj, null, null, null)?.use { cursor ->
-            cursor.moveToFirst()
-            "'${cursor.getString(0)}'"
-        }
-    } ?: return null
-
-    // remove deleted and get destDateModified
-    val destLastModified = bridge(keys)
-
-    // check what has changed since.
-    // get lastModified date from localImageStore.
-    // all those files which are above this date are either changed or added newly.
-    val sLastModified = kotlin.run {
-        //language=SQL
-        val proj = arrayOf("MAX(${MediaStore.MediaColumns.DATE_MODIFIED})")
-        query(uri, proj, null, null, null)?.use {
-            it.moveToFirst()
-            it.getLong(0)
-        }
-    }
-
-    Log.i(TAG, "doWork: $sLastModified, $destLastModified")
-
-
-    if (sLastModified == null) {
-        Log.e(TAG, "doWork: $sLastModified == null")
-        return null //error
-    }
-
-    if (destLastModified != null && destLastModified == sLastModified) {
-        Log.i(TAG, "doWork: cache up-to date, $uri updating not required.")
-        return emptyList() // no error
-    }
-
-    // get all those changed or newly added files.
-    // update or insert them to local images.
-    val fromDate = (destLastModified ?: 0)
-
-    val selection = "${MediaStore.MediaColumns.DATE_MODIFIED} > $fromDate"
-
-    return using(Dispatchers.IO) {
-        query(uri, projection, selection, null, null)?.use { cursor ->
-            List(cursor.count) { index ->
-                cursor.moveToPosition(index)
-                transform(cursor)
-            }
-        }
-    }
-}
 
 private val AUDIO_PROJECTION
     get() = arrayOf(
@@ -117,7 +49,10 @@ private val AUDIO_PROJECTION
         MediaStore.Audio.AudioColumns.DATE_MODIFIED, // 14
     )
 
-private fun Audio(cursor: Cursor, retriever: MediaMetadataRetriever): Audio {
+private fun Audio(
+    cursor: Cursor,
+    retriever: MediaMetadataRetriever
+): Audio {
     val path = cursor.getString(8)
     val genre = runCatching(TAG) {
         retriever.setDataSource(path)
@@ -225,7 +160,6 @@ class SyncWorker @AssistedInject constructor(
     @Inject
     lateinit var preferences: Preferences
 
-    
     /**
      * Compute and save the art work.
      */
@@ -279,37 +213,50 @@ class SyncWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        val resolver = context.contentResolver
+        val exception =
+            kotlin.runCatching {
+                val resolver = context.contentResolver
+                val db = audioDb
+                val retriever = MediaMetadataRetriever()
 
-        val db = audioDb
+                val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                val proj = arrayOf(MediaStore.MediaColumns._ID)
+                val keys = resolver.query(uri, proj, null, null, null)?.use { cursor ->
+                    List(cursor.count) {
+                        cursor.moveToPosition(it)
+                        cursor.getLong(0)
+                    }
+                } ?: return Result.failure(Data.Builder().put("error", "keys == null").build())
+                // delete all those which are not in keys
+                db._delete(
+                    keys.joinToString(separator = ",") {
+                        "'$it'"
+                    }
+                )
 
-        val retriever = MediaMetadataRetriever()
+                // get all available in content resolver
+                val projection = AUDIO_PROJECTION
+                var changed = false
+                resolver.query(uri, projection, null, null, null)?.use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(0)
+                        // insert not exist ones only
+                        if (!db.exists(id)) {
+                            changed = true
+                            db.insert(
+                                Audio(cursor, retriever)
+                            )
+                        }
 
-        kotlinx.coroutines.withContext(Dispatchers.Main){
-            Toast.makeText(context, "Generating local cache. Please wait!.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                if (changed)
+                    poster()
+            }
+        return if (exception.isFailure){
+            Result.failure(Data.Builder().put("error", exception.exceptionOrNull() ?: "").build())
+        }else {
+            Result.success()
         }
-
-        val list = resolver.request(
-            uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            projection = AUDIO_PROJECTION,
-            bridge = { keys ->
-                // delete all which are not in keys.
-                val x = db._delete(keys)
-                Log.i(TAG, "doWork: deleted count $x")
-                db.lastModified()?.let { it / 1000 }
-            },
-            transform = { Audio(it, retriever) },
-        )
-
-        if (!list.isNullOrEmpty()) {
-            db.insert(list)
-            // now recompute the audio poster.
-            // as new files have been added.
-            poster()
-        }
-
-        // schedule unique if api > 24
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) schedule(context)
-        return if (list != null) Result.success() else Result.failure()
     }
 }

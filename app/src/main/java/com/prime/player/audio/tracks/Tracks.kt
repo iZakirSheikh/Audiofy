@@ -40,6 +40,7 @@ import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
 import com.prime.player.settings.GlobalKeys
 import com.primex.core.*
+import com.primex.core.Text
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
