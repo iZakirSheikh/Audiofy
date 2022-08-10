@@ -448,7 +448,7 @@ private inline fun LazyGridScope.Genres(value: List<Audio.Genre>) {
 }
 
 private inline fun LazyGridScope.Albums(value: List<Audio.Album>, fallback: Painter) {
-    items(value, contentType = { CONTENT_TYPE_GRID_ITEM }, key = { it.id }) { album ->
+    items(value, contentType = { CONTENT_TYPE_GRID_ITEM }) { album ->
         val navigator = LocalNavController.current
         Album(
             value = album,

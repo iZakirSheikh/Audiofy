@@ -100,22 +100,23 @@ class MainActivity : ComponentActivity() {
 
         //schedule sync
         // trigger sync worker once change in MediaStore is detected.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) SyncWorker.schedule(this)
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) SyncWorker.schedule(this)
         else {
-            observer = object : ContentObserver(null) {
-                override fun onChange(selfChange: Boolean) {
-                    // run worker when change is detected.
-                    if (!selfChange) SyncWorker.run(this@MainActivity)
-                }
-            }
 
-            // observe Images in MediaStore.
-            contentResolver.registerContentObserver(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                true,
-                observer,
-            )
+        }*/
+        observer = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                // run worker when change is detected.
+                if (!selfChange) SyncWorker.run(this@MainActivity)
+            }
         }
+
+        // observe Images in MediaStore.
+        contentResolver.registerContentObserver(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            true,
+            observer,
+        )
 
 
         // launch
@@ -188,7 +189,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         // unregister content Observer.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
             contentResolver.unregisterContentObserver(observer)
         super.onDestroy()
     }
