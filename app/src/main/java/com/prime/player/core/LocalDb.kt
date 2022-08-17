@@ -9,7 +9,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.prime.player.common.FileUtils
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 
 private const val AUDIO_COLUMN_ID = "audio_id"
@@ -168,14 +167,15 @@ data class Playlist(
 
 @Database(
     entities = [Audio::class, Playlist::class, Playlist.Member::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
     views = [Audio.Bucket::class, Audio.Artist::class, Audio.Album::class, Audio.Genre::class, Audio.Info::class]
 )
-abstract class AppDatabase : RoomDatabase() {
+abstract class LocalDb : RoomDatabase() {
 
     abstract val audios: Audios
     abstract val playlists: Playlists
+    abstract val members: Members
 
     companion object {
         private const val DB_NAME = "localdb"
@@ -218,15 +218,15 @@ abstract class AppDatabase : RoomDatabase() {
         // Singleton prevents multiple instances of database opening at the
         // same time.
         @Volatile
-        private var INSTANCE: AppDatabase? = null
+        private var INSTANCE: LocalDb? = null
 
-        fun get(context: Context): AppDatabase {
+        fun get(context: Context): LocalDb {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    AppDatabase::class.java,
+                    LocalDb::class.java,
                     DB_NAME
                 )
                     .addCallback(CALLBACK)
@@ -246,54 +246,149 @@ abstract class AppDatabase : RoomDatabase() {
 }
 
 @Dao
-interface Playlists {
+interface Audios {
+    /**
+     * The Max of the recnetly added [date_added] mills
+     */
+    @Query("SELECT MAX(date_modified) FROM tbl_audios")
+    suspend fun lastModified(): Long?
 
+    @Insert
+    fun insert(audio: Audio): Long
+
+    @Query("SELECT EXISTS(SELECT audio_id FROM tbl_audios WHERE audio_id == :id)")
+    suspend fun exists(id: Long): Boolean
+
+    @Update
+    fun update(audio: Audio): Int
+
+    @Insert
+    fun insert(values: List<Audio>): List<Long>
+
+    @Update
+    fun update(values: List<Audio>): Int
+
+    @Query("DELETE FROM tbl_audios WHERE audio_id == :id")
+    suspend fun delete(id: Long): Int
+
+    @Deprecated("not to be used for normal purposes")
+    @Suppress("FunctionName")
+    @RawQuery(observedEntities = [Audio::class])
+    fun rawDelete(query: SupportSQLiteQuery): Int
+
+    /**
+     * Deletes ids from [Audio] table which are not in [ids]
+     * @param ids - string of ids separated by commas '123','456'
+     */
+    @Deprecated("not to be used for normal purposes")
+    @Suppress("FunctionName")
+    @Transaction
+    fun delete(ids: String): Int {
+        //language=SQL
+        //language=SQL
+        val query = SimpleSQLiteQuery("DELETE FROM tbl_audios WHERE audio_id NOT IN ($ids)")
+        return rawDelete(query)
+    }
+
+    /**
+     * Observes those files of [Audio]s Table which match the query.
+     */
+    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
+    fun observe(query: String? = null): Flow<List<Audio>>
+
+    /**
+     * @return the [Audio] or null matching the [id]
+     */
+    @Query("SELECT * FROM tbl_audios WHERE audio_id == :id")
+    suspend fun get(id: Long): Audio?
+
+    /**
+     * @return the list of [Audio] matching the query
+     */
+    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
+    suspend fun get(query: String? = null): List<Audio>
+
+    @Deprecated("not to be used for normal purposes")
+    @RawQuery
+    suspend fun get(query: SupportSQLiteQuery): List<Audio>
+
+    /**
+     * @return the recently added [Audio.Album]s below or equal to the limit
+     */
+    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
+    suspend fun getRecentAlbums(limit: Int): List<Audio.Album>
+
+    /**
+     * @see getRecentAlbums
+     */
+    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
+    fun observeRecentAlbums(limit: Int): Flow<List<Audio.Album>>
+
+    /**
+     * Observe the audio files of the [Audio.Bucket] as pointed by the [path]
+     */
+    @Query("SELECT * FROM tbl_audios WHERE parent_path == :path")
+    fun bucket(path: String): Flow<List<Audio>>
+
+    /**
+     * Observe the [Audio.Bucket]s filtered by [query]
+     */
+    @Query("SELECT * FROM vw_audio_bucket WHERE :query IS NULL OR bucket_path LIKE '%' || :query || '%'")
+    fun buckets(query: String? = null): Flow<List<Audio.Bucket>>
+
+    /**
+     * Observe the audio files of [Audio.Artist] pointed by the [name].
+     */
+    @Query("SELECT * FROM tbl_audios WHERE artist == :name")
+    fun artist(name: String): Flow<List<Audio>>
+
+    /**
+     *  Observe the [Audio.Artist]s filtered by [query]
+     */
+    @Query("SELECT * FROM vw_audio_artist WHERE :query IS NULL OR artist LIKE '%' || :query || '%'")
+    fun artists(query: String? = null): Flow<List<Audio.Artist>>
+
+    /**
+     *  Observe the audio files of [Audio.Genre]s pointed by [name]
+     */
+    @Query("SELECT * FROM tbl_audios WHERE genre == :name")
+    fun genre(name: String): Flow<List<Audio>>
+
+    /**
+     *  Observe the [Audio.Genre]s filtered by [query]
+     */
+    @Query("SELECT * FROM vw_audio_genre WHERE :query IS NULL OR genre LIKE '%' || :query || '%'")
+    fun genres(query: String? = null): Flow<List<Audio.Genre>>
+
+    /**
+     * Observe the [Audio.Album]s pointed by the unique [name]
+     */
+    @Query("SELECT * FROM tbl_audios WHERE album == :name")
+    fun album(name: String): Flow<List<Audio>>
+
+    /**
+     *  Observe the [Audio.Album]s filtered by [query]
+     */
+    @Query("SELECT * FROM vw_audio_album WHERE :query IS NULL OR album LIKE '%' || :query || '%'")
+    fun albums(query: String? = null): Flow<List<Audio.Album>>
+
+    /**
+     * @return [List][Audio]s of [Playlist] represented by [playlistId]
+     */
+    @RewriteQueriesToDropUnusedColumns
+    @Query(
+        "SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id " +
+                "WHERE playlist_id = :playlistId ORDER BY play_order ASC"
+    )
+    fun playlist(playlistId: Long): Flow<List<Audio>>
+
+}
+
+@Dao
+interface Playlists {
     // playlists
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(playlist: Playlist): Long
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(member: Playlist.Member): Long
-
-    // members
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(members: List<Playlist.Member>): List<Long>
-
-    suspend fun insert(playlist: Playlist, tracks: List<Audio>): List<Long> {
-        // check if playlist exists.
-        // if playlist id == 0 i.e, it doesn't exist; insert it
-        // else return id
-        val playlistId = if (playlist.id == 0L) insert(playlist) else playlist.id
-        // insert and return ids.
-        return insert(playlistId, tracks)
-    }
-
-    @Transaction
-    suspend fun insert(playlistId: Long, tracks: List<Audio>): List<Long> {
-        var order = lastPlayOrder(playlistId) ?: -1
-
-        // convert to members
-        val members = tracks.map {
-            Playlist.Member(playlistID = playlistId, id = "${it.id}", order = ++order)
-        }
-
-        // insert and return ids.
-        return insert(members)
-    }
-
-    @Transaction
-    suspend fun insert(playlistId: Long, track: Audio): Long {
-        val order = lastPlayOrder(playlistId) ?: -1
-        return insert(Playlist.Member(playlistId, "${track.id}", order + 1))
-    }
-
-    suspend fun insert(playlist: Playlist, track: Audio): Long {
-        // check if playlist exists.
-        // if playlist id == 0 i.e, it doesn't exist; insert it
-        // else return id
-        val playlistId = if (playlist.id == 0L) insert(playlist) else playlist.id
-        return insert(playlistId, track)
-    }
 
     /**
      * Returns the [MAX] [COLUMN_PLAY_ORDER] of [TABLE_NAME_MEMBER] associated with [playlistId] or null if [playlistId] !exists
@@ -308,63 +403,11 @@ interface Playlists {
     @Update
     suspend fun update(playlist: Playlist): Int
 
-    @Update
-    suspend fun update(member: Playlist.Member): Int
-
     @Delete
     suspend fun delete(playlist: Playlist): Int
 
     @Delete
-    suspend fun delete(member: Playlist.Member): Int
-
-    @Delete
     suspend fun delete(playlists: List<Playlist>): Int
-
-    @Delete
-    suspend fun delete(members: ArrayList<Playlist.Member>): Int
-
-    /**
-     * Delete from [playlistId] the track with id [track]
-     */
-    @Transaction
-    suspend fun delete(playlistId: Long, track: Audio): Int {
-        val member = Playlist.Member(playlistId, "${track.id}", 0)
-        return delete(member)
-    }
-
-    /**
-     * Returns the [COLUMN_PLAY_ORDER] if the track exists in [TABLE_NAME_MEMBER] else null
-     */
-    @Query("SELECT play_order FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :trackId")
-    suspend fun getPlayOrder(playlistId: Long, trackId: String): Long?
-
-    /**
-     * Returns the number of tracks in the playlist.
-     */
-    @Query("SELECT COUNT(*) FROM tbl_playlist_members WHERE playlist_id == :playlistId")
-    suspend fun count(playlistId: Long): Int
-
-    suspend fun count(playlist: Playlist) = count(playlist.id)
-
-    /**
-     * Check if the [Playlist.Member] exits in [Playlist]
-     */
-    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id)")
-    suspend fun exists(playlistId: Long, id: String): Boolean
-
-    /**
-     * Check if the [Playlist.Member] exits in [Playlist]
-     */
-    suspend fun exists(playlistName: String, uTag: String, id: String): Boolean {
-        val playlist = get(uTag, playlistName)
-        return playlist?.let { exists(it.id, id) } ?: false
-    }
-
-    /**
-     * Delete the [Playlist.Member] from the [Playlist]
-     */
-    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id")
-    suspend fun delete(playlistId: Long, id: String): Int
 
     /**
      * @return [Playlist] represented by [id]
@@ -401,169 +444,57 @@ interface Playlists {
      */
     @Query("SELECT * FROM tbl_playlists WHERE tag == :tag AND name = :name")
     fun observe(tag: String, name: String): Flow<Playlist?>
-
-    /**
-     * @return [List][Audio]s of [Playlist] represented by [playlistId]
-     */
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id WHERE playlist_id = :playlistId ORDER BY play_order ASC")
-    suspend fun getAudios(playlistId: Long): List<Audio>
-
-    /**
-     * Returns a [Flow]able [Pair] of [Playlist] with [List] [Audio]
-     */
-    fun observe2(name: String, tag: String): Flow<Pair<Playlist, List<Audio>>?> =
-        observe(name = name, tag = tag).map {
-            if (it == null)
-                null
-            else
-                it to getAudios(it.id)
-        }
 }
 
-
-//TODO: Split each View/Table into repective Dao
 @Dao
-interface Audios {
+interface Members {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(member: Playlist.Member): Long
 
-    @Query("SELECT MAX(date_modified) FROM tbl_audios")
-    suspend fun lastModified(): Long?
+    // members
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(members: List<Playlist.Member>): List<Long>
 
-    @Insert
-    fun insert(audio: Audio): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(values: List<Audio>): List<Long>
-
-    @Query("DELETE FROM tbl_audios WHERE audio_id == :id")
-    suspend fun delete(id: Long): Int
-
-    @Deprecated("not to be used for normal purposes")
-    @Suppress("FunctionName")
-    @RawQuery(observedEntities = [Audio::class])
-    fun __raw_delete(query: SupportSQLiteQuery): Int
-
-    @Deprecated("not to be used for normal purposes")
-    @Suppress("FunctionName")
-    @Transaction
-    fun _delete(ids: String): Int {
-        //language=SQL
-        val query = SimpleSQLiteQuery("DELETE FROM tbl_audios WHERE audio_id NOT IN ($ids)")
-        return __raw_delete(query)
-    }
+    @Update
+    suspend fun update(member: Playlist.Member): Int
 
     @Delete
-    suspend fun delete(audio: Audio): Int
+    suspend fun delete(member: Playlist.Member): Int
 
-    @Query("SELECT COUNT(*) FROM tbl_audios")
-    suspend fun count(): Int
+    @Delete
+    suspend fun delete(members: ArrayList<Playlist.Member>): Int
 
-    @Query("SELECT EXISTS(SELECT audio_id FROM tbl_audios WHERE audio_id == :id)")
-    suspend fun exists(id: Long): Boolean
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :fileId")
+    suspend fun get(playlistId: Long, fileId: String): Playlist.Member?
 
-    @Query("SELECT * FROM vw_audio_info")
-    fun info(): Flow<Audio.Info>
+    /**
+     * Returns the number of tracks in the playlist.
+     */
+    @Query("SELECT COUNT(*) FROM tbl_playlist_members WHERE playlist_id == :playlistId")
+    suspend fun count(playlistId: Long): Int
 
-    @Query("SELECT * FROM vw_audio_info")
-    suspend fun getInfo(): Audio.Info
+    /**
+     * Returns the [COLUMN_PLAY_ORDER] if the track exists in [TABLE_NAME_MEMBER] else null
+     */
+    @Query("SELECT play_order FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :trackId")
+    suspend fun getPlayOrder(playlistId: Long, trackId: String): Long?
 
-    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
-    fun observe(query: String? = null): Flow<List<Audio>>
+    /**
+     * Check if the [Playlist.Member] exits in [Playlist]
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id)")
+    suspend fun exists(playlistId: Long, id: String): Boolean
 
-    @Query("SELECT * FROM tbl_audios WHERE audio_id == :id")
-    suspend fun get(id: Long): Audio?
+    /**
+     * Delete the [Playlist.Member] from the [Playlist]
+     */
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id")
+    suspend fun delete(playlistId: Long, id: String): Int
 
-    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
-    suspend fun get(query: String? = null): List<Audio>
 
-    @Deprecated("not to be used for normal purposes")
-    @RawQuery
-    suspend fun get(query: SupportSQLiteQuery): List<Audio>
-
-    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
-    suspend fun getRecentAlbums(limit: Int): List<Audio.Album>
-
-    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
-    fun observeRecentAlbums(limit: Int): Flow<List<Audio.Album>>
-
-    // buckets
-    @Query("SELECT * FROM vw_audio_bucket WHERE :query IS NULL OR bucket_path LIKE '%' || :query || '%'")
-    fun buckets(query: String? = null): Flow<List<Audio.Bucket>>
-
-    @Query("SELECT * FROM vw_audio_bucket WHERE bucket_path == :path")
-    fun bucket(path: String): Flow<Audio.Bucket?>
-
-    fun bucket2(path: String): Flow<Pair<Audio.Bucket, List<Audio>>?> {
-        val query =
-            SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE parent_path == ?", arrayOf(path))
-        return bucket(path).map { bucket ->
-            when (bucket == null) {
-                true -> null
-                else -> {
-                    val list = get(query = query)
-                    bucket to list
-                }
-            }
-        }
-    }
-
-    // Artists
-    @Query("SELECT * FROM vw_audio_artist WHERE :query IS NULL OR artist LIKE '%' || :query || '%'")
-    fun artists(query: String? = null): Flow<List<Audio.Artist>>
-
-    @Query("SELECT * FROM vw_audio_artist WHERE artist == :name")
-    fun artist(name: String): Flow<Audio.Artist?>
-
-    fun artist2(name: String): Flow<Pair<Audio.Artist, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE artist == ?", arrayOf(name))
-        return artist(name).map { artist ->
-            when (artist == null) {
-                true -> null
-                else -> {
-                    val list = get(query = query)
-                    artist to list
-                }
-            }
-        }
-    }
-
-    // Albums
-    @Query("SELECT * FROM vw_audio_album WHERE :query IS NULL OR album LIKE '%' || :query || '%'")
-    fun albums(query: String? = null): Flow<List<Audio.Album>>
-
-    @Query("SELECT * FROM vw_audio_album WHERE album == :name")
-    fun album(name: String): Flow<Audio.Album?>
-
-    fun albums2(name: String): Flow<Pair<Audio.Album, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE album == ?", arrayOf(name))
-        return album(name).map { album ->
-            when (album == null) {
-                true -> null
-                else -> {
-                    val list = get(query = query)
-                    album to list
-                }
-            }
-        }
-    }
-
-    // Genres
-    @Query("SELECT * FROM vw_audio_genre WHERE :query IS NULL OR genre LIKE '%' || :query || '%'")
-    fun genres(query: String? = null): Flow<List<Audio.Genre>>
-
-    @Query("SELECT * FROM vw_audio_genre WHERE genre == :name")
-    fun genre(name: String): Flow<Audio.Genre?>
-
-    fun genre2(name: String): Flow<Pair<Audio.Genre, List<Audio>>?> {
-        val query = SimpleSQLiteQuery("SELECT * FROM tbl_audios WHERE genre == ?", arrayOf(name))
-        return genre(name).map { genre ->
-            when (genre == null) {
-                true -> null
-                else -> {
-                    val list = get(query = query)
-                    genre to list
-                }
-            }
-        }
-    }
+    /**
+     * Delete the [Playlist.Member] where [Playlist.Member.order] > [order]
+     */
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND play_order >= :order")
+    suspend fun delete(playlistId: Long, order: Long): Int
 }

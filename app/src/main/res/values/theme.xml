@@ -7,7 +7,7 @@
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.Audiofy</item>
-        <item name="windowSplashScreenBackground">#FF0D0D0E</item>
+        <item name="windowSplashScreenBackground">#FFFE6109</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
         <item name="android:windowFullscreen">true</item>
         <!-- <item name="windowSplashScreenBrandingImage">@drawable/ic_angle</item>-->
