@@ -7,17 +7,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
-import androidx.compose.animation.core.AnimationConstants
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.ElevationOverlay
-import androidx.compose.material.LocalElevationOverlay
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.prime.player.core.AppDatabase
+import com.prime.player.core.LocalDb
 import com.primex.preferences.Preferences
 import dagger.Module
 import dagger.Provides
@@ -79,10 +71,20 @@ object Singleton {
 
     @Singleton
     @Provides
-    fun audios(@ApplicationContext context: Context) = AppDatabase.get(context).audios
+    fun audios(@ApplicationContext context: Context) = LocalDb.get(context).audios
 
     @Singleton
     @Provides
-    fun playlists(@ApplicationContext context: Context) = AppDatabase.get(context).playlists
+    fun playlists(@ApplicationContext context: Context) = LocalDb.get(context).playlists
 
+    @Singleton
+    @Provides
+    fun members(@ApplicationContext context: Context) = LocalDb.get(context).members
+
+    @Singleton
+    @Provides
+    fun localDb(
+        @ApplicationContext context: Context
+    ) =
+        LocalDb.get(context)
 }

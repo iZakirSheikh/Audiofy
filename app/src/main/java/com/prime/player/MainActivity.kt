@@ -190,7 +190,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         // unregister content Observer.
         //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-            contentResolver.unregisterContentObserver(observer)
+        contentResolver.unregisterContentObserver(observer)
         super.onDestroy()
     }
 

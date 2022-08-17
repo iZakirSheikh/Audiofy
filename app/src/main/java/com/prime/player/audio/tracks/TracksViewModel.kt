@@ -12,12 +12,9 @@ import com.prime.player.R
 import com.prime.player.Tokens
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
-import com.prime.player.common.MediaUtil
-import com.prime.player.common.Utils
-import com.prime.player.common.asComposeState
+import com.prime.player.common.*
 import com.prime.player.common.compose.SnackDataChannel
 import com.prime.player.common.compose.send
-import com.prime.player.common.share
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
 import com.prime.player.core.Repository
@@ -42,6 +39,17 @@ typealias TrackResult = Map<Text, List<Audio>>
 
 private const val DEBOUNCE_MIN_DELAY = 300L //ms
 
+@Immutable
+@Stable
+data class Meta(
+    val cardinality: Int,
+    val duration: Int,
+    val size: Long,
+    val subtitle: Text? = null,
+    val artwork: Uri? = null,
+)
+
+
 @HiltViewModel
 class TracksViewModel @Inject constructor(
     handle: SavedStateHandle,
@@ -60,9 +68,16 @@ class TracksViewModel @Inject constructor(
 
     val query = args.query?.let { if (it == "@null") null else it }
 
-    val title: State<Text> = mutableStateOf(Text(""))
+    val title: Text =
+        when (type) {
+            Type.AUDIOS -> Text("Audios")
+            Type.FOLDERS -> Text(FileUtils.name(uuid))
+            Type.PLAYLISTS -> Text(if (uuid.indexOf(Tokens.Audio.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
+            else -> Text(uuid)
+        }
 
-    val header: State<Header?> = mutableStateOf(null)
+    val header: State<Meta?> = mutableStateOf(null)
+
 
     /**
      *  The Selected Audios
@@ -109,8 +124,8 @@ class TracksViewModel @Inject constructor(
      */
     val favourite =
         repository
-            .favouriteList
-            .map { list -> list.map { it.id } }
+            .favourite
+            .map { list -> list?.map { it.id } ?: emptyList() }
             .asComposeState(emptyList())
 
     /**
@@ -164,7 +179,7 @@ class TracksViewModel @Inject constructor(
             }
             val index = indexOf?.let { list.indexOf(it) } ?: 0
 
-            val title = title.value.let {
+            val title = title.let {
                 if (it.raw is String)
                     it.raw as String
                 else
@@ -193,10 +208,16 @@ class TracksViewModel @Inject constructor(
     }
 
     @OptIn(FlowPreview::class)
-    private val observable: Flow<Pair<Any, List<Audio>>?> =
+    private val observable: Flow<List<Audio>?> =
         when (type) {
-            Type.AUDIOS -> repository.audios2(query)
-            Type.PLAYLISTS -> repository.playlist(uuid)
+            Type.AUDIOS -> repository.audios(query)
+
+            Type.PLAYLISTS -> repository.playlist(
+                // must not be null
+                // because clicked on it so it must be real.
+                repository.getPlaylist(uuid)!!.id
+            )
+
             Type.FOLDERS -> repository.folder(uuid)
             Type.ARTISTS -> repository.artist(uuid)
             Type.ALBUMS -> repository.album(uuid)
@@ -204,8 +225,7 @@ class TracksViewModel @Inject constructor(
         }
             .debounce(DEBOUNCE_MIN_DELAY)
 
-
-    fun addToPlaylist(playlist: Playlist, ids: List<Long>){
+    fun addToPlaylist(playlist: Playlist, ids: List<Long>) {
         viewModelScope.launch {
             repository.addToPlaylist(
                 name = playlist.name,
@@ -215,7 +235,6 @@ class TracksViewModel @Inject constructor(
     }
 
     val playlists = repository.playlists
-
 
     @OptIn(FlowPreview::class)
     val result: Result<TrackResult> =
@@ -231,7 +250,11 @@ class TracksViewModel @Inject constructor(
                         return@combine null
                     }
 
-                    val (info, list) = data
+                    if (data.isEmpty()){
+                        return@combine null to emptyMap()
+                    }
+
+                    val list = data
 
                     val filteredList =
                         if (query.isNullOrEmpty()) list else list.filter { audio ->
@@ -284,31 +307,17 @@ class TracksViewModel @Inject constructor(
                         }
 
                     // emit the pair of original info and grouped items.
-                    info to grouped
+                    list.meta to grouped
                 }
                 .onEach { pair ->
                     val first = pair?.first
                     val data = pair?.second
 
-                    // convert first/header to its Ui Model
-                    // also emit the title.
-                    val info =
-                        when (first) {
-                            null -> null
-                            is Audio.Artist -> first.asListInfo to first.title
-                            is Audio.Album -> first.asListInfo to first.title2
-                            is Audio.Genre -> first.asListInfo to first.title
-                            is Audio.Bucket -> first.asListInfo to first.title
-                            is Audio.Info -> first.asListInfo to first.title
-                            is Playlist -> first.asListInfo to first.title
-                            else -> error("TrackResult: Unknown type")
-                        }
 
                     // emit data
                     // emit title & header
                     emit(data ?: emptyMap())
-                    (this@TracksViewModel.title as MutableState).value = info?.second ?: Text("")
-                    (this@TracksViewModel.header as MutableState).value = info?.first
+                    (this@TracksViewModel.header as MutableState).value = first
 
                     // emit state of this result
                     // FixMe - Maybe it's good to emit Text as error value
@@ -326,96 +335,20 @@ class TracksViewModel @Inject constructor(
         }
 }
 
-@Immutable
-@Stable
-data class Header(
-    val subtitle: Text? = null,
-    val artwork: Uri? = null,
-    val cardinality: Int,
-    val duration: Int,
-    val size: Long
-)
 
-private val Audio.Info.asListInfo
-    get() = Header(
-        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
-        subtitle = Text("Last Modified: ${Utils.formatAsRelativeTimeSpan(value.dateModified)}"),
-        cardinality = cardinality,
-        duration = duration,
-        size = size.toLong(),
-    )
-
-private val Audio.Info.title inline get() = Text("Audios")
-
-private val Audio.Genre.asListInfo
-    get() = Header(
-        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
-        subtitle = null,
-        cardinality = tracks,
-        duration = duration,
-        size = size,
-    )
-
-private val Audio.Genre.title
-    inline get() = Text(name)
-
-
-private val Audio.Album.asListInfo
-    get() = Header(
-        artwork = MediaUtil.composeAlbumArtUri(id),
-        subtitle = Text("First Year: $firstYear | Last Year $lastYear"),
-        cardinality = tracks,
-        duration = duration,
-        size = size,
-    )
-
-private val Audio.Album.title2
-    inline get() = Text(title)
-
-private val Audio.Bucket.asListInfo
-    get() = Header(
-        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
-        subtitle = null,
-        cardinality = cardinality,
-        duration = -1,
-        size = value.size,
-    )
-
-private val Audio.Bucket.title
-    inline get() = Text(name)
-
-private val Audio.Artist.asListInfo
-    get() = Header(
-        subtitle = null,
-        artwork = MediaUtil.composeAlbumArtUri(value.albumId),
-        cardinality = tracks,
-        size = value.size,
-        duration = value.duration,
-    )
-
-private val Audio.Artist.title
-    inline get() = Text(name)
-
-private val Playlist.asListInfo
-    get() = Header(
-        subtitle = Text(
-            "Date Created: ${Utils.formatAsRelativeTimeSpan(dateCreated)} \nDate Modified ${
-                Utils.formatAsRelativeTimeSpan(
-                    dateModified
-                )
-            }"
-        ),
-        artwork = null,
-        cardinality = -1,
-        size = -1,
-        duration = -1,
-    )
-
-private val Playlist.title
-    inline get() = Text(
-        name.let { if (it == Tokens.Audio.PLAYLIST_FAVOURITES) "Favourites" else name }
-    )
-
+private inline val List<Audio>.meta: Meta
+    get() {
+        val latest = maxBy { it.dateModified }
+        return Meta(
+            cardinality = size,
+            duration = sumOf { it.duration },
+            size = sumOf { it.size },
+            artwork = latest.let { MediaUtil.composeAlbumArtUri(it.albumId) },
+            subtitle = Text(
+                value = Utils.formatAsRelativeTimeSpan(latest.dateModified)
+            )
+        )
+    }
 
 private val Audio.firstTitleChar
     inline get() = title.uppercase(Locale.ROOT)[0].toString()

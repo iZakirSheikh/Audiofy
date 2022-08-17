@@ -8,10 +8,16 @@ object Tokens {
      * This object contains the constants of the [Audio] Player.
      */
     object Audio {
+
+        /**
+         * A prefix char for private playlists.
+         */
+        const val PRIVATE_PLAYLIST_PREFIX = '_'
+
         /**
          * The name of the playlist contains the favourites.
          */
-        const val PLAYLIST_FAVOURITES = "_favourites"
+        val PLAYLIST_FAVOURITES = PRIVATE_PLAYLIST_PREFIX + "favourites"
 
         /**
          * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]

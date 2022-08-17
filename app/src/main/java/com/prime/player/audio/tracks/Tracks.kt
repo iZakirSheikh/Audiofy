@@ -2,7 +2,6 @@ package com.prime.player.audio.tracks
 
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -38,10 +37,10 @@ import com.prime.player.common.FileUtils
 import com.prime.player.common.Utils
 import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
-import com.prime.player.settings.GlobalKeys
-import com.primex.core.*
 import com.primex.core.Text
-import com.primex.preferences.LocalPreferenceStore
+import com.primex.core.drawHorizontalDivider
+import com.primex.core.raw
+import com.primex.core.rememberState
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
 import cz.levinzonr.saferoute.core.annotations.RouteArg
@@ -71,7 +70,7 @@ context(TracksViewModel)  @Composable
 private fun Toolbar(
     modifier: Modifier = Modifier
 ) {
-    val title = stringResource(res = title.value)
+    val title = stringResource(res = title)
     val query = query
     val navigator = LocalNavController.current
 
@@ -118,7 +117,8 @@ private fun Actions(
         onPlaylistClick = {
             if (selected.isNotEmpty() && it != null) {
                 addToPlaylist(it, selected)
-                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT)
+                    .show()
             }
             showPlaylistViewer = false
         }
@@ -248,7 +248,7 @@ fun Header(
     ConstraintLayout(modifier = modifier) {
 
         val meta by header
-        val title = stringResource(res = title.value)
+        val title = stringResource(res = title)
         val (Artwork, Play, Title, Subtitle, Share, Shuffle, Sort, Divider) = createRefs()
 
         // create the chain
@@ -537,7 +537,8 @@ private fun Audio.More(
         onPlaylistClick = {
             if (it != null) {
                 resolver.addToPlaylist(it, listOf(id))
-                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT)
+                    .show()
             }
             showPlaylistViewer = false
         }
