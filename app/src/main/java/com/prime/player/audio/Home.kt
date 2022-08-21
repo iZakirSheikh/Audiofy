@@ -43,11 +43,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 private val EnterTransition = scaleIn(
-    initialScale = 0.96f,
-    animationSpec = tween(180, delayMillis = 90)
-) + fadeIn()
+    initialScale = 0.98f,
+    animationSpec = tween(220, delayMillis = 90)
+) + fadeIn(animationSpec = tween(700))
 
-private val ExitTransition = fadeOut()
+private val ExitTransition = fadeOut(tween(700))
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable

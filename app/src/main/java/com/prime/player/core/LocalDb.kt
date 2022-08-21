@@ -455,8 +455,11 @@ interface Members {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(members: List<Playlist.Member>): List<Long>
 
-    @Update
-    suspend fun update(member: Playlist.Member): Int
+    /**
+     * This is not the recommanded way to do it.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun update(member: Playlist.Member): Long
 
     @Delete
     suspend fun delete(member: Playlist.Member): Int

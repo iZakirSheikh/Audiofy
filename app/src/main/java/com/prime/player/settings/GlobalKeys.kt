@@ -58,9 +58,9 @@ object GlobalKeys {
 
     val FONT_SCALE =
         floatPreferenceKey(
-        TAG + "_font_scale",
-        defaultValue = 1.0f
-    )
+            TAG + "_font_scale",
+            defaultValue = 1.0f
+        )
 
     private val defaultMinTrackLimit =
         TimeUnit.MINUTES.toMillis(1)
@@ -81,5 +81,9 @@ object GlobalKeys {
             defaultValue = 20
         )
 
-
+    /**
+     * The counter counts the number of times this app was launched.
+     */
+    val KEY_LAUNCH_COUNTER =
+        intPreferenceKey(TAG + "_launch_counter")
 }

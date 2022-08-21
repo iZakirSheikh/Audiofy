@@ -299,8 +299,8 @@ class Repository @Inject constructor(
                 true -> {
                     //localDb.members.update(member.copy(order = 0))
                     // updating the member doesn't work as expected.
-                    localDb.members.delete(member)
-                    localDb.members.insert(member = member.copy(order = 0))
+                    // localDb.members.delete(member)
+                    localDb.members.update(member = member.copy(order = 0))
                 }
                 else -> {
                     // check the limit in this case

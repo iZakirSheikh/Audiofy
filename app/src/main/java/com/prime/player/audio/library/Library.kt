@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -98,7 +99,7 @@ private fun Reel(modifier: Modifier = Modifier) {
 
             //Row of icon nad title
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+
                 modifier = Modifier
                     .padding(horizontal = ContentPadding.normal)
                     .statusBarsPadding2(
@@ -112,6 +113,24 @@ private fun Reel(modifier: Modifier = Modifier) {
                         style = Material.typography.h5,
                         fontWeight = FontWeight.Light
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    val billing = LocalBillingManager.current
+                    val isPurchased by billing.isPurchased(id = BillingTokens.DISABLE_ASD_IN_APP_PRODUCT)
+                    val activity = LocalContext.current.activity!!
+                    if (!isPurchased)
+                        IconButton(
+                            painter = painterResource(id = R.drawable.ic_remove_ads),
+                            contentDescription = null,
+                            onClick = {
+                                billing.launchBillingFlow(
+                                    activity,
+                                    BillingTokens.DISABLE_ASD_IN_APP_PRODUCT
+                                )
+                            }
+                        )
+
 
                     // the icon
                     val navigator = LocalNavController.current
@@ -136,6 +155,7 @@ private fun Carousal(
     modifier: Modifier = Modifier
 ) {
     val navigator = LocalNavController.current
+    val activity = LocalContext.current.activity!!
     Surface(
         modifier = modifier,
         elevation = ContentElevation.high,
@@ -143,6 +163,7 @@ private fun Carousal(
         onClick = {
             val direction = BucketsRoute(Type.ALBUMS.name)
             navigator.navigateTo(direction)
+            activity.launchReviewFlow()
         },
 
         content = {
