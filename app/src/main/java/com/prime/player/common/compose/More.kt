@@ -24,6 +24,7 @@ import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.review.ReviewManager
+import com.prime.player.common.billing.BillingManager
 import com.primex.core.Text
 import com.primex.core.resolve
 import com.primex.core.spannedResource
@@ -224,23 +225,11 @@ inline fun Resources.stringResource(res: Text) =
 inline fun Resources.stringResource(res: Text?) =
     resolve(res)
 
-/**
- * Convince method to pass the AppUpdateManager down the compose tree.
- */
-val LocalAppUpdateManager =
-    compositionLocalOf<AppUpdateManager> {
-        error("No  Local App Update Manager set.")
-    }
-
-/**
- * Convince way to pass the ReviewManager down the compose tree.
- */
-val LocalAppReviewManager =
-    compositionLocalOf<ReviewManager> {
-        error("No Local Review Manager set. ")
-    }
-
 val LocalSystemUiController =
     staticCompositionLocalOf<SystemUiController> {
     error("No ui controller defined!!")
 }
+val LocalBillingManager =
+    compositionLocalOf<BillingManager> {
+        error("No Local BillingClient set. ")
+    }

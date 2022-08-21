@@ -1,6 +1,5 @@
 package com.prime.player
 
-
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.database.ContentObserver
@@ -46,6 +45,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.prime.player.audio.Home
+import com.prime.player.common.billing.BillingManager
 import com.prime.player.common.compose.*
 import com.prime.player.core.SyncWorker
 import com.prime.player.settings.GlobalKeys
@@ -64,25 +64,28 @@ import javax.inject.Inject
 
 private const val TAG = "MainActivity"
 
-private val KEY_LAUNCH_COUNTER = intPreferenceKey(TAG + "_launch_counter")
-private val KEY_LAST_REVIEW_TIME = longPreferenceKey(TAG + "_last_review_time")
-
 private const val RESULT_CODE_APP_UPDATE = 1000
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     lateinit var fAnalytics: FirebaseAnalytics
-    lateinit var mAppUpdateManager: AppUpdateManager
     private lateinit var observer: ContentObserver
+    lateinit var mReviewManager: ReviewManager
 
     @Inject
     lateinit var preferences: Preferences
 
+    override fun onDestroy() {
+        // unregister content Observer.
+        //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        contentResolver.unregisterContentObserver(observer)
+        super.onDestroy()
+    }
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // The app has started from scratch if savedInstanceState is null.
         val isColdStart = savedInstanceState == null //why?
         // Obtain the FirebaseAnalytics instance.
@@ -91,26 +94,17 @@ class MainActivity : ComponentActivity() {
         initSplashScreen(
             isColdStart
         )
-
-        //init
-        mAppUpdateManager = AppUpdateManagerFactory.create(this)
-        val reviewManager = ReviewManagerFactory.create(this)
+        mReviewManager = ReviewManagerFactory.create(this)
         val channel = SnackDataChannel()
 
-
-        //schedule sync
-        // trigger sync worker once change in MediaStore is detected.
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) SyncWorker.schedule(this)
-        else {
-
-        }*/
-        observer = object : ContentObserver(null) {
-            override fun onChange(selfChange: Boolean) {
-                // run worker when change is detected.
-                if (!selfChange) SyncWorker.run(this@MainActivity)
+        //Observe the MediaStore
+        observer =
+            object : ContentObserver(null) {
+                override fun onChange(selfChange: Boolean) {
+                    // run worker when change is detected.
+                    if (!selfChange) SyncWorker.run(this@MainActivity)
+                }
             }
-        }
-
         // observe Images in MediaStore.
         contentResolver.registerContentObserver(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -118,35 +112,31 @@ class MainActivity : ComponentActivity() {
             observer,
         )
 
-
-        // launch
-        if (isColdStart && !BuildConfig.DEBUG)
-            lifecycleScope.launch {
-                // increment launch counter
-                val counter = with(preferences) { preferences[KEY_LAUNCH_COUNTER].obtain() } ?: 0
-                // update launch counter if
-                // cold start.
-                preferences[KEY_LAUNCH_COUNTER] = counter + 1
-
-                // check for updates on startup
-                // don't report
-                // check silently
-                mAppUpdateManager.check(
-                    channel = channel,
-                    activity = this@MainActivity
-                )
-
-                val isAvailable = mAppUpdateManager.requestAppUpdateInfo().updateAvailability() ==
-                        UpdateAvailability.UPDATE_AVAILABLE
-                // don't ask
-                // if update is available
-                // because maybe the user wishes to update the app
-                // this might interrupt the reviewFlow.
-                if (!isAvailable)
-                    reviewManager.review(this@MainActivity, preferences)
-            }
+        if (isColdStart) {
+            val counter =
+                with(preferences) { preferences[GlobalKeys.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+            // update launch counter if
+            // cold start.
+            preferences[GlobalKeys.KEY_LAUNCH_COUNTER] = counter + 1
+            // check for updates on startup
+            // don't report
+            // check silently
+            launchUpdateFlow(channel)
+            // TODO: Try to reconcile if it is any good to ask for reviews here.
+            // launchReviewFlow()
+        }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // setup billing manager
+
+        val billingManager =
+            BillingManager(
+                context = this,
+                products = arrayOf(
+                    BillingTokens.DISABLE_ASD_IN_APP_PRODUCT
+                )
+            )
+        lifecycle.addObserver(billingManager)
 
         setContent {
             val sWindow = rememberWindowSizeClass()
@@ -164,9 +154,8 @@ class MainActivity : ComponentActivity() {
                 LocalWindowSizeClass provides sWindow,
                 LocalPreferenceStore provides preferences,
                 LocalDensity provides modified,
-                LocalAppUpdateManager provides mAppUpdateManager,
-                LocalAppReviewManager provides reviewManager,
                 LocalSnackDataChannel provides channel,
+                LocalBillingManager provides billingManager,
                 LocalSystemUiController provides rememberSystemUiController()
             ) {
                 Material(isDark = resolveAppThemeState()) {
@@ -186,15 +175,8 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    override fun onDestroy() {
-        // unregister content Observer.
-        //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-        contentResolver.unregisterContentObserver(observer)
-        super.onDestroy()
-    }
-
 }
+
 
 @Composable
 private fun PermissionRationale(
@@ -262,137 +244,126 @@ private fun resolveAppThemeState(): Boolean {
 }
 
 
-private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
-
-/**
- * @param report simple messages.
- */
-suspend fun AppUpdateManager.check(
-    channel: SnackDataChannel,
-    activity: Activity,
-    report: Boolean = false,
-) {
-    requestUpdateFlow()
-        // catch any error like the install exception occuring
-        // in the release version of the app.
-        .catch { Log.i(TAG, "check: ${it.message}") }
-        // collect the flow and publish/request/install the update.
-        .collect { result ->
-            when (result) {
-                AppUpdateResult.NotAvailable -> if (report)
-                    channel.send("The app is already updated to the latest version.")
-
-                is AppUpdateResult.InProgress -> {
-                    //FixMe: Publish progress
-                    val state = result.installState
-                    val progress =
-                        state.bytesDownloaded() / (state.totalBytesToDownload() + 0.1) * 100
-                    Log.i(TAG, "check: $progress")
-                    // currently don't show any message
-                    // future version find ways to show progress.
-                }
-                is AppUpdateResult.Downloaded -> {
-                    val info = requestAppUpdateInfo()
-                    //when update first becomes available
-                    //don't force it.
-                    // make it required when staleness days overcome allowed limit
-                    val isFlexible =
-                        (info.clientVersionStalenessDays() ?: -1) <=
-                                FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
-
-                    // forcefully update; if it's flexible
-                    if (!isFlexible)
-                        completeUpdate()
-                    else
-                    // ask gracefully
-                        channel.send(
-                            message = "An update has just been downloaded.",
-                            label = "RESTART",
-                            action = this::completeUpdate,
-                            duration = SnackbarDuration.Indefinite
-                        )
-                    // no message needs to be shown
-                }
-                is AppUpdateResult.Available -> {
-                    val isFlexible =
-                        (result.updateInfo.clientVersionStalenessDays() ?: -1) <=
-                                FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
-                    val result2 =
-                        com.primex.core.runCatching(TAG) {
-                            if (isFlexible)
-                                result.startFlexibleUpdate(
-                                    activity = activity,
-                                    RESULT_CODE_APP_UPDATE
-                                )
-                            else
-                                result.startImmediateUpdate(
-                                    activity = activity,
-                                    RESULT_CODE_APP_UPDATE
-                                )
-                        }
-                    Log.i(TAG, "check: starting $result2")
-                    // no message needs to be shown
-                }
-            }
-        }
-}
-
-
 private const val MIN_LAUNCH_COUNT = 20
 private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
-private val MAX_DAY_AFTER_FIRST_REVIEW = TimeUnit.DAYS.toMillis(20)
 
 /**
- * Launch app review subject with condition.
- * @param activity The activity to launch on.
- * @param preferences The [Preferences] used to retrieve and stored values.
- * @param force if force all the manually applied conditions will be forgotten and
+ * A convince method for launching an in-app review.
+ * The review API is guarded by some conditions which are
+ * * The first review will be asked when launchCount is > [MIN_LAUNCH_COUNT] and daysPassed >=[MAX_DAYS_BEFORE_FIRST_REVIEW]
+ * * After asking first review then after each [MAX_DAY_AFTER_FIRST_REVIEW] a review dialog will be showed.
+ * Note: The review should not be asked after every coldBoot.
  */
-suspend fun ReviewManager.review(
-    activity: Activity,
-    preferences: Preferences,
-    force: Boolean = false
-) {
-    val count = with(preferences) { preferences[KEY_LAUNCH_COUNTER].obtain() } ?: 0
-    // the time when lastly asked for review
-    val lastAskedTime =
-        with(preferences) { preferences[KEY_LAST_REVIEW_TIME].obtain() }
+fun Activity.launchReviewFlow() {
+    require(this is MainActivity)
+    val count =
+        with(preferences) { preferences[GlobalKeys.KEY_LAUNCH_COUNTER].obtain() } ?: 0
 
     val firstInstallTime =
         com.primex.core.runCatching(TAG + "_review") {
-            activity.packageManager.getPackageInfo(activity.packageName, 0).firstInstallTime
+            packageManager.getPackageInfo(packageName, 0).firstInstallTime
         }
+
     val currentTime = System.currentTimeMillis()
 
-    val askFirstReview =
-        lastAskedTime == null &&
-                firstInstallTime != null &&
-                count >= MIN_LAUNCH_COUNT &&
-                currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW
-
-    val askBiggerOne =
-        lastAskedTime != null &&
-                count >= MIN_LAUNCH_COUNT &&
-                currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW
-
-    // if any one is true ask
-    if (force || askFirstReview || askBiggerOne)
-        ask(activity, preferences)
-    /*val fAnalystics = Firebase.analytics
-    fAnalystics.("Review Forced: $force, First: $askFirstReview, lastAsked: $askBiggerOne")*/
-}
-
-private suspend inline fun ReviewManager.ask(
-    activity: Activity,
-    preferences: Preferences
-) {
+    // Only first time we should not ask immediately
+    // however other than this whenever we do some thing of appreciation.
+    // we should ask for review.
+    // after first review, it is safe to call it n number of times as the quota is managed by API.
+    val ask = firstInstallTime != null &&
+            count >= MIN_LAUNCH_COUNT &&
+            currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW
     // The flow has finished. The API does not indicate whether the user
     // reviewed or not, or even whether the review dialog was shown. Thus, no
     // matter the result, we continue our app flow.
-    com.primex.core.runCatching(TAG) {
-        // update the last asking
-        preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
-        val info = requestReview()
-        launchReviewFlow(activity, info)
+    lifecycleScope.launch {
+        if (ask) {
+            com.primex.core.runCatching(TAG) {
+                // update the last asking
+                val info = mReviewManager.requestReview()
+                mReviewManager.launchReviewFlow(this@launchReviewFlow, info)
+                //host.fAnalytics.
+            }
+        }
     }
 }
+
+private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
+
+/**
+ * A utility method to check for updates.
+ * @param channel [SnackDataChannel] to report errors, inform users about the availability of update.
+ * @param report simple messages.
+ */
+fun Activity.launchUpdateFlow(
+    channel: SnackDataChannel,
+    report: Boolean = false,
+) {
+    require(this is MainActivity)
+    lifecycleScope.launch {
+        val manager = AppUpdateManagerFactory.create(this@launchUpdateFlow)
+        with(manager) {
+            val result =
+                kotlin.runCatching {
+                    requestUpdateFlow()
+                        .collect { result ->
+                            when (result) {
+                                AppUpdateResult.NotAvailable -> if (report)
+                                    channel.send("The app is already updated to the latest version.")
+                                is AppUpdateResult.InProgress -> {
+                                    //FixMe: Publish progress
+                                    val state = result.installState
+                                    val progress =
+                                        state.bytesDownloaded() / (state.totalBytesToDownload() + 0.1) * 100
+                                    Log.i(TAG, "check: $progress")
+                                    // currently don't show any message
+                                    // future version find ways to show progress.
+                                }
+                                is AppUpdateResult.Downloaded -> {
+                                    val info = requestAppUpdateInfo()
+                                    //when update first becomes available
+                                    //don't force it.
+                                    // make it required when staleness days overcome allowed limit
+                                    val isFlexible =
+                                        (info.clientVersionStalenessDays() ?: -1) <=
+                                                FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
+
+                                    // forcefully update; if it's flexible
+                                    if (!isFlexible)
+                                        completeUpdate()
+                                    else
+                                    // ask gracefully
+                                        channel.send(
+                                            message = "An update has just been downloaded.",
+                                            label = "RESTART",
+                                            action = this::completeUpdate,
+                                            duration = SnackbarDuration.Indefinite
+                                        )
+                                    // no message needs to be shown
+                                }
+                                is AppUpdateResult.Available -> {
+                                    // if user choose to skip the update handle that case also.
+                                    val isFlexible =
+                                        (result.updateInfo.clientVersionStalenessDays()
+                                            ?: -1) <=
+                                                FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
+                                    if (isFlexible)
+                                        result.startFlexibleUpdate(
+                                            activity = this@launchUpdateFlow,
+                                            RESULT_CODE_APP_UPDATE
+                                        )
+                                    else
+                                        result.startImmediateUpdate(
+                                            activity = this@launchUpdateFlow,
+                                            RESULT_CODE_APP_UPDATE
+                                        )
+                                    // no message needs to be shown
+                                }
+                            }
+                        }
+                }
+            Log.d(TAG, "launchUpdateFlow() returned: $result")
+        }
+    }
+}
+

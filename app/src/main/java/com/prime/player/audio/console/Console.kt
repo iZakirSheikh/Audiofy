@@ -55,10 +55,7 @@ import com.prime.player.common.share
 import com.prime.player.core.Audio
 import com.prime.player.core.playback.PlaybackService
 import com.prime.player.settings.GlobalKeys
-import com.primex.core.drawHorizontalDivider
-import com.primex.core.horizontalGradient
-import com.primex.core.radialGradient
-import com.primex.core.rememberState
+import com.primex.core.*
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
 import com.primex.preferences.LocalPreferenceStore
@@ -81,6 +78,7 @@ private fun ConsoleViewModel.MiniLayout(
         val color = Material.colors.surface
 
         createHorizontalChain(Artwork, Title, Heart, Play)
+        val activity = LocalContext.current.activity!!
         //artwork
         val artwork by artwork
         Image(
@@ -128,7 +126,7 @@ private fun ConsoleViewModel.MiniLayout(
 
         val favourite by favourite
         IconButton(
-            onClick = { toggleFav() },
+            onClick = { toggleFav(); activity.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
             modifier = Modifier.constrainAs(Heart) {
                 top.linkTo(parent.top)
@@ -140,7 +138,7 @@ private fun ConsoleViewModel.MiniLayout(
         //play/pause
         val playing by playing
         IconButton(
-            onClick = { togglePlay() },
+            onClick = { togglePlay(); activity.launchReviewFlow() },
             contentDescription = null,
             painter = rememberAnimatedVectorPainter(
                 id = R.drawable.avd_pause_to_play,
@@ -272,6 +270,7 @@ private fun ConsoleViewModel.More(
     SleepTimer(expanded = showSleepMenu) {
         showSleepMenu = false
     }
+    val activity = LocalContext.current.activity!!
 
     var showPlaylistViewer by rememberState(initial = false)
     val playlists by playlists.collectAsState(initial = emptyList())
@@ -314,7 +313,7 @@ private fun ConsoleViewModel.More(
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.PlaylistAdd),
             label = "Add to playlist",
-            onClick = {   showPlaylistViewer = true; onDismissRequest() }
+            onClick = {   showPlaylistViewer = true; activity.launchReviewFlow(); onDismissRequest();  }
         )
 
         MenuItem(
@@ -338,7 +337,7 @@ private fun ConsoleViewModel.More(
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.ModeNight),
             label = "Sleep timer",
-            onClick = {   showSleepMenu = true; onDismissRequest()  }
+            onClick = {   showSleepMenu = true; onDismissRequest(); }
         )
 
         val context = LocalContext.current
@@ -359,7 +358,7 @@ private fun ConsoleViewModel.More(
 
                 val shuffle by shuffle
                 IconButton(
-                    onClick = { toggleShuffle(); onDismissRequest() },
+                    onClick = { toggleShuffle(); activity.launchReviewFlow(); onDismissRequest() },
                     painter = painterResource(id = R.drawable.ic_shuffle),
                     contentDescription = null,
                     tint = LocalContentColor.current.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled)
@@ -367,7 +366,7 @@ private fun ConsoleViewModel.More(
 
                 val mode by repeatMode
                 IconButton(
-                    onClick = { cycleRepeatMode(); onDismissRequest() },
+                    onClick = { cycleRepeatMode();activity.launchReviewFlow(); onDismissRequest(); },
                     painter = painterResource(id = if (mode == PlaybackService.REPEAT_MODE_THIS) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
                     contentDescription = null,
                     tint = LocalContentColor.current.copy(
@@ -377,7 +376,7 @@ private fun ConsoleViewModel.More(
                 )
 
                 IconButton(
-                    onClick = { showPlayingQueue = true; onDismissRequest() },
+                    onClick = { showPlayingQueue = true; activity.launchReviewFlow(); onDismissRequest() },
                     imageVector = Icons.Outlined.PlaylistPlay,
                     contentDescription = null
                 )
@@ -391,6 +390,7 @@ private fun ConsoleViewModel.SleepTimer(
     expanded: Boolean,
     onDismissRequest: () -> Unit
 ){
+    val activity = LocalContext.current.activity!!
     DropdownMenu(
         title = "Sleep Timer",
         preserveIconSpace = true,
@@ -414,6 +414,7 @@ private fun ConsoleViewModel.SleepTimer(
                 else -> error("No such value !!")
             }
         setSleepAfter(minutes)
+        activity.launchReviewFlow()
     }
 }
 
@@ -478,6 +479,7 @@ private fun ConsoleViewModel.Layout(
         val (Signature, PlaylistLabel, ArtistLabel, Artwork, Slider, Album, Title, Play, UpNextLabel, UpNext) = createRefs()
 
         val primary = Material.colors.primary
+        val activity = LocalContext.current.activity!!
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
@@ -672,7 +674,7 @@ private fun ConsoleViewModel.Layout(
         val (Heart, More) = createRefs()
         val favourite by favourite
         IconButton(
-            onClick = { toggleFav() },
+            onClick = { toggleFav(); activity.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
             contentDescription = null,
             modifier = Modifier.constrainAs(Heart) {
@@ -741,7 +743,7 @@ private fun ConsoleViewModel.Layout(
         val (SkipToNext, SkipToPrev) = createRefs()
         createHorizontalChain(SkipToPrev, Play, SkipToNext, chainStyle = ChainStyle.Packed)
         NeuButton(
-            onClick = { togglePlay() },
+            onClick = { togglePlay(); activity.launchReviewFlow() },
 
             painter = rememberAnimatedVectorPainter(
                 id = R.drawable.avd_pause_to_play,
@@ -757,7 +759,7 @@ private fun ConsoleViewModel.Layout(
         )
 
         NeuButton(
-            onClick = { skipToPrev() },
+            onClick = { skipToPrev(); activity.launchReviewFlow() },
             shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_prev_filled),
             iconScale = 0.8f,
@@ -768,7 +770,7 @@ private fun ConsoleViewModel.Layout(
         )
 
         NeuButton(
-            onClick = { skipToNext() },
+            onClick = { skipToNext(); activity.launchReviewFlow() },
             shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_next_filled),
             iconScale = 0.8f,

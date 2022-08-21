@@ -263,7 +263,6 @@ fun Settings(
 
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
-                    val updateManager = LocalAppUpdateManager.current
                     val channel = LocalSnackDataChannel.current
                     val activity = context.activity!!
                     Preference(
@@ -272,13 +271,7 @@ fun Settings(
                         icon = Icons.Outlined.TouchApp,
                         modifier = Modifier.clickable(
                             onClick = {
-                                viewModel.viewModelScope.launch {
-                                    updateManager.check(
-                                        channel = channel,
-                                        activity = activity,
-                                        report = true
-                                    )
-                                }
+                                activity.launchUpdateFlow(channel)
                             }
                         )
                     )
