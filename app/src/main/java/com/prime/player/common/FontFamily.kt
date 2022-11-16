@@ -1,4 +1,4 @@
-package com.prime.player.settings
+package com.prime.player.common
 
 enum class FontFamily {
 

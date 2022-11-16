@@ -2,85 +2,153 @@ package com.prime.player.common.compose
 
 import android.app.Activity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.window.layout.WindowMetricsCalculator
 
-
 /**
- * Window size classes are a set of opinionated viewport breakpoints for you to design, develop, and
- * test resizable application layouts against. They have been chosen specifically to balance layout
- * simplicity with the flexibility to optimize your app for unique cases.
+ * Height/Width-based window size class.
  *
- * ![Window Sizes: Image](https://developer.android.com/images/guide/topics/large-screens/window_size_classes_width.png)
+ * A window size class represents a breakpoint that can be used to build responsive layouts. Each
+ * window size class breakpoint represents a majority case for typical device scenarios so your
+ * layouts will work well on most devices and configurations.
  *
- * Window size classes partition the raw window size available to your app into more manageable and
- * meaningful buckets. There are three buckets: compact, medium, and expanded. The available width
- * and height are partitioned individually, so at any point in time, your app has two size classes
- * associated with it: a width window size class, and a height window size class.
- *
- * While window size classes are specified for both width and height, the available width is often
- * more important than available height due to the ubiquity of vertical scrolling. Therefore, the
- * width window size class will likely be more relevant to your app’s UI.
- * @sample
- * @see https://developer.android.com/guide/topics/large-screens/support-different-screen-sizes#compose
+ * For more details see <a href="https://developer.android.com/guide/topics/large-screens/support-different-screen-sizes#window_size_classes" class="external" target="_blank">Window size classes documentation</a>.
  */
 enum class WindowSize {
-
-    // Small phones
-    // An window size of 480p width max
+    /**
+     * **Width** - Represents the majority of phones in portrait.
+     *
+     * **Height** - Represents the majority of phones in landscape
+     */
     COMPACT,
 
-    // medium phones
-    // An Window Size of 600dp width max
+    /**
+     * **Width** - Represents the majority of tablets in portrait and large unfolded inner displays in portrait.
+     * **Height** - Represents the majority of tablets in landscape and majority of phones in portrait
+     */
     MEDIUM,
 
-    // tablets 7 inch
-    // An Window size of 800p width max
-    LARGE,
-
-    // large tablets and beyond.
-    // Beyond 800p
-    X_LARGE
+    /**
+     * **Width** - Represents the majority of tablets in landscape and large unfolded inner displays in landscape.
+     * **Height** - Represents the majority of tablets in portrait
+     */
+    EXPANDED;
 }
 
+
+
+/** Calculates the [WindowWidthSizeClass] for a given [width] */
+private fun fromWidth(width: Dp): WindowSize {
+    require(width >= 0.dp) { "Width must not be negative" }
+    return when {
+        width < 600.dp -> WindowSize.COMPACT
+        width < 840.dp -> WindowSize.MEDIUM
+        else -> WindowSize.EXPANDED
+    }
+}
+
+/** Calculates the [WindowHeightSizeClass] for a given [height] */
+private fun fromHeight(height: Dp): WindowSize {
+    require(height >= 0.dp) { "Height must not be negative" }
+    return when {
+        height < 480.dp -> WindowSize.COMPACT
+        height < 900.dp -> WindowSize.MEDIUM
+        else -> WindowSize.EXPANDED
+    }
+}
 
 /**
- * Remembers the [WindowSize] class for the window corresponding to the current window metrics.
+ * Window size classes are a set of opinionated viewport breakpoints to design, develop, and test
+ * responsive application layouts against.
+ * For more details check <a href="https://developer.android.com/guide/topics/large-screens/support-different-screen-sizes" class="external" target="_blank">Support different screen sizes</a> documentation.
+ *
+ * WindowSizeClass contains a [WindowWidthSizeClass] and [WindowHeightSizeClass], representing the
+ * window size classes for this window's width and height respectively.
+ *
+ * See [calculateWindowSizeClass] to calculate the WindowSizeClass for an Activity's current window
+ *
+ * @property widthSizeClass width-based window size class ([WindowWidthSizeClass])
+ * @property heightSizeClass height-based window size class ([WindowHeightSizeClass])
+ */
+@Immutable
+class WindowSizeClass private constructor(
+    val widthSizeClass: WindowSize,
+    val heightSizeClass: WindowSize
+) {
+
+    companion object {
+        /**
+         * Calculates [WindowSizeClass] for a given [size]. Should be used for testing purposes only
+         * - to calculate a [WindowSizeClass] for the Activity's current window see
+         * [calculateWindowSizeClass].
+         *
+         * @param size of the window
+         * @return [WindowSizeClass] corresponding to the given width and height
+         */
+        fun calculateFromSize(size: DpSize): WindowSizeClass {
+            val windowWidthSizeClass = fromWidth(size.width)
+            val windowHeightSizeClass = fromHeight(size.height)
+            return WindowSizeClass(windowWidthSizeClass, windowHeightSizeClass)
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as WindowSizeClass
+
+        if (widthSizeClass != other.widthSizeClass) return false
+        if (heightSizeClass != other.heightSizeClass) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = widthSizeClass.hashCode()
+        result = 31 * result + heightSizeClass.hashCode()
+        return result
+    }
+
+    operator fun component1(): WindowSize = widthSizeClass
+
+    operator fun component2(): WindowSize = heightSizeClass
+
+    override fun toString() = "WindowSizeClass($widthSizeClass, $heightSizeClass)"
+}
+
+/**
+ * Calculates the window's [WindowSizeClass] for the provided [activity].
+ *
+ * A new [WindowSizeClass] will be returned whenever a configuration change causes the width or
+ * height of the window to cross a breakpoint, such as when the device is rotated or the window
+ * is resized.
+ *
+ * @sample androidx.compose.material3.windowsizeclass.samples.AndroidWindowSizeClassSample
  */
 @Composable
-fun Activity.rememberWindowSizeClass(): WindowSize {
-    val configuration = LocalConfiguration.current
-    val windowMetrics = remember(configuration) {
-        WindowMetricsCalculator.getOrCreate()
-            .computeCurrentWindowMetrics(this)
-    }
-    val windowDpSize = with(LocalDensity.current) {
-        windowMetrics.bounds.toComposeRect().size.toDpSize()
-    }
-    return when {
-        windowDpSize.width < 480.dp -> WindowSize.COMPACT
-        windowDpSize.width < 600.dp -> WindowSize.MEDIUM
-        windowDpSize.width < 840.dp -> WindowSize.LARGE
-        else -> WindowSize.X_LARGE
-    }
-
-    //INFO: This seems not required.
-
-    /* val heightWindowSizeClass = when {
-         windowDpSize.height < 480.dp -> WindowSize.COMPACT
-         windowDpSize.height < 900.dp -> WindowSize.MEDIUM
-         else -> WindowSize.EXPANDED
-     }*/
-
-    // Use widthWindowSizeClass and heightWindowSizeClass
+fun calculateWindowSizeClass(activity: Activity): WindowSizeClass {
+    // Observe view configuration changes and recalculate the size class on each change. We can't
+    // use Activity#onConfigurationChanged as this will sometimes fail to be called on different
+    // API levels, hence why this function needs to be @Composable so we can observe the
+    // ComposeView's configuration changes.
+    LocalConfiguration.current
+    val density = LocalDensity.current
+    val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity)
+    val size = with(density) { metrics.bounds.toComposeRect().size.toDpSize() }
+    return WindowSizeClass.calculateFromSize(size)
 }
 
 
-val LocalWindowSizeClass = compositionLocalOf<WindowSize> {
-    error("No Window size available")
-}
+val LocalWindowSizeClass =
+    staticCompositionLocalOf<WindowSizeClass> {
+        error("No Window size available")
+    }

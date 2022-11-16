@@ -1,8 +1,9 @@
 package com.prime.player.core.playback;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static com.prime.player.App.DEFUALT_ALBUM_ART;
-import static com.prime.player.App.PLAYBACK_NOTIFICATION_ID;
+import static com.prime.player.Audiofy.DEFAULT_ALBUM_ART;
+import static com.prime.player.Audiofy.PLAYBACK_NOTIFICATION_ID;
+import static com.prime.player.Audiofy.toAudioTrackUri;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -41,10 +42,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.prime.player.App;
+import com.prime.player.Audiofy;
 import com.prime.player.MainActivity;
 import com.prime.player.R;
-import com.prime.player.common.MediaUtil;
 import com.prime.player.core.Audio;
 import com.prime.player.core.Repository;
 
@@ -451,7 +451,7 @@ public class PlaybackService extends Service implements Player.EventListener {
         mMediaPlayer.reset();
         try {
             if (trackId != -1) {
-                Uri trackUri = MediaUtil.composeAudioTrackUri(trackId);
+                Uri trackUri = toAudioTrackUri(trackId);
                 mMediaPlayer.setDataSource(this, trackUri);
             } else
                 mMediaPlayer.setDataSource(audio.path);
@@ -751,7 +751,7 @@ public class PlaybackService extends Service implements Player.EventListener {
         if (audio.album != null)
             art = getAlbumArt(audio.albumId);
         if (art == null)
-            art = DEFUALT_ALBUM_ART;
+            art = DEFAULT_ALBUM_ART;
         String title = audio.title;
         SpannableStringBuilder builder = new SpannableStringBuilder(title);
         builder.setSpan(new StyleSpan(Typeface.BOLD),
@@ -760,7 +760,7 @@ public class PlaybackService extends Service implements Player.EventListener {
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         final NotificationCompat.Builder nBuilder =
                 new NotificationCompat.Builder(this,
-                        App.PLAYBACK_CHANNEL_ID);
+                        Audiofy.PLAYBACK_CHANNEL_ID);
         nBuilder.setOngoing(mMediaPlayer.isPlaying() || mMediaPlayer.isPreparing())
                 .setLargeIcon(art)
                 .setSubText(mPlaylistName)
@@ -984,7 +984,7 @@ public class PlaybackService extends Service implements Player.EventListener {
         unregisterReceiver(mBecomingNoisyReceiver);
         unregisterReceiver(mIntentReceiver);
         mMediaSessionCompat.setActive(false);
-        mNotificationManager.cancel(App.PLAYBACK_NOTIFICATION_ID);
+        mNotificationManager.cancel(Audiofy.PLAYBACK_NOTIFICATION_ID);
         closeAudioEffectSession();
         getAudioManager().abandonAudioFocus(mAudioFocusListener);
         mMediaPlayer.release();

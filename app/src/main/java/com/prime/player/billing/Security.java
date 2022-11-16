@@ -1,4 +1,4 @@
-package com.prime.player.common.billing;
+package com.prime.player.billing;
 
 /*
  * This class is an sample of how you can check to make sure your purchases on the device came from
@@ -8,11 +8,10 @@ package com.prime.player.common.billing;
  * harder. The reason this code isn't just part of the library is to allow you to customize it (and
  * rename it!) to make generic patching exploits more difficult.
  */
+
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-
-import com.prime.player.BillingTokens;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -40,7 +39,7 @@ class Security {
      * your local.properties, it will be echoed into BuildConfig.
      */
 
-    final private static String BASE_64_ENCODED_PUBLIC_KEY = BillingTokens.PUBLIC_KEY;
+    final private static String BASE_64_ENCODED_PUBLIC_KEY = Private.PLAY_CONSOLE_PUBLIC_KEY;
 
     /**
      * Verifies that the data was signed with the given signature
