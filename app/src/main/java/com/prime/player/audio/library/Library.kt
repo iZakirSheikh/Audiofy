@@ -41,6 +41,9 @@ import com.prime.player.audio.Image
 import com.prime.player.audio.Type
 import com.prime.player.audio.buckets.BucketsRoute
 import com.prime.player.audio.tracks.TracksRoute
+import com.prime.player.billing.Product
+import com.prime.player.billing.observeAsState
+import com.prime.player.billing.purchased
 import com.prime.player.common.KenBurns
 import com.prime.player.common.MediaUtil
 import com.prime.player.common.compose.*
@@ -83,7 +86,7 @@ private fun Reel(modifier: Modifier = Modifier) {
                         // the reel as ken_burns view
                         KenBurns(
                             modifier = Modifier
-                                .horizontalGradient(),
+                                .gradient(vertical = false),
                             view = { setImageBitmap(bitmap) },
 
                             generator = remember(duration) {
@@ -116,17 +119,17 @@ private fun Reel(modifier: Modifier = Modifier) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    val billing = LocalBillingManager.current
-                    val isPurchased by billing.isPurchased(id = BillingTokens.DISABLE_ASD_IN_APP_PRODUCT)
-                    val activity = LocalContext.current.activity!!
-                    if (!isPurchased)
+                    val billing = LocalContext.billingManager
+                    val purchase by billing.observeAsState(id = Product.DISABLE_ADS)
+                    val activity = LocalContext.activity
+                    if (!purchase.purchased)
                         IconButton(
                             painter = painterResource(id = R.drawable.ic_remove_ads),
                             contentDescription = null,
                             onClick = {
                                 billing.launchBillingFlow(
                                     activity,
-                                    BillingTokens.DISABLE_ASD_IN_APP_PRODUCT
+                                    Product.DISABLE_ADS
                                 )
                             }
                         )
@@ -155,7 +158,7 @@ private fun Carousal(
     modifier: Modifier = Modifier
 ) {
     val navigator = LocalNavController.current
-    val activity = LocalContext.current.activity!!
+    val activity = LocalContext.activity
     Surface(
         modifier = modifier,
         elevation = ContentElevation.high,
@@ -163,7 +166,7 @@ private fun Carousal(
         onClick = {
             val direction = BucketsRoute(Type.ALBUMS.name)
             navigator.navigateTo(direction)
-            activity.launchReviewFlow()
+            activity.showAd()
         },
 
         content = {
@@ -177,7 +180,7 @@ private fun Carousal(
                     content = { value ->
                         value?.let {
                             KenBurns(
-                                modifier = Modifier.verticalGradient(),
+                                modifier = Modifier.gradient(vertical = false),
                                 view = {
                                     load(MediaUtil.composeAlbumArtUri(it.id))
                                 }

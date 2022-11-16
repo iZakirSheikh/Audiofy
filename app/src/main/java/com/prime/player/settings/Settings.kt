@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +30,7 @@ import androidx.lifecycle.viewModelScope
 import com.prime.player.*
 import com.prime.player.BuildConfig
 import com.prime.player.R
+import com.prime.player.billing.*
 import com.prime.player.common.compose.*
 import com.primex.core.activity
 import com.primex.core.drawHorizontalDivider
@@ -128,17 +130,20 @@ fun Settings(
             ) {
                 with(viewModel) {
 
+                    val activity = LocalContext.activity
+
                     PrefHeader(text = stringResource(R.string.appearance))
 
                     //dark mode
                     val darkTheme by darkUiMode
                     SwitchPreference(
                         checked = darkTheme.value,
-                        title = stringResource(res = darkTheme.title),
-                        summery = stringResource(res = darkTheme.summery),
+                        title = stringResource(value = darkTheme.title),
+                        summery = stringResource(value = darkTheme.summery),
                         icon = darkTheme.vector,
                         onCheckedChange = { new: Boolean ->
                             set(GlobalKeys.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
+                            activity.showAd(force = true)
                         }
                     )
 
@@ -146,12 +151,13 @@ fun Settings(
                     //font
                     val font by font
                     DropDownPreference(
-                        title = stringResource(res = font.title),
+                        title = stringResource(value = font.title),
                         entries = FontFamilyList,
                         defaultValue = font.value,
                         icon = font.vector,
                         onRequestChange = { family: FontFamily ->
                             viewModel.set(GlobalKeys.FONT_FAMILY, family)
+                            activity.showAd(force = true)
                         }
                     )
 
@@ -160,27 +166,36 @@ fun Settings(
                     val scale by fontScale
                     SliderPreference(
                         defaultValue = scale.value,
-                        title = stringResource(res = scale.title),
-                        summery = stringResource(res = scale.summery),
+                        title = stringResource(value = scale.title),
+                        summery = stringResource(value = scale.summery),
                         valueRange = FontSliderRange,
                         steps = SLIDER_STEPS,
                         icon = scale.vector,
                         iconChange = Icons.Outlined.TextFormat,
                         onValueChange = { value: Float ->
                             set(GlobalKeys.FONT_SCALE, value)
+                            activity.showAd(force = true)
                         }
                     )
+
+                    val purchase by LocalContext.billingManager.observeAsState(id = Product.DISABLE_ADS)
+                    if (!purchase.purchased)
+                        Banner(
+                            placementID = Placement.BANNER_SETTINGS,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
 
                     //force accent
                     val forceAccent by forceAccent
                     SwitchPreference(
                         checked = forceAccent.value,
-                        title = stringResource(res = forceAccent.title),
-                        summery = stringResource(res = forceAccent.summery),
+                        title = stringResource(value = forceAccent.title),
+                        summery = stringResource(value = forceAccent.summery),
                         onCheckedChange = { should: Boolean ->
                             set(GlobalKeys.FORCE_COLORIZE, should)
                             if (should)
                                 set(GlobalKeys.COLOR_STATUS_BAR, true)
+                            activity.showAd(force = true)
                         }
                     )
 
@@ -188,11 +203,12 @@ fun Settings(
                     val colorStatusBar by colorStatusBar
                     SwitchPreference(
                         checked = colorStatusBar.value,
-                        title = stringResource(res = colorStatusBar.title),
-                        summery = stringResource(res = colorStatusBar.summery),
+                        title = stringResource(value = colorStatusBar.title),
+                        summery = stringResource(value = colorStatusBar.summery),
                         enabled = !forceAccent.value,
                         onCheckedChange = { should: Boolean ->
                             set(GlobalKeys.COLOR_STATUS_BAR, should)
+                            activity.showAd(force = true)
                         }
                     )
 
@@ -201,8 +217,8 @@ fun Settings(
                     val hideStatusBar by hideStatusBar
                     SwitchPreference(
                         checked = hideStatusBar.value,
-                        title = stringResource(res = hideStatusBar.title),
-                        summery = stringResource(res = hideStatusBar.summery),
+                        title = stringResource(value = hideStatusBar.title),
+                        summery = stringResource(value = hideStatusBar.summery),
                         onCheckedChange = { should: Boolean ->
                             set(GlobalKeys.HIDE_STATUS_BAR, should)
                             //TODO: Add statusBar Hide/Show logic.
@@ -213,11 +229,11 @@ fun Settings(
                     val showProgressInMini by showProgressInMini
                     SwitchPreference(
                         checked = showProgressInMini.value,
-                        title = stringResource(res = showProgressInMini.title),
-                        summery = stringResource(res = showProgressInMini.summery),
+                        title = stringResource(value = showProgressInMini.title),
+                        summery = stringResource(value = showProgressInMini.summery),
                         onCheckedChange = { should: Boolean ->
                             set(GlobalKeys.SHOW_MINI_PROGRESS_BAR, should)
-                            //TODO: Add statusBar Hide/Show logic.
+                            activity.showAd(force = true)
                         }
                     )
 
@@ -264,7 +280,6 @@ fun Settings(
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
                     val channel = LocalSnackDataChannel.current
-                    val activity = context.activity!!
                     Preference(
                         title = stringResource(R.string.app_version),
                         summery = "$version \nClick to check for updates.",

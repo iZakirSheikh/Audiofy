@@ -41,6 +41,7 @@ import androidx.constraintlayout.compose.*
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.audio.Image
@@ -78,7 +79,7 @@ private fun ConsoleViewModel.MiniLayout(
         val color = Material.colors.surface
 
         createHorizontalChain(Artwork, Title, Heart, Play)
-        val activity = LocalContext.current.activity!!
+        val activity = LocalContext.activity
         //artwork
         val artwork by artwork
         Image(
@@ -86,7 +87,7 @@ private fun ConsoleViewModel.MiniLayout(
             modifier = Modifier
                 .offset(x = -ContentPadding.medium)
                 .requiredWidth(75.dp)
-                .horizontalGradient(listOf(Color.Transparent, color))
+                .gradient(vertical = false, listOf(Color.Transparent, color))
                 .fillMaxHeight()
                 .constrainAs(Artwork) {},
         )
@@ -181,7 +182,10 @@ private inline fun NeuButton(
         onClick = onClick,
         shape = shape,
         elevation = NeumorphicButtonDefaults.elevation(defaultElevation = 12.dp),
-        border = if (Material.colors.isLight) null else BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
+        border = if (Material.colors.isLight) null else BorderStroke(
+            1.dp,
+            Material.colors.outline.copy(0.06f)
+        ),
         modifier = modifier,
         colors = NeumorphicButtonDefaults.neumorphicButtonColors(
             lightShadowColor = Material.colors.lightShadowColor,
@@ -231,7 +235,7 @@ private inline fun Artwork(
                 spotLight = SpotLight.TOP_LEFT,
             )
             .border(BorderStroke(ArtworkBorderWidth, color), ArtworkShape)
-            .radialGradient(colors = listOf(Color.Transparent, Color.Black.copy(0.5f)))
+            .gradient(colors = listOf(Color.Transparent, Color.Black.copy(0.5f)), vertical = false)
             .background(color)
             .then(modifier)
     )
@@ -245,7 +249,7 @@ private inline fun MenuItem(
     noinline onClick: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
-){
+) {
     DropdownMenuItem(
         modifier = modifier,
         onClick = onClick,
@@ -265,12 +269,12 @@ private inline fun MenuItem(
 private fun ConsoleViewModel.More(
     expanded: Boolean,
     onDismissRequest: () -> Unit
-){
+) {
     var showSleepMenu by rememberState(initial = false)
     SleepTimer(expanded = showSleepMenu) {
         showSleepMenu = false
     }
-    val activity = LocalContext.current.activity!!
+    val activity = LocalContext.activity
 
     var showPlaylistViewer by rememberState(initial = false)
     val playlists by playlists.collectAsState(initial = emptyList())
@@ -281,7 +285,8 @@ private fun ConsoleViewModel.More(
         onPlaylistClick = {
             it?.let {
                 addToPlaylist(it)
-                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT)
+                    .show()
             }
             showPlaylistViewer = false
         }
@@ -313,7 +318,9 @@ private fun ConsoleViewModel.More(
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.PlaylistAdd),
             label = "Add to playlist",
-            onClick = {   showPlaylistViewer = true; activity.launchReviewFlow(); onDismissRequest();  }
+            onClick = {
+                showPlaylistViewer = true; activity.launchReviewFlow(); onDismissRequest()
+            }
         )
 
         MenuItem(
@@ -331,20 +338,20 @@ private fun ConsoleViewModel.More(
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.Info),
             label = "Info",
-            onClick = {   showPropertiesDialog = true; onDismissRequest() }
+            onClick = { showPropertiesDialog = true; onDismissRequest() }
         )
 
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.ModeNight),
             label = "Sleep timer",
-            onClick = {   showSleepMenu = true; onDismissRequest(); }
+            onClick = { showSleepMenu = true; onDismissRequest(); }
         )
 
         val context = LocalContext.current
         MenuItem(
             vector = rememberVectorPainter(image = Icons.Outlined.Share),
             label = "Share",
-            onClick = {   current?.let { context.share(it) }; onDismissRequest()  }
+            onClick = { current?.let { context.share(it) }; onDismissRequest() }
         )
 
         Divider()
@@ -376,7 +383,9 @@ private fun ConsoleViewModel.More(
                 )
 
                 IconButton(
-                    onClick = { showPlayingQueue = true; activity.launchReviewFlow(); onDismissRequest() },
+                    onClick = {
+                        showPlayingQueue = true; activity.launchReviewFlow(); onDismissRequest()
+                    },
                     imageVector = Icons.Outlined.PlaylistPlay,
                     contentDescription = null
                 )
@@ -389,8 +398,8 @@ private fun ConsoleViewModel.More(
 private fun ConsoleViewModel.SleepTimer(
     expanded: Boolean,
     onDismissRequest: () -> Unit
-){
-    val activity = LocalContext.current.activity!!
+) {
+    val activity = LocalContext.activity
     DropdownMenu(
         title = "Sleep Timer",
         preserveIconSpace = true,
@@ -467,6 +476,7 @@ private fun Next(
 }
 
 private val SignatureTextSize = 70.sp
+
 @OptIn(ExperimentalAnimationApi::class, ExperimentalAnimationGraphicsApi::class)
 @Composable
 private fun ConsoleViewModel.Layout(
@@ -479,7 +489,7 @@ private fun ConsoleViewModel.Layout(
         val (Signature, PlaylistLabel, ArtistLabel, Artwork, Slider, Album, Title, Play, UpNextLabel, UpNext) = createRefs()
 
         val primary = Material.colors.primary
-        val activity = LocalContext.current.activity!!
+        val activity = LocalContext.activity
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
@@ -855,7 +865,7 @@ fun Console(
                     ),
                     content = {
 
-                        val controller = LocalSystemUiController.current
+                        val controller = rememberSystemUiController()
                         val greyIcons = controller.statusBarDarkContentEnabled
                         val isLight = Material.colors.isLight
                         val channel = LocalSnackDataChannel.current

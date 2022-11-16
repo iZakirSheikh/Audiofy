@@ -338,15 +338,17 @@ class TracksViewModel @Inject constructor(
 
 private inline val List<Audio>.meta: Meta
     get() {
-        val latest = maxBy { it.dateModified }
+        val latest = maxByOrNull { it.dateModified }
         return Meta(
             cardinality = size,
             duration = sumOf { it.duration },
             size = sumOf { it.size },
-            artwork = latest.let { MediaUtil.composeAlbumArtUri(it.albumId) },
-            subtitle = Text(
-                value = Utils.formatAsRelativeTimeSpan(latest.dateModified)
-            )
+            artwork = latest?.let { MediaUtil.composeAlbumArtUri(it.albumId) },
+            subtitle = latest?.let {
+                Text(
+                    value = Utils.formatAsRelativeTimeSpan(it.dateModified)
+                )
+            }
         )
     }
 

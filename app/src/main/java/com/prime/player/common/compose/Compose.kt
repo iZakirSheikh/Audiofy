@@ -56,7 +56,7 @@ fun Placeholder(
         modifier = modifier,
         vertical = vertical,
         message = { if (message != null) Text(text = message) },
-        title = { Label(text = title, maxLines = 2) },
+        title = { Label(text = title.ifEmpty { " " }, maxLines = 2) },
 
         icon = {
             val composition by rememberLottieComposition(

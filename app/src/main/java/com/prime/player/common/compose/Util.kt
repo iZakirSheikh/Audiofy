@@ -1,6 +1,13 @@
 package com.prime.player.common.compose
 
+import android.content.Context
 import android.content.res.Resources
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import com.primex.core.activity
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,12 +31,42 @@ import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.review.ReviewManager
-import com.prime.player.common.billing.BillingManager
 import com.primex.core.Text
 import com.primex.core.resolve
 import com.primex.core.spannedResource
 
 private const val TAG = "Util"
+
+/**
+ * Provides/finds a [Activity] that is wrapped inside the [LocalContext]
+ */
+val ProvidableCompositionLocal<Context>.activity
+    @ReadOnlyComposable
+    @Composable
+    inline get() = current.activity
+
+/**
+ * Returns a Resources instance for the application's package.
+ */
+val ProvidableCompositionLocal<Context>.resources: Resources
+    @ReadOnlyComposable
+    @Composable
+    inline get() = current.resources
+
+/**
+ * Used to access the [NavHostController] without passing it down the tree.
+ */
+val LocalNavController =
+    staticCompositionLocalOf<NavHostController> {
+        error("no local nav host controller found")
+    }
+
+/**
+ * Returns the current route of the [NavHostController]
+ */
+val NavHostController.current
+    @Composable
+    inline get() = currentBackStackEntryAsState().value?.destination?.route
 
 /**
  * A Utility extension function for managing status bar UI.
@@ -43,7 +80,7 @@ fun Modifier.statusBarsPadding2(
     color: Color = Color.Unspecified,
     darkIcons: Boolean = false,
 ) = composed {
-    val controller = LocalSystemUiController.current
+    val controller = rememberSystemUiController()
 
     // invoke but control only icons not color.
     SideEffect {
@@ -76,19 +113,6 @@ fun Modifier.statusBarsPadding2(
         .then(this@composed)
         .statusBarsPadding()
 }
-
-
-/**
- * Used to access the [NavHostController] without passing it down the tree.
- */
-val LocalNavController =
-    staticCompositionLocalOf<NavHostController> {
-        error("no local nav host controller found")
-    }
-
-val NavHostController.current
-    @Composable
-    inline get() = currentBackStackEntryAsState().value?.destination?.route
 
 /**
  * The content padding for the screen under current [NavGraph]
@@ -206,16 +230,14 @@ private const val Indication = 0.1f
 @Composable
 @ReadOnlyComposable
 @NonRestartableComposable
-inline fun stringResource(res: Text) =
-    spannedResource(value = res)
+inline fun stringResource(value: Text) = spannedResource(value = value)
 
 
 @JvmName("stringResource1")
 @Composable
 @ReadOnlyComposable
 @NonRestartableComposable
-inline fun stringResource(res: Text?) =
-    res?.let { spannedResource(value = it) }
+inline fun stringResource(value: Text?) = value?.let { spannedResource(value = it) }
 
 
 inline fun Resources.stringResource(res: Text) =
@@ -224,12 +246,3 @@ inline fun Resources.stringResource(res: Text) =
 @JvmName("stringResource1")
 inline fun Resources.stringResource(res: Text?) =
     resolve(res)
-
-val LocalSystemUiController =
-    staticCompositionLocalOf<SystemUiController> {
-    error("No ui controller defined!!")
-}
-val LocalBillingManager =
-    compositionLocalOf<BillingManager> {
-        error("No Local BillingClient set. ")
-    }

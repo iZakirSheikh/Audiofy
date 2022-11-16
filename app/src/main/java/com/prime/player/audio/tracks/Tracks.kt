@@ -18,6 +18,7 @@ import androidx.compose.material.icons.twotone.Share
 import androidx.compose.material.icons.twotone.Shuffle
 import androidx.compose.material.icons.twotone.Sort
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -33,9 +34,11 @@ import androidx.constraintlayout.compose.*
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.audio.*
+import com.prime.player.billing.*
 import com.prime.player.common.FileUtils
 import com.prime.player.common.Utils
 import com.prime.player.common.compose.*
+import com.prime.player.common.padding
 import com.prime.player.core.Audio
 import com.primex.core.Text
 import com.primex.core.drawHorizontalDivider
@@ -70,7 +73,7 @@ context(TracksViewModel)  @Composable
 private fun Toolbar(
     modifier: Modifier = Modifier
 ) {
-    val title = stringResource(res = title)
+    val title = stringResource(value = title)
     val query = query
     val navigator = LocalNavController.current
 
@@ -248,7 +251,7 @@ fun Header(
     ConstraintLayout(modifier = modifier) {
 
         val meta by header
-        val title = stringResource(res = title)
+        val title = stringResource(value = title)
         val (Artwork, Play, Title, Subtitle, Share, Shuffle, Sort, Divider) = createRefs()
 
         // create the chain
@@ -383,7 +386,7 @@ fun Header(
         )
 
         // Subtitle
-        val subtitle = stringResource(res = meta?.subtitle) ?: AnnotatedString("")
+        val subtitle = stringResource(value = meta?.subtitle) ?: AnnotatedString("")
         Label(
             text = subtitle,
             textAlign = TextAlign.Start,
@@ -480,7 +483,7 @@ private fun Header(
     text: Text,
     modifier: Modifier = Modifier
 ) {
-    val title = stringResource(res = text)
+    val title = stringResource(value = text)
     val secondary = Material.colors.secondary
 
     val hModifier = Modifier
@@ -746,6 +749,7 @@ fun Tracks(
 
             },
             content = {
+                val purchase by LocalContext.billingManager.observeAsState(id = Product.DISABLE_ADS)
                 Placeholder(
                     value = result,
                     modifier = Modifier.padding(it)
@@ -763,6 +767,18 @@ fun Tracks(
                             contentType = CONTENT_TYPE_HEADER,
                             content = { Header() }
                         )
+
+                        if (!purchase.purchased)
+                            item(
+                                contentType = "banner_ad",
+                                content = {
+                                    Banner(
+                                        placementID = Placement.BANNER_VIEWER,
+                                        modifier = Modifier
+                                            .padding(vertical = ContentPadding.medium),
+                                    )
+                                }
+                            )
 
                         data.forEach { (header, list) ->
 

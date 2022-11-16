@@ -448,7 +448,12 @@ public class PlaybackService extends Service implements Player.EventListener {
 
     private void prepare(@NonNull final Audio audio) {
         long trackId = audio.id;
-        mMediaPlayer.reset();
+        try {
+            mMediaPlayer.reset();
+        }catch (Exception e){
+            mMediaPlayer = new Player(UIHandler.get());
+        }
+
         try {
             if (trackId != -1) {
                 Uri trackUri = MediaUtil.composeAudioTrackUri(trackId);
@@ -1073,7 +1078,11 @@ public class PlaybackService extends Service implements Player.EventListener {
     }
 
     public Audio getNextTrack() {
-        return getTrackAt(mNextTrackPos);
+        try{
+            return getTrackAt(mNextTrackPos);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public int getBookmark() {
