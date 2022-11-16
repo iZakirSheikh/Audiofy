@@ -3,7 +3,9 @@ package com.prime.player
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.ContentObserver
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -29,7 +31,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
@@ -151,29 +152,33 @@ fun Activity.launchReviewFlow() {
 
         val firstInstallTime =
             com.primex.core.runCatching(TAG + "_review") {
-                packageManager.getPackageInfo(packageName, 0).firstInstallTime
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    packageManager.getPackageInfo(
+                        packageName,
+                        PackageManager.PackageInfoFlags.of(0)
+                    ).firstInstallTime
+                else
+                    packageManager.getPackageInfo(packageName, 0).firstInstallTime
             }
 
         val currentTime = System.currentTimeMillis()
-
-        val ask =
         // Only first time we should not ask immediately
         // however other than this whenever we do some thing of appreciation.
-            // we should ask for review.
+        // we should ask for review.
+        var ask =
             (lastAskedTime == null &&
                     firstInstallTime != null &&
                     count >= MIN_LAUNCH_COUNT &&
                     currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW)
 
-                    ||
-
-                    // if this is not the first review; ask only if after time passed.
-                    (lastAskedTime != null &&
-                            count >= MIN_LAUNCH_COUNT &&
-                            currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW)
+        // check for other condition as well
+        ask = ask ||
+                // if this is not the first review; ask only if after time passed.
+                (lastAskedTime != null &&
+                        count >= MIN_LAUNCH_COUNT &&
+                        currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW)
         // return from here if not required to ask
         if (!ask) return@launch
-
         // The flow has finished. The API does not indicate whether the user
         // reviewed or not, or even whether the review dialog was shown. Thus, no
         // matter the result, we continue our app flow.
@@ -186,7 +191,6 @@ fun Activity.launchReviewFlow() {
         }
     }
 }
-
 
 private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
 
@@ -202,7 +206,7 @@ fun Activity.launchUpdateFlow(
     require(this is MainActivity)
     lifecycleScope.launch {
         com.primex.core.runCatching(TAG) {
-            val manager = mUpdateManager
+            val manager = AppUpdateManagerFactory.create(this@launchUpdateFlow)
             manager.requestUpdateFlow().collect { result ->
                 when (result) {
                     AppUpdateResult.NotAvailable -> if (report)
@@ -262,7 +266,6 @@ fun Activity.launchUpdateFlow(
     }
 }
 
-
 /**
  * A simple extension property on [LocalContext] that returns the [Advertiser] of the [MainActivity].
  * *Requirements*
@@ -276,6 +279,7 @@ val ProvidableCompositionLocal<Context>.advertiser: Advertiser
         require(activity is MainActivity)
         return activity.advertiser
     }
+
 
 /**
  * A utility extension fun for showing interstitially ads.
@@ -320,7 +324,6 @@ val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
         return activity.fAnalytics
     }
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -330,7 +333,6 @@ class MainActivity : ComponentActivity() {
     lateinit var mReviewManager: ReviewManager
     lateinit var advertiser: Advertiser
     lateinit var billingManager: BillingManager
-    lateinit var mUpdateManager: AppUpdateManager
 
     @Inject
     lateinit var preferences: Preferences
@@ -356,11 +358,10 @@ class MainActivity : ComponentActivity() {
         // Obtain the FirebaseAnalytics instance.
         fAnalytics = Firebase.analytics
         // show splash screen
-        initSplashScreen(isColdStart)
-
+        initSplashScreen(
+            isColdStart
+        )
         mReviewManager = ReviewManagerFactory.create(this)
-        mUpdateManager = AppUpdateManagerFactory.create(this)
-
         val channel = SnackDataChannel()
         //Observe the MediaStore
         observer =

@@ -39,14 +39,6 @@ import com.primex.core.spannedResource
 private const val TAG = "ComposeUtil"
 
 /**
- * Provides/finds a [Activity] that is wrapped inside the [LocalContext]
- */
-val ProvidableCompositionLocal<Context>.activity
-    @ReadOnlyComposable
-    @Composable
-    inline get() = current.activity
-
-/**
  * Returns a Resources instance for the application's package.
  */
 val ProvidableCompositionLocal<Context>.resources: Resources

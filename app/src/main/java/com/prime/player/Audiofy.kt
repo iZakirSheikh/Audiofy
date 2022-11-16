@@ -1,13 +1,19 @@
 package com.prime.player
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
 import com.prime.player.core.LocalDb
@@ -18,7 +24,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,7 +37,7 @@ class Audiofy : Application(), Configuration.Provider {
          * Retrieves/Sets The [NightMode] Strategy
          */
         val NIGHT_MODE =
-            stringPreferenceKey("${TAG}_night_mode", NightMode.NO, object : StringSaver<NightMode> {
+            stringPreferenceKey("${TAG}_night_mode", NightMode.YES, object : StringSaver<NightMode> {
                 override fun save(value: NightMode): String = value.name
 
                 override fun restore(value: String): NightMode = NightMode.valueOf(value)
@@ -124,6 +129,24 @@ class Audiofy : Application(), Configuration.Provider {
         Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
+
+    override fun onCreate() {
+        super.onCreate()
+        DEFAULT_ALBUM_ART = BitmapFactory.decodeResource(resources, R.drawable.default_art)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                PLAYBACK_CHANNEL_ID,
+                "Playing Music Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.setShowBadge(false)
+            channel.setSound(null, null)
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+        // initialize firebase
+        FirebaseApp.initializeApp(this)
+    }
 }
 
 

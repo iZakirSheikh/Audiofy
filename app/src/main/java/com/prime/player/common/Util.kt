@@ -3,8 +3,10 @@ package com.prime.player.common
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.StrictMode
+import android.text.format.DateUtils.*
 import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.State
@@ -14,17 +16,28 @@ import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.prime.player.R
 import com.prime.player.core.Audio
+import com.primex.core.Text
+import com.primex.core.TextPlural
+import com.primex.core.runCatching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.jetbrains.annotations.Contract
 import java.net.URI
+import java.util.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
+import kotlin.time.ExperimentalTime
 
 
 private const val TAG = "Util"
 
 object UrlUtil
+
+object Util
 
 context (ViewModel) @Suppress("NOTHING_TO_INLINE")
 inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
@@ -175,3 +188,154 @@ suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
         else -> null
     }
 }
+
+
+//language=RegExp
+private val ISO6709LocationPattern = Pattern.compile("([+\\-][0-9.]+)([+\\-][0-9.]+)")
+
+/**
+ * This method parses the given string representing a geographic point location by coordinates in ISO 6709 format
+ * and returns the latitude and the longitude in float. If `location` is not in ISO 6709 format,
+ * this method returns `null`
+ *
+ * @param location a String representing a geographic point location by coordinates in ISO 6709 format
+ * @return `null` if the given string is not as expected, an array of floats with size 2,
+ * where the first element represents latitude and the second represents longitude, otherwise.
+ */
+val MediaMetadataRetriever.latLong: DoubleArray?
+    get() = runCatching(TAG) {
+        val location =
+            extractMetadata(MediaMetadataRetriever.METADATA_KEY_LOCATION) ?: return@runCatching null
+        val m: Matcher = ISO6709LocationPattern.matcher(location)
+        if (m.find() && m.groupCount() == 2) {
+            val latstr: String = m.group(1) ?: return@runCatching null
+            val lonstr: String = m.group(2) ?: return@runCatching null
+            val lat = latstr.toDouble()
+            val lon = lonstr.toDouble()
+            doubleArrayOf(lat, lon)
+        } else null
+    }
+
+
+/**
+ * Return given duration in a human-friendly format. For example, "4
+ * minutes" or "1 second". Returns only largest meaningful unit of time,
+ * from seconds up to hours.
+ */
+fun Util.formatAsDuration2(mills: Long): Text {
+    return when {
+        mills >= HOUR_IN_MILLIS -> {
+            val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
+            TextPlural(R.plurals.duration_hours, hours, hours)
+        }
+        mills >= MINUTE_IN_MILLIS -> {
+            val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
+            TextPlural(R.plurals.duration_minutes, minutes, minutes)
+        }
+        else -> {
+            val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
+            TextPlural(R.plurals.duration_seconds, seconds, seconds)
+        }
+    }
+}
+
+
+/**
+ * Return given duration in a human-friendly format. For example, "4
+ * minutes" or "1 second". Returns only largest meaningful unit of time,
+ * from seconds up to hours.
+ *
+ * @hide
+ */
+@Deprecated(message = "Use toDuration(mills) with Text return ", level = DeprecationLevel.ERROR)
+fun Util.formatAsDuration(context: Context, mills: Long): String {
+    val res = context.resources
+    return when {
+        mills >= HOUR_IN_MILLIS -> {
+            val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
+            res.getQuantityString(
+                R.plurals.duration_hours, hours, hours
+            )
+        }
+        mills >= MINUTE_IN_MILLIS -> {
+            val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
+            res.getQuantityString(
+                R.plurals.duration_minutes, minutes, minutes
+            )
+        }
+        else -> {
+            val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
+            res.getQuantityString(
+                R.plurals.duration_seconds, seconds, seconds
+            )
+        }
+    }
+}
+
+fun Util.formatAsDuration(mills: Int): String =
+    formatAsDuration(mills.toLong())
+
+
+/**
+ * @return mills formated as hh:mm:ss
+ */
+fun Util.formatAsDuration(mills: Long): String {
+    var minutes: Long = mills / 1000 / 60
+    val seconds: Long = mills / 1000 % 60
+    return if (minutes < 60) {
+        String.format(Locale.getDefault(), "%01d:%02d", minutes, seconds)
+    } else {
+        val hours = minutes / 60
+        minutes %= 60
+        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+    }
+}
+
+/**
+ * Returns a string describing 'time' as a time relative to 'now'.
+ * <p>
+ * Time spans in the past are formatted like "42 minutes ago". Time spans in
+ * the future are formatted like "In 42 minutes".
+ * <p>
+ * Can use {@link #FORMAT_ABBREV_RELATIVE} flag to use abbreviated relative
+ * times, like "42 mins ago".
+ *
+ * @param time the time to describe, in milliseconds
+ * @param now the current time in milliseconds
+ * @param minResolution the minimum timespan to report. For example, a time
+ *            3 seconds in the past will be reported as "0 minutes ago" if
+ *            this is set to MINUTE_IN_MILLIS. Pass one of 0,
+ *            MINUTE_IN_MILLIS, HOUR_IN_MILLIS, DAY_IN_MILLIS,
+ *            WEEK_IN_MILLIS
+ * @param flags a bit mask of formatting options, such as
+ *            {@link #FORMAT_NUMERIC_DATE} or
+ *            {@link #FORMAT_ABBREV_RELATIVE}
+ */
+@OptIn(ExperimentalTime::class)
+fun Util.formatAsRelativeTimeSpan(mills: Long) = getRelativeTimeSpanString(
+    mills,
+    System.currentTimeMillis(),
+    DAY_IN_MILLIS,
+    FORMAT_ABBREV_RELATIVE
+) as String
+
+/**
+ * @return: String representation of Time like 24:34 i.e., 24min and 128 secs.
+ */
+@OptIn(ExperimentalTime::class)
+fun Util.formatAsTime(mills: Long): String {
+    var minutes: Long = mills / 1000 / 60
+    val seconds: Long = mills / 1000 % 60
+    return if (minutes < 60) String.format(
+        Locale.getDefault(),
+        "%01d:%02d",
+        minutes,
+        seconds
+    ) else {
+        val hours = minutes / 60
+        minutes %= 60
+        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+    }
+}
+
+
