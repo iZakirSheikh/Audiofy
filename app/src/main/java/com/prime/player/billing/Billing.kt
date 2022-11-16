@@ -1,15 +1,16 @@
-package com.prime.player.common.billing
+package com.prime.player.billing
 
 import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.*
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.android.billingclient.api.*
 import com.prime.player.BuildConfig
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import java.lang.Long.min
+import kotlin.coroutines.EmptyCoroutineContext
 
 private const val TAG = "BillingManager"
 
@@ -17,6 +18,45 @@ private const val TAG = "BillingManager"
 private const val RECONNECT_TIMER_START_MILLISECONDS = 1L * 1000L
 private const val RECONNECT_TIMER_MAX_TIME_MILLISECONDS = 1000L * 60L * 15L // 15 minutes
 private const val SKU_DETAILS_REQUERY_TIME = 1000L * 60L * 60L * 4L // 4 hours
+
+interface BillingManager {
+
+    /**
+     * The list of items that the user have purchased.
+     */
+    val purchases: MutableStateFlow<List<Purchase>>
+
+    /**
+     * The [ProductDetails] mapped with their product Ids.
+     */
+    val details: MutableStateFlow<Map<String, ProductDetails>>
+
+    /**
+     * Launch the billing flow. This will launch an external Activity for a result, so it requires
+     * an Activity reference. For subscriptions, it supports upgrading from one SKU type to another
+     * by passing in SKUs to be upgraded.
+     *
+     * @param activity active activity to launch our billing flow from
+     * @param sku SKU (Product ID) to be purchased
+     * @param uSKUS SKUs that the subscription can be upgraded from
+     * @return true if launch is successful
+     */
+    fun launchBillingFlow(
+        activity: Activity, product: String, vararg uSKUS: String
+    ): Boolean
+
+    /**
+     * Needs to be called by the parent to run and refresh the code.
+     */
+    fun refresh()
+
+    /**
+     * Releases resources associated with this object.
+     *
+     * You must call this method once the instance is no longer required.
+     */
+    fun release()
+}
 
 /**
  * A one stop solution for monetization and Billing.
@@ -26,38 +66,31 @@ private const val SKU_DETAILS_REQUERY_TIME = 1000L * 60L * 60L * 4L // 4 hours
  * @author Zakir Ahmad Sheikh
  * @since 18-08-2022
  */
-class BillingManager(
+
+fun BillingManager(
     context: Context,
     products: Array<String>? = null,
     // TODO: Implement in future version of BillingManger
     subscriptions: Array<String>? = null,
-) : PurchasesUpdatedListener, Advertiser, BillingClientStateListener, DefaultLifecycleObserver {
+): BillingManager = object : BillingManager, PurchasesUpdatedListener, BillingClientStateListener {
+
+    private val ref = this
 
     private val mBillingClient =
-        BillingClient.newBuilder(context)
-            .setListener(this)
-            .enablePendingPurchases()
-            .build()
+        BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
 
     // how long before the data source tries to reconnect to Google play
-    private var delayReconnectMills =
-        RECONNECT_TIMER_START_MILLISECONDS
+    private var delayReconnectMills = RECONNECT_TIMER_START_MILLISECONDS
 
-    private val products =
-        products?.map { product ->
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(product)
-                .setProductType(BillingClient.ProductType.INAPP)
-                .build()
-        }
+    private val products = products?.map { product ->
+        QueryProductDetailsParams.Product.newBuilder().setProductId(product)
+            .setProductType(BillingClient.ProductType.INAPP).build()
+    }
 
-    private val subscriptions =
-        products?.map { product ->
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(product)
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build()
-        }
+    private val subscriptions = products?.map { product ->
+        QueryProductDetailsParams.Product.newBuilder().setProductId(product)
+            .setProductType(BillingClient.ProductType.SUBS).build()
+    }
 
     init {
         // requires not everything to be null or empty.
@@ -69,46 +102,31 @@ class BillingManager(
     /**
      * The list of items that the user have purchased.
      */
-    private val _purchases =
-        mutableStateOf<List<Purchase>>(emptyList())
+    private val _purchases = MutableStateFlow<List<Purchase>>(emptyList())
 
     /**
      * @see _purchases
      */
-    val purchases: State<List<Purchase>> get() = _purchases
+    override val purchases get() = _purchases
 
-    /**
-     * An item is purchased if its state [Purchase.PurchaseState.PURCHASED] && [Purchase.isAcknowledged]
-     * @param id the product id.
-     */
-    @Composable
-    fun isPurchased(id: String) =
-        derivedStateOf {
-            val purchase = _purchases.value.find { it.products.contains(id) }
-            purchase != null && purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-                    && if (BuildConfig.DEBUG) true else purchase.isAcknowledged
-        }
 
     /**
      * The [ProductDetails] mapped with their product Ids.
      */
-    private val _details =
-        mutableStateOf<Map<String, ProductDetails>>(emptyMap())
+    private val _details = MutableStateFlow<Map<String, ProductDetails>>(emptyMap())
 
     /**
      * @see _details
      */
-    val details: State<Map<String, ProductDetails>> get() = _details
+    override val details get() = _details
 
     /**
      * A [CoroutineScope] to handle async tasks.
      */
-    private val billingManagerScope =
-        CoroutineScope(Dispatchers.IO)
+    private val billingManagerScope = CoroutineScope(Dispatchers.IO)
 
     override fun onPurchasesUpdated(
-        result: BillingResult,
-        purchases: MutableList<Purchase>?
+        result: BillingResult, purchases: MutableList<Purchase>?
     ) {
         when (result.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
@@ -118,23 +136,23 @@ class BillingManager(
                 }
                 // process the purchases.
                 process(purchases)
+                _purchases.value = purchases
             }
-            BillingClient.BillingResponseCode.USER_CANCELED ->
-                Log.i(TAG, "onPurchasesUpdated: User canceled the purchase")
-            BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED ->
-                Log.i(TAG, "onPurchasesUpdated: The user already owns this item")
+            BillingClient.BillingResponseCode.USER_CANCELED -> Log.i(
+                TAG,
+                "onPurchasesUpdated: User canceled the purchase"
+            )
+            BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> Log.i(
+                TAG,
+                "onPurchasesUpdated: The user already owns this item"
+            )
             BillingClient.BillingResponseCode.DEVELOPER_ERROR -> Log.e(
                 TAG,
-                "onPurchasesUpdated: Developer error means that Google Play " +
-                        "does not recognize the configuration. If you are just getting started, " +
-                        "make sure you have configured the application correctly in the " +
-                        "Google Play Console. The SKU product ID must match and the APK you " +
-                        "are using must be signed with release keys."
+                "onPurchasesUpdated: Developer error means that Google Play " + "does not recognize the configuration. If you are just getting started, " + "make sure you have configured the application correctly in the " + "Google Play Console. The SKU product ID must match and the APK you " + "are using must be signed with release keys."
             )
-            else ->
-                Log.d(
-                    TAG, "BillingResult [" + result.responseCode + "]: " + result.debugMessage
-                )
+            else -> Log.d(
+                TAG, "BillingResult [" + result.responseCode + "]: " + result.debugMessage
+            )
         }
     }
 
@@ -153,8 +171,7 @@ class BillingManager(
         // The billing client is ready. You can query purchases here.
         // This doesn't mean that your app is set up correctly in the console -- it just
         // means that you have a connection to the Billing service.
-        billingManagerScope
-            .launch {
+        billingManagerScope.launch {
                 val purchases = async { query(BillingClient.ProductType.INAPP) }
                 val response = purchases.await()
                 // process them.
@@ -162,17 +179,14 @@ class BillingManager(
                 _purchases.value = response
 
                 // details
-                val details = async { query(products) }
+                val details = async { query(ref.products) }
                 _details.value = details.await().associateBy { it.productId }
             }
     }
 
-    /**
-     * It's recommended to requery purchases during onResume.
-     */
-    override fun onResume(owner: LifecycleOwner) {
-        super.onResume(owner)
-        Log.d(TAG, "ON_RESUME")
+
+    override fun refresh() {
+        Log.d(TAG, "refresh: ")
         // this just avoids an extra purchase refresh after we finish a billing flow
         if (mBillingClient.isReady) {
             billingManagerScope.launch {
@@ -184,11 +198,10 @@ class BillingManager(
         }
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
+    override fun release() {
         Log.i(TAG, "Terminating connection")
         mBillingClient.endConnection()
         billingManagerScope.cancel("destroying BillingManager")
-        super.onDestroy(owner)
     }
 
 
@@ -215,8 +228,16 @@ class BillingManager(
     }
 
     /**
-     * A simple query method.
-     * *Note - Handles all error cases.*
+     * Returns purchases details for currently owned items bought within your app.
+     * Only active subscriptions and non-consumed one-time purchases are returned.
+     * This method uses a cache of Google Play Store app without initiating a network request.
+     *
+     * Note:
+     * * It's recommended for security purposes to go through purchases verification on
+     * your backend (if you have one) by calling one of the following APIs:
+     * [https://developers.google.com/android-publisher/api-ref/purchases/products/get https://developers.google.com/android-publisher/api-ref/purchases/subscriptions/get]
+     *
+     * * Handles all error cases.
      * @param : The list of products to query.
      * @return empty in case error else the products.
      */
@@ -232,11 +253,7 @@ class BillingManager(
         }
 
         // construct params
-        val prams =
-            QueryProductDetailsParams
-                .newBuilder()
-                .setProductList(products)
-                .build()
+        val prams = QueryProductDetailsParams.newBuilder().setProductList(products).build()
 
         val (result, list) = mBillingClient.queryProductDetails(prams)
         if (result.responseCode != BillingClient.BillingResponseCode.OK) {
@@ -246,10 +263,7 @@ class BillingManager(
         if (list.isNullOrEmpty()) {
             Log.e(
                 TAG,
-                "onProductDetailsResponse: " +
-                        "Found null or empty ProductDetails. " +
-                        "Check to see if the Products you requested are correctly " +
-                        "published in the Google Play Console."
+                "onProductDetailsResponse: " + "Found null or empty ProductDetails. " + "Check to see if the Products you requested are correctly " + "published in the Google Play Console."
             )
             return emptyList()
         }
@@ -257,7 +271,7 @@ class BillingManager(
     }
 
     /**
-     * A convince query method. It just returns [_purchases] and handles error cases and nothing more.
+     * Performs a network query the details of products available for sale in your app.
      * @param type the type of purchases to fetch E.g., [BillingClient.ProductType.INAPP]]
      * @return empty list in case of error else purchases.
      */
@@ -269,11 +283,7 @@ class BillingManager(
             reconnect()
         }
 
-        val params =
-            QueryPurchasesParams
-                .newBuilder()
-                .setProductType(type)
-                .build()
+        val params = QueryPurchasesParams.newBuilder().setProductType(type).build()
 
         val response = mBillingClient.queryPurchasesAsync(params = params)
         val result = response.billingResult
@@ -311,14 +321,10 @@ class BillingManager(
         if (BuildConfig.DEBUG) return true
         if (purchase.isAcknowledged) return false
         val params =
-            AcknowledgePurchaseParams
-                .newBuilder()
-                .setPurchaseToken(purchase.purchaseToken)
-                .build()
+            AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
         val result = mBillingClient.acknowledgePurchase(params)
         Log.i(TAG, "acknowledge: $result")
-        return result.responseCode == BillingClient.BillingResponseCode.OK
-                && purchase.purchaseState == Purchase.PurchaseState.PURCHASED
+        return result.responseCode == BillingClient.BillingResponseCode.OK && purchase.purchaseState == Purchase.PurchaseState.PURCHASED
 
     }
 
@@ -333,7 +339,7 @@ class BillingManager(
             delayReconnectMills =
                 min(delayReconnectMills * 2, RECONNECT_TIMER_MAX_TIME_MILLISECONDS)
             delay(delay)
-            mBillingClient.startConnection(this@BillingManager)
+            mBillingClient.startConnection(ref)
         }
     }
 
@@ -344,29 +350,21 @@ class BillingManager(
      *
      * @param activity active activity to launch our billing flow from
      * @param sku SKU (Product ID) to be purchased
-     * @param upgradeSkusVarargs SKUs that the subscription can be upgraded from
+     * @param uSKUS SKUs that the subscription can be upgraded from
      * @return true if launch is successful
      */
-    fun launchBillingFlow(
-        host: Activity,
-        product: String,
-        vararg upgradeSkusVarargs: String
+    override fun launchBillingFlow(
+        activity: Activity, product: String, vararg uSKUS: String
     ): Boolean {
         val details = _details.value[product] ?: return false
-        val params = BillingFlowParams
-            .newBuilder()
-            .setProductDetailsParamsList(
+        val params = BillingFlowParams.newBuilder().setProductDetailsParamsList(
                 listOf(
-                    BillingFlowParams
-                        .ProductDetailsParams
-                        .newBuilder()
-                        .setProductDetails(details)
+                    BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details)
                         .build()
                 )
-            )
-            .build()
+            ).build()
         // val upgradeSkus = arrayOf(*upgradeSkusVarargs)
-        val result = mBillingClient.launchBillingFlow(host, params)
+        val result = mBillingClient.launchBillingFlow(activity, params)
         return when (result.responseCode) {
             BillingClient.BillingResponseCode.OK -> true
             else -> {
@@ -376,3 +374,30 @@ class BillingManager(
         }
     }
 }
+
+
+/**
+ * Returns the purchase associated with this [id].
+ */
+operator fun BillingManager.get(id: String) = purchases.value.find { it.products.contains(id) }
+
+/**
+ * Observe the purchase as [State] associated with the [id]
+ */
+@Composable
+@NonRestartableComposable
+fun BillingManager.observeAsState(id: String) =
+    produceState(initialValue = this@BillingManager[id], key1 = purchases, EmptyCoroutineContext) {
+        purchases.map { it.find { it.products.contains(id) } }.collect {
+                value = it
+            }
+    }
+
+
+/**
+ * Check weather the purchase's state is acknowledged.
+ * An item is purchased if its state [Purchase.PurchaseState.PURCHASED] && [Purchase.isAcknowledged]
+ */
+val Purchase?.purchased
+    get() = if (this == null) false else purchaseState == Purchase.PurchaseState.PURCHASED && if (BuildConfig.DEBUG) true else isAcknowledged
+
