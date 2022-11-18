@@ -36,9 +36,10 @@ import com.prime.player.R
 import com.prime.player.audio.*
 import com.prime.player.billing.*
 import com.prime.player.common.FileUtils
-import com.prime.player.common.Utils
+import com.prime.player.common.Util
 import com.prime.player.common.compose.*
-import com.prime.player.common.padding
+import com.prime.player.common.formatAsDuration
+import com.prime.player.common.toFormattedDataUnit
 import com.prime.player.core.Audio
 import com.primex.core.Text
 import com.primex.core.drawHorizontalDivider
@@ -149,6 +150,9 @@ private fun ActionBar(
         elevation = ContentElevation.low,
         shape = TopBarShape,
         contentColor = Material.colors.secondary,
+
+        lightShadowColor = Material.colors.lightShadowColor,
+        darkShadowColor = Material.colors.darkShadowColor,
 
         navigationIcon = {
             IconButton(
@@ -422,7 +426,7 @@ fun Header(
         )
 
         //Duration
-        val duration = Utils.formatAsDuration((meta?.duration ?: 0).toLong())
+        val duration = Util.formatAsDuration((meta?.duration ?: 0).toLong())
         Text(
             reference = Duration,
             value = duration,
@@ -464,7 +468,7 @@ fun Header(
         )
 
         // Size
-        val size = FileUtils.toFormattedDataUnit(meta?.size ?: 0L)
+        val size = FileUtils.toFormattedDataUnit(context, meta?.size ?: 0L)
         Text(
             reference = Size,
             value = size,

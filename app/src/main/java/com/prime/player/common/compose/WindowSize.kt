@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -148,6 +149,6 @@ fun calculateWindowSizeClass(activity: Activity): WindowSizeClass {
 
 
 val LocalWindowSizeClass =
-    compositionLocalOf<WindowSizeClass> {
+    staticCompositionLocalOf<WindowSizeClass> {
         error("No Window size available")
     }

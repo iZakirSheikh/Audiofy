@@ -2,24 +2,15 @@ package com.prime.player.core
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.annotation.WorkerThread
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
-import com.prime.player.Tokens
-import com.prime.player.common.MediaUtil
-import com.prime.player.common.Utils
-import com.prime.player.settings.GlobalKeys
-import com.primex.core.Text
+import com.prime.player.Audiofy
+import com.prime.player.audio.Tokens
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -29,8 +20,8 @@ private const val TAG = "Repository"
 
 private const val PLAYLIST_UNIQUE_TAG = "local_audios"
 
-private val PLAYLIST_RECENT = Tokens.Audio.PRIVATE_PLAYLIST_PREFIX + "recent"
-private val PLAYLIST_FAV = Tokens.Audio.PLAYLIST_FAVOURITES
+private val PLAYLIST_RECENT = Tokens.PRIVATE_PLAYLIST_PREFIX + "recent"
+private val PLAYLIST_FAV = Tokens.PLAYLIST_FAVOURITES
 
 private const val CAROUSEL_LIMIT = 30
 
@@ -74,8 +65,10 @@ class Repository @Inject constructor(
             .audios
             .playlist(
                 runBlocking {
-                    localDb.playlists.get(PLAYLIST_UNIQUE_TAG, PLAYLIST_RECENT)?.id ?: createPlaylist(
-                        PLAYLIST_RECENT)
+                    localDb.playlists.get(PLAYLIST_UNIQUE_TAG, PLAYLIST_RECENT)?.id
+                        ?: createPlaylist(
+                            PLAYLIST_RECENT
+                        )
                 }
             )
 
@@ -84,7 +77,9 @@ class Repository @Inject constructor(
             .audios
             .playlist(
                 runBlocking {
-                    localDb.playlists.get(PLAYLIST_UNIQUE_TAG, PLAYLIST_FAV)?.id ?: createPlaylist(PLAYLIST_FAV)
+                    localDb.playlists.get(PLAYLIST_UNIQUE_TAG, PLAYLIST_FAV)?.id ?: createPlaylist(
+                        PLAYLIST_FAV
+                    )
                 }
             )
 
@@ -104,7 +99,7 @@ class Repository @Inject constructor(
             .map { playlists ->
                 // drop private playlists.
                 playlists.dropWhile {
-                    it.name.indexOf(Tokens.Audio.PRIVATE_PLAYLIST_PREFIX) == 0
+                    it.name.indexOf(Tokens.PRIVATE_PLAYLIST_PREFIX) == 0
                 }
             }
 
@@ -305,7 +300,7 @@ class Repository @Inject constructor(
                 else -> {
                     // check the limit in this case
                     val limit = with(preferences) {
-                        preferences[GlobalKeys.MAX_RECENT_PLAYLIST_SIZE].obtain().toLong() - 1
+                        preferences[Tokens.MAX_RECENT_PLAYLIST_SIZE].obtain().toLong() - 1
                     }
                     // delete above member
                     localDb.members.delete(playlistId, limit)

@@ -8,8 +8,9 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prime.player.Audiofy
 import com.prime.player.R
-import com.prime.player.Tokens
+import com.prime.player.audio.Tokens
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
 import com.prime.player.common.*
@@ -18,7 +19,6 @@ import com.prime.player.common.compose.send
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
 import com.prime.player.core.Repository
-import com.prime.player.core.name
 import com.prime.player.core.playback.PlaybackService
 import com.primex.core.Result
 import com.primex.core.Text
@@ -72,7 +72,7 @@ class TracksViewModel @Inject constructor(
         when (type) {
             Type.AUDIOS -> Text("Audios")
             Type.FOLDERS -> Text(FileUtils.name(uuid))
-            Type.PLAYLISTS -> Text(if (uuid.indexOf(Tokens.Audio.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
+            Type.PLAYLISTS -> Text(if (uuid.indexOf(Tokens.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
             else -> Text(uuid)
         }
 
@@ -250,7 +250,7 @@ class TracksViewModel @Inject constructor(
                         return@combine null
                     }
 
-                    if (data.isEmpty()){
+                    if (data.isEmpty()) {
                         return@combine null to emptyMap()
                     }
 
@@ -343,10 +343,10 @@ private inline val List<Audio>.meta: Meta
             cardinality = size,
             duration = sumOf { it.duration },
             size = sumOf { it.size },
-            artwork = latest?.let { MediaUtil.composeAlbumArtUri(it.albumId) },
+            artwork = latest?.let { Audiofy.toAlbumArtUri(it.albumId) },
             subtitle = latest?.let {
                 Text(
-                    value = Utils.formatAsRelativeTimeSpan(it.dateModified)
+                    value = Util.formatAsRelativeTimeSpan(it.dateModified)
                 )
             }
         )

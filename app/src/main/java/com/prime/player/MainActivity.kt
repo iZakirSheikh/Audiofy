@@ -3,7 +3,9 @@ package com.prime.player
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.ContentObserver
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -39,15 +41,14 @@ import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
-import com.prime.player.audio.Home
 import com.prime.player.billing.*
+import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
 import com.prime.player.core.SyncWorker
-import com.prime.player.settings.GlobalKeys
-import com.prime.player.settings.NightMode
 import com.primex.core.activity
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.preferences.Preferences
+import com.primex.preferences.longPreferenceKey
 import com.primex.ui.ColoredOutlineButton
 import com.primex.ui.Label
 import dagger.hilt.android.AndroidEntryPoint
@@ -82,7 +83,7 @@ private fun PermissionRationale(
 private fun resolveAppThemeState(): Boolean {
     val preferences = LocalPreferenceStore.current
     val mode by with(preferences) {
-        preferences[GlobalKeys.NIGHT_MODE].observeAsState()
+        preferences[Audiofy.NIGHT_MODE].observeAsState()
     }
     return when (mode) {
         NightMode.YES -> true
@@ -125,6 +126,12 @@ fun MainActivity.initSplashScreen(
 
 private const val MIN_LAUNCH_COUNT = 20
 private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
+private val MAX_DAY_AFTER_FIRST_REVIEW = TimeUnit.DAYS.toMillis(10)
+
+private val KEY_LAST_REVIEW_TIME =
+    longPreferenceKey(
+        TAG + "_last_review_time"
+    )
 
 /**
  * A convince method for launching an in-app review.
@@ -135,32 +142,49 @@ private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
  */
 fun Activity.launchReviewFlow() {
     require(this is MainActivity)
-    val count =
-        with(preferences) { preferences[GlobalKeys.KEY_LAUNCH_COUNTER].obtain() } ?: 0
-
-    val firstInstallTime =
-        com.primex.core.runCatching(TAG + "_review") {
-            packageManager.getPackageInfo(packageName, 0).firstInstallTime
-        }
-
-    val currentTime = System.currentTimeMillis()
-
-    // Only first time we should not ask immediately
-    // however other than this whenever we do some thing of appreciation.
-    // we should ask for review.
-    // after first review, it is safe to call it n number of times as the quota is managed by API.
-    val ask = firstInstallTime != null &&
-            count >= MIN_LAUNCH_COUNT &&
-            currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW
-
-    // return from here if not required to ask
-    if (!ask) return
-    // The flow has finished. The API does not indicate whether the user
-    // reviewed or not, or even whether the review dialog was shown. Thus, no
-    // matter the result, we continue our app flow.
     lifecycleScope.launch {
+        val count =
+            with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+
+        // the time when lastly asked for review
+        val lastAskedTime =
+            with(preferences) { preferences[KEY_LAST_REVIEW_TIME].obtain() }
+
+        val firstInstallTime =
+            com.primex.core.runCatching(TAG + "_review") {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    packageManager.getPackageInfo(
+                        packageName,
+                        PackageManager.PackageInfoFlags.of(0)
+                    ).firstInstallTime
+                else
+                    packageManager.getPackageInfo(packageName, 0).firstInstallTime
+            }
+
+        val currentTime = System.currentTimeMillis()
+        // Only first time we should not ask immediately
+        // however other than this whenever we do some thing of appreciation.
+        // we should ask for review.
+        var ask =
+            (lastAskedTime == null &&
+                    firstInstallTime != null &&
+                    count >= MIN_LAUNCH_COUNT &&
+                    currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW)
+
+        // check for other condition as well
+        ask = ask ||
+                // if this is not the first review; ask only if after time passed.
+                (lastAskedTime != null &&
+                        count >= MIN_LAUNCH_COUNT &&
+                        currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW)
+        // return from here if not required to ask
+        if (!ask) return@launch
+        // The flow has finished. The API does not indicate whether the user
+        // reviewed or not, or even whether the review dialog was shown. Thus, no
+        // matter the result, we continue our app flow.
         com.primex.core.runCatching(TAG) {
             // update the last asking
+            preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
             val info = mReviewManager.requestReview()
             mReviewManager.launchReviewFlow(this@launchReviewFlow, info)
             //host.fAnalytics.
@@ -356,10 +380,10 @@ class MainActivity : ComponentActivity() {
 
         if (isColdStart) {
             val counter =
-                with(preferences) { preferences[GlobalKeys.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+                with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
             // update launch counter if
             // cold start.
-            preferences[GlobalKeys.KEY_LAUNCH_COUNTER] = counter + 1
+            preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
             // check for updates on startup
             // don't report
             // check silently
@@ -383,7 +407,7 @@ class MainActivity : ComponentActivity() {
             val sWindow = calculateWindowSizeClass(activity = this)
             // observe the change to density
             val density = LocalDensity.current
-            val fontScale by with(preferences) { get(GlobalKeys.FONT_SCALE).observeAsState() }
+            val fontScale by with(preferences) { get(Audiofy.FONT_SCALE).observeAsState() }
             val modified = Density(density = density.density, fontScale = fontScale)
 
             val permission =

@@ -14,8 +14,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prime.player.settings.FontFamily
-import com.prime.player.settings.GlobalKeys
+import com.prime.player.common.FontFamily
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import kotlinx.coroutines.flow.map
@@ -28,33 +27,26 @@ typealias Material = MaterialTheme
 /**
  * An Extra font family.
  */
-private val ProvidedFontFamily =
-    AndroidFontFamily(
-        //light
-        Font(R.font.lato_light, FontWeight.Light),
-        //normal
-        Font(R.font.lato_regular, FontWeight.Normal),
-        //bold
-        Font(R.font.lato_bold, FontWeight.Bold),
-    )
+private val ProvidedFontFamily = AndroidFontFamily(
+    //light
+    Font(R.font.lato_light, FontWeight.Light),
+    //normal
+    Font(R.font.lato_regular, FontWeight.Normal),
+    //bold
+    Font(R.font.lato_bold, FontWeight.Bold),
+)
 
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
  */
 private fun Typography(fontFamily: AndroidFontFamily): Typography {
     return Typography(
-        defaultFontFamily = fontFamily,
-        button = TextStyle(
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp,
-            letterSpacing = 1.25.sp,
+        defaultFontFamily = fontFamily, button = TextStyle(
+            fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.25.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
-        ),
-        overline = TextStyle(
-            fontWeight = FontWeight.Normal,
-            fontSize = 10.sp,
-            letterSpacing = 1.5.sp,
+        ), overline = TextStyle(
+            fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 1.5.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
         )
@@ -65,9 +57,7 @@ private fun Typography(fontFamily: AndroidFontFamily): Typography {
  * A variant of caption.
  */
 private val caption2 = TextStyle(
-    fontWeight = FontWeight.Normal,
-    fontSize = 10.sp,
-    letterSpacing = 0.4.sp
+    fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 0.4.sp
 )
 
 /**
@@ -85,7 +75,7 @@ val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
  */
 val MaterialTheme.forceColorize
     @Composable inline get() = LocalPreferenceStore.current.run {
-        get(GlobalKeys.FORCE_COLORIZE).observeAsState()
+        get(Audiofy.FORCE_COLORIZE).observeAsState()
     }
 
 
@@ -94,7 +84,7 @@ val MaterialTheme.forceColorize
  */
 val MaterialTheme.colorStatusBar
     @Composable inline get() = LocalPreferenceStore.current.run {
-        get(GlobalKeys.COLOR_STATUS_BAR).observeAsState()
+        get(Audiofy.COLOR_STATUS_BAR).observeAsState()
     }
 
 private val small2 = RoundedCornerShape(8.dp)
@@ -132,27 +122,23 @@ inline val Colors.outline
     get() = (if (isLight) Color.Black else Color.White).copy(0.12f)
 
 val Colors.onOverlay
-    @Composable inline get() =
-        (colors.onBackground).copy(alpha = ContentAlpha.medium)
+    @Composable inline get() = (colors.onBackground).copy(alpha = ContentAlpha.medium)
 
 val Colors.lightShadowColor
-    @Composable inline get() =
-        if (isLight) Color.White else Color.White.copy(0.025f)
+    @Composable inline get() = if (isLight) Color.White else Color.White.copy(0.025f)
 
 val Colors.darkShadowColor
-    @Composable inline get() =
-        if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
+    @Composable inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
 
 
 private val defaultPrimaryColor = Color(0xFF5600E8)
 private val defaultSecondaryColor = Color.Rose
 
-private val defaultThemeShapes =
-    Shapes(
-        small = RoundedCornerShape(4.dp),
-        medium = RoundedCornerShape(4.dp),
-        large = RoundedCornerShape(0.dp)
-    )
+private val defaultThemeShapes = Shapes(
+    small = RoundedCornerShape(4.dp),
+    medium = RoundedCornerShape(4.dp),
+    large = RoundedCornerShape(0.dp)
+)
 
 @Composable
 fun Material(isDark: Boolean, content: @Composable () -> Unit) {
@@ -189,7 +175,7 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
     )
 
     val fontFamily by with(preferences) {
-        preferences[GlobalKeys.FONT_FAMILY].map { font ->
+        preferences[Audiofy.FONT_FAMILY].map { font ->
             when (font) {
                 FontFamily.SYSTEM_DEFAULT -> AndroidFontFamily.Default
                 FontFamily.PROVIDED -> ProvidedFontFamily

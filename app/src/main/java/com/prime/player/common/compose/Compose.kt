@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.prime.player.common.compose
 
 import androidx.annotation.DrawableRes
@@ -8,49 +10,34 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction.Companion
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.painter.Painter
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.primex.ui.ColoredOutlineButton
+import com.prime.player.R
+import com.primex.core.Result
 import com.primex.ui.Label
 import com.primex.ui.Placeholder
 
+
+//This file holds the simple extension, utility methods of compose.
 /**
  * Composes placeholder with lottie icon.
  */
 @Composable
-fun Placeholder(
+inline fun Placeholder(
     title: String,
     modifier: Modifier = Modifier,
     vertical: Boolean = true,
     @RawRes iconResId: Int,
     message: String? = null,
-    action: @Composable (() -> Unit)? = null
+    noinline action: @Composable (() -> Unit)? = null
 ) {
     Placeholder(
         modifier = modifier,
@@ -65,8 +52,7 @@ fun Placeholder(
                 )
             )
             LottieAnimation(
-                composition = composition,
-                iterations = Int.MAX_VALUE
+                composition = composition, iterations = Int.MAX_VALUE
             )
         },
         action = action,
@@ -83,87 +69,83 @@ fun AnimatedVisibility(
     exit: ExitTransition = fadeOut() + shrinkOut(),
     initiallyVisible: Boolean,
     content: @Composable () -> Unit
-) = AnimatedVisibility(
-    visibleState = remember { MutableTransitionState(initiallyVisible) }
-        .apply { targetState = visible },
-    modifier = modifier,
-    enter = enter,
-    exit = exit
+) = AnimatedVisibility(visibleState = remember { MutableTransitionState(initiallyVisible) }.apply {
+        targetState = visible
+    }, modifier = modifier, enter = enter, exit = exit
 ) {
     content()
 }
 
 @ExperimentalAnimationGraphicsApi
 @Composable
-fun rememberAnimatedVectorPainter(@DrawableRes id: Int, atEnd: Boolean) =
+inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) =
     androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
-        animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id),
-        atEnd = atEnd
+        animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
 
 
-/**
- * A single line [Label] that is animated using the [AnimatedContent]
- */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AnimatedLabel(
-    text: AnnotatedString,
+inline fun <T> Placeholder(
+    value: Result<T>,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-    color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontWeight: FontWeight? = null,
-    textAlign: TextAlign? = null,
-    transitionSpec: AnimatedContentScope<AnnotatedString>.() -> ContentTransform = {
-        slideInVertically { height -> height } + fadeIn() with
-                slideOutVertically { height -> -height } + fadeOut()
-    }
+    crossinline success: @Composable (data: T) -> Unit,
 ) {
-    AnimatedContent(
-        targetState = text,
-        transitionSpec = transitionSpec,
-        modifier = modifier,
-        content = {
-            Label(
-                text = it,
-                style = style,
-                color = color,
-                fontSize = fontSize,
-                fontWeight = fontWeight,
-                textAlign = textAlign
+    val (state, data) = value
+    Crossfade(
+        targetState = state,
+        animationSpec = tween(Anim.ActivityLongDurationMills),
+        modifier = modifier
+    ) {
+        when (it) {
+            Result.State.Loading -> Placeholder(
+                iconResId = R.raw.lt_loading_dots_blue,
+                title = "Loading",
             )
+            is Result.State.Processing -> Placeholder(
+                iconResId = R.raw.lt_loading_hand, title = "Processing."
+            )
+            is Result.State.Error -> Placeholder(
+                iconResId = R.raw.lt_error, title = "Error"
+            )
+            Result.State.Empty -> Placeholder(
+                iconResId = R.raw.lt_empty_box, title = "Oops Empty!!"
+            )
+            Result.State.Success -> success(data)
         }
-    )
-}
-
-
-
-
-@OptIn(ExperimentalAnimationApi::class)
-@NonRestartableComposable
-@Composable
-fun AnimatedLabel(
-    text: String,
-    modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-    color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontWeight: FontWeight? = null,
-    textAlign: TextAlign? = null,
-    transitionSpec: AnimatedContentScope<AnnotatedString>.() -> ContentTransform = {
-        slideInVertically { height -> height } + fadeIn() with
-                slideOutVertically { height -> -height } + fadeOut()
     }
-){
-   AnimatedLabel(
-       text = AnnotatedString(text),
-       modifier = modifier,
-       style = style,
-       color = color,
-       fontSize = fontSize,
-       fontWeight = fontWeight,
-       textAlign = textAlign,
-       transitionSpec = transitionSpec
-   )
 }
+
+
+@Composable
+inline fun RowScope.BottomNavigationItem(
+    selected: Boolean,
+    noinline onClick: () -> Unit,
+    icon: Painter,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    label: String = "",
+    alwaysShowLabel: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    selectedContentColor: Color = LocalContentColor.current,
+    unselectedContentColor: Color = selectedContentColor.copy(alpha = ContentAlpha.medium)
+) {
+    BottomNavigationItem(selected = selected,
+        onClick = onClick,
+        icon = {
+            Icon(painter = icon, contentDescription = "Bottom Nav Icon")
+        },
+        modifier = modifier,
+        enabled = enabled,
+        alwaysShowLabel = alwaysShowLabel,
+        interactionSource = interactionSource,
+        selectedContentColor = selectedContentColor,
+        unselectedContentColor = unselectedContentColor,
+        label = { Label(text = label) })
+}
+
+fun composable(condition: Boolean, content: @Composable () -> Unit) = when (condition) {
+    true -> content
+    else -> null
+}
+
+

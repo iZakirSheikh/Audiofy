@@ -35,8 +35,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prime.player.*
 import com.prime.player.R
-import com.prime.player.common.MediaUtil
-import com.prime.player.common.Utils
+import com.prime.player.common.*
 import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
@@ -58,7 +57,7 @@ fun Image(
     val request =
         remember(albumId) {
             ImageRequest.Builder(context)
-                .data(MediaUtil.composeAlbumArtUri(albumId))
+                .data(Audiofy.toAlbumArtUri(albumId))
                 .crossfade(fadeMills)
                 .build()
         }
@@ -110,7 +109,7 @@ fun Image(
     bitmap: Bitmap?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
-    error: Bitmap = App.DEFUALT_ALBUM_ART,
+    error: Bitmap = Audiofy.DEFAULT_ALBUM_ART,
     alignment: Alignment = Alignment.Center,
     durationMillis: Int = AnimationConstants.DefaultDurationMillis,
 ) {
@@ -222,13 +221,13 @@ fun Audio.Properties(
 
                 Property(
                     title = "Duration",
-                    subtitle = Utils.formatAsDuration(audio.duration),
+                    subtitle = Util.formatAsDuration(audio.duration),
                     icon = Icons.Default.Timer3
                 )
 
                 Property(
                     title = "Date Modified",
-                    subtitle = Utils.formatAsRelativeTimeSpan(audio.dateModified).toString(),
+                    subtitle = Util.formatAsRelativeTimeSpan(audio.dateModified).toString(),
                     icon = Icons.Outlined.Update
                 )
             }
@@ -290,12 +289,11 @@ private fun Playlist(
 
         // Subtitle
         Label(
-            text = "Modified - ${Utils.formatAsRelativeTimeSpan(value.dateModified)}",
+            text = "Modified - ${Util.formatAsRelativeTimeSpan(value.dateModified)}",
             style = Material.typography.caption2
         )
     }
 }
-
 
 
 /**
@@ -324,7 +322,7 @@ fun Playlists(
                 targetState = value.isEmpty(),
                 modifier = Modifier.heightIn(max = 350.dp),
             ) {
-                when(it){
+                when (it) {
                     false -> {
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(80.dp + (4.dp * 2)),
@@ -332,11 +330,11 @@ fun Playlists(
                                 vertical = ContentPadding.medium,
                                 horizontal = ContentPadding.normal
                             )
-                        ){
-                            items(value, key = {it.id}){value ->
+                        ) {
+                            items(value, key = { it.id }) { value ->
                                 Playlist(
                                     value = value,
-                                    onPlaylistClick = {onPlaylistClick(value) },
+                                    onPlaylistClick = { onPlaylistClick(value) },
                                     modifier = Modifier.animateItemPlacement()
                                 )
                             }
@@ -355,42 +353,4 @@ fun Playlists(
     }
 }
 
-
-@Composable
-inline fun <T> Placeholder(
-    value: Result<T>,
-    modifier: Modifier = Modifier,
-    crossinline success: @Composable (data: T) -> Unit,
-) {
-    val (state, data) = value
-    Crossfade(
-        targetState = state,
-        animationSpec = tween(Anim.ActivityLongDurationMills),
-        modifier = modifier
-    ) {
-        when (it) {
-            Result.State.Loading ->
-                Placeholder(
-                    iconResId = R.raw.lt_loading_dots_blue,
-                    title = "Loading",
-                )
-            is Result.State.Processing ->
-                Placeholder(
-                    iconResId = R.raw.lt_loading_hand,
-                    title = "Processing."
-                )
-            is Result.State.Error ->
-                Placeholder(
-                    iconResId = R.raw.lt_error,
-                    title = "Error"
-                )
-            Result.State.Empty ->
-                Placeholder(
-                    iconResId = R.raw.lt_empty_box,
-                    title = "Oops Empty!!"
-                )
-            Result.State.Success -> success(data)
-        }
-    }
-}
 

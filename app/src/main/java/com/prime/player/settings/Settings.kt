@@ -26,18 +26,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
-import androidx.lifecycle.viewModelScope
 import com.prime.player.*
 import com.prime.player.BuildConfig
 import com.prime.player.R
+import com.prime.player.audio.Tokens
 import com.prime.player.billing.*
+import com.prime.player.common.FontFamily
+import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
-import com.primex.core.activity
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
-import kotlinx.coroutines.launch
 
 
 private val RESERVE_PADDING = 56.dp
@@ -71,14 +71,13 @@ private inline fun PrefHeader(text: String) {
 }
 
 
-private val FontFamilyList =
-    listOf(
-        "Lato" to FontFamily.PROVIDED,
-        "Cursive" to FontFamily.CURSIVE,
-        "San serif" to FontFamily.SAN_SERIF,
-        "serif" to FontFamily.SARIF,
-        "System default" to FontFamily.SYSTEM_DEFAULT
-    )
+private val FontFamilyList = listOf(
+    "Lato" to FontFamily.PROVIDED,
+    "Cursive" to FontFamily.CURSIVE,
+    "San serif" to FontFamily.SAN_SERIF,
+    "serif" to FontFamily.SARIF,
+    "System default" to FontFamily.SYSTEM_DEFAULT
+)
 
 
 @Route
@@ -108,8 +107,7 @@ fun Settings(
                 elevation = ContentElevation.low,
                 modifier = Modifier
                     .statusBarsPadding2(
-                        color = bgColor,
-                        darkIcons = !colorize && Material.colors.isLight
+                        color = bgColor, darkIcons = !colorize && Material.colors.isLight
                     )
                     .drawHorizontalDivider(color = Material.colors.onSurface)
                     .padding(vertical = ContentPadding.medium),
@@ -136,36 +134,31 @@ fun Settings(
 
                     //dark mode
                     val darkTheme by darkUiMode
-                    SwitchPreference(
-                        checked = darkTheme.value,
+                    SwitchPreference(checked = darkTheme.value,
                         title = stringResource(value = darkTheme.title),
                         summery = stringResource(value = darkTheme.summery),
                         icon = darkTheme.vector,
                         onCheckedChange = { new: Boolean ->
-                            set(GlobalKeys.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
+                            set(Audiofy.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
 
                     //font
                     val font by font
-                    DropDownPreference(
-                        title = stringResource(value = font.title),
+                    DropDownPreference(title = stringResource(value = font.title),
                         entries = FontFamilyList,
                         defaultValue = font.value,
                         icon = font.vector,
                         onRequestChange = { family: FontFamily ->
-                            viewModel.set(GlobalKeys.FONT_FAMILY, family)
+                            viewModel.set(Audiofy.FONT_FAMILY, family)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
 
                     // app font scale
                     val scale by fontScale
-                    SliderPreference(
-                        defaultValue = scale.value,
+                    SliderPreference(defaultValue = scale.value,
                         title = stringResource(value = scale.title),
                         summery = stringResource(value = scale.summery),
                         valueRange = FontSliderRange,
@@ -173,69 +166,58 @@ fun Settings(
                         icon = scale.vector,
                         iconChange = Icons.Outlined.TextFormat,
                         onValueChange = { value: Float ->
-                            set(GlobalKeys.FONT_SCALE, value)
+                            set(Audiofy.FONT_SCALE, value)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
                     val purchase by LocalContext.billingManager.observeAsState(id = Product.DISABLE_ADS)
-                    if (!purchase.purchased)
-                        Banner(
-                            placementID = Placement.BANNER_SETTINGS,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
+                    if (!purchase.purchased) Banner(
+                        placementID = Placement.BANNER_SETTINGS,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
 
                     //force accent
                     val forceAccent by forceAccent
-                    SwitchPreference(
-                        checked = forceAccent.value,
+                    SwitchPreference(checked = forceAccent.value,
                         title = stringResource(value = forceAccent.title),
                         summery = stringResource(value = forceAccent.summery),
                         onCheckedChange = { should: Boolean ->
-                            set(GlobalKeys.FORCE_COLORIZE, should)
-                            if (should)
-                                set(GlobalKeys.COLOR_STATUS_BAR, true)
+                            set(Audiofy.FORCE_COLORIZE, should)
+                            if (should) set(Audiofy.COLOR_STATUS_BAR, true)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
                     //color status bar
                     val colorStatusBar by colorStatusBar
-                    SwitchPreference(
-                        checked = colorStatusBar.value,
+                    SwitchPreference(checked = colorStatusBar.value,
                         title = stringResource(value = colorStatusBar.title),
                         summery = stringResource(value = colorStatusBar.summery),
                         enabled = !forceAccent.value,
                         onCheckedChange = { should: Boolean ->
-                            set(GlobalKeys.COLOR_STATUS_BAR, should)
+                            set(Audiofy.COLOR_STATUS_BAR, should)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
 
                     //hide status bar
                     val hideStatusBar by hideStatusBar
-                    SwitchPreference(
-                        checked = hideStatusBar.value,
+                    SwitchPreference(checked = hideStatusBar.value,
                         title = stringResource(value = hideStatusBar.title),
                         summery = stringResource(value = hideStatusBar.summery),
                         onCheckedChange = { should: Boolean ->
-                            set(GlobalKeys.HIDE_STATUS_BAR, should)
+                            set(Audiofy.HIDE_STATUS_BAR, should)
                             //TODO: Add statusBar Hide/Show logic.
-                        }
-                    )
+                        })
 
                     //mini player progress bar
                     val showProgressInMini by showProgressInMini
-                    SwitchPreference(
-                        checked = showProgressInMini.value,
+                    SwitchPreference(checked = showProgressInMini.value,
                         title = stringResource(value = showProgressInMini.title),
                         summery = stringResource(value = showProgressInMini.summery),
                         onCheckedChange = { should: Boolean ->
-                            set(GlobalKeys.SHOW_MINI_PROGRESS_BAR, should)
+                            set(Tokens.SHOW_MINI_PROGRESS_BAR, should)
                             activity.showAd(force = true)
-                        }
-                    )
+                        })
 
                     PrefHeader(text = "Feedback")
                     val context = LocalContext.current
@@ -246,24 +228,18 @@ fun Settings(
                         modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
                     )
 
-                    Preference(
-                        title = stringResource(R.string.rate_us),
+                    Preference(title = stringResource(R.string.rate_us),
                         summery = stringResource(id = R.string.review_msg),
                         icon = Icons.Outlined.Star,
-                        modifier = Modifier.clickable(
-                            onClick = { context.launchPlayStore() }
-                        )
+                        modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
                     )
 
-                    Preference(
-                        title = stringResource(R.string.spread_the_word),
+                    Preference(title = stringResource(R.string.spread_the_word),
                         summery = stringResource(R.string.spread_the_word_summery),
                         icon = Icons.Outlined.Share,
-                        modifier = Modifier.clickable(
-                            onClick = {
-                                context.shareApp()
-                            }
-                        )
+                        modifier = Modifier.clickable(onClick = {
+                            context.shareApp()
+                        })
                     )
 
                     PrefHeader(text = stringResource(R.string.about_us))
@@ -271,7 +247,9 @@ fun Settings(
                         text = stringHtmlResource(R.string.about_us_desc),
                         style = MaterialTheme.typography.body2,
                         modifier = Modifier
-                            .padding(start = RESERVE_PADDING, end = ContentPadding.large)
+                            .padding(
+                                start = RESERVE_PADDING, end = ContentPadding.large
+                            )
                             .padding(vertical = ContentPadding.small),
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
@@ -280,15 +258,12 @@ fun Settings(
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
                     val channel = LocalSnackDataChannel.current
-                    Preference(
-                        title = stringResource(R.string.app_version),
+                    Preference(title = stringResource(R.string.app_version),
                         summery = "$version \nClick to check for updates.",
                         icon = Icons.Outlined.TouchApp,
-                        modifier = Modifier.clickable(
-                            onClick = {
-                                activity.launchUpdateFlow(channel)
-                            }
-                        )
+                        modifier = Modifier.clickable(onClick = {
+                            activity.launchUpdateFlow(channel)
+                        })
                     )
 
                     // Add the necessary padding.
@@ -300,32 +275,27 @@ fun Settings(
                     )
                 }
             }
-        }
-    )
+        })
 }
 
 
 private fun Context.shareApp() {
-    ShareCompat.IntentBuilder(this)
-        .setType("text/plain")
+    ShareCompat.IntentBuilder(this).setType("text/plain")
         .setChooserTitle(getString(R.string.app_name))
-        .setText("Let me recommend you this application ${Tokens.GOOGLE_STORE}")
-        .startChooser()
+        .setText("Let me recommend you this application ${Audiofy.GOOGLE_STORE}").startChooser()
 }
 
 
 private fun Context.launchPlayStore() {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Tokens.GOOGLE_STORE)).apply {
-            setPackage(Tokens.PKG_GOOGLE_PLAY_STORE)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
+            setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
             addFlags(
-                Intent.FLAG_ACTIVITY_NO_HISTORY or
-                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT or
-                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+                Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
             )
         }
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Tokens.FALLBACK_GOOGLE_STORE)))
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
     }
 }

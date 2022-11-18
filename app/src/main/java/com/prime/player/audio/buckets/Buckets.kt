@@ -30,18 +30,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.audio.Image
-import com.prime.player.audio.Placeholder
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.TracksRoute
 import com.prime.player.common.FileUtils
-import com.prime.player.common.Utils
+import com.prime.player.common.Util
 import com.prime.player.common.compose.*
+import com.prime.player.common.formatAsRelativeTimeSpan
+import com.prime.player.common.toFormattedDataUnit
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
 import com.prime.player.core.name
@@ -116,12 +118,13 @@ private fun Album(
     onAlbumClick: () -> Unit
 ) {
     val count = value.tracks
+    val context = LocalContext.current
     Generic(
         title = value.title,
         clickable = modifier.clickable(onClick = onAlbumClick),
 
         subtitle = stringQuantityResource(R.plurals.file, count, count) +
-                " " + FileUtils.toFormattedDataUnit(value.size),
+                " " + FileUtils.toFormattedDataUnit(context, value.size),
 
         // icon of this album
         icon = {
@@ -150,7 +153,7 @@ private fun Genre(
     modifier: Modifier = Modifier,
     onGenreClick: () -> Unit
 ) {
-
+    val context = LocalContext.current
     Generic(
         title = value.name,
         clickable = modifier.clickable(onClick = onGenreClick),
@@ -158,7 +161,7 @@ private fun Genre(
         subtitle = run {
             val count = value.tracks
             stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(value.size)
+                    " " + FileUtils.toFormattedDataUnit(context, value.size)
         },
         icon = {
             Surface(
@@ -192,6 +195,7 @@ private fun Folder(
     modifier: Modifier = Modifier,
     onFolderClick: () -> Unit
 ) {
+    val context = LocalContext.current
     Generic(
         title = value.name,
         clickable = modifier.clickable(onClick = onFolderClick),
@@ -199,7 +203,7 @@ private fun Folder(
         subtitle = run {
             val count = value.cardinality
             stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(value.size)
+                    " " + FileUtils.toFormattedDataUnit(context, value.size)
         },
 
         icon = {
@@ -221,6 +225,7 @@ private fun Artist(
     modifier: Modifier = Modifier,
     onArtistClick: () -> Unit
 ) {
+    val context = LocalContext.current
     Generic(
         title = value.name,
         clickable = modifier.clickable(onClick = onArtistClick),
@@ -228,7 +233,7 @@ private fun Artist(
         subtitle = run {
             val count = value.tracks
             stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(value.size)
+                    " " + FileUtils.toFormattedDataUnit(context, value.size)
         },
 
         icon = {
@@ -271,7 +276,7 @@ private fun Playlist(
 ) {
     Generic(
         title = value.name,
-        subtitle = Utils.formatAsRelativeTimeSpan(value.dateCreated),
+        subtitle = Util.formatAsRelativeTimeSpan(value.dateCreated),
 
         clickable = modifier.combinedClickable(
             onClick = onPlaylistClick,

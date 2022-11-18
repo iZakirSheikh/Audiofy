@@ -11,9 +11,6 @@ import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -26,11 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -44,18 +39,15 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.player.*
 import com.prime.player.R
-import com.prime.player.audio.Image
-import com.prime.player.audio.Playlists
-import com.prime.player.audio.Properties
-import com.prime.player.audio.Type
+import com.prime.player.audio.*
 import com.prime.player.audio.tracks.TracksRoute
 import com.prime.player.common.Ticker
-import com.prime.player.common.Utils
+import com.prime.player.common.Util
 import com.prime.player.common.compose.*
+import com.prime.player.common.formatAsDuration
 import com.prime.player.common.share
 import com.prime.player.core.Audio
 import com.prime.player.core.playback.PlaybackService
-import com.prime.player.settings.GlobalKeys
 import com.primex.core.*
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
@@ -141,7 +133,7 @@ private fun ConsoleViewModel.MiniLayout(
         IconButton(
             onClick = { togglePlay(); activity.launchReviewFlow() },
             contentDescription = null,
-            painter = rememberAnimatedVectorPainter(
+            painter = rememberAnimatedVectorResource(
                 id = R.drawable.avd_pause_to_play,
                 atEnd = !playing
             ),
@@ -152,7 +144,7 @@ private fun ConsoleViewModel.MiniLayout(
         )
 
         val showProgress by with(LocalPreferenceStore.current) {
-            get(GlobalKeys.SHOW_MINI_PROGRESS_BAR).observeAsState()
+            get(Tokens.SHOW_MINI_PROGRESS_BAR).observeAsState()
         }
         if (showProgress) {
             val progress by progress
@@ -618,7 +610,7 @@ private fun ConsoleViewModel.Layout(
 
 
             Ticker(
-                text = Utils.formatAsDuration(it),
+                text = Util.formatAsDuration(it),
                 color = Material.colors.onSurface,
                 font = Typeface.DEFAULT_BOLD,
                 size = 32.sp,
@@ -651,7 +643,7 @@ private fun ConsoleViewModel.Layout(
         val tickerPaddingEnd = ArtworkValleyWidth + ArtworkBorderWidth + 3.dp
         val onArtworkColor = Color.White
         Ticker(
-            text = Utils.formatAsDuration(position.toInt()),
+            text = Util.formatAsDuration(position.toInt()),
             size = 48.sp,
             font = Typeface.DEFAULT_BOLD,
             color = onArtworkColor,
@@ -665,7 +657,7 @@ private fun ConsoleViewModel.Layout(
 
         // track length
         AnimatedLabel(
-            text = Utils.formatAsDuration(current?.duration?.toLong() ?: 0),
+            text = Util.formatAsDuration(current?.duration?.toLong() ?: 0),
             fontWeight = FontWeight.Bold,
             style = Material.typography.caption.copy(
                 fontFamily = FontFamily.Default,
@@ -755,7 +747,7 @@ private fun ConsoleViewModel.Layout(
         NeuButton(
             onClick = { togglePlay(); activity.launchReviewFlow() },
 
-            painter = rememberAnimatedVectorPainter(
+            painter = rememberAnimatedVectorResource(
                 id = R.drawable.avd_pause_to_play,
                 atEnd = !playing
             ),
@@ -841,7 +833,7 @@ fun Console(
                                             interactionSource = remember(::MutableInteractionSource)
                                         )
                                         .fillMaxWidth(0.78f)
-                                        .requiredHeight(Tokens.Audio.MINI_PLAYER_HEIGHT - 10.dp),
+                                        .requiredHeight(Tokens.MINI_PLAYER_HEIGHT - 10.dp),
                                     shape = CircleShape,
                                     elevation = ContentElevation.high,
                                     content = { MiniLayout() }

@@ -38,6 +38,7 @@ import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.audio.Image
+import com.prime.player.audio.Tokens
 import com.prime.player.audio.Type
 import com.prime.player.audio.buckets.BucketsRoute
 import com.prime.player.audio.tracks.TracksRoute
@@ -45,15 +46,11 @@ import com.prime.player.billing.Product
 import com.prime.player.billing.observeAsState
 import com.prime.player.billing.purchased
 import com.prime.player.common.KenBurns
-import com.prime.player.common.MediaUtil
 import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
 import com.prime.player.settings.SettingsRoute
 import com.primex.core.*
-import com.primex.ui.DropdownMenu
-import com.primex.ui.IconButton
-import com.primex.ui.Label
-import com.primex.ui.Search
+import com.primex.ui.*
 import com.primex.ui.views.Recycler
 import cz.levinzonr.saferoute.core.annotations.Route
 import cz.levinzonr.saferoute.core.annotations.RouteNavGraph
@@ -182,7 +179,7 @@ private fun Carousal(
                             KenBurns(
                                 modifier = Modifier.gradient(vertical = false),
                                 view = {
-                                    load(MediaUtil.composeAlbumArtUri(it.id))
+                                    load(Audiofy.toAlbumArtUri(it.id))
                                 }
                             )
                         }
@@ -287,7 +284,7 @@ private fun Main(
             icon = Icons.Outlined.FavoriteBorder,
             modifier = Modifier.rotate(false),
             onClick = {
-                val direction = TracksRoute(Type.PLAYLISTS.name, Tokens.Audio.PLAYLIST_FAVOURITES)
+                val direction = TracksRoute(Type.PLAYLISTS.name, Tokens.PLAYLIST_FAVOURITES)
                 navigator.navigateTo(direction)
             }
         )

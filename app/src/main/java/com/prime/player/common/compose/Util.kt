@@ -21,6 +21,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -35,15 +36,7 @@ import com.primex.core.Text
 import com.primex.core.resolve
 import com.primex.core.spannedResource
 
-private const val TAG = "Util"
-
-/**
- * Provides/finds a [Activity] that is wrapped inside the [LocalContext]
- */
-val ProvidableCompositionLocal<Context>.activity
-    @ReadOnlyComposable
-    @Composable
-    inline get() = current.activity
+private const val TAG = "ComposeUtil"
 
 /**
  * Returns a Resources instance for the application's package.
@@ -68,6 +61,7 @@ val NavHostController.current
     @Composable
     inline get() = currentBackStackEntryAsState().value?.destination?.route
 
+
 /**
  * A Utility extension function for managing status bar UI.
  *
@@ -78,7 +72,7 @@ val NavHostController.current
  */
 fun Modifier.statusBarsPadding2(
     color: Color = Color.Unspecified,
-    darkIcons: Boolean = false,
+    darkIcons: Boolean = color.luminance() > 0.5,
 ) = composed {
     val controller = rememberSystemUiController()
 

@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import java.lang.Long.min
+import kotlin.coroutines.EmptyCoroutineContext
 
 private const val TAG = "BillingManager"
 
@@ -423,13 +424,22 @@ fun BillingManager(
 operator fun BillingManager.get(id: String) = purchases.value.find { it.products.contains(id) }
 
 /**
- * Observe the purchase as [State] associated with the [id]
- */
+ * Observe the purchase as [State] associated with the [id].
+ *   ``@Composable
+ * @NonRestartableComposable
+ * fun BillingManager.observeAsState(id: String) =
+ * purchases.map { it.find { it.products.contains(id) } }
+ * .collectAsState(initial = this@BillingManager[id]) ``
+ *
+ **/
 @Composable
 @NonRestartableComposable
 fun BillingManager.observeAsState(id: String) =
-    purchases.map { it.find { it.products.contains(id) } }
-        .collectAsState(initial = this@BillingManager[id])
+    produceState(initialValue = this@BillingManager[id], key1 = purchases, EmptyCoroutineContext) {
+        purchases.map { it.find { it.products.contains(id) } }.collect {
+            value = it
+        }
+    }
 
 /**
  * Check weather the purchase's state is acknowledged.

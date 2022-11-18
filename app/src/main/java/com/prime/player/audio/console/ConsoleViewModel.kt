@@ -14,12 +14,12 @@ import androidx.compose.runtime.*
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prime.player.App
+import com.prime.player.Audiofy
 import com.prime.player.R
-import com.prime.player.common.MediaUtil
-import com.prime.player.common.Utils
+import com.prime.player.common.Util
 import com.prime.player.common.compose.Snack
 import com.prime.player.common.compose.SnackDataChannel
+import com.prime.player.common.formatAsDuration
 import com.prime.player.common.getAlbumArt
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
@@ -87,8 +87,8 @@ class ConsoleViewModel @Inject constructor(
         }
 
     private suspend fun getArtwork(of: Audio): Bitmap {
-        return context.getAlbumArt(MediaUtil.composeAlbumArtUri(of.albumId))?.toBitmap()
-            ?: App.DEFUALT_ALBUM_ART
+        return context.getAlbumArt(Audiofy.toAlbumArtUri(of.albumId))?.toBitmap()
+            ?: Audiofy.DEFAULT_ALBUM_ART
     }
 
     /**
@@ -247,7 +247,7 @@ class ConsoleViewModel @Inject constructor(
                     in 1..180 -> {
                         val mills = TimeUnit.MINUTES.toMillis(minutes.toLong())
                         service?.setSleepTimer(mills)
-                        "Rhythm will sleep after ${Utils.formatAsDuration(mills)}."
+                        "Audiofy will sleep after ${Util.formatAsDuration(mills)}."
                     }
                     -1 -> {
                         service?.setSleepTimer(-1L)
@@ -342,7 +342,7 @@ class ConsoleViewModel @Inject constructor(
      */
     val artwork: State<Bitmap> =
         mutableStateOf(
-            App.DEFUALT_ALBUM_ART
+            Audiofy.DEFAULT_ALBUM_ART
         )
 
     fun playTrackAt(position: Int) {
@@ -356,7 +356,7 @@ class ConsoleViewModel @Inject constructor(
         get() = service?.playingQueue
 
 
-    fun addToPlaylist(id: Playlist){
+    fun addToPlaylist(id: Playlist) {
         val audioId = current.value?.id ?: return
         viewModelScope.launch {
             repository.addToPlaylist(
