@@ -144,7 +144,7 @@ private fun ConsoleViewModel.MiniLayout(
         )
 
         val showProgress by with(LocalPreferenceStore.current) {
-            get(Tokens.SHOW_MINI_PROGRESS_BAR).observeAsState()
+            get(Player.SHOW_MINI_PROGRESS_BAR).observeAsState()
         }
         if (showProgress) {
             val progress by progress
@@ -833,7 +833,7 @@ fun Console(
                                             interactionSource = remember(::MutableInteractionSource)
                                         )
                                         .fillMaxWidth(0.78f)
-                                        .requiredHeight(Tokens.MINI_PLAYER_HEIGHT - 10.dp),
+                                        .requiredHeight(Player.MINI_PLAYER_HEIGHT - 10.dp),
                                     shape = CircleShape,
                                     elevation = ContentElevation.high,
                                     content = { MiniLayout() }

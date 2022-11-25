@@ -3,8 +3,7 @@ package com.prime.player.core
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.annotation.WorkerThread
-import com.prime.player.Audiofy
-import com.prime.player.audio.Tokens
+import com.prime.player.audio.Player
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,8 +19,8 @@ private const val TAG = "Repository"
 
 private const val PLAYLIST_UNIQUE_TAG = "local_audios"
 
-private val PLAYLIST_RECENT = Tokens.PRIVATE_PLAYLIST_PREFIX + "recent"
-private val PLAYLIST_FAV = Tokens.PLAYLIST_FAVOURITES
+private val PLAYLIST_RECENT = Player.PRIVATE_PLAYLIST_PREFIX + "recent"
+private val PLAYLIST_FAV = Player.PLAYLIST_FAVOURITES
 
 private const val CAROUSEL_LIMIT = 30
 
@@ -99,7 +98,7 @@ class Repository @Inject constructor(
             .map { playlists ->
                 // drop private playlists.
                 playlists.dropWhile {
-                    it.name.indexOf(Tokens.PRIVATE_PLAYLIST_PREFIX) == 0
+                    it.name.indexOf(Player.PRIVATE_PLAYLIST_PREFIX) == 0
                 }
             }
 
@@ -300,7 +299,7 @@ class Repository @Inject constructor(
                 else -> {
                     // check the limit in this case
                     val limit = with(preferences) {
-                        preferences[Tokens.MAX_RECENT_PLAYLIST_SIZE].obtain().toLong() - 1
+                        preferences[Player.MAX_RECENT_PLAYLIST_SIZE].obtain().toLong() - 1
                     }
                     // delete above member
                     localDb.members.delete(playlistId, limit)

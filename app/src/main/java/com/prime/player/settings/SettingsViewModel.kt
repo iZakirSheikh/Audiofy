@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.Audiofy
-import com.prime.player.audio.Tokens
+import com.prime.player.audio.Player
 import com.prime.player.common.NightMode
 import com.prime.player.common.asComposeState
 import com.primex.core.Text
@@ -108,7 +108,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     val showProgressInMini = with(preferences) {
-        preferences[Tokens.SHOW_MINI_PROGRESS_BAR].map {
+        preferences[Player.SHOW_MINI_PROGRESS_BAR].map {
             Preference(
                 value = it,
                 title = Text("MiniPlayer Progress Bar"),

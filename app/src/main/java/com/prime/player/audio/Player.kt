@@ -2,14 +2,13 @@ package com.prime.player.audio
 
 import androidx.compose.ui.unit.dp
 import com.primex.preferences.booleanPreferenceKey
-import com.primex.preferences.floatPreferenceKey
 import com.primex.preferences.intPreferenceKey
 import com.primex.preferences.longPreferenceKey
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "Tokens"
 
-object Tokens {
+object Player {
     /**
      * A prefix char for private playlists.
      */

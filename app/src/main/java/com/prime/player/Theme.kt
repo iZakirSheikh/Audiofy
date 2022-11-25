@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import com.prime.player.common.FontFamily
 import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
-import kotlinx.coroutines.flow.map
 import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
 
 private const val TAG = "Theme"
@@ -39,13 +38,21 @@ private val ProvidedFontFamily = AndroidFontFamily(
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
  */
-private fun Typography(fontFamily: AndroidFontFamily): Typography {
+private fun Typography(fontFamily: FontFamily): Typography {
     return Typography(
-        defaultFontFamily = fontFamily, button = TextStyle(
+        defaultFontFamily = when (fontFamily) {
+            FontFamily.SYSTEM_DEFAULT -> AndroidFontFamily.Default
+            FontFamily.PROVIDED -> ProvidedFontFamily
+            FontFamily.SAN_SERIF -> AndroidFontFamily.SansSerif
+            FontFamily.SARIF -> AndroidFontFamily.Serif
+            FontFamily.CURSIVE -> AndroidFontFamily.Cursive
+        },
+        button = TextStyle(
             fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.25.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
-        ), overline = TextStyle(
+        ),
+        overline = TextStyle(
             fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 1.5.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
@@ -175,15 +182,7 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
     )
 
     val fontFamily by with(preferences) {
-        preferences[Audiofy.FONT_FAMILY].map { font ->
-            when (font) {
-                FontFamily.SYSTEM_DEFAULT -> AndroidFontFamily.Default
-                FontFamily.PROVIDED -> ProvidedFontFamily
-                FontFamily.SAN_SERIF -> AndroidFontFamily.SansSerif
-                FontFamily.SARIF -> AndroidFontFamily.Serif
-                FontFamily.CURSIVE -> AndroidFontFamily.Cursive
-            }
-        }.observeAsState()
+        preferences[Audiofy.FONT_FAMILY].observeAsState()
     }
 
     MaterialTheme(

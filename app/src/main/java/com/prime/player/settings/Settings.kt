@@ -29,7 +29,7 @@ import androidx.core.app.ShareCompat
 import com.prime.player.*
 import com.prime.player.BuildConfig
 import com.prime.player.R
-import com.prime.player.audio.Tokens
+import com.prime.player.audio.Player
 import com.prime.player.billing.*
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
@@ -215,7 +215,7 @@ fun Settings(
                         title = stringResource(value = showProgressInMini.title),
                         summery = stringResource(value = showProgressInMini.summery),
                         onCheckedChange = { should: Boolean ->
-                            set(Tokens.SHOW_MINI_PROGRESS_BAR, should)
+                            set(Player.SHOW_MINI_PROGRESS_BAR, should)
                             activity.showAd(force = true)
                         })
 

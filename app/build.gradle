@@ -15,7 +15,7 @@ android {
         minSdk 21
         targetSdk 33
         versionCode 12
-        versionName "1.0.0-beta07"
+        versionName "1.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -116,7 +116,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
 
     // The Accompanist Libraries
-    def accompanist_version = '0.27.0'
+    def accompanist_version = '0.27.1'
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
 
     //implementation "com.google.accompanist:accompanist-coil:$accompanist_version"
@@ -194,7 +194,7 @@ dependencies {
     def billing_version = '5.1.0'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation "com.android.billingclient:billing-ktx:$billing_version"
-    implementation("androidx.startup:startup-runtime:1.1.1")
+    //implementation("androidx.startup:startup-runtime:1.1.1")
 
     //Unity Ads
     implementation 'com.unity3d.ads:unity-ads:4.4.1'
