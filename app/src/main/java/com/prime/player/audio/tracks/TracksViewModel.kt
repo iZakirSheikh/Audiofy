@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.Audiofy
 import com.prime.player.R
-import com.prime.player.audio.Player
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
 import com.prime.player.common.*
@@ -72,7 +71,7 @@ class TracksViewModel @Inject constructor(
         when (type) {
             Type.AUDIOS -> Text("Audios")
             Type.FOLDERS -> Text(FileUtils.name(uuid))
-            Type.PLAYLISTS -> Text(if (uuid.indexOf(Player.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
+            Type.PLAYLISTS -> Text(if (uuid.indexOf(Audiofy.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
             else -> Text(uuid)
         }
 

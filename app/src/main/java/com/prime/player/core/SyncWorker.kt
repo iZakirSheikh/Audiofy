@@ -20,6 +20,7 @@ import com.prime.player.common.parent
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
+import com.primex.preferences.value
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import javax.inject.Inject
@@ -225,7 +226,7 @@ class SyncWorker @AssistedInject constructor(
             background.compress(Bitmap.CompressFormat.JPEG, 60, fos)
             //increment by 1/ms if the new is equal to old.
             // so the observer will be notified.
-            val oldMills = with(preferences) { preferences[key].obtain() }
+            val oldMills = preferences.value(key)
             var new = bitmaps.size * BITMAP_DURATION
             if (new == oldMills)
                 new += 1

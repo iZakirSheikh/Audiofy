@@ -12,15 +12,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.Audiofy
-import com.prime.player.audio.Player
 import com.prime.player.common.NightMode
 import com.prime.player.common.asComposeState
 import com.primex.core.Text
-import com.primex.preferences.*
+import com.primex.preferences.Key
+import com.primex.preferences.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -108,7 +110,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     val showProgressInMini = with(preferences) {
-        preferences[Player.SHOW_MINI_PROGRESS_BAR].map {
+        preferences[Audiofy.SHOW_MINI_PROGRESS_BAR].map {
             Preference(
                 value = it,
                 title = Text("MiniPlayer Progress Bar"),
@@ -119,25 +121,7 @@ class SettingsViewModel @Inject constructor(
     }
 
 
-    fun <T> set(key: Key<T>, value: T) {
-        viewModelScope.launch {
-            preferences[key] = value
-        }
-    }
-
-    fun <T> set(key: Key1<T>, value: T) {
-        viewModelScope.launch {
-            preferences[key] = value
-        }
-    }
-
-    fun <T, O> set(key: Key2<T, O>, value: O) {
-        viewModelScope.launch {
-            preferences[key] = value
-        }
-    }
-
-    fun <T, O> set(key: Key3<T, O>, value: O) {
+    fun <S, O> set(key: Key<S, O>, value: O) {
         viewModelScope.launch {
             preferences[key] = value
         }
@@ -146,5 +130,5 @@ class SettingsViewModel @Inject constructor(
 
 context (Preferences, ViewModel)
         private fun <T> Flow<T>.asComposeState(): State<T> = asComposeState(
-    obtain()
+    runBlocking { first() }
 )

@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prime.player.common.FontFamily
-import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
 
@@ -26,14 +25,15 @@ typealias Material = MaterialTheme
 /**
  * An Extra font family.
  */
-private val ProvidedFontFamily = AndroidFontFamily(
-    //light
-    Font(R.font.lato_light, FontWeight.Light),
-    //normal
-    Font(R.font.lato_regular, FontWeight.Normal),
-    //bold
-    Font(R.font.lato_bold, FontWeight.Bold),
-)
+private val ProvidedFontFamily =
+    AndroidFontFamily(
+        //light
+        Font(R.font.lato_light, FontWeight.Light),
+        //normal
+        Font(R.font.lato_regular, FontWeight.Normal),
+        //bold
+        Font(R.font.lato_bold, FontWeight.Bold),
+    )
 
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
@@ -81,18 +81,14 @@ val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
  * checks If [GlobalKeys.FORCE_COLORIZE]
  */
 val MaterialTheme.forceColorize
-    @Composable inline get() = LocalPreferenceStore.current.run {
-        get(Audiofy.FORCE_COLORIZE).observeAsState()
-    }
+    @Composable inline get() = preference(key = Audiofy.FORCE_COLORIZE)
 
 
 /**
  * checks If [GlobalKeys.FORCE_COLORIZE]
  */
 val MaterialTheme.colorStatusBar
-    @Composable inline get() = LocalPreferenceStore.current.run {
-        get(Audiofy.COLOR_STATUS_BAR).observeAsState()
-    }
+    @Composable inline get() = preference(key = Audiofy.COLOR_STATUS_BAR)
 
 private val small2 = RoundedCornerShape(8.dp)
 
@@ -150,8 +146,6 @@ private val defaultThemeShapes = Shapes(
 @Composable
 fun Material(isDark: Boolean, content: @Composable () -> Unit) {
 
-    val preferences = LocalPreferenceStore.current
-
     val background by animateColorAsState(
         targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
         animationSpec = tween(AnimationConstants.DefaultDurationMillis)
@@ -181,9 +175,7 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
         isLight = !isDark
     )
 
-    val fontFamily by with(preferences) {
-        preferences[Audiofy.FONT_FAMILY].observeAsState()
-    }
+    val fontFamily by preference(key = Audiofy.FONT_FAMILY)
 
     MaterialTheme(
         colors = colors,

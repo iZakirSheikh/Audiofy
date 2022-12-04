@@ -17,7 +17,6 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.player.audio.Player
 import com.prime.player.audio.buckets.Buckets
 import com.prime.player.audio.buckets.BucketsViewModel
 import com.prime.player.audio.console.Console
@@ -113,7 +112,7 @@ fun Home() {
             sheetElevation = 0.dp,
             sheetGesturesEnabled = false,
             sheetBackgroundColor = androidx.compose.ui.graphics.Color.Transparent,
-            sheetPeekHeight = if (show) Player.MINI_PLAYER_HEIGHT else 0.dp,
+            sheetPeekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp,
 
             sheetContent = {
                 Console(

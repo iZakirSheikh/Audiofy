@@ -51,7 +51,6 @@ import com.prime.player.core.playback.PlaybackService
 import com.primex.core.*
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
-import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import com.primex.ui.views.MarqueText
 import cz.levinzonr.saferoute.core.navigateTo
@@ -143,9 +142,7 @@ private fun ConsoleViewModel.MiniLayout(
             }
         )
 
-        val showProgress by with(LocalPreferenceStore.current) {
-            get(Player.SHOW_MINI_PROGRESS_BAR).observeAsState()
-        }
+        val showProgress by preference(key = Audiofy.SHOW_MINI_PROGRESS_BAR)
         if (showProgress) {
             val progress by progress
             LinearProgressIndicator(
@@ -833,7 +830,7 @@ fun Console(
                                             interactionSource = remember(::MutableInteractionSource)
                                         )
                                         .fillMaxWidth(0.78f)
-                                        .requiredHeight(Player.MINI_PLAYER_HEIGHT - 10.dp),
+                                        .requiredHeight(Audiofy.MINI_PLAYER_HEIGHT - 10.dp),
                                     shape = CircleShape,
                                     elevation = ContentElevation.high,
                                     content = { MiniLayout() }

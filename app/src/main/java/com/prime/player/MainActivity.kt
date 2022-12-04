@@ -1,6 +1,7 @@
 package com.prime.player
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -20,6 +21,7 @@ import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
@@ -46,11 +48,10 @@ import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
 import com.prime.player.core.SyncWorker
 import com.primex.core.activity
-import com.primex.preferences.LocalPreferenceStore
-import com.primex.preferences.Preferences
-import com.primex.preferences.longPreferenceKey
+import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
 import com.primex.ui.Label
+import com.primex.ui.activity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -59,6 +60,27 @@ import javax.inject.Inject
 private const val TAG = "MainActivity"
 
 private const val RESULT_CODE_APP_UPDATE = 1000
+
+/**
+ * A simple fun that uses [MainActivity] to fetch [Preference] as state.
+ */
+@Composable
+inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
+/**
+ * @see [preference]
+ */
+@Composable
+inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
 
 @Composable
 private fun PermissionRationale(
@@ -81,10 +103,7 @@ private fun PermissionRationale(
 
 @Composable
 private fun resolveAppThemeState(): Boolean {
-    val preferences = LocalPreferenceStore.current
-    val mode by with(preferences) {
-        preferences[Audiofy.NIGHT_MODE].observeAsState()
-    }
+    val mode by preference(key = Audiofy.NIGHT_MODE)
     return when (mode) {
         NightMode.YES -> true
         else -> false
@@ -144,11 +163,11 @@ fun Activity.launchReviewFlow() {
     require(this is MainActivity)
     lifecycleScope.launch {
         val count =
-            with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+            preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
 
         // the time when lastly asked for review
         val lastAskedTime =
-            with(preferences) { preferences[KEY_LAST_REVIEW_TIME].obtain() }
+            preferences.value(KEY_LAST_REVIEW_TIME)
 
         val firstInstallTime =
             com.primex.core.runCatching(TAG + "_review") {
@@ -350,6 +369,7 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    @SuppressLint("WrongThread")
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -380,7 +400,7 @@ class MainActivity : ComponentActivity() {
 
         if (isColdStart) {
             val counter =
-                with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+                preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
             // update launch counter if
             // cold start.
             preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
@@ -407,7 +427,7 @@ class MainActivity : ComponentActivity() {
             val sWindow = calculateWindowSizeClass(activity = this)
             // observe the change to density
             val density = LocalDensity.current
-            val fontScale by with(preferences) { get(Audiofy.FONT_SCALE).observeAsState() }
+            val fontScale by preference(key = Audiofy.FONT_SCALE)
             val modified = Density(density = density.density, fontScale = fontScale)
 
             val permission =
@@ -415,7 +435,6 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalElevationOverlay provides null,
                 LocalWindowSizeClass provides sWindow,
-                LocalPreferenceStore provides preferences,
                 LocalDensity provides modified,
                 LocalSnackDataChannel provides channel
             ) {
