@@ -38,7 +38,6 @@ import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
-import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -202,10 +201,11 @@ fun Activity.launchReviewFlow() {
         // reviewed or not, or even whether the review dialog was shown. Thus, no
         // matter the result, we continue our app flow.
         com.primex.core.runCatching(TAG) {
+            val reviewManager = ReviewManagerFactory.create(this@launchReviewFlow)
             // update the last asking
             preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
-            val info = mReviewManager.requestReview()
-            mReviewManager.launchReviewFlow(this@launchReviewFlow, info)
+            val info = reviewManager.requestReview()
+            reviewManager.launchReviewFlow(this@launchReviewFlow, info)
             //host.fAnalytics.
         }
     }
@@ -348,10 +348,9 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var observer: ContentObserver
 
-    lateinit var fAnalytics: FirebaseAnalytics
-    lateinit var mReviewManager: ReviewManager
-    lateinit var advertiser: Advertiser
-    lateinit var billingManager: BillingManager
+    val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+    val advertiser by lazy { Advertiser(this) }
+    val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
 
     @Inject
     lateinit var preferences: Preferences
@@ -375,13 +374,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
         val isColdStart = savedInstanceState == null //why?
-        // Obtain the FirebaseAnalytics instance.
-        fAnalytics = Firebase.analytics
         // show splash screen
         initSplashScreen(
             isColdStart
         )
-        mReviewManager = ReviewManagerFactory.create(this)
         val channel = SnackDataChannel()
         //Observe the MediaStore
         observer =
@@ -413,16 +409,6 @@ class MainActivity : ComponentActivity() {
         }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // setup billing manager
-
-        billingManager =
-            BillingManager(
-                context = this, products = arrayOf(
-                    Product.DISABLE_ADS
-                )
-            )
-        advertiser = Advertiser(this)
-
         setContent {
             val sWindow = calculateWindowSizeClass(activity = this)
             // observe the change to density
