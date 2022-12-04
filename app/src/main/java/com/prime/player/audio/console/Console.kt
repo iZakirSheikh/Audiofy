@@ -687,7 +687,7 @@ private fun ConsoleViewModel.Layout(
         val duration = current?.duration?.toFloat() ?: 0f
         Slider(
             value = value, onValueChange = { seekTo(it) },
-            steps = (duration / 45_000).toInt(),
+            //steps = (duration / 45_000).toInt(),
             valueRange = 0f..duration,
             modifier = Modifier.constrainAs(Slider) {
                 bottom.linkTo(Album.top, ContentPadding.small)
