@@ -256,12 +256,11 @@ fun Settings(
 
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
-                    val channel = LocalSnackDataChannel.current
                     Preference(title = stringResource(R.string.app_version),
                         summery = "$version \nClick to check for updates.",
                         icon = Icons.Outlined.TouchApp,
                         modifier = Modifier.clickable(onClick = {
-                            activity.launchUpdateFlow(channel)
+                            activity.launchUpdateFlow()
                         })
                     )
 

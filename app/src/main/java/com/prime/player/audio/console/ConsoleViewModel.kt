@@ -17,8 +17,8 @@ import androidx.lifecycle.viewModelScope
 import com.prime.player.Audiofy
 import com.prime.player.R
 import com.prime.player.common.Util
-import com.prime.player.common.compose.Snack
-import com.prime.player.common.compose.SnackDataChannel
+import com.prime.player.common.compose.ToastHostState
+import com.prime.player.common.compose.show
 import com.prime.player.common.formatAsDuration
 import com.prime.player.common.getAlbumArt
 import com.prime.player.core.Audio
@@ -45,7 +45,7 @@ class ConsoleViewModel @Inject constructor(
     /**
      * This channel must be set from composable.
      */
-    var messenger: SnackDataChannel? = null
+    var messenger: ToastHostState? = null
 
     private val mPlaybackListener =
         object : PlaybackService.EventListener {
@@ -204,16 +204,12 @@ class ConsoleViewModel @Inject constructor(
             val newMode = service?.repeatMode ?: PlaybackService.REPEAT_MODE_NONE
             (repeatMode as MutableState).value = newMode
 
-            val message = Snack(
+            messenger?.show(
                 message = when (newMode) {
                     PlaybackService.REPEAT_MODE_NONE -> "Repeat mode none."
                     PlaybackService.REPEAT_MODE_ALL -> "Repeat mode all."
                     else -> "Repeat mode one."
                 }
-            )
-
-            messenger?.send(
-                message
             )
         }
     }
@@ -242,7 +238,7 @@ class ConsoleViewModel @Inject constructor(
 
     fun setSleepAfter(minutes: Int) {
         viewModelScope.launch {
-            val message = Snack(
+            messenger?.show(
                 message = when (minutes) {
                     in 1..180 -> {
                         val mills = TimeUnit.MINUTES.toMillis(minutes.toLong())
@@ -256,7 +252,6 @@ class ConsoleViewModel @Inject constructor(
                     else -> "Invalid sleep timer value"
                 }
             )
-            messenger?.send(message)
         }
     }
 
@@ -294,13 +289,12 @@ class ConsoleViewModel @Inject constructor(
             // service?.to
             service?.toggleFav()
             val favourite = service?.isFavourite
-            val message = Snack(
+            messenger?.show(
                 message = when (favourite) {
                     true -> context.getString(R.string.msg_fav_added)
                     else -> context.getString(R.string.msg_fav_removed)
                 }
             )
-            messenger?.send(message)
         }
     }
 
@@ -319,10 +313,9 @@ class ConsoleViewModel @Inject constructor(
             service?.toggleShuffle()
             val newValue = service?.isShuffleEnabled ?: false
             (shuffle as MutableState).value = newValue
-            val message = Snack(
+            messenger?.show(
                 message = if (newValue) "Shuffle enabled." else "Shuffle disabled."
             )
-            messenger?.send(message)
         }
     }
 

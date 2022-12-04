@@ -183,7 +183,7 @@ private fun SortBy(
     onDismissRequest: () -> Unit
 ) {
     var checked by rememberState(initial = 0)
-    val channel = LocalSnackDataChannel.current
+    val channel = LocalContext.toastHostState
     DropdownMenu(
         title = "Sort By",
         checked = checked,
@@ -288,7 +288,7 @@ fun Header(
         )
 
         val context = LocalContext.current
-        val channel = LocalSnackDataChannel.current
+        val channel = LocalContext.toastHostState
         val enabled by remember { derivedStateOf { selected.size > 0 } }
         //Share
         IconButton(
@@ -676,7 +676,7 @@ private inline fun Audio.trailing(resolver: TracksViewModel) =
     @Composable {
         Row {
             val favourite = resolver.favourite.value.contains(id)
-            val channel = LocalSnackDataChannel.current
+            val channel = LocalContext.toastHostState
 
             Crossfade(targetState = favourite) {
                 IconButton(

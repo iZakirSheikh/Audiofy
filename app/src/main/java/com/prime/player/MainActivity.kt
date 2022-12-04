@@ -18,9 +18,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalElevationOverlay
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -40,16 +40,17 @@ import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
 import com.prime.player.billing.*
 import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
+import com.prime.player.common.compose.ToastHostState.Duration
+import com.prime.player.common.compose.ToastHostState.Result
 import com.prime.player.core.SyncWorker
 import com.primex.core.activity
 import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
 import com.primex.ui.Label
+import com.primex.ui.MetroGreen
 import com.primex.ui.activity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -219,25 +220,30 @@ private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
  * @param report simple messages.
  */
 fun Activity.launchUpdateFlow(
-    channel: SnackDataChannel,
     report: Boolean = false,
 ) {
     require(this is MainActivity)
     lifecycleScope.launch {
         com.primex.core.runCatching(TAG) {
             val manager = AppUpdateManagerFactory.create(this@launchUpdateFlow)
+            val channel = toastHostState
             manager.requestUpdateFlow().collect { result ->
                 when (result) {
                     AppUpdateResult.NotAvailable -> if (report)
-                        channel.send("The app is already updated to the latest version.")
+                        channel.show("The app is already updated to the latest version.")
                     is AppUpdateResult.InProgress -> {
-                        //FixMe: Publish progress
                         val state = result.installState
-                        val progress =
-                            state.bytesDownloaded() / (state.totalBytesToDownload() + 0.1) * 100
+
+                        val total = state.totalBytesToDownload()
+                        val downloaded = state.bytesDownloaded()
+
+                        val progress = when {
+                            total <= 0 -> -1f
+                            total == downloaded -> Float.NaN
+                            else -> downloaded / total.toFloat()
+                        }
+                        (inAppUpdateProgress as MutableState).value = progress
                         Log.i(TAG, "check: $progress")
-                        // currently don't show any message
-                        // future version find ways to show progress.
                     }
                     is AppUpdateResult.Downloaded -> {
                         val info = manager.requestAppUpdateInfo()
@@ -249,17 +255,21 @@ fun Activity.launchUpdateFlow(
                                     FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
 
                         // forcefully update; if it's flexible
-                        if (!isFlexible)
+                        if (!isFlexible) {
                             manager.completeUpdate()
-                        else
-                        // ask gracefully
-                            channel.send(
-                                message = "An update has just been downloaded.",
-                                label = "RESTART",
-                                action = manager::completeUpdate,
-                                duration = SnackbarDuration.Indefinite
-                            )
-                        // no message needs to be shown
+                            return@collect
+                        }
+                        // else show the toast.
+                        val res = channel.show(
+                            title = "Update",
+                            message = "An update has just been downloaded.",
+                            label = "RESTART",
+                            duration = Duration.Indefinite,
+                            accent = Color.MetroGreen
+                        )
+                        // complete update when ever user clicks on action.
+                        if (res == Result.ActionPerformed)
+                            manager.completeUpdate()
                     }
                     is AppUpdateResult.Available -> {
                         // if user choose to skip the update handle that case also.
@@ -343,6 +353,29 @@ val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
         return activity.fAnalytics
     }
 
+/**
+ * A simple extension property on [LocalContext] that returns the [ToastHostState].
+ * *Requirements*
+ * * The context must contain the [Activity] as [MainActivity]
+ */
+val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
+    @ReadOnlyComposable
+    @Composable
+    inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.toastHostState
+    }
+
+val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
+    @ReadOnlyComposable
+    @Composable
+    inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.inAppUpdateProgress
+    }
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -351,6 +384,13 @@ class MainActivity : ComponentActivity() {
     val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
     val advertiser by lazy { Advertiser(this) }
     val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
+    val toastHostState by lazy { ToastHostState() }
+
+    /**
+     * The progress of the in-App update.
+     */
+    val inAppUpdateProgress: State<Float> = mutableStateOf(Float.NaN)
+
 
     @Inject
     lateinit var preferences: Preferences
@@ -378,7 +418,6 @@ class MainActivity : ComponentActivity() {
         initSplashScreen(
             isColdStart
         )
-        val channel = SnackDataChannel()
         //Observe the MediaStore
         observer =
             object : ContentObserver(null) {
@@ -403,7 +442,7 @@ class MainActivity : ComponentActivity() {
             // check for updates on startup
             // don't report
             // check silently
-            launchUpdateFlow(channel)
+            launchUpdateFlow()
             // TODO: Try to reconcile if it is any good to ask for reviews here.
             // launchReviewFlow()
         }
@@ -421,8 +460,7 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalElevationOverlay provides null,
                 LocalWindowSizeClass provides sWindow,
-                LocalDensity provides modified,
-                LocalSnackDataChannel provides channel
+                LocalDensity provides modified
             ) {
                 Material(isDark = resolveAppThemeState()) {
                     // scaffold

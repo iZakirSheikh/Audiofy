@@ -3,6 +3,7 @@ package com.prime.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,10 +26,7 @@ import com.prime.player.audio.library.Library
 import com.prime.player.audio.library.LibraryViewModel
 import com.prime.player.audio.tracks.Tracks
 import com.prime.player.audio.tracks.TracksViewModel
-import com.prime.player.common.compose.LocalNavController
-import com.prime.player.common.compose.LocalSnackDataChannel
-import com.prime.player.common.compose.LocalWindowPadding
-import com.prime.player.common.compose.stringResource
+import com.prime.player.common.compose.*
 import com.prime.player.settings.MainGraphRoutes
 import com.prime.player.settings.Settings
 import com.prime.player.settings.SettingsViewModel
@@ -45,102 +43,6 @@ private val EnterTransition = scaleIn(
 ) + fadeIn(animationSpec = tween(700))
 
 private val ExitTransition = fadeOut(tween(700))
-
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
-@Composable
-fun Home() {
-    // Currently; supports only 1 Part
-    // add others in future
-    // including support for more tools, like direction, prime factorization etc.
-    // also support for navGraph.
-    val controller = rememberAnimatedNavController()
-    val scope = rememberCoroutineScope()
-    val consoleViewModel = hiltViewModel<ConsoleViewModel>()
-
-    //FixMe - Needs to be corrected.
-    val connected by consoleViewModel.connected
-    LaunchedEffect(key1 = connected) {
-        //delay(1000)
-        consoleViewModel.connect()
-    }
-    val show = consoleViewModel.current.value != null
-
-    // The state of the Snackbar
-    val snackbar = remember(::SnackbarHostState)
-    //Handle messages etc.
-    val state =
-        rememberBottomSheetScaffoldState(snackbarHostState = snackbar)
-
-    // observe the channel
-    // emit the updates
-    val channel = LocalSnackDataChannel.current
-    val resource = LocalContext.current.resources
-    LaunchedEffect(key1 = channel) {
-        channel.receiveAsFlow().collect { (label, message, duration, action) ->
-            // dismantle the given snack and use the corresponding components
-            val result = snackbar.showSnackbar(
-                message = resource.stringResource(message).text,
-                actionLabel = resource.stringResource(label)?.text
-                    ?: resource.getString(R.string.dismiss),
-                duration = duration
-            )
-            // action based on
-            when (result) {
-                SnackbarResult.ActionPerformed -> action?.invoke()
-                SnackbarResult.Dismissed -> { /*do nothing*/
-                }
-            }
-        }
-    }
-
-    BackHandler(state.bottomSheetState.isExpanded) {
-        if (state.bottomSheetState.isExpanded)
-            scope.launch {
-                state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Collapsed)
-            }
-    }
-
-    var windowPadding by rememberState(initial = PaddingValues(0.dp))
-    CompositionLocalProvider(
-        LocalWindowPadding provides windowPadding,
-        LocalNavController provides controller,
-    ) {
-        //Bottom sheet
-        BottomSheetScaffold(
-            backgroundColor = Material.colors.background,
-            scaffoldState = state,
-            sheetElevation = 0.dp,
-            sheetGesturesEnabled = false,
-            sheetBackgroundColor = androidx.compose.ui.graphics.Color.Transparent,
-            sheetPeekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp,
-
-            sheetContent = {
-                Console(
-                    viewModel = consoleViewModel,
-                    expanded = state.bottomSheetState.isExpanded
-                ) {
-                    scope.launch {
-                        if (state.bottomSheetState.isExpanded) {
-                            state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Collapsed)
-                        } else {
-                            state.bottomSheetState.snapTo(targetValue = BottomSheetValue.Expanded)
-                        }
-                    }
-                }
-            },
-
-            content = { inner ->
-                // update window padding when ever it changes.
-                windowPadding = inner
-                Box(
-                    Modifier.fillMaxSize(),
-                    content = { NavGraph() }
-                )
-            },
-        )
-    }
-}
-
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -205,3 +107,59 @@ private fun NavGraphBuilder.composable(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@Composable
+fun Home() {
+    // Currently; supports only 1 Part
+    // add others in future
+    // including support for more tools, like direction, prime factorization etc.
+    // also support for navGraph.
+    val controller = rememberAnimatedNavController()
+    val scope = rememberCoroutineScope()
+    val consoleViewModel = hiltViewModel<ConsoleViewModel>()
+
+    //FixMe - Needs to be corrected.
+    val connected by consoleViewModel.connected
+    LaunchedEffect(key1 = connected) {
+        //delay(1000)
+        consoleViewModel.connect()
+    }
+    val show = consoleViewModel.current.value != null
+    //Handle messages etc.
+    val state =
+        rememberPlayerState(initial = PlayerValue.COLLAPSED)
+
+    BackHandler(state.isExpanded) {
+        scope.launch { state.snapTo(PlayerValue.COLLAPSED) }
+    }
+
+    val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
+    val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
+    CompositionLocalProvider(
+        LocalWindowPadding provides windowPadding,
+        LocalNavController provides controller,
+    ) {
+        Player(
+            sheet = {
+                Console(consoleViewModel, state.isExpanded, { scope.launch { state.toggle() } })
+            },
+            state = state,
+            sheetPeekHeight = peekHeight,
+            toast = LocalContext.toastHostState,
+            progress = LocalContext.inAppUpdateProgress.value,
+            content = {
+                Surface(modifier = Modifier.fillMaxSize(), color = Material.colors.background) {
+                    NavGraph()
+                }
+            }
+        )
+    }
+}
+
+private suspend inline fun PlayerState.toggle() {
+    if (isExpanded) {
+        snapTo(targetValue = PlayerValue.COLLAPSED)
+    } else {
+        snapTo(targetValue = PlayerValue.EXPANDED)
+    }
+}

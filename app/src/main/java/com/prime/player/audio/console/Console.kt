@@ -857,7 +857,7 @@ fun Console(
                         val controller = rememberSystemUiController()
                         val greyIcons = controller.statusBarDarkContentEnabled
                         val isLight = Material.colors.isLight
-                        val channel = LocalSnackDataChannel.current
+                        val channel = LocalContext.toastHostState
                         DisposableEffect(key1 = greyIcons && isLight) {
                             // set icon color for current screen
                             controller.setStatusBarColor(Color.Transparent, isLight)

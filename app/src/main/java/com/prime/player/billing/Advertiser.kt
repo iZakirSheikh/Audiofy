@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.prime.player.BuildConfig
@@ -65,6 +66,8 @@ fun Advertiser(
     forceDelay: Long = DEFAULT_FORCE_DELAY,
 ) = object : Advertiser {
 
+    private val fAnalytics = Firebase.analytics
+
     init {
         // init ads sdk
         UnityAds.initialize(
@@ -88,7 +91,7 @@ fun Advertiser(
         )
     }
 
-    private val fAnalytics = Firebase.analytics
+
 
     /**
      * The time in *mills* when interstitial ad was showed.

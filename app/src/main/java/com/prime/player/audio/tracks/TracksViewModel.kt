@@ -13,8 +13,8 @@ import com.prime.player.R
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
 import com.prime.player.common.*
-import com.prime.player.common.compose.SnackDataChannel
-import com.prime.player.common.compose.send
+import com.prime.player.common.compose.ToastHostState
+import com.prime.player.common.compose.show
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
 import com.prime.player.core.Repository
@@ -108,7 +108,7 @@ class TracksViewModel @Inject constructor(
     fun filter(
         value: GroupBy,
         ascending: Boolean,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
             val old = filter.value
@@ -132,7 +132,7 @@ class TracksViewModel @Inject constructor(
      */
     fun toggleFav(
         id: Long,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
             repository.toggleFav(id)
@@ -145,7 +145,7 @@ class TracksViewModel @Inject constructor(
      */
     fun share(
         context: Context,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
             val list = ArrayList<Audio>()
@@ -167,7 +167,7 @@ class TracksViewModel @Inject constructor(
         context: Context,
         shuffle: Boolean = false,
         indexOf: Audio? = null,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
 
@@ -185,7 +185,7 @@ class TracksViewModel @Inject constructor(
                     context.getString(it.raw as Int)
             }
 
-            channel?.send(
+            channel?.show(
                 message = "Playing queue $title"
             )
 
