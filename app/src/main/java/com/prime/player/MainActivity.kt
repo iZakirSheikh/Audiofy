@@ -1,6 +1,7 @@
 package com.prime.player
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -17,9 +18,10 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalElevationOverlay
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
@@ -36,21 +38,20 @@ import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
-import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
 import com.prime.player.billing.*
 import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
+import com.prime.player.common.compose.ToastHostState.Duration
+import com.prime.player.common.compose.ToastHostState.Result
 import com.prime.player.core.SyncWorker
 import com.primex.core.activity
-import com.primex.preferences.LocalPreferenceStore
-import com.primex.preferences.Preferences
-import com.primex.preferences.longPreferenceKey
+import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
 import com.primex.ui.Label
+import com.primex.ui.MetroGreen
+import com.primex.ui.activity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -59,6 +60,27 @@ import javax.inject.Inject
 private const val TAG = "MainActivity"
 
 private const val RESULT_CODE_APP_UPDATE = 1000
+
+/**
+ * A simple fun that uses [MainActivity] to fetch [Preference] as state.
+ */
+@Composable
+inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
+/**
+ * @see [preference]
+ */
+@Composable
+inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
 
 @Composable
 private fun PermissionRationale(
@@ -81,10 +103,7 @@ private fun PermissionRationale(
 
 @Composable
 private fun resolveAppThemeState(): Boolean {
-    val preferences = LocalPreferenceStore.current
-    val mode by with(preferences) {
-        preferences[Audiofy.NIGHT_MODE].observeAsState()
-    }
+    val mode by preference(key = Audiofy.NIGHT_MODE)
     return when (mode) {
         NightMode.YES -> true
         else -> false
@@ -144,11 +163,11 @@ fun Activity.launchReviewFlow() {
     require(this is MainActivity)
     lifecycleScope.launch {
         val count =
-            with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+            preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
 
         // the time when lastly asked for review
         val lastAskedTime =
-            with(preferences) { preferences[KEY_LAST_REVIEW_TIME].obtain() }
+            preferences.value(KEY_LAST_REVIEW_TIME)
 
         val firstInstallTime =
             com.primex.core.runCatching(TAG + "_review") {
@@ -183,10 +202,11 @@ fun Activity.launchReviewFlow() {
         // reviewed or not, or even whether the review dialog was shown. Thus, no
         // matter the result, we continue our app flow.
         com.primex.core.runCatching(TAG) {
+            val reviewManager = ReviewManagerFactory.create(this@launchReviewFlow)
             // update the last asking
             preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
-            val info = mReviewManager.requestReview()
-            mReviewManager.launchReviewFlow(this@launchReviewFlow, info)
+            val info = reviewManager.requestReview()
+            reviewManager.launchReviewFlow(this@launchReviewFlow, info)
             //host.fAnalytics.
         }
     }
@@ -200,25 +220,30 @@ private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
  * @param report simple messages.
  */
 fun Activity.launchUpdateFlow(
-    channel: SnackDataChannel,
     report: Boolean = false,
 ) {
     require(this is MainActivity)
     lifecycleScope.launch {
         com.primex.core.runCatching(TAG) {
             val manager = AppUpdateManagerFactory.create(this@launchUpdateFlow)
+            val channel = toastHostState
             manager.requestUpdateFlow().collect { result ->
                 when (result) {
                     AppUpdateResult.NotAvailable -> if (report)
-                        channel.send("The app is already updated to the latest version.")
+                        channel.show("The app is already updated to the latest version.")
                     is AppUpdateResult.InProgress -> {
-                        //FixMe: Publish progress
                         val state = result.installState
-                        val progress =
-                            state.bytesDownloaded() / (state.totalBytesToDownload() + 0.1) * 100
+
+                        val total = state.totalBytesToDownload()
+                        val downloaded = state.bytesDownloaded()
+
+                        val progress = when {
+                            total <= 0 -> -1f
+                            total == downloaded -> Float.NaN
+                            else -> downloaded / total.toFloat()
+                        }
+                        (inAppUpdateProgress as MutableState).value = progress
                         Log.i(TAG, "check: $progress")
-                        // currently don't show any message
-                        // future version find ways to show progress.
                     }
                     is AppUpdateResult.Downloaded -> {
                         val info = manager.requestAppUpdateInfo()
@@ -230,17 +255,21 @@ fun Activity.launchUpdateFlow(
                                     FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
 
                         // forcefully update; if it's flexible
-                        if (!isFlexible)
+                        if (!isFlexible) {
                             manager.completeUpdate()
-                        else
-                        // ask gracefully
-                            channel.send(
-                                message = "An update has just been downloaded.",
-                                label = "RESTART",
-                                action = manager::completeUpdate,
-                                duration = SnackbarDuration.Indefinite
-                            )
-                        // no message needs to be shown
+                            return@collect
+                        }
+                        // else show the toast.
+                        val res = channel.show(
+                            title = "Update",
+                            message = "An update has just been downloaded.",
+                            label = "RESTART",
+                            duration = Duration.Indefinite,
+                            accent = Color.MetroGreen
+                        )
+                        // complete update when ever user clicks on action.
+                        if (res == Result.ActionPerformed)
+                            manager.completeUpdate()
                     }
                     is AppUpdateResult.Available -> {
                         // if user choose to skip the update handle that case also.
@@ -324,15 +353,44 @@ val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
         return activity.fAnalytics
     }
 
+/**
+ * A simple extension property on [LocalContext] that returns the [ToastHostState].
+ * *Requirements*
+ * * The context must contain the [Activity] as [MainActivity]
+ */
+val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
+    @ReadOnlyComposable
+    @Composable
+    inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.toastHostState
+    }
+
+val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
+    @ReadOnlyComposable
+    @Composable
+    inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.inAppUpdateProgress
+    }
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private lateinit var observer: ContentObserver
 
-    lateinit var fAnalytics: FirebaseAnalytics
-    lateinit var mReviewManager: ReviewManager
-    lateinit var advertiser: Advertiser
-    lateinit var billingManager: BillingManager
+    val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+    val advertiser by lazy { Advertiser(this) }
+    val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
+    val toastHostState by lazy { ToastHostState() }
+
+    /**
+     * The progress of the in-App update.
+     */
+    val inAppUpdateProgress: State<Float> = mutableStateOf(Float.NaN)
+
 
     @Inject
     lateinit var preferences: Preferences
@@ -350,19 +408,16 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    @SuppressLint("WrongThread")
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
         val isColdStart = savedInstanceState == null //why?
-        // Obtain the FirebaseAnalytics instance.
-        fAnalytics = Firebase.analytics
         // show splash screen
         initSplashScreen(
             isColdStart
         )
-        mReviewManager = ReviewManagerFactory.create(this)
-        val channel = SnackDataChannel()
         //Observe the MediaStore
         observer =
             object : ContentObserver(null) {
@@ -380,34 +435,24 @@ class MainActivity : ComponentActivity() {
 
         if (isColdStart) {
             val counter =
-                with(preferences) { preferences[Audiofy.KEY_LAUNCH_COUNTER].obtain() } ?: 0
+                preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
             // update launch counter if
             // cold start.
             preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
             // check for updates on startup
             // don't report
             // check silently
-            launchUpdateFlow(channel)
+            launchUpdateFlow()
             // TODO: Try to reconcile if it is any good to ask for reviews here.
             // launchReviewFlow()
         }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // setup billing manager
-
-        billingManager =
-            BillingManager(
-                context = this, products = arrayOf(
-                    Product.DISABLE_ADS
-                )
-            )
-        advertiser = Advertiser(this)
-
         setContent {
             val sWindow = calculateWindowSizeClass(activity = this)
             // observe the change to density
             val density = LocalDensity.current
-            val fontScale by with(preferences) { get(Audiofy.FONT_SCALE).observeAsState() }
+            val fontScale by preference(key = Audiofy.FONT_SCALE)
             val modified = Density(density = density.density, fontScale = fontScale)
 
             val permission =
@@ -415,9 +460,7 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(
                 LocalElevationOverlay provides null,
                 LocalWindowSizeClass provides sWindow,
-                LocalPreferenceStore provides preferences,
-                LocalDensity provides modified,
-                LocalSnackDataChannel provides channel
+                LocalDensity provides modified
             ) {
                 Material(isDark = resolveAppThemeState()) {
                     // scaffold

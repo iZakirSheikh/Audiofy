@@ -51,7 +51,6 @@ import com.prime.player.core.playback.PlaybackService
 import com.primex.core.*
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
-import com.primex.preferences.LocalPreferenceStore
 import com.primex.ui.*
 import com.primex.ui.views.MarqueText
 import cz.levinzonr.saferoute.core.navigateTo
@@ -143,9 +142,7 @@ private fun ConsoleViewModel.MiniLayout(
             }
         )
 
-        val showProgress by with(LocalPreferenceStore.current) {
-            get(Player.SHOW_MINI_PROGRESS_BAR).observeAsState()
-        }
+        val showProgress by preference(key = Audiofy.SHOW_MINI_PROGRESS_BAR)
         if (showProgress) {
             val progress by progress
             LinearProgressIndicator(
@@ -690,7 +687,7 @@ private fun ConsoleViewModel.Layout(
         val duration = current?.duration?.toFloat() ?: 0f
         Slider(
             value = value, onValueChange = { seekTo(it) },
-            steps = (duration / 45_000).toInt(),
+            //steps = (duration / 45_000).toInt(),
             valueRange = 0f..duration,
             modifier = Modifier.constrainAs(Slider) {
                 bottom.linkTo(Album.top, ContentPadding.small)
@@ -833,7 +830,7 @@ fun Console(
                                             interactionSource = remember(::MutableInteractionSource)
                                         )
                                         .fillMaxWidth(0.78f)
-                                        .requiredHeight(Player.MINI_PLAYER_HEIGHT - 10.dp),
+                                        .requiredHeight(Audiofy.MINI_PLAYER_HEIGHT - 10.dp),
                                     shape = CircleShape,
                                     elevation = ContentElevation.high,
                                     content = { MiniLayout() }
@@ -860,7 +857,7 @@ fun Console(
                         val controller = rememberSystemUiController()
                         val greyIcons = controller.statusBarDarkContentEnabled
                         val isLight = Material.colors.isLight
-                        val channel = LocalSnackDataChannel.current
+                        val channel = LocalContext.toastHostState
                         DisposableEffect(key1 = greyIcons && isLight) {
                             // set icon color for current screen
                             controller.setStatusBarColor(Color.Transparent, isLight)

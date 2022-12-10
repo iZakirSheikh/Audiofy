@@ -3,9 +3,10 @@ package com.prime.player.core
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.annotation.WorkerThread
-import com.prime.player.audio.Player
+import com.prime.player.Audiofy
 import com.primex.core.runCatching
 import com.primex.preferences.Preferences
+import com.primex.preferences.value
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -19,8 +20,8 @@ private const val TAG = "Repository"
 
 private const val PLAYLIST_UNIQUE_TAG = "local_audios"
 
-private val PLAYLIST_RECENT = Player.PRIVATE_PLAYLIST_PREFIX + "recent"
-private val PLAYLIST_FAV = Player.PLAYLIST_FAVOURITES
+private val PLAYLIST_RECENT = Audiofy.PRIVATE_PLAYLIST_PREFIX + "recent"
+private val PLAYLIST_FAV = Audiofy.PLAYLIST_FAVOURITES
 
 private const val CAROUSEL_LIMIT = 30
 
@@ -98,7 +99,7 @@ class Repository @Inject constructor(
             .map { playlists ->
                 // drop private playlists.
                 playlists.dropWhile {
-                    it.name.indexOf(Player.PRIVATE_PLAYLIST_PREFIX) == 0
+                    it.name.indexOf(Audiofy.PRIVATE_PLAYLIST_PREFIX) == 0
                 }
             }
 
@@ -298,9 +299,7 @@ class Repository @Inject constructor(
                 }
                 else -> {
                     // check the limit in this case
-                    val limit = with(preferences) {
-                        preferences[Player.MAX_RECENT_PLAYLIST_SIZE].obtain().toLong() - 1
-                    }
+                    val limit = preferences.value(Audiofy.MAX_RECENT_PLAYLIST_SIZE).toLong() - 1
                     // delete above member
                     localDb.members.delete(playlistId, limit)
                     localDb.members.insert(

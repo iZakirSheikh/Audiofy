@@ -29,7 +29,6 @@ import androidx.core.app.ShareCompat
 import com.prime.player.*
 import com.prime.player.BuildConfig
 import com.prime.player.R
-import com.prime.player.audio.Player
 import com.prime.player.billing.*
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
@@ -215,7 +214,7 @@ fun Settings(
                         title = stringResource(value = showProgressInMini.title),
                         summery = stringResource(value = showProgressInMini.summery),
                         onCheckedChange = { should: Boolean ->
-                            set(Player.SHOW_MINI_PROGRESS_BAR, should)
+                            set(Audiofy.SHOW_MINI_PROGRESS_BAR, should)
                             activity.showAd(force = true)
                         })
 
@@ -257,12 +256,11 @@ fun Settings(
 
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
-                    val channel = LocalSnackDataChannel.current
                     Preference(title = stringResource(R.string.app_version),
                         summery = "$version \nClick to check for updates.",
                         icon = Icons.Outlined.TouchApp,
                         modifier = Modifier.clickable(onClick = {
-                            activity.launchUpdateFlow(channel)
+                            activity.launchUpdateFlow()
                         })
                     )
 
@@ -278,13 +276,11 @@ fun Settings(
         })
 }
 
-
 private fun Context.shareApp() {
     ShareCompat.IntentBuilder(this).setType("text/plain")
         .setChooserTitle(getString(R.string.app_name))
         .setText("Let me recommend you this application ${Audiofy.GOOGLE_STORE}").startChooser()
 }
-
 
 private fun Context.launchPlayStore() {
     try {

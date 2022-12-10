@@ -38,7 +38,6 @@ import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.audio.Image
-import com.prime.player.audio.Player
 import com.prime.player.audio.Type
 import com.prime.player.audio.buckets.BucketsRoute
 import com.prime.player.audio.tracks.TracksRoute
@@ -284,7 +283,7 @@ private fun Main(
             icon = Icons.Outlined.FavoriteBorder,
             modifier = Modifier.rotate(false),
             onClick = {
-                val direction = TracksRoute(Type.PLAYLISTS.name, Player.PLAYLIST_FAVOURITES)
+                val direction = TracksRoute(Type.PLAYLISTS.name, Audiofy.PLAYLIST_FAVOURITES)
                 navigator.navigateTo(direction)
             }
         )

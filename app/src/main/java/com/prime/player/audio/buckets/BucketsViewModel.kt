@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.audio.Type
 import com.prime.player.audio.buckets.args.BucketsRouteArgsFactory
-import com.prime.player.common.compose.SnackDataChannel
-import com.prime.player.common.compose.send
+import com.prime.player.common.compose.ToastHostState
+import com.prime.player.common.compose.show
 import com.prime.player.core.Playlist
 import com.prime.player.core.Repository
 import com.prime.player.core.name
@@ -34,10 +34,10 @@ class BucketsViewModel @Inject constructor(
 
     val isTypePlaylists: Boolean = type == Type.PLAYLISTS
 
-    private suspend inline fun exits(name: String, channel: SnackDataChannel?, elze: () -> Unit) {
+    private suspend inline fun exits(name: String, channel: ToastHostState?, elze: () -> Unit) {
         val doesExist = name.isBlank() || repository.exists(name)
         if (doesExist)
-            channel?.send(message = "The playlist with name: $name already exits.")
+            channel?.show(message = "The playlist with name: $name already exits.")
         else
             elze()
     }
@@ -45,11 +45,11 @@ class BucketsViewModel @Inject constructor(
 
     fun createPlaylist(
         name: String,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
             exits(name = name, channel = channel) {
-                channel?.send(message = "Creating playlist - $name")
+                channel?.show(message = "Creating playlist - $name")
                 repository.createPlaylist(name)
             }
         }
@@ -57,10 +57,10 @@ class BucketsViewModel @Inject constructor(
 
     fun delete(
         playlist: Playlist,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
-            channel?.send(message = "Deleting playlist - ${playlist.name}")
+            channel?.show(message = "Deleting playlist - ${playlist.name}")
             repository.deletePlaylist(playlist)
         }
     }
@@ -68,7 +68,7 @@ class BucketsViewModel @Inject constructor(
     fun rename(
         value: Playlist,
         name: String,
-        channel: SnackDataChannel? = null
+        channel: ToastHostState? = null
     ) {
         viewModelScope.launch {
             exits(name, channel = channel) {
@@ -78,8 +78,8 @@ class BucketsViewModel @Inject constructor(
                 )
                 val success = repository.updatePlaylist(update)
                 when (success) {
-                    true -> channel?.send(message = "The name of the playlist has been update to $name")
-                    else -> channel?.send(message = "An error occurred while update the name of the playlist to $name")
+                    true -> channel?.show(message = "The name of the playlist has been update to $name")
+                    else -> channel?.show(message = "An error occurred while update the name of the playlist to $name")
                 }
             }
         }

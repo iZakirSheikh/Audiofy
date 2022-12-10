@@ -339,7 +339,7 @@ private fun More(
         onExpandedChange = {},
         content = {
             var showRenameDialog by rememberState(initial = false)
-            val channel = LocalSnackDataChannel.current
+            val channel = LocalContext.toastHostState
             EditDialog(
                 expanded = showRenameDialog,
                 title = "Rename",
@@ -541,7 +541,7 @@ fun Buckets(
         floatingActionButton = {
             val show = viewModel.isTypePlaylists
             if (show) {
-                val channel = LocalSnackDataChannel.current
+                val channel = LocalContext.toastHostState
                 var show by rememberState(initial = false)
 
                 // Dialog to add the name of the playlist
