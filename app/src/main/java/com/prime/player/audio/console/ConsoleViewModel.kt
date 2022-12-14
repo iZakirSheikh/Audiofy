@@ -1,44 +1,37 @@
 package com.prime.player.audio.console
 
-import android.annotation.SuppressLint
-import android.app.Application
-import android.content.ComponentName
-import android.content.Context.BIND_ADJUST_WITH_ACTIVITY
-import android.content.Intent
-import android.content.ServiceConnection
-import android.graphics.Bitmap
-import android.os.IBinder
-import android.util.Log
-import android.widget.Toast
-import androidx.compose.runtime.*
-import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.State
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import com.prime.player.Audiofy
 import com.prime.player.R
-import com.prime.player.common.Util
 import com.prime.player.common.compose.ToastHostState
 import com.prime.player.common.compose.show
-import com.prime.player.common.formatAsDuration
-import com.prime.player.common.getAlbumArt
-import com.prime.player.core.Audio
-import com.prime.player.core.Playlist
-import com.prime.player.core.Repository
-import com.prime.player.core.playback.PlaybackService
+import com.prime.player.core.*
+import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+
+private inline fun <T> mutableStateOf(
+    value: T,
+    policy: SnapshotMutationPolicy<T> = structuralEqualityPolicy()
+): State<T> = androidx.compose.runtime.mutableStateOf(value, policy)
 
 private const val TAG = "HomeViewModel"
 
 @HiltViewModel
 class ConsoleViewModel @Inject constructor(
-    private val context: Application,
+    private val remote: Remote,
     private val repository: Repository,
 ) : ViewModel() {
 
@@ -46,220 +39,131 @@ class ConsoleViewModel @Inject constructor(
      * This channel must be set from composable.
      */
     var messenger: ToastHostState? = null
+    val playing = mutableStateOf(remote.isPLaying)
+    val repeatMode = mutableStateOf(remote.repeatMode)
+    val progress = mutableStateOf(remote.position.toFloat())
+    val sleepAfter = mutableStateOf<Long?>(null)
+    val current = mutableStateOf<Audio?>(null)
+    val next: State<Audio?> = mutableStateOf<Audio?>(null)
+    val shuffle = mutableStateOf(false)
+    val playlistName = mutableStateOf("Unknown")
+    val artwork = mutableStateOf(Audiofy.DEFAULT_ALBUM_ART)
+    val playlists = repository.playlists
+    val queue =
+        remote.observe(Playback.ROOT_PLAYLIST)
+            .map {
+                val x = it.map { repository.getAudioById(it.mediaId.toLong()) }
+                x.filterNotNull()
+            }
 
-    private val mPlaybackListener =
-        object : PlaybackService.EventListener {
-            override fun onPlayingStateChanged(isPlaying: Boolean) {
+    val favourite = mutableStateOf(false)
+
+    private val listener =
+        object : Player.Listener {
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                viewModelScope.launch {
+                    val id = mediaItem?.mediaId?.toLong() ?: -1
+                    val item = repository.getAudioById(id)
+                    (favourite as MutableState).value = repository.isFavourite(id)
+                    (current as MutableState).value = item
+                    val next = remote.nextMediaItem
+                    val nextId = next?.mediaId?.toLong() ?: -1
+                    (this@ConsoleViewModel.next as MutableState).value =
+                        repository.getAudioById(nextId)
+                    (this@ConsoleViewModel.artwork as MutableState).value =
+                        remote.artwork() ?: Audiofy.DEFAULT_ALBUM_ART
+                }
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
                 (playing as MutableState).value = isPlaying
-                (playlistName as MutableState).value = service?.title ?: ""
             }
 
-            override fun onTrackChanged(newTrack: Audio, isFavourite: Boolean) {
-                (current as MutableState).value = newTrack
-                (favourite as MutableState).value = isFavourite
-                viewModelScope.launch(Dispatchers.IO) {
-                    val of = current.value ?: return@launch
-                    val bitmap = getArtwork(of)
-                    withContext(Dispatchers.Main) {
-                        (artwork as MutableState).value = bitmap
-                    }
+            override fun onPlayerError(error: PlaybackException) {
+                super.onPlayerError(error)
+            }
+
+            override fun onRepeatModeChanged(rm: Int) {
+                (repeatMode as MutableState).value = rm
+                viewModelScope.launch {
+                    val next = remote.nextMediaItem
+                    val nextId = next?.mediaId?.toLong() ?: -1
+                    (this@ConsoleViewModel.next as MutableState).value =
+                        repository.getAudioById(nextId)
                 }
             }
 
-            override fun onProgress(mills: Long) {
-                (progress as MutableState).value = mills.toFloat()
-                val value = service ?: return
-                (sleepAfter as MutableState).value =
-                    if (value.sleepAfter != -1L) value.sleepAfter - System.currentTimeMillis() else null
-            }
-
-            override fun onError(what: Int, extra: Int) {
-                //TODO: "Handle this"
-            }
-
-            override fun setNextTrack(nextTrack: Audio) {
-                (next as MutableState).value = nextTrack
-            }
-
-            override fun setFavourite(favourite: Boolean) {
-                (this@ConsoleViewModel.favourite as MutableState).value = favourite
-            }
-        }
-
-    private suspend fun getArtwork(of: Audio): Bitmap {
-        return context.getAlbumArt(Audiofy.toAlbumArtUri(of.albumId))?.toBitmap()
-            ?: Audiofy.DEFAULT_ALBUM_ART
-    }
-
-    /**
-     * FixMe: Fix Service leak issue.
-     */
-    @SuppressLint("StaticFieldLeak")
-    private var service: PlaybackService? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                value.registerListener(mPlaybackListener)
-                if (value.isInitialized) {
-                    (playing as MutableState).value = value.isPlaying
-                    (repeatMode as MutableState).value = value.repeatMode
-                    (progress as MutableState).value = value.bookmark.toFloat()
-                    (current as MutableState).value = value.currentTrack
-                    (favourite as MutableState).value = value.isFavourite
-                    (next as MutableState).value = value.nextTrack
-                    (shuffle as MutableState).value = value.isShuffleEnabled
-                    (playlistName as MutableState).value = value.title
-                    (sleepAfter as MutableState).value =
-                        if (value.sleepAfter != -1L) value.sleepAfter - System.currentTimeMillis() else null
-
-                    viewModelScope.launch(Dispatchers.IO) {
-                        val of = current.value ?: return@launch
-                        val bitmap = getArtwork(of)
-                        withContext(Dispatchers.Main) {
-                            (artwork as MutableState).value = bitmap
-                        }
-                    }
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                (shuffle as MutableState).value = shuffleModeEnabled
+                viewModelScope.launch {
+                    val next = remote.nextMediaItem
+                    val nextId = next?.mediaId?.toLong() ?: -1
+                    (this@ConsoleViewModel.next as MutableState).value =
+                        repository.getAudioById(nextId)
                 }
             }
         }
 
-    val connected: State<Boolean> =
-        mutableStateOf(false)
 
-    /**
-     * Requires to connect with the [PlaybackService]
-     */
-    private val connection =
-        object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                service = (binder as PlaybackService.PlaybackBinder).service
-                (connected as MutableState).value = true
-            }
-
-            override fun onServiceDisconnected(p0: ComponentName?) {
-                service = null
-                // in order to hide the player
-                (connected as MutableState).value = false
-            }
-        }
-
-    /**
-     * Must be called periodically to check whether service is connected or not.
-     */
-    fun connect() {
-        // start service if it is disconnected.
-        if (service == null) {
-            try {
-                val serviceIntent = Intent(context, PlaybackService::class.java)
-                //start normal service
-                context.startService(serviceIntent)
-                context.bindService(serviceIntent, connection, BIND_ADJUST_WITH_ACTIVITY)
-            } catch (e: IllegalStateException) {
-                Log.i(TAG, "connect: ${e.message}")
-                Toast.makeText(
-                    context,
-                    "Error occurred in starting playback service.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
-    /**
-     * **Playing**
-     *
-     * is currently [Media Player] in playing mode
-     */
-    val playing: State<Boolean> =
-        mutableStateOf(false)
-
-    fun togglePlay() {
+    init {
         viewModelScope.launch {
-            // reset sleep after if playing and paused.
-            service?.togglePlay()
-            delay(200)
-            //hide sleep timer
-            if (!playing.value)
-                (sleepAfter as MutableState).value = null
+            remote.await()
+            remote.add(listener)
+            listener.onMediaItemTransition(remote.current, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO)
+            listener.onIsPlayingChanged(remote.isPLaying)
+            listener.onRepeatModeChanged(remote.repeatMode)
+            listener.onShuffleModeEnabledChanged(remote.shuffle)
+
+            // FixMe: infinite loop
+            while (true) {
+                delay(1000)
+                (progress as MutableState).value = remote.position.toFloat()
+            }
         }
     }
 
-    fun skipToNext() {
-        service?.playNextTrack(false)
+    override fun onCleared() {
+        viewModelScope.launch { remote.remove(listener) }
+        super.onCleared()
     }
 
-    fun skipToPrev() {
-        service?.back(false)
-    }
 
-    /**
-     * @see PlayerState.repeatMode
-     */
-    val repeatMode: State<Int> =
-        mutableStateOf(PlaybackService.REPEAT_MODE_NONE)
+    fun togglePlay() = remote.togglePlay()
+
+    fun skipToNext() = remote.skipToNext()
+
+    fun skipToPrev() = remote.skipToPrev()
+
 
     fun cycleRepeatMode() {
         viewModelScope.launch {
-            service?.cycleRepeatMode()
-            val newMode = service?.repeatMode ?: PlaybackService.REPEAT_MODE_NONE
-            (repeatMode as MutableState).value = newMode
+            remote.cycleRepeatMode()
+            val newMode = remote.repeatMode
+            // (repeatMode as MutableState).value = newMode
 
             messenger?.show(
                 message = when (newMode) {
-                    PlaybackService.REPEAT_MODE_NONE -> "Repeat mode none."
-                    PlaybackService.REPEAT_MODE_ALL -> "Repeat mode all."
+                    Player.REPEAT_MODE_OFF -> "Repeat mode none."
+                    Player.REPEAT_MODE_ALL -> "Repeat mode all."
                     else -> "Repeat mode one."
                 }
             )
         }
     }
 
-    /**
-     * *Track Progress*
-     *
-     *  Represents the progress of the current track
-     */
-    val progress: State<Float> =
-        mutableStateOf(0f)
-
     fun seekTo(duration: Float) {
         (progress as MutableState).value = duration
-        service?.seekTo(duration.toInt())
+        remote.seekTo(duration.toLong())
     }
-
-    /**
-     *  **Sleep Timer**
-     *
-     *  Represents when playback will automatically stop.
-     *  Default value -1 means unset.
-     */
-    val sleepAfter: State<Long?> =
-        mutableStateOf(null)
 
     fun setSleepAfter(minutes: Int) {
         viewModelScope.launch {
             messenger?.show(
-                message = when (minutes) {
-                    in 1..180 -> {
-                        val mills = TimeUnit.MINUTES.toMillis(minutes.toLong())
-                        service?.setSleepTimer(mills)
-                        "Audiofy will sleep after ${Util.formatAsDuration(mills)}."
-                    }
-                    -1 -> {
-                        service?.setSleepTimer(-1L)
-                        "Clearing sleep timer."
-                    }
-                    else -> "Invalid sleep timer value"
-                }
+                message = "Temporarily disabled!!"
             )
         }
     }
-
-    /**
-     * The Current track playing
-     */
-    val current: State<Audio?> =
-        mutableStateOf<Audio?>(null)
 
     fun addToPlaylist(playlist: Playlist, value: Audio) {
         viewModelScope.launch {
@@ -270,48 +174,27 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    /**
-     * The track after current
-     */
-    val next: State<Audio?> =
-        mutableStateOf<Audio?>(null)
-
-    /**
-     * **Favourite**
-     *
-     * Is [currTrack] in favourite list
-     */
-    val favourite: State<Boolean> =
-        mutableStateOf(false)
-
     fun toggleFav() {
         viewModelScope.launch {
             // service?.to
-            service?.toggleFav()
-            val favourite = service?.isFavourite
+            //service?.toggleFav()
+            val id = current.value?.id ?: return@launch
+            val favourite = repository.toggleFav(id)
+            (this@ConsoleViewModel.favourite as MutableState).value = favourite
             messenger?.show(
                 message = when (favourite) {
-                    true -> context.getString(R.string.msg_fav_added)
-                    else -> context.getString(R.string.msg_fav_removed)
+                    true -> Text(R.string.msg_fav_added)
+                    else -> Text(R.string.msg_fav_removed)
                 }
             )
         }
     }
 
-    /**
-     *  **Shuffle**
-     *
-     *  Represents weather shuffle is [Boolean] **on** or **off**.
-     *
-     *  Changes to this will result in re-calculation of queue.
-     */
-    val shuffle: State<Boolean> =
-        mutableStateOf(false)
 
     fun toggleShuffle() {
         viewModelScope.launch {
-            service?.toggleShuffle()
-            val newValue = service?.isShuffleEnabled ?: false
+            remote.toggleShuffle()
+            val newValue = remote.shuffle
             (shuffle as MutableState).value = newValue
             messenger?.show(
                 message = if (newValue) "Shuffle enabled." else "Shuffle disabled."
@@ -319,35 +202,7 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-
-    /**
-     * **Playlist Name**
-     *
-     * The name of [Playlist] currently playing
-     *
-     * *Default Value empty [String]*
-     */
-    val playlistName: State<String> =
-        mutableStateOf("")
-
-    /**
-     * The [current] track artwork
-     */
-    val artwork: State<Bitmap> =
-        mutableStateOf(
-            Audiofy.DEFAULT_ALBUM_ART
-        )
-
-    fun playTrackAt(position: Int) {
-        service?.playTrackAt(position)
-    }
-
-    /**
-     * Returns the current playing queue
-     */
-    val playingQueue
-        get() = service?.playingQueue
-
+    fun playTrackAt(position: Int) = remote.playTrackAt(position)
 
     fun addToPlaylist(id: Playlist) {
         val audioId = current.value?.id ?: return
@@ -358,6 +213,4 @@ class ConsoleViewModel @Inject constructor(
             )
         }
     }
-
-    val playlists = repository.playlists
 }

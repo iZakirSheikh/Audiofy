@@ -421,9 +421,9 @@ private fun observer(view: RecyclerView) =
 
 context(LibraryViewModel) @Composable
 private fun Recents(modifier: Modifier = Modifier) {
-    val recent by recent
+    val recent by recent.collectAsState(emptyList())
     Crossfade(
-        targetState = recent.isNullOrEmpty(),
+        targetState = recent.isEmpty(),
         modifier = modifier.height(RECENT_MAX_HEIGHT)
     ) { state ->
 

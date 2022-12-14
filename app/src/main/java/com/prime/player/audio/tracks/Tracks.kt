@@ -366,7 +366,7 @@ fun Header(
 
             content = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_play_arrow),
+                    painter = painterResource(id = R.drawable.media3_notification_play),
                     contentDescription = null,
                     modifier = Modifier.requiredSize(20.dp)
                 )

@@ -10,6 +10,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
@@ -17,12 +20,15 @@ import com.google.firebase.FirebaseApp
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
 import com.prime.player.core.LocalDb
+import com.prime.player.core.Remote
 import com.primex.preferences.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -34,74 +40,47 @@ private const val TAG = "Audiofy"
 class Audiofy : Application(), Configuration.Provider {
     companion object {
 
+        private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
+
         /**
          * Retrieves/Sets The [NightMode] Strategy
          */
-        val NIGHT_MODE =
-            stringPreferenceKey("${TAG}_night_mode",
-                NightMode.YES,
-                object : StringSaver<NightMode> {
-                    override fun save(value: NightMode): String = value.name
-                    override fun restore(value: String): NightMode = NightMode.valueOf(value)
-                })
+        val NIGHT_MODE = stringPreferenceKey(
+            "${TAG}_night_mode",
+            NightMode.YES,
+            object : StringSaver<NightMode> {
+                override fun save(value: NightMode): String = value.name
+                override fun restore(value: String): NightMode = NightMode.valueOf(value)
+            }
+        )
 
-        val FONT_FAMILY =
-            stringPreferenceKey(TAG + "_font_family",
-                FontFamily.PROVIDED,
-                object : StringSaver<FontFamily> {
-                    override fun save(value: FontFamily): String = value.name
-                    override fun restore(value: String): FontFamily = FontFamily.valueOf(value)
-                })
-
-
-        val FORCE_COLORIZE =
-            booleanPreferenceKey(
-                TAG + "_force_colorize", false
-            )
-
-        val COLOR_STATUS_BAR =
-            booleanPreferenceKey(
-                TAG + "_color_status_bar", false
-            )
-
-        val HIDE_STATUS_BAR =
-            booleanPreferenceKey(
-                TAG + "_hide_status_bar", false
-            )
+        val FONT_FAMILY = stringPreferenceKey(
+            TAG + "_font_family",
+            FontFamily.PROVIDED,
+            object : StringSaver<FontFamily> {
+                override fun save(value: FontFamily): String = value.name
+                override fun restore(value: String): FontFamily = FontFamily.valueOf(value)
+            }
+        )
 
 
-        val FONT_SCALE =
-            floatPreferenceKey(
-                TAG + "_font_scale", defaultValue = 1.0f
-            )
+        val FORCE_COLORIZE = booleanPreferenceKey(TAG + "_force_colorize", false)
+        val COLOR_STATUS_BAR = booleanPreferenceKey(TAG + "_color_status_bar", false)
+        val HIDE_STATUS_BAR = booleanPreferenceKey(TAG + "_hide_status_bar", false)
+        val FONT_SCALE = floatPreferenceKey(TAG + "_font_scale", defaultValue = 1.0f)
 
         /**
          * The counter counts the number of times this app was launched.
          */
-        val KEY_LAUNCH_COUNTER =
-            intPreferenceKey(TAG + "_launch_counter")
-
-        val SHOW_MINI_PROGRESS_BAR =
-            booleanPreferenceKey(
-                TAG + "_show_mini_progress_bar", false
-            )
-
-
-        private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
+        val KEY_LAUNCH_COUNTER = intPreferenceKey(TAG + "_launch_counter")
+        val SHOW_MINI_PROGRESS_BAR = booleanPreferenceKey(TAG + "_show_mini_progress_bar", false)
 
         /**
          * The length/duration of the track in mills considered above which to include
          */
         val EXCLUDE_TRACK_DURATION =
-            longPreferenceKey(
-                TAG + "_min_duration_limit_of_track", defaultMinTrackLimit
-            )
-
-
-        val MAX_RECENT_PLAYLIST_SIZE =
-            intPreferenceKey(
-                TAG + "_max_recent_size", defaultValue = 20
-            )
+            longPreferenceKey(TAG + "_min_duration_limit_of_track", defaultMinTrackLimit)
+        val MAX_RECENT_PLAYLIST_SIZE = intPreferenceKey(TAG + "_max_recent_size", defaultValue = 20)
 
         /**
          * A prefix char for private playlists.
@@ -117,10 +96,6 @@ class Audiofy : Application(), Configuration.Provider {
          * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]
          */
         val MINI_PLAYER_HEIGHT = 68.dp
-
-        const val PLAYBACK_CHANNEL_ID = "audio_playback_channel"
-        const val UPDATES_CHANNEL_ID = "content_updates"
-        const val PLAYBACK_NOTIFICATION_ID = 1
         lateinit var DEFAULT_ALBUM_ART: Bitmap
 
         /**
@@ -128,10 +103,6 @@ class Audiofy : Application(), Configuration.Provider {
          */
         const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
 
-        @Deprecated(
-            "Not Required. As currently I am distributing app through the PlayStore only.",
-            level = DeprecationLevel.WARNING
-        )
         /**
          * If PlayStore is not available in Users Phone. This will be used to redirect to the
          * WebPage of the app.
@@ -171,15 +142,6 @@ class Audiofy : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         DEFAULT_ALBUM_ART = BitmapFactory.decodeResource(resources, R.drawable.default_art)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                PLAYBACK_CHANNEL_ID, "Playing Music Channel", NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.setShowBadge(false)
-            channel.setSound(null, null)
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
         // initialize firebase
         FirebaseApp.initializeApp(this)
     }
@@ -213,4 +175,13 @@ object Singleton {
     fun localDb(
         @ApplicationContext context: Context
     ) = LocalDb.get(context)
+}
+
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+object Activity {
+
+    @ActivityRetainedScoped
+    @Provides
+    fun remote(@ApplicationContext context: Context) = Remote(context)
 }

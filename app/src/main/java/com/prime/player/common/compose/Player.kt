@@ -235,7 +235,10 @@ fun Player(
         layout(width, height){
             contentPlaceable.placeRelative(0, 0)
             // place at the bottom centre
-            sheetPlaceable.placeRelative(0, height - sheetH)
+            val sheetY = height - sheetH
+            if (sheetY != height)  // draw only if visible
+            sheetPlaceable.placeRelative(0, sheetY)
+            //Log.d(TAG, "Player: ${height}")
             val adjusted = if (state.current == PlayerValue.COLLAPSED) sheetPeekHeightPx else 0
             // draw a bottom centre.
             toastPlaceable.placeRelative(

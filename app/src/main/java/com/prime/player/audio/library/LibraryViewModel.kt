@@ -2,9 +2,12 @@ package com.prime.player.audio.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.common.asComposeState
+import com.prime.player.core.Playback
+import com.prime.player.core.Remote
 import com.prime.player.core.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
@@ -21,6 +24,7 @@ private val TimeOutPolicy = SharingStarted.Lazily
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     repository: Repository,
+    remote: Remote
 ) : ViewModel() {
 
     val reel =
@@ -31,7 +35,12 @@ class LibraryViewModel @Inject constructor(
      */
     val recent =
         // replace with actual recent playlist
-        repository.recent.asComposeState(null)
+        remote.observe(Playback.ROOT_RECENT, null)
+            .map {
+                val x = it.map { repository.getAudioById(it.mediaId.toLong()) }
+                x.filterNotNull().reversed()
+            }
+
 
     val carousel =
         repository

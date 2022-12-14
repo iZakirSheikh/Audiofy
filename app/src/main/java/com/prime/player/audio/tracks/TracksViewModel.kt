@@ -15,10 +15,7 @@ import com.prime.player.audio.tracks.args.TracksRouteArgsFactory
 import com.prime.player.common.*
 import com.prime.player.common.compose.ToastHostState
 import com.prime.player.common.compose.show
-import com.prime.player.core.Audio
-import com.prime.player.core.Playlist
-import com.prime.player.core.Repository
-import com.prime.player.core.playback.PlaybackService
+import com.prime.player.core.*
 import com.primex.core.Result
 import com.primex.core.Text
 import com.primex.core.buildResult
@@ -52,7 +49,8 @@ data class Meta(
 @HiltViewModel
 class TracksViewModel @Inject constructor(
     handle: SavedStateHandle,
-    private val repository: Repository
+    private val repository: Repository,
+    private val remote: Remote
 ) : ViewModel() {
 
     private val args = TracksRouteArgsFactory.fromSavedStateHandle(handle = handle)
@@ -184,25 +182,13 @@ class TracksViewModel @Inject constructor(
                 else
                     context.getString(it.raw as Int)
             }
-
-            channel?.show(
-                message = "Playing queue $title"
-            )
-
-            val intent = Intent(context, PlaybackService::class.java).apply {
-                action = PlaybackService.ACTION_LOAD_LIST
-                putExtra(PlaybackService.PARAM_NAME, title)
-                putExtra(PlaybackService.PARAM_SHUFFLE, shuffle)
-                putExtra(PlaybackService.PARAM_FROM_INDEX, index)
-                putExtra(PlaybackService.PARAM_START_PLAYING, true)
-                val array = JSONArray()
-                list.forEach {
-                    array.put(it.id)
-                }
-                putExtra(PlaybackService.PARAM_LIST, array.toString())
+            launch {
+                channel?.show(
+                    message = "Playing queue $title",
+                    label = "Dismiss"
+                )
             }
-            //start normal service
-            context.startService(intent)
+            remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
         }
     }
 

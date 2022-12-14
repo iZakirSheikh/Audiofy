@@ -261,13 +261,13 @@ class Repository @Inject constructor(
         return count == 1
     }
 
-    fun toggleFav(audioID: Long) {
-        GlobalScope.launch {
-            if (isFavourite(audioID = audioID))
-                removeFromPlaylist(PLAYLIST_FAV, audioID)
-            else
-                addToPlaylist(audioID, PLAYLIST_FAV)
-        }
+    suspend fun toggleFav(audioID: Long): Boolean {
+        val favourite = isFavourite(audioID = audioID)
+        val op = if (favourite)
+            removeFromPlaylist(PLAYLIST_FAV, audioID)
+        else
+            addToPlaylist(audioID, PLAYLIST_FAV)
+        return !favourite && op
     }
 
     fun addToRecent(audioID: Long) {

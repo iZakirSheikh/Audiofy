@@ -47,13 +47,13 @@ import com.prime.player.common.compose.*
 import com.prime.player.common.formatAsDuration
 import com.prime.player.common.share
 import com.prime.player.core.Audio
-import com.prime.player.core.playback.PlaybackService
 import com.primex.core.*
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
 import com.primex.ui.*
 import com.primex.ui.views.MarqueText
 import cz.levinzonr.saferoute.core.navigateTo
+import androidx.media3.common.Player
 
 @OptIn(
     ExperimentalAnimationApi::class,
@@ -363,10 +363,10 @@ private fun ConsoleViewModel.More(
                 val mode by repeatMode
                 IconButton(
                     onClick = { cycleRepeatMode();activity.launchReviewFlow(); onDismissRequest(); },
-                    painter = painterResource(id = if (mode == PlaybackService.REPEAT_MODE_THIS) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
+                    painter = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
                     contentDescription = null,
                     tint = LocalContentColor.current.copy(
-                        if (mode == PlaybackService.REPEAT_MODE_NONE) ContentAlpha.disabled
+                        if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled
                         else ContentAlpha.high
                     )
                 )
@@ -760,7 +760,7 @@ private fun ConsoleViewModel.Layout(
         NeuButton(
             onClick = { skipToPrev(); activity.launchReviewFlow() },
             shape = RoundedCornerShape(10.dp),
-            painter = painterResource(id = R.drawable.ic_skip_to_prev_filled),
+            painter = painterResource(id = R.drawable.ic_skip_to_prev),
             iconScale = 0.8f,
             modifier = Modifier.constrainAs(SkipToPrev) {
                 top.linkTo(Play.top)
@@ -771,7 +771,7 @@ private fun ConsoleViewModel.Layout(
         NeuButton(
             onClick = { skipToNext(); activity.launchReviewFlow() },
             shape = RoundedCornerShape(10.dp),
-            painter = painterResource(id = R.drawable.ic_skip_to_next_filled),
+            painter = painterResource(id = R.drawable.ic_skip_to_next),
             iconScale = 0.8f,
             modifier = Modifier.constrainAs(SkipToNext) {
                 top.linkTo(Play.top)

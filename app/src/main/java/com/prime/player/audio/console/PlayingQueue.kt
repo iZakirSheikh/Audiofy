@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -85,7 +86,7 @@ fun ConsoleViewModel.PlayingQueue(
     onDismissRequest: () -> Unit
 ) {
     if (expanded) {
-        val list = playingQueue ?: emptyList()
+        val list by queue.collectAsState(initial = emptyList())
         val current by current
         val state = rememberLazyListState()
         val playing by playing
@@ -103,7 +104,7 @@ fun ConsoleViewModel.PlayingQueue(
             LazyColumn(
                 state = state,
                 modifier = Modifier
-                    .heightIn(max = 350.dp)
+                    .heightIn(min  = 350.dp, max = 350.dp)
                     .verticalFadingEdge(color = Material.colors.surface, state = state),
                 contentPadding = PaddingValues(vertical = ContentPadding.medium)
             ) {
@@ -150,10 +151,10 @@ fun ConsoleViewModel.PlayingQueue(
             }
         }
 
-        LaunchedEffect(key1 = Unit) {
+        /*LaunchedEffect(key1 = Unit) {
             current?.let {
                 state.scrollToItem(list.indexOf(it))
             }
-        }
+        }*/
     }
 }

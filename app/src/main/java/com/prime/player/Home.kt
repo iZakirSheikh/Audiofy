@@ -118,12 +118,6 @@ fun Home() {
     val scope = rememberCoroutineScope()
     val consoleViewModel = hiltViewModel<ConsoleViewModel>()
 
-    //FixMe - Needs to be corrected.
-    val connected by consoleViewModel.connected
-    LaunchedEffect(key1 = connected) {
-        //delay(1000)
-        consoleViewModel.connect()
-    }
     val show = consoleViewModel.current.value != null
     //Handle messages etc.
     val state =
