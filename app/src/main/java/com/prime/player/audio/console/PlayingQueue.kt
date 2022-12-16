@@ -144,9 +144,35 @@ fun ConsoleViewModel.PlayingQueue(
                         value = audio,
                         playing = current == audio && playing,
                         modifier = Modifier.clickable(enabled = audio != current) {
-                            playTrackAt(list.indexOf(audio))
+                            playTrack(audio.id)
                         }
                     )
+
+                    Crossfade(
+                        targetState = audio == current,
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .animateContentSize(animationSpec = tween(Anim.LongDurationMills))
+                    ) { show ->
+                        if (show)
+                            Column {
+                                Label(
+                                    text = "Up Next",
+                                    modifier = Modifier.padding(
+                                        top = ContentPadding.large,
+                                        start = ContentPadding.normal,
+                                        bottom = ContentPadding.medium
+                                    ),
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = secondary
+                                )
+                                Divider(
+                                    modifier = Modifier.padding(horizontal = ContentPadding.normal),
+                                    color = secondary.copy(0.12f)
+                                )
+                            }
+                    }
+
                 }
             }
         }

@@ -26,7 +26,16 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.prime.player.MainActivity
 import com.prime.player.R
+import com.primex.preferences.Preferences
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.components.ServiceComponent
+import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.*
+import javax.inject.Inject
+import kotlin.random.Random
 
 private const val TAG = "Playback"
 
@@ -76,8 +85,73 @@ private fun NotificationManager.ensureNotificationChannel(
 }
 
 /**
+ * Returns the non-shuffled tracks
+ */
+private val Player.queue1: List<MediaItem> get() {
+    var current = currentMediaItemIndex
+    if (current == C.INDEX_UNSET)
+        return emptyList()
+    val list = ArrayList<MediaItem>()
+    while (current < this.mediaItemCount){
+        val ele = getMediaItemAt(current)
+        list += ele
+        current++
+    }
+    return list
+}
+
+
+private val Player.queue2: List<MediaItem>
+    @SuppressLint("UnsafeOptInUsageError")
+    get() {
+        var current = currentMediaItemIndex
+        if (current == C.INDEX_UNSET)
+            return emptyList()
+        require(this is ExoPlayer)
+        val f1 = this.javaClass.getDeclaredField("shuffleOrder")
+        f1.isAccessible = true
+        val order2 = f1.get(this) as DefaultShuffleOrder
+        val list = ArrayList<MediaItem>()
+        while (current != C.INDEX_UNSET){
+            list += getMediaItemAt(current)
+            current = order2.getNextIndex(current)
+        }
+        return  list
+    }
+
+private val Player.queue: List<MediaItem> get() = if (!shuffleModeEnabled) queue1 else queue2
+
+
+/**
+ * FixMe: Extracts array from player using reflection.
+ */
+private val Player.shuffled: IntArray
+    get() {
+        require(this is ExoPlayer)
+        val f1 = this.javaClass.getDeclaredField("shuffleOrder")
+        f1.isAccessible = true
+        val order2 = f1.get(this)
+        require(order2 is DefaultShuffleOrder)
+        val f2 = order2.javaClass.getDeclaredField("shuffled")
+        f2.isAccessible = true
+        return f2.get(order2) as IntArray
+    }
+
+
+@Module
+@InstallIn(ServiceComponent::class)
+object Service {
+
+    @ServiceScoped
+    @Provides
+    fun storage(preferences: Preferences) = Storage(preferences)
+}
+
+
+/**
  * The Playback Service class using media3.
  */
+@AndroidEntryPoint
 class Playback : MediaLibraryService(), Callback {
 
     companion object {
@@ -114,7 +188,9 @@ class Playback : MediaLibraryService(), Callback {
     }
 
     // This helps in implement the state of this service using persistent storage .
-    private val storage by lazy { Storage(this) }
+    @Inject
+    lateinit var storage: Storage
+
 
     /**
      * The pending intent for the underlying activity.
@@ -142,11 +218,13 @@ class Playback : MediaLibraryService(), Callback {
                 if (mediaItem != null) {
                     storage.addToRecent(mediaItem)
                     session.notifyChildrenChanged(ROOT_RECENT, storage.recent.size, null)
+                    session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
                 }
             }
 
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                 storage.shuffle = shuffleModeEnabled
+                session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
@@ -157,7 +235,8 @@ class Playback : MediaLibraryService(), Callback {
                 // construct list and update.
                 if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
                     storage.list = player.mediaItems
-                    session.notifyChildrenChanged(ROOT_PLAYLIST, player.mediaItemCount, null)
+                    storage.shuffled = player.shuffled
+                    session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
                 }
             }
 
@@ -211,6 +290,15 @@ class Playback : MediaLibraryService(), Callback {
             shuffleModeEnabled = storage.shuffle
             repeatMode = storage.repeatMode
             setMediaItems(storage.list)
+
+            // set saved shuffled.
+            (this as ExoPlayer).setShuffleOrder(
+                DefaultShuffleOrder(
+                    storage.shuffled,
+                    Random.nextLong()
+                )
+            )
+
             // seek to current position
             val index = storage.index
             if (index != C.INDEX_UNSET)
@@ -309,7 +397,7 @@ class Playback : MediaLibraryService(), Callback {
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
         //TODO(Maybe add support for paging.)
         val children = when (parentId) {
-            ROOT_PLAYLIST -> player.mediaItems
+            ROOT_PLAYLIST -> player.queue
             ROOT_RECENT -> storage.recent
             else -> return Futures.immediateFuture(
                 LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)

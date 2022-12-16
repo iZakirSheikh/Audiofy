@@ -204,6 +204,8 @@ class ConsoleViewModel @Inject constructor(
 
     fun playTrackAt(position: Int) = remote.playTrackAt(position)
 
+    fun playTrack(id: Long) = remote.playTrack(id)
+
     fun addToPlaylist(id: Playlist) {
         val audioId = current.value?.id ?: return
         viewModelScope.launch {

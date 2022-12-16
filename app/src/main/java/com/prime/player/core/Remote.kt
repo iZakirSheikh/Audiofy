@@ -67,6 +67,8 @@ interface Remote {
 
     fun playTrackAt(position: Int)
 
+    fun playTrack(id: Long)
+
     fun onRequestPlay(shuffle: Boolean, index: Int = C.INDEX_UNSET, values: List<MediaItem>)
 
     suspend fun artwork(): Bitmap
@@ -260,6 +262,15 @@ private class RemoteImpl(private val context: Context) : Remote {
         browser.seekTo(index, C.TIME_UNSET)
         browser.prepare()
         browser.play()
+    }
+
+    override fun playTrack(id: Long) {
+        val browser = browser ?: return
+        repeat(browser.mediaItemCount){pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.mediaId == "$id")
+                playTrackAt(pos)
+        }
     }
 
 

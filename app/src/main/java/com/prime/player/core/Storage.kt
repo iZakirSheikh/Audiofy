@@ -1,17 +1,19 @@
 package com.prime.player.core
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import com.primex.preferences.*
 import org.json.JSONObject
 
 /**
- * This is a helper class that helps in saving the state of the [Playback]
+ * A Utility interface for saving the state of [Playback] persistently.
  */
-internal interface Storage {
+interface Storage {
     /**
      * Adds the [MediaItem] to [Playlist] recent.
      */
@@ -38,7 +40,6 @@ internal interface Storage {
     var repeatMode: Int
         @Player.RepeatMode get
 
-
     /**
      * The current index of the [Player]
      */
@@ -48,16 +49,12 @@ internal interface Storage {
      * The current bookmark of the [Player]
      */
     var bookmark: Long
-}
 
-/*Different keys for saving the state*/
-private const val PREFERENCES_NAME = "media_service_state.db"
-private const val PREF_KEY_PLAYLIST = "_playlist"
-private const val PREF_KEY_RECENT_LIST = "_recent"
-private const val PREF_KEY_SHUFFLE_MODE = "_shuffle"
-private const val PREF_KEY_REPEAT_MODE = "_repeat_mode"
-private const val PREF_KEY_INDEX = "_index"
-private const val PREF_KEY_BOOKMARK = "_bookmark"
+    /**
+     * A shuffled array of positions of [list]
+     */
+    var shuffled: IntArray
+}
 
 /**
  * Only these fields are saved in the playlist.
@@ -138,46 +135,27 @@ private fun MediaItem(source: String): MediaItem = JSONObject(source).run {
     )
 }
 
-internal fun Storage(context: Context) =
+/*Different keys for saving the state*/
+private val KEY_PLAYLIST = stringSetPreferenceKey("_playlist", emptySet())
+private val PREF_KEY_RECENT_LIST = stringSetPreferenceKey("_recent", emptySet())
+private val PREF_KEY_SHUFFLE_MODE = booleanPreferenceKey("_shuffle", false)
+private val PREF_KEY_REPEAT_MODE = intPreferenceKey("_repeat_mode", Player.REPEAT_MODE_OFF)
+private val PREF_KEY_INDEX = intPreferenceKey("_index", C.INDEX_UNSET)
+private val PREF_KEY_BOOKMARK = longPreferenceKey("_bookmark", C.TIME_UNSET)
+private val PREF_KEY_SHUFFLED = stringSetPreferenceKey("_shuffled", emptySet())
+
+fun Storage(preferences: Preferences) =
     object : Storage {
 
-        /**
-         * Store any data which must persist between restarts, such as the most recently played song.
-         */
-        private val preferences by lazy {
-            context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-        }
-
         override var list: List<MediaItem>
-            get() = preferences.getStringSet(PREF_KEY_PLAYLIST, null).let { set ->
-                if (set.isNullOrEmpty()) emptyList()
-                else set.map { MediaItem(it) }
-            }
+            get() = preferences.value(KEY_PLAYLIST).map { MediaItem(it) }
             set(value) {
-                val set = value.map { it.toJson }.toSet()
-                preferences.edit().putStringSet(PREF_KEY_PLAYLIST, set).apply()
+                preferences[KEY_PLAYLIST] = value.map { it.toJson }.toSet()
             }
 
 
-        override fun addToRecent(mediaItem: MediaItem) {
-            val oldIndex =
-                cache.indexOfFirst { it.requestMetadata.mediaUri == mediaItem.requestMetadata.mediaUri }
-            if (oldIndex != -1) cache.removeAt(oldIndex)
-            cache.add(mediaItem)
-            while (cache.size > RECENT_LIMIT) cache.removeAt(0)
-            preferences.edit()
-                .putStringSet(PREF_KEY_RECENT_LIST, cache.map { it.toJson }.toSet())
-                .apply()
-        }
-
-        override var shuffle: Boolean = preferences.getBoolean(PREF_KEY_SHUFFLE_MODE, false)
-            set(value) {
-                field = value
-                preferences.edit().putBoolean(PREF_KEY_SHUFFLE_MODE, value).apply()
-            }
-
-        private val cache by lazy {
-            preferences.getStringSet(PREF_KEY_RECENT_LIST, emptySet())!!.map { MediaItem(it) }
+        val cache by lazy {
+            preferences.value(PREF_KEY_RECENT_LIST).map { MediaItem(it) }
                 .toMutableList()
         }
 
@@ -185,18 +163,41 @@ internal fun Storage(context: Context) =
             get() = cache
 
         override var repeatMode: Int
-            get() = preferences.getInt(PREF_KEY_REPEAT_MODE, Player.REPEAT_MODE_OFF)
+            get() = preferences.value(PREF_KEY_REPEAT_MODE)
             set(value) {
-                preferences.edit().putInt(PREF_KEY_REPEAT_MODE, value).apply()
+                preferences[PREF_KEY_REPEAT_MODE] = value
             }
+
         override var index: Int
-            get() = preferences.getInt(PREF_KEY_INDEX, C.INDEX_UNSET)
+            get() = preferences.value(PREF_KEY_INDEX)
             set(value) {
-                preferences.edit().putInt(PREF_KEY_INDEX, value).apply()
+                preferences[PREF_KEY_INDEX] = value
             }
+
+        override var shuffle: Boolean
+            get() = preferences.value(PREF_KEY_SHUFFLE_MODE)
+            set(value) {
+                preferences[PREF_KEY_SHUFFLE_MODE] = value
+            }
+
         override var bookmark: Long
-            get() = preferences.getLong(PREF_KEY_BOOKMARK, C.TIME_UNSET)
+            get() = preferences.value(PREF_KEY_BOOKMARK)
             set(value) {
-                preferences.edit().putLong(PREF_KEY_BOOKMARK, value).apply()
+                preferences[PREF_KEY_BOOKMARK] = value
             }
+
+        override var shuffled: IntArray
+            get() = preferences.value(PREF_KEY_SHUFFLED).map { it.toInt() }.toIntArray()
+            set(value) {
+                preferences[PREF_KEY_SHUFFLED] = value.map { "$it" }.toSet()
+            }
+
+        override fun addToRecent(mediaItem: MediaItem) {
+            val oldIndex =
+                cache.indexOfFirst { it.requestMetadata.mediaUri == mediaItem.requestMetadata.mediaUri }
+            if (oldIndex != -1) cache.removeAt(oldIndex)
+            cache.add(mediaItem)
+            while (cache.size > RECENT_LIMIT) cache.removeAt(0)
+            preferences[PREF_KEY_RECENT_LIST] = cache.map { it.toJson }.toSet()
+        }
     }
