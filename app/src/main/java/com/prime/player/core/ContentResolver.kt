@@ -105,7 +105,7 @@ private val AUDIO_PROJECTION
         replaceIfNull(MediaStore.Audio.Media.ARTIST, MediaStore.UNKNOWN_STRING), // 2
         replaceIfNull(MediaStore.Audio.Media.ALBUM, MediaStore.UNKNOWN_STRING), // 3
         MediaStore.Audio.Media.ALBUM_ID, // 4
-        MediaStore.Audio.Media.DATE_ADDED,  //5
+        "${MediaStore.Audio.Media.DATE_ADDED} * 1000",  //5
         replaceIfNull(MediaStore.Audio.Media.COMPOSER, MediaStore.UNKNOWN_STRING), // , // 6
         MediaStore.Audio.Media.YEAR, // 7
         MediaStore.Audio.Media.DATA, // 8
@@ -113,7 +113,7 @@ private val AUDIO_PROJECTION
         MediaStore.Audio.Media.MIME_TYPE, // 10
         MediaStore.Audio.Media.TRACK, // 11
         MediaStore.Audio.Media.SIZE, //12
-        MediaStore.Audio.Media.DATE_MODIFIED, // 14
+        "${MediaStore.Audio.Media.DATE_MODIFIED} * 1000", // 14
     )
 
 
@@ -173,7 +173,7 @@ private val FOLDER_PROJECTION
         COLUMN_BUCKET_PATH, // 0
         "COUNT(*)", // 1,
         "SUM(${MediaStore.Audio.Media.SIZE})", // 2
-        "MAX(${MediaStore.Audio.Media.DATE_MODIFIED})", // 3
+        "MAX(${MediaStore.Audio.Media.DATE_MODIFIED}) * 1000", // 3
         "SUM(${MediaStore.Audio.Media.DURATION})", // 4
     )
 
