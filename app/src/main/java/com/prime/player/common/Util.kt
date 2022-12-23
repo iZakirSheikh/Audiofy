@@ -130,7 +130,7 @@ fun Context.share(audios: List<Audio>) {
             putExtra(Intent.EXTRA_SUBJECT, "Sharing audio files.")
             val list = ArrayList<Uri>()
             audios.forEach {
-                list.add(Uri.parse("file:///" + it.path))
+                list.add(Uri.parse("file:///" + it.data))
             }
             putParcelableArrayListExtra(Intent.EXTRA_STREAM, list)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -156,13 +156,13 @@ fun Context.share(audio: Audio) {
     try {
         val shareIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///" + audio.path))
+            putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///" + audio.data))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             type = "audio/*"
         }
         val builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
-        startActivity(Intent.createChooser(shareIntent, "Sharing " + audio.title))
+        startActivity(Intent.createChooser(shareIntent, "Sharing " + audio.name))
     } catch (e: IllegalArgumentException) {
         // TODO the path is most likely not like /storage/emulated/0/... but something like /storage/28C7-75B0/...
         e.printStackTrace()

@@ -44,9 +44,7 @@ import com.prime.player.common.Util
 import com.prime.player.common.compose.*
 import com.prime.player.common.formatAsRelativeTimeSpan
 import com.prime.player.common.toFormattedDataUnit
-import com.prime.player.core.Audio
-import com.prime.player.core.Playlist
-import com.prime.player.core.name
+import com.prime.player.core.*
 import com.primex.core.*
 import com.primex.ui.*
 import cz.levinzonr.saferoute.core.annotations.Route
@@ -112,7 +110,7 @@ private inline fun Generic(
 
 @Composable
 private fun Album(
-    value: Audio.Album,
+    value: Album,
     fallback: Painter,
     modifier: Modifier = Modifier,
     onAlbumClick: () -> Unit
@@ -149,7 +147,7 @@ val GenreShape = CircleShape
 
 @Composable
 private fun Genre(
-    value: Audio.Genre,
+    value: Genre,
     modifier: Modifier = Modifier,
     onGenreClick: () -> Unit
 ) {
@@ -191,7 +189,7 @@ private val folderIcon = Icons.Default.Folder
 
 @Composable
 private fun Folder(
-    value: Audio.Bucket,
+    value: Folder,
     modifier: Modifier = Modifier,
     onFolderClick: () -> Unit
 ) {
@@ -221,7 +219,7 @@ private fun Folder(
 
 @Composable
 private fun Artist(
-    value: Audio.Artist,
+    value: Artist,
     modifier: Modifier = Modifier,
     onArtistClick: () -> Unit
 ) {
@@ -437,7 +435,7 @@ context (BucketsViewModel) private inline fun LazyGridScope.Playlists(value: Lis
     }
 }
 
-private inline fun LazyGridScope.Genres(value: List<Audio.Genre>) {
+private inline fun LazyGridScope.Genres(value: List<Genre>) {
     items(value, contentType = { CONTENT_TYPE_GRID_ITEM }, key = { it.name }) { genre ->
         val navigator = LocalNavController.current
         Genre(
@@ -452,7 +450,7 @@ private inline fun LazyGridScope.Genres(value: List<Audio.Genre>) {
     }
 }
 
-private inline fun LazyGridScope.Albums(value: List<Audio.Album>, fallback: Painter) {
+private inline fun LazyGridScope.Albums(value: List<Album>, fallback: Painter) {
     items(value, contentType = { CONTENT_TYPE_GRID_ITEM }) { album ->
         val navigator = LocalNavController.current
         Album(
@@ -468,7 +466,7 @@ private inline fun LazyGridScope.Albums(value: List<Audio.Album>, fallback: Pain
     }
 }
 
-private inline fun LazyGridScope.Buckets(value: List<Audio.Bucket>) {
+private inline fun LazyGridScope.Buckets(value: List<Folder>) {
     items(value, contentType = { CONTENT_TYPE_GRID_ITEM }, key = { it.path }) { bucket ->
         val navigator = LocalNavController.current
         Folder(
@@ -483,7 +481,7 @@ private inline fun LazyGridScope.Buckets(value: List<Audio.Bucket>) {
     }
 }
 
-private inline fun LazyGridScope.Artists(value: List<Audio.Artist>) {
+private inline fun LazyGridScope.Artists(value: List<Artist>) {
     items(value, contentType = { CONTENT_TYPE_GRID_ITEM }, key = { it.name }) { artist ->
         val navigator = LocalNavController.current
         Artist(

@@ -4,114 +4,12 @@ package com.prime.player.core
 import android.content.Context
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
-import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.SupportSQLiteQuery
-import com.prime.player.common.FileUtils
-import com.prime.player.common.name
+import com.prime.player.core.Playlist.Member
 import kotlinx.coroutines.flow.Flow
 
 
 private const val AUDIO_COLUMN_ID = "audio_id"
-
-// data classes.
-@Entity(tableName = "tbl_audios")
-data class Audio(
-    @PrimaryKey
-    @ColumnInfo(name = AUDIO_COLUMN_ID) @JvmField val id: Long,
-    @JvmField val title: String,
-    @ColumnInfo(name = "album_id") @JvmField val albumId: Long,
-    @JvmField val path: String,
-    @JvmField @ColumnInfo(name = "parent_path") val parent: String,
-    @JvmField val album: String,
-    @JvmField val artist: String,
-    @JvmField val composer: String,
-    @JvmField val genre: String,
-    @ColumnInfo(name = "mime_type") @JvmField val mimeType: String,
-    @JvmField val track: Int,
-    @ColumnInfo(name = "date_added") @JvmField val dateAdded: Long,
-    @ColumnInfo(name = "date_modified") @JvmField val dateModified: Long,
-    @JvmField val duration: Int,
-    @ColumnInfo(name = "file_size") @JvmField val size: Long,
-    @JvmField val year: Int,
-) {
-
-    @DatabaseView(
-        viewName = "vw_audio_info",
-        value = "SELECT tbl_audios.*, COUNT(*) AS cardinality, MAX(date_modified) AS bucket_date_modified, " +
-                "SUM(file_size) AS info_size, SUM(duration) AS info_duration FROM tbl_audios ORDER BY date_modified DESC",
-    )
-    data class Info(
-        @Embedded @JvmField val value: Audio,
-        @JvmField val cardinality: Int,
-        @ColumnInfo(name = "bucket_date_modified") @JvmField val dateModified: Long,
-        @ColumnInfo(name = "info_size") @JvmField val size: Int,
-        @ColumnInfo(name = "info_duration") @JvmField val duration: Int
-    )
-
-    @DatabaseView(
-        value = "SELECT tbl_audios.*, parent_path AS bucket_path, COUNT(*) AS cardinality, " +
-                "MAX(date_modified) AS bucket_date_modified, SUM(file_size) AS bucket_size FROM tbl_audios " +
-                "GROUP BY parent_path ORDER BY date_modified DESC",
-        viewName = "vw_audio_bucket"
-    )
-    data class Bucket(
-        @Embedded @JvmField val value: Audio,
-        @JvmField @ColumnInfo(name = "bucket_path") val path: String,
-        @JvmField val cardinality: Int,
-        @JvmField @ColumnInfo(name = "bucket_size") val size: Long, // size in bytes
-        @JvmField @ColumnInfo(name = "bucket_date_modified") val dateModified: Long,
-    )
-
-    @DatabaseView(
-        value = "SELECT tbl_audios.*, artist AS artist_name, COUNT(*) AS tracks, COUNT(DISTINCT album) AS albums, " +
-                "SUM(file_size) AS artist_size, SUM(duration) AS artist_duration FROM tbl_audios " +
-                "GROUP BY artist ORDER BY date_modified DESC",
-        viewName = "vw_audio_artist"
-    )
-    data class Artist(
-        @Embedded val value: Audio,
-        @JvmField @ColumnInfo(name = "artist_name") val name: String,
-        @JvmField val tracks: Int,
-        @JvmField val albums: Int,
-        @JvmField @ColumnInfo(name = "artist_size") val size: Long,
-        @JvmField @ColumnInfo(name = "artist_duration") val duration: Int,
-    )
-
-    @DatabaseView(
-        viewName = "vw_audio_album",
-        value = "SELECT tbl_audios.*, album AS bucket_title, COUNT(*) AS tracks, COUNT(DISTINCT album) AS albums, " +
-                "SUM(file_size) AS album_size, SUM(duration) AS album_duration, MAX(year) AS last_year, MIN(year) AS first_year, album_id AS id " +
-                "FROM tbl_audios GROUP BY album ORDER BY date_modified DESC"
-    )
-    data class Album(
-        @JvmField val id: Long,
-        @Embedded val value: Audio,
-        @JvmField @ColumnInfo(name = "bucket_title") val title: String,
-        @JvmField @ColumnInfo(name = "first_year") val firstYear: Int,
-        @JvmField @ColumnInfo(name = "last_year") val lastYear: Int,
-        @JvmField @ColumnInfo(name = "album_size") val size: Long,
-        @JvmField @ColumnInfo(name = "album_duration") val duration: Int,
-        @JvmField val tracks: Int,
-    )
-
-    @DatabaseView(
-        value = "SELECT tbl_audios.*, genre AS genre_name, COUNT(*) AS tracks, SUM(file_size) AS genre_size, " +
-                "SUM(duration) AS genre_duration FROM tbl_audios " +
-                "GROUP BY genre ORDER BY date_modified DESC",
-        viewName = "vw_audio_genre"
-    )
-    data class Genre(
-        @Embedded val value: Audio,
-        @JvmField @ColumnInfo(name = "genre_name") val name: String,
-        @JvmField val tracks: Int,
-        @JvmField @ColumnInfo(name = "genre_size") val size: Long,
-        @JvmField @ColumnInfo(name = "genre_duration") val duration: Int,
-    )
-}
-
-
-val Audio.Bucket.name get() = FileUtils.name(path)
 
 /**
  * The member table of playlist.
@@ -139,12 +37,6 @@ data class Playlist(
         primaryKeys = [PLAYLIST_COLUMN_ID, MEMBER_FILE_ID],
         foreignKeys = [
             ForeignKey(
-                entity = Audio::class,
-                parentColumns = [AUDIO_COLUMN_ID],
-                childColumns = [MEMBER_FILE_ID],
-                onDelete = CASCADE
-            ),
-            ForeignKey(
                 entity = Playlist::class,
                 parentColumns = [PLAYLIST_COLUMN_ID],
                 childColumns = [PLAYLIST_COLUMN_ID],
@@ -167,14 +59,12 @@ data class Playlist(
 
 
 @Database(
-    entities = [Audio::class, Playlist::class, Playlist.Member::class],
-    version = 2,
+    entities = [Playlist::class, Member::class],
+    version = 3,
     exportSchema = false,
-    views = [Audio.Bucket::class, Audio.Artist::class, Audio.Album::class, Audio.Genre::class, Audio.Info::class]
 )
 abstract class LocalDb : RoomDatabase() {
 
-    abstract val audios: Audios
     abstract val playlists: Playlists
     abstract val members: Members
 
@@ -246,144 +136,6 @@ abstract class LocalDb : RoomDatabase() {
     }
 }
 
-@Dao
-interface Audios {
-    /**
-     * The Max of the recnetly added [date_added] mills
-     */
-    @Query("SELECT MAX(date_modified) FROM tbl_audios")
-    suspend fun lastModified(): Long?
-
-    @Insert
-    fun insert(audio: Audio): Long
-
-    @Query("SELECT EXISTS(SELECT audio_id FROM tbl_audios WHERE audio_id == :id)")
-    suspend fun exists(id: Long): Boolean
-
-    @Update
-    fun update(audio: Audio): Int
-
-    @Insert
-    fun insert(values: List<Audio>): List<Long>
-
-    @Update
-    fun update(values: List<Audio>): Int
-
-    @Query("DELETE FROM tbl_audios WHERE audio_id == :id")
-    suspend fun delete(id: Long): Int
-
-    @Deprecated("not to be used for normal purposes")
-    @Suppress("FunctionName")
-    @RawQuery(observedEntities = [Audio::class])
-    fun rawDelete(query: SupportSQLiteQuery): Int
-
-    /**
-     * Deletes ids from [Audio] table which are not in [ids]
-     * @param ids - string of ids separated by commas '123','456'
-     */
-    @Deprecated("not to be used for normal purposes")
-    @Suppress("FunctionName")
-    @Transaction
-    fun delete(ids: String): Int {
-        //language=SQL
-        //language=SQL
-        val query = SimpleSQLiteQuery("DELETE FROM tbl_audios WHERE audio_id NOT IN ($ids)")
-        return rawDelete(query)
-    }
-
-    /**
-     * Observes those files of [Audio]s Table which match the query.
-     */
-    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
-    fun observe(query: String? = null): Flow<List<Audio>>
-
-    /**
-     * @return the [Audio] or null matching the [id]
-     */
-    @Query("SELECT * FROM tbl_audios WHERE audio_id == :id")
-    suspend fun get(id: Long): Audio?
-
-    /**
-     * @return the list of [Audio] matching the query
-     */
-    @Query("SELECT * FROM tbl_audios WHERE :query IS NULL OR title LIKE '%' || :query || '%'")
-    suspend fun get(query: String? = null): List<Audio>
-
-    @Deprecated("not to be used for normal purposes")
-    @RawQuery
-    suspend fun get(query: SupportSQLiteQuery): List<Audio>
-
-    /**
-     * @return the recently added [Audio.Album]s below or equal to the limit
-     */
-    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
-    suspend fun getRecentAlbums(limit: Int): List<Audio.Album>
-
-    /**
-     * @see getRecentAlbums
-     */
-    @Query("SELECT * FROM vw_audio_album ORDER BY date_modified DESC LIMIT :limit")
-    fun observeRecentAlbums(limit: Int): Flow<List<Audio.Album>>
-
-    /**
-     * Observe the audio files of the [Audio.Bucket] as pointed by the [path]
-     */
-    @Query("SELECT * FROM tbl_audios WHERE parent_path == :path")
-    fun bucket(path: String): Flow<List<Audio>>
-
-    /**
-     * Observe the [Audio.Bucket]s filtered by [query]
-     */
-    @Query("SELECT * FROM vw_audio_bucket WHERE :query IS NULL OR bucket_path LIKE '%' || :query || '%'")
-    fun buckets(query: String? = null): Flow<List<Audio.Bucket>>
-
-    /**
-     * Observe the audio files of [Audio.Artist] pointed by the [name].
-     */
-    @Query("SELECT * FROM tbl_audios WHERE artist == :name")
-    fun artist(name: String): Flow<List<Audio>>
-
-    /**
-     *  Observe the [Audio.Artist]s filtered by [query]
-     */
-    @Query("SELECT * FROM vw_audio_artist WHERE :query IS NULL OR artist LIKE '%' || :query || '%'")
-    fun artists(query: String? = null): Flow<List<Audio.Artist>>
-
-    /**
-     *  Observe the audio files of [Audio.Genre]s pointed by [name]
-     */
-    @Query("SELECT * FROM tbl_audios WHERE genre == :name")
-    fun genre(name: String): Flow<List<Audio>>
-
-    /**
-     *  Observe the [Audio.Genre]s filtered by [query]
-     */
-    @Query("SELECT * FROM vw_audio_genre WHERE :query IS NULL OR genre LIKE '%' || :query || '%'")
-    fun genres(query: String? = null): Flow<List<Audio.Genre>>
-
-    /**
-     * Observe the [Audio.Album]s pointed by the unique [name]
-     */
-    @Query("SELECT * FROM tbl_audios WHERE album == :name")
-    fun album(name: String): Flow<List<Audio>>
-
-    /**
-     *  Observe the [Audio.Album]s filtered by [query]
-     */
-    @Query("SELECT * FROM vw_audio_album WHERE :query IS NULL OR album LIKE '%' || :query || '%'")
-    fun albums(query: String? = null): Flow<List<Audio.Album>>
-
-    /**
-     * @return [List][Audio]s of [Playlist] represented by [playlistId]
-     */
-    @RewriteQueriesToDropUnusedColumns
-    @Query(
-        "SELECT * FROM tbl_playlist_members INNER JOIN tbl_audios ON file_id == tbl_audios.audio_id " +
-                "WHERE playlist_id = :playlistId ORDER BY play_order ASC"
-    )
-    fun playlist(playlistId: Long): Flow<List<Audio>>
-
-}
 
 @Dao
 interface Playlists {
@@ -450,26 +202,26 @@ interface Playlists {
 @Dao
 interface Members {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(member: Playlist.Member): Long
+    suspend fun insert(member: Member): Long
 
     // members
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(members: List<Playlist.Member>): List<Long>
+    suspend fun insert(members: List<Member>): List<Long>
 
     /**
      * This is not the recommanded way to do it.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(member: Playlist.Member): Long
+    suspend fun update(member: Member): Long
 
     @Delete
-    suspend fun delete(member: Playlist.Member): Int
+    suspend fun delete(member: Member): Int
 
     @Delete
-    suspend fun delete(members: ArrayList<Playlist.Member>): Int
+    suspend fun delete(members: ArrayList<Member>): Int
 
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :fileId")
-    suspend fun get(playlistId: Long, fileId: String): Playlist.Member?
+    suspend fun get(playlistId: Long, fileId: String): Member?
 
     /**
      * Returns the number of tracks in the playlist.
@@ -501,4 +253,11 @@ interface Members {
      */
     @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND play_order >= :order")
     suspend fun delete(playlistId: Long, order: Long): Int
+
+    /**
+     * @return [List][Audio]s of [Playlist] represented by [playlistId]
+     */
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :playlistId ORDER BY play_order ASC")
+    fun playlist(playlistId: Long): Flow<List<Member>>
 }

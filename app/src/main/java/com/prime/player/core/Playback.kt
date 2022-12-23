@@ -10,13 +10,11 @@ import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StyleSpan
-import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
 import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.*
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession.Callback
@@ -87,18 +85,19 @@ private fun NotificationManager.ensureNotificationChannel(
 /**
  * Returns the non-shuffled tracks
  */
-private val Player.queue1: List<MediaItem> get() {
-    var current = currentMediaItemIndex
-    if (current == C.INDEX_UNSET)
-        return emptyList()
-    val list = ArrayList<MediaItem>()
-    while (current < this.mediaItemCount){
-        val ele = getMediaItemAt(current)
-        list += ele
-        current++
+private val Player.queue1: List<MediaItem>
+    get() {
+        var current = currentMediaItemIndex
+        if (current == C.INDEX_UNSET)
+            return emptyList()
+        val list = ArrayList<MediaItem>()
+        while (current < this.mediaItemCount) {
+            val ele = getMediaItemAt(current)
+            list += ele
+            current++
+        }
+        return list
     }
-    return list
-}
 
 
 private val Player.queue2: List<MediaItem>
@@ -112,11 +111,11 @@ private val Player.queue2: List<MediaItem>
         f1.isAccessible = true
         val order2 = f1.get(this) as DefaultShuffleOrder
         val list = ArrayList<MediaItem>()
-        while (current != C.INDEX_UNSET){
+        while (current != C.INDEX_UNSET) {
             list += getMediaItemAt(current)
             current = order2.getNextIndex(current)
         }
-        return  list
+        return list
     }
 
 private val Player.queue: List<MediaItem> get() = if (!shuffleModeEnabled) queue1 else queue2
@@ -334,7 +333,6 @@ class Playback : MediaLibraryService(), Callback {
     }
 
 
-
     // FixMe: Don't currently know how this affects.
     @SuppressLint("UnsafeOptInUsageError")
     override fun onGetLibraryRoot(
@@ -343,7 +341,16 @@ class Playback : MediaLibraryService(), Callback {
         params: LibraryParams?
     ): ListenableFuture<LibraryResult<MediaItem>> {
         val key = params?.extras?.getString(EXTRA_ROOT)
-            ?: throw IllegalAccessError("No $EXTRA_ROOT provided")
+            ?: return Futures.immediateFuture(
+                LibraryResult.ofItem(
+                    MediaItem.Builder().setMediaId(
+                        ROOT_PLAYLIST
+                    ).setMediaMetadata(
+                        MediaMetadata.Builder().setIsPlayable(false)
+                            .setFolderType(MediaMetadata.FOLDER_TYPE_MIXED).build()
+                    ).build(), params
+                )
+            )
         val root = when (key) {
             ROOT_PLAYLIST -> MediaItem.Builder().setMediaId(ROOT_PLAYLIST)
             ROOT_RECENT -> MediaItem.Builder().setMediaId(ROOT_RECENT)

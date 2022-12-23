@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
+import androidx.media3.common.Player
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -53,7 +54,6 @@ import com.primex.core.shadow.shadow
 import com.primex.ui.*
 import com.primex.ui.views.MarqueText
 import cz.levinzonr.saferoute.core.navigateTo
-import androidx.media3.common.Player
 
 @OptIn(
     ExperimentalAnimationApi::class,
@@ -95,7 +95,7 @@ private fun ConsoleViewModel.MiniLayout(
         //title
         val current by current
         MarqueText(
-            text = current?.title ?: "",
+            text = current?.name ?: "",
             modifier = Modifier.constrainAs(Title) {
                 width = Dimension.fillToConstraints
             },
@@ -435,7 +435,7 @@ private fun Next(
                     centreVertically = true,
                     text = {
                         Label(
-                            text = new.title,
+                            text = new.name,
                             style = Material.typography.body2
                         )
                     },
@@ -726,7 +726,7 @@ private fun ConsoleViewModel.Layout(
         )
 
         MarqueText(
-            text = current?.title ?: stringResource(id = R.string.unknown),
+            text = current?.name ?: stringResource(id = R.string.unknown),
             textSize = 40.sp,
             typeface = Typeface.DEFAULT_BOLD,
 

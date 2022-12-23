@@ -5,10 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -45,7 +43,6 @@ import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
 import com.prime.player.common.compose.ToastHostState.Duration
 import com.prime.player.common.compose.ToastHostState.Result
-import com.prime.player.core.SyncWorker
 import com.primex.core.activity
 import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
@@ -379,8 +376,6 @@ val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private lateinit var observer: ContentObserver
-
     val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
     val advertiser by lazy { Advertiser(this) }
     val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
@@ -402,9 +397,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         billingManager.release()
-        // unregister content Observer.
-        //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-        contentResolver.unregisterContentObserver(observer)
         super.onDestroy()
     }
 
@@ -417,20 +409,6 @@ class MainActivity : ComponentActivity() {
         // show splash screen
         initSplashScreen(
             isColdStart
-        )
-        //Observe the MediaStore
-        observer =
-            object : ContentObserver(null) {
-                override fun onChange(selfChange: Boolean) {
-                    // run worker when change is detected.
-                    if (!selfChange) SyncWorker.run(this@MainActivity)
-                }
-            }
-        // observe Images in MediaStore.
-        contentResolver.registerContentObserver(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            true,
-            observer,
         )
 
         if (isColdStart) {

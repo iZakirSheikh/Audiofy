@@ -1,18 +1,12 @@
 package com.prime.player
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
-import androidx.compose.material.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
@@ -158,9 +152,6 @@ object Singleton {
     @Singleton
     fun preferences(@ApplicationContext context: Context) = Preferences(context)
 
-    @Singleton
-    @Provides
-    fun audios(@ApplicationContext context: Context) = LocalDb.get(context).audios
 
     @Singleton
     @Provides
@@ -175,6 +166,12 @@ object Singleton {
     fun localDb(
         @ApplicationContext context: Context
     ) = LocalDb.get(context)
+
+    @Singleton
+    @Provides
+    fun resolver(
+        @ApplicationContext context: Context
+    ) = context.contentResolver
 }
 
 @Module

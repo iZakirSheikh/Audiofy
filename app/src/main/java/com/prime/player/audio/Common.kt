@@ -185,13 +185,13 @@ fun Audio.Properties(
             ) {
                 Property(
                     title = "Title",
-                    subtitle = audio.title,
+                    subtitle = audio.name,
                     icon = Icons.Outlined.Title
                 )
 
                 Property(
                     title = "Path",
-                    subtitle = audio.path,
+                    subtitle = audio.data,
                     icon = Icons.Outlined.LocationCity
                 )
 

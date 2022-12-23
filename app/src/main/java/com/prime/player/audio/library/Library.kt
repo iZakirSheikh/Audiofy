@@ -178,7 +178,7 @@ private fun Carousal(
                             KenBurns(
                                 modifier = Modifier.gradient(vertical = false),
                                 view = {
-                                    load(Audiofy.toAlbumArtUri(it.id))
+                                    load(Audiofy.toAlbumArtUri(it))
                                 }
                             )
                         }
@@ -361,7 +361,7 @@ private fun Recent(
             )
 
             Label(
-                text = value.title,
+                text = value.name,
                 modifier = Modifier.padding(vertical = ContentPadding.small),
                 style = Material.typography.caption2,
                 fontWeight = FontWeight.SemiBold,

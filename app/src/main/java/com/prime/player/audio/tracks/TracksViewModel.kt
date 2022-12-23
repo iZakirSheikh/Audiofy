@@ -243,7 +243,7 @@ class TracksViewModel @Inject constructor(
 
                     val filteredList =
                         if (query.isNullOrEmpty()) list else list.filter { audio ->
-                            audio.title.lowercase().contains(query)
+                            audio.name.lowercase().contains(query)
                         }
                     val grouped =
                         when (groupBy) {
@@ -255,19 +255,19 @@ class TracksViewModel @Inject constructor(
                             // then reverse it may be
                             // then group it according to the firstTitleChar
                             GroupBy.NAME -> filteredList
-                                .sortedBy { it.title }
+                                .sortedBy { it.name }
                                 .let { if (ascending) it else it.asReversed() }
                                 .groupBy { audio -> Text(audio.firstTitleChar) }
 
 
                             GroupBy.ARTIST -> filteredList
-                                .sortedBy { it.title }
+                                .sortedBy { it.name }
                                 .let { if (ascending) it else it.asReversed() }
                                 .groupBy { audio -> Text(audio.artist) }
 
 
                             GroupBy.ALBUM -> filteredList
-                                .sortedBy { it.title }
+                                .sortedBy { it.name }
                                 .let { if (ascending) it else it.asReversed() }
                                 .groupBy { audio -> Text(audio.album) }
 
@@ -338,4 +338,4 @@ private inline val List<Audio>.meta: Meta
     }
 
 private val Audio.firstTitleChar
-    inline get() = title.uppercase(Locale.ROOT)[0].toString()
+    inline get() = name.uppercase(Locale.ROOT)[0].toString()

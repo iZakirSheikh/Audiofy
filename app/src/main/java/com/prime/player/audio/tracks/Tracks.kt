@@ -610,7 +610,7 @@ private fun Track(
 
         overlineText = {
             Label(
-                text = value.title,
+                text = value.name,
                 style = Material.typography.body1,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,

@@ -299,7 +299,7 @@ val Audio.toMediaItem
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setArtworkUri(Audiofy.toAlbumArtUri(albumId))
-                    .setTitle(title)
+                    .setTitle(name)
                     .setSubtitle(artist)
                     .setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
                     .setIsPlayable(true)

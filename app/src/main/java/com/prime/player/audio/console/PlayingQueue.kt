@@ -51,7 +51,7 @@ private fun Track(
 ) {
     ListTile(
         overlineText = { Label(text = value.album) },
-        text = { Label(text = value.title, fontWeight = FontWeight.SemiBold) },
+        text = { Label(text = value.name, fontWeight = FontWeight.SemiBold) },
         secondaryText = { Label(text = value.artist, fontWeight = FontWeight.SemiBold) },
         modifier = modifier,
         leading = {

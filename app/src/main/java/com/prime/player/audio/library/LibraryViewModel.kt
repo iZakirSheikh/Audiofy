@@ -1,4 +1,7 @@
 package com.prime.player.audio.library
+
+import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.common.asComposeState
@@ -27,8 +30,9 @@ class LibraryViewModel @Inject constructor(
     remote: Remote
 ) : ViewModel() {
 
-    val reel =
-        repository.reel.asComposeState(null)
+    val reel = mutableStateOf<Pair<Long, Bitmap>?>(
+        null
+    )
 
     /**
      * The recently played tracks.
