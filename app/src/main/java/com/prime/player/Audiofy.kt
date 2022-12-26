@@ -13,7 +13,7 @@ import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
-import com.prime.player.core.LocalDb
+import com.prime.player.core.Playlists
 import com.prime.player.core.Remote
 import com.primex.preferences.*
 import dagger.Module
@@ -155,17 +155,7 @@ object Singleton {
 
     @Singleton
     @Provides
-    fun playlists(@ApplicationContext context: Context) = LocalDb.get(context).playlists
-
-    @Singleton
-    @Provides
-    fun members(@ApplicationContext context: Context) = LocalDb.get(context).members
-
-    @Singleton
-    @Provides
-    fun localDb(
-        @ApplicationContext context: Context
-    ) = LocalDb.get(context)
+    fun playlists(@ApplicationContext context: Context) = Playlists(context)
 
     @Singleton
     @Provides

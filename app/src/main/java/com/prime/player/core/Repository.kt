@@ -13,7 +13,6 @@ import javax.inject.Singleton
 
 private const val TAG = "Repository"
 
-private const val PLAYLIST_UNIQUE_TAG = "local_audios"
 
 private val PLAYLIST_RECENT = Audiofy.PRIVATE_PLAYLIST_PREFIX + "recent"
 private val PLAYLIST_FAV = Audiofy.PLAYLIST_FAVOURITES
@@ -22,7 +21,7 @@ private const val CAROUSEL_LIMIT = 30
 
 @Singleton
 class Repository @Inject constructor(
-    private val localDb: LocalDb,
+    private val localDb: Playlists,
     private val resolver: ContentResolver
 ) {
     /**
@@ -30,8 +29,7 @@ class Repository @Inject constructor(
      */
     val playlists =
         localDb
-            .playlists
-            .observe()
+            .playlists()
             .map { playlists ->
                 // drop private playlists.
                 playlists.dropWhile {
@@ -52,7 +50,7 @@ class Repository @Inject constructor(
     fun genre(name: String) = resolver.genre(name)
     fun artist(name: String) = resolver.artist(name)
     fun album(title: String) = resolver.album(title)
-    fun playlist(id: Long): Flow<List<Audio>> = localDb.members.playlist(
+    fun playlist(id: Long): Flow<List<Audio>> = localDb.playlist(
         id
     ).map {
         it.mapNotNull {
@@ -62,12 +60,9 @@ class Repository @Inject constructor(
 
     val favourite: Flow<List<Audio>?>
         get() = localDb
-            .members
             .playlist(
                 runBlocking {
-                    localDb.playlists.get(PLAYLIST_UNIQUE_TAG, PLAYLIST_FAV)?.id ?: createPlaylist(
-                        PLAYLIST_FAV
-                    )
+                    localDb.get(PLAYLIST_FAV)?.id ?: createPlaylist(PLAYLIST_FAV)
                 }
             )
             .map {
@@ -84,15 +79,15 @@ class Repository @Inject constructor(
                 MediaStore.Audio.Media.ALBUM_ID
             ),
             order = "${MediaStore.Audio.Media.DATE_MODIFIED} DESC LIMIT $CAROUSEL_LIMIT OFFSET 0"
-        ){c ->
-            List(c.count){
+        ) { c ->
+            List(c.count) {
                 c.moveToPosition(it)
                 c.getLong(0)
             }
         } ?: emptyList()
     }
 
-    fun getPlaylist(name: String) = runBlocking { localDb.playlists.get(PLAYLIST_UNIQUE_TAG, name) }
+    fun getPlaylist(name: String) = runBlocking { localDb.get(name) }
 
     @WorkerThread
     fun getAudioById(id: Long) =
@@ -105,12 +100,11 @@ class Repository @Inject constructor(
         runBlocking {
             val id =
                 localDb
-                    .playlists
-                    .get(PLAYLIST_UNIQUE_TAG, PLAYLIST_FAV)?.id
+                    .get(PLAYLIST_FAV)?.id
                     ?: return@runBlocking false
-            localDb.members.exists(
+            localDb.exists(
                 playlistId = id,
-                "$audioID"
+                Audiofy.toAudioTrackUri(audioID).toString()
             )
         }
 
@@ -125,43 +119,47 @@ class Repository @Inject constructor(
             exists(playlistName = name) -> -1L
             else ->
                 localDb
-                    .playlists
                     .insert(
                         Playlist(
                             name = name,
                             desc = desc,
                             dateCreated = System.currentTimeMillis(),
                             dateModified = System.currentTimeMillis(),
-                            tag = PLAYLIST_UNIQUE_TAG
                         )
                     )
         }
 
     suspend fun exists(playlistName: String): Boolean =
         localDb
-            .playlists
-            .get(PLAYLIST_UNIQUE_TAG, playlistName) != null
+            .get(playlistName) != null
 
     suspend fun deletePlaylist(playlist: Playlist): Boolean =
         localDb
-            .playlists
             .delete(playlist) == 1
 
     suspend fun updatePlaylist(value: Playlist): Boolean =
-        localDb.playlists.update(value) == 1
+        localDb.update(value) == 1
 
     suspend fun addToPlaylist(
         audioID: Long,
         name: String
     ): Boolean {
-        val playlistsDb = localDb.playlists
-        val id = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name)?.id ?: createPlaylist(name)
+        val playlistsDb = localDb
+        val id = playlistsDb.get(name)?.id ?: createPlaylist(name)
         //TODO: Update dateModified.
         val older = playlistsDb.lastPlayOrder(id) ?: 0
-        val member = Playlist.Member(id, "$audioID", order = older + 1)
+        val audio = getAudioById(audioID) ?: return false
+        val member = Playlist.Member(
+            id,
+            "$audioID",
+            order = older + 1,
+            Audiofy.toAudioTrackUri(audioID).toString(),
+            audio.name,
+            audio.artist,
+            Audiofy.toAlbumArtUri(id).toString()
+        )
 
         val memberId = localDb
-            .members
             .insert(member)
             .also {
                 val playlist = playlistsDb.get(id) ?: return false
@@ -172,14 +170,8 @@ class Repository @Inject constructor(
     }
 
     suspend fun addToPlaylist(audios: List<Long>, name: String): List<Boolean> {
-        val id = localDb.playlists.get(PLAYLIST_UNIQUE_TAG, name)?.id ?: createPlaylist(name)
-        //TODO: Update dateModified.
-        var older = localDb.playlists.lastPlayOrder(id) ?: 0
-        val members = audios.map {
-            Playlist.Member(id, "$it", order = older++)
-        }
-        return localDb.members.insert(members).map {
-            it != -1L
+        return audios.map {
+            addToPlaylist(it, name)
         }
     }
 
@@ -188,10 +180,9 @@ class Repository @Inject constructor(
      * Remove from playlist if first [Playlist] found and then if successfully removed.
      */
     suspend fun removeFromPlaylist(name: String, audioID: Long): Boolean {
-        val playlistsDb = localDb.playlists
-        val members = localDb.members
-        val playlist = playlistsDb.get(PLAYLIST_UNIQUE_TAG, name) ?: return false
-        val count = members.delete(playlist.id, "$audioID")
+        val playlistsDb = localDb
+        val playlist = playlistsDb.get(name) ?: return false
+        val count = playlistsDb.delete(playlist.id, "$audioID")
             .also {
                 if (it == 1)
                     playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
@@ -207,5 +198,4 @@ class Repository @Inject constructor(
             addToPlaylist(audioID, PLAYLIST_FAV)
         return !favourite && op
     }
-
 }

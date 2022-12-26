@@ -1,6 +1,5 @@
 package com.prime.player.core
 
-
 import android.content.Context
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
@@ -18,23 +17,21 @@ private const val TABLE_PLAYLIST_MEMBER = "tbl_playlist_members"
 
 private const val PLAYLIST_COLUMN_ID = "playlist_id"
 private const val MEMBER_COLUMN_ORDER = "play_order"
-private const val MEMBER_FILE_ID = "file_id"
+private const val MEMBER_FILE_ID = "media_id"
+private const val MEMBER_FILE_URI = "uri"
 
-/**
- * @param tag Unique among modules like audio player, video player, radio etc.
- */
+
 @Entity(tableName = "tbl_playlists")
 data class Playlist(
     @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = PLAYLIST_COLUMN_ID) val id: Long = 0,
     @JvmField val name: String,
     @ColumnInfo(defaultValue = "") val desc: String,
-    @JvmField val tag: String,
     @JvmField @ColumnInfo(name = "date_created") val dateCreated: Long,
     @JvmField @ColumnInfo(name = "date_modified") val dateModified: Long,
 ) {
     @Entity(
         tableName = TABLE_PLAYLIST_MEMBER,
-        primaryKeys = [PLAYLIST_COLUMN_ID, MEMBER_FILE_ID],
+        primaryKeys = [PLAYLIST_COLUMN_ID, MEMBER_FILE_URI],
         foreignKeys = [
             ForeignKey(
                 entity = Playlist::class,
@@ -44,32 +41,27 @@ data class Playlist(
             )
         ],
         indices = [
-            Index(
-                value = [PLAYLIST_COLUMN_ID, MEMBER_FILE_ID],
-                unique = false
-            )
+            Index(value = [PLAYLIST_COLUMN_ID, MEMBER_FILE_URI], unique = false)
         ]
     )
     data class Member(
         @JvmField @ColumnInfo(name = PLAYLIST_COLUMN_ID) val playlistID: Long,
         @JvmField @ColumnInfo(name = MEMBER_FILE_ID) val id: String,
-        @JvmField @ColumnInfo(name = MEMBER_COLUMN_ORDER) val order: Long
+        @JvmField @ColumnInfo(name = MEMBER_COLUMN_ORDER) val order: Long,
+        @JvmField @ColumnInfo(name = MEMBER_FILE_URI) val uri: String,
+        @JvmField val title: String,
+        @JvmField val subtitle: String,
+        @JvmField @ColumnInfo(name = "artwork_uri") val artwork: String? = null
     )
 }
 
-
-@Database(
-    entities = [Playlist::class, Member::class],
-    version = 3,
-    exportSchema = false,
-)
-abstract class LocalDb : RoomDatabase() {
+@Database(entities = [Playlist::class, Member::class], version = 4, exportSchema = false)
+abstract class Realm : RoomDatabase() {
 
     abstract val playlists: Playlists
-    abstract val members: Members
 
     companion object {
-        private const val DB_NAME = "localdb"
+        private const val DB_NAME = "realm_db"
 
         /**
          * Create triggers in order to manage [MEMBER_COLUMN_PLAY_ORDER]
@@ -90,7 +82,7 @@ abstract class LocalDb : RoomDatabase() {
                     "WHERE old.${PLAYLIST_COLUMN_ID} == $PLAYLIST_COLUMN_ID AND old.$MEMBER_COLUMN_ORDER < $MEMBER_COLUMN_ORDER;" +
                     "END;"
 
-        private val CALLBACK = object : RoomDatabase.Callback() {
+        private val CALLBACK = object : Callback() {
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
@@ -109,15 +101,15 @@ abstract class LocalDb : RoomDatabase() {
         // Singleton prevents multiple instances of database opening at the
         // same time.
         @Volatile
-        private var INSTANCE: LocalDb? = null
+        private var INSTANCE: Realm? = null
 
-        fun get(context: Context): LocalDb {
+        fun get(context: Context): Realm {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    LocalDb::class.java,
+                    Realm::class.java,
                     DB_NAME
                 )
                     .addCallback(CALLBACK)
@@ -136,9 +128,14 @@ abstract class LocalDb : RoomDatabase() {
     }
 }
 
-
 @Dao
 interface Playlists {
+
+
+    companion object {
+        operator fun invoke(context: Context) = Realm.get(context).playlists
+    }
+
     // playlists
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(playlist: Playlist): Long
@@ -169,38 +166,17 @@ interface Playlists {
     suspend fun get(id: Long): Playlist?
 
     /**
-     * @return [Playlist] represented by unique [tag] and [name]
+     * @return [Playlist] represented by [id]
      */
-    @Query("SELECT * FROM tbl_playlists WHERE tag == :tag AND name == :name")
-    suspend fun get(tag: String, name: String): Playlist?
-
-    /**
-     * @return All [Playlist]s matched by the query.
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE :query IS NULL OR name LIKE '%' || :query || '%'")
-    suspend fun get(query: String? = null): List<Playlist>
+    @Query("SELECT * FROM tbl_playlists WHERE name == :name")
+    suspend fun get(name: String): Playlist?
 
     /**
      * @return All [Flow][Playlist]s matched by the query.
      */
     @Query("SELECT * FROM tbl_playlists WHERE :query IS NULL OR name LIKE '%' || :query || '%'")
-    fun observe(query: String? = null): Flow<List<Playlist>>
+    fun playlists(query: String? = null): Flow<List<Playlist>>
 
-    /**
-     * @return [Flow][Playlist] matched by [id].
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE playlist_id == :id")
-    fun observe(id: Long): Flow<Playlist?>
-
-    /**
-     * @return [Flow][Playlist] matched by the unique [tag] and [name].
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE tag == :tag AND name = :name")
-    fun observe(tag: String, name: String): Flow<Playlist?>
-}
-
-@Dao
-interface Members {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(member: Member): Long
 
@@ -209,7 +185,7 @@ interface Members {
     suspend fun insert(members: List<Member>): List<Long>
 
     /**
-     * This is not the recommanded way to do it.
+     * This is not the recommended way to do it.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun update(member: Member): Long
@@ -220,32 +196,20 @@ interface Members {
     @Delete
     suspend fun delete(members: ArrayList<Member>): Int
 
-    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :fileId")
-    suspend fun get(playlistId: Long, fileId: String): Member?
-
-    /**
-     * Returns the number of tracks in the playlist.
-     */
-    @Query("SELECT COUNT(*) FROM tbl_playlist_members WHERE playlist_id == :playlistId")
-    suspend fun count(playlistId: Long): Int
-
-    /**
-     * Returns the [COLUMN_PLAY_ORDER] if the track exists in [TABLE_NAME_MEMBER] else null
-     */
-    @Query("SELECT play_order FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :trackId")
-    suspend fun getPlayOrder(playlistId: Long, trackId: String): Long?
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
+    suspend fun get(playlistId: Long, uri: String): Member?
 
     /**
      * Check if the [Playlist.Member] exits in [Playlist]
      */
-    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id)")
-    suspend fun exists(playlistId: Long, id: String): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri)")
+    suspend fun exists(playlistId: Long, uri: String): Boolean
 
     /**
      * Delete the [Playlist.Member] from the [Playlist]
      */
-    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND file_id == :id")
-    suspend fun delete(playlistId: Long, id: String): Int
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
+    suspend fun delete(playlistId: Long, uri: String): Int
 
 
     /**
