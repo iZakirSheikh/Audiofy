@@ -16,7 +16,10 @@ import com.prime.player.common.compose.show
 import com.prime.player.core.*
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +38,8 @@ class ConsoleViewModel @Inject constructor(
     private val repository: Repository,
 ) : ViewModel() {
 
+    private val progressJob: Job? = null
+
     /**
      * This channel must be set from composable.
      */
@@ -50,11 +55,13 @@ class ConsoleViewModel @Inject constructor(
     val artwork = mutableStateOf(Audiofy.DEFAULT_ALBUM_ART)
     val playlists = repository.playlists
     val queue =
-        remote.observe(Playback.ROOT_PLAYLIST)
+        remote.observe(Playback.ROOT_QUEUE)
+            .flowOn(Dispatchers.Main)
             .map {
                 val x = it.map { repository.getAudioById(it.mediaId.toLong()) }
                 x.filterNotNull()
             }
+            .flowOn(Dispatchers.Default)
 
     val favourite = mutableStateOf(false)
 

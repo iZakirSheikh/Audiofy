@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 private const val TAG = "LibraryViewModel"
@@ -26,8 +27,7 @@ private val TimeOutPolicy = SharingStarted.Lazily
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    repository: Repository,
-    remote: Remote
+    repository: Repository
 ) : ViewModel() {
 
     val reel = mutableStateOf<Pair<Long, Bitmap>?>(
@@ -39,11 +39,9 @@ class LibraryViewModel @Inject constructor(
      */
     val recent =
         // replace with actual recent playlist
-        remote.observe(Playback.ROOT_RECENT, null)
-            .map {
-                val x = it.map { repository.getAudioById(it.mediaId.toLong()) }
-                x.filterNotNull().reversed()
-            }
+        repository.playlist(
+            repository.getPlaylist(Playback.PLAYLIST_RECENT)?.id ?: 0
+        )
 
 
     val carousel =

@@ -281,8 +281,8 @@ private class RemoteImpl(private val context: Context) : Remote {
 
     override suspend fun await() {
         val x = fBrowser.await()
-        x.subscribe(Playback.ROOT_PLAYLIST, null)
-        x.subscribe(Playback.ROOT_RECENT, null)
+        x.subscribe(Playback.ROOT_QUEUE, null)
+        //x.subscribe(Playback.ROOT_RECENT, null)
     }
 }
 

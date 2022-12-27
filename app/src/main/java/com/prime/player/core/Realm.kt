@@ -224,4 +224,12 @@ interface Playlists {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :playlistId ORDER BY play_order ASC")
     fun playlist(playlistId: Long): Flow<List<Member>>
+
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order ASC")
+    suspend fun getMembers(id: Long): List<Member>
+
+    suspend fun getMembers(name: String): List<Member>{
+        val x = get(name) ?: return emptyList()
+        return getMembers(x.id)
+    }
 }

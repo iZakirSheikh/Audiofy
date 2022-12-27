@@ -6,6 +6,7 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -13,7 +14,6 @@ import android.text.style.StyleSpan
 import android.widget.Toast
 import androidx.media3.common.*
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
-import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.*
@@ -24,36 +24,99 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.prime.player.MainActivity
 import com.prime.player.R
-import com.primex.preferences.Preferences
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
+import com.prime.player.core.Playlist.Member
+import com.primex.preferences.*
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.components.ServiceComponent
-import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.*
+import org.json.JSONArray
 import javax.inject.Inject
 import kotlin.random.Random
 
-private const val TAG = "Playback"
+/**
+ * A simple extension fun that constructs [Member] from this [MediaItem]
+ */
+private inline fun MediaItem.toMember(id: Long, order: Long) =
+    Member(
+        id,
+        mediaId,
+        order,
+        requestMetadata.mediaUri!!.toString(),
+        mediaMetadata.title.toString(),
+        mediaMetadata.subtitle.toString(),
+        mediaMetadata.artworkUri?.toString()
+    )
 
-/* Do nothing. */
-private fun ListenableFuture<SessionResult>.ignore() = Unit
+private const val PLAYLIST_RECENT = "_playlist_recent"
+private const val PLAYLIST_QUEUE = "_playlist_queue"
 
-/** The action which starts playback.  */
-private const val ACTION_PLAY = "com.prime.player.play"
+/**
+ * A simple extension fun that adds items to recent.
+ */
+private fun Playlists.addToRecent(item: MediaItem) {
+    GlobalScope.launch {
 
-/** The action which pauses playback.  */
-private const val ACTION_PAUSE = "com.prime.player.pause"
+        val playlistId = get(PLAYLIST_RECENT)?.id
+            ?: insert(
+                Playlist(
+                    name = PLAYLIST_RECENT,
+                    desc = "",
+                    dateCreated = System.currentTimeMillis(),
+                    dateModified = System.currentTimeMillis()
+                )
+            )
+        // here two cases arise
+        // case 1 the member already exists:
+        // in this case we just have to update the order and nothing else
+        // case 2 the member needs to be inserted.
+        // In both cases the playlist's dateModified needs to be updated.
+        val playlist = get(playlistId)!!
+        update(playlist = playlist.copy(dateModified = System.currentTimeMillis()))
 
-/** The action which skips to the previous window.  */
-private const val ACTION_PREVIOUS = "com.prime.player.prev"
+        val member = get(playlistId, item.requestMetadata.mediaUri.toString())
 
-/** The action which skips to the next window.  */
-private const val ACTION_NEXT = "com.prime.player.next"
+        when (member != null) {
+            // exists
+            true -> {
+                //localDb.members.update(member.copy(order = 0))
+                // updating the member doesn't work as expected.
+                // localDb.members.delete(member)
+                update(member = member.copy(order = 0))
+            }
+            else -> {
+                // check the limit in this case
+                val limit = 200L
+                // delete above member
+                delete(playlistId, limit)
+                insert(
+                    item.toMember(playlistId, 0)
+                )
+            }
+        }
+    }
+}
 
-/** The action which stops playback.  */
-private const val ACTION_STOP = "com.prime.player.stop"
+
+private fun Playlists.queue(items: List<MediaItem>){
+    GlobalScope.launch {
+
+        val id = get(PLAYLIST_QUEUE)?.id ?: insert(
+            Playlist(
+                name = PLAYLIST_QUEUE,
+                desc = "",
+                dateModified = System.currentTimeMillis(),
+                dateCreated = System.currentTimeMillis()
+            )
+        )
+
+        // delete all old
+        var order = 0L
+        val members = items.map {
+            it.toMember(id, order++)
+        }
+        delete(members as ArrayList<Member>)
+        insert(members)
+    }
+}
 
 /**
  * Returns all the [MediaItem]s of [Player]
@@ -62,25 +125,6 @@ private inline val Player.mediaItems
     get() = List(this.mediaItemCount) {
         getMediaItemAt(it)
     }
-
-/**
- * Ensures the notification channel exists, if not creates it.
- */
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-private fun NotificationManager.ensureNotificationChannel(
-    channelId: String,
-    channelName: CharSequence
-) {
-    if (Util.SDK_INT < 26 || getNotificationChannel(channelId) != null) return
-    // Need to create a notification channel.
-    val channel = NotificationChannel(
-        channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT
-    ).also {
-        it.setShowBadge(false)
-        it.setSound(null, null)
-    }
-    createNotificationChannel(channel)
-}
 
 /**
  * Returns the non-shuffled tracks
@@ -120,11 +164,18 @@ private val Player.queue2: List<MediaItem>
 
 private val Player.queue: List<MediaItem> get() = if (!shuffleModeEnabled) queue1 else queue2
 
+/**
+ * Returns a spannable string representation of [value]
+ */
+fun Bold(value: CharSequence): CharSequence =
+    SpannableStringBuilder(value).apply {
+        setSpan(StyleSpan(Typeface.BOLD), 0, value.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    }
 
 /**
  * FixMe: Extracts array from player using reflection.
  */
-private val Player.shuffled: IntArray
+private val Player.orders: IntArray
     get() {
         require(this is ExoPlayer)
         val f1 = this.javaClass.getDeclaredField("shuffleOrder")
@@ -136,15 +187,76 @@ private val Player.shuffled: IntArray
         return f2.get(order2) as IntArray
     }
 
+/*Different keys for saving the state*/
+private val PREF_KEY_SHUFFLE_MODE = booleanPreferenceKey("_shuffle", false)
+private val PREF_KEY_REPEAT_MODE = intPreferenceKey("_repeat_mode", Player.REPEAT_MODE_OFF)
+private val PREF_KEY_INDEX = intPreferenceKey("_index", C.INDEX_UNSET)
+private val PREF_KEY_BOOKMARK = longPreferenceKey("_bookmark", C.TIME_UNSET)
+private val PREF_KEY_ORDERS = stringPreferenceKey(
+    "_orders",
+    IntArray(0),
+    object : StringSaver<IntArray> {
+        override fun restore(value: String): IntArray {
+            val arr = JSONArray(value)
+            return IntArray(arr.length()) {
+                arr.getInt(it)
+            }
+        }
 
-@Module
-@InstallIn(ServiceComponent::class)
-object Service {
+        override fun save(value: IntArray): String {
+            val arr = JSONArray(value)
+            return arr.toString()
+        }
+    }
+)
 
-    @ServiceScoped
-    @Provides
-    fun storage(preferences: Preferences) = Storage(preferences)
-}
+
+/**
+ * Constructs a [MediaItem]
+ */
+private fun MediaItem(
+    uri: Uri,
+    id: String = MediaItem.DEFAULT_MEDIA_ID,
+    artwork: Uri? = null,
+    subtitle: CharSequence? = null,
+    title: CharSequence? = null
+) = MediaItem.Builder()
+    .setMediaId(id)
+    // as this is going to be passed to MediaBrowserService and hence can't be initiated
+    .setUri(uri)
+    .setRequestMetadata(
+        MediaItem.RequestMetadata.Builder()
+            .setMediaUri(uri)
+            .build()
+    ).setMediaMetadata(
+        MediaMetadata.Builder()
+            .setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
+            .setIsPlayable(true)
+            .setTitle(title)
+            .setArtist(subtitle)
+            .setArtworkUri(artwork)
+            .setSubtitle(subtitle)
+            .build()
+    ).build()
+
+private const val ROOT_QUEUE = "com.prime.player.queue"
+
+private val BROWSER_ROOT_QUEUE =
+    MediaItem.Builder()
+        .setMediaId(ROOT_QUEUE)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+                .setIsPlayable(false)
+                .build()
+        )
+        .build()
+
+private val Member.toMediaItem
+    get() = MediaItem(Uri.parse(uri), id, artwork?.let { Uri.parse(it) }, subtitle, Bold(title))
+
+
+
 
 
 /**
@@ -154,41 +266,11 @@ object Service {
 class Playback : MediaLibraryService(), Callback {
 
     companion object {
-        /**
-         * The lookup key for the browser service that indicates the kind of root to return.
-         *
-         * When creating a media browser for a given media browser service, this key can be
-         * supplied as a root hint for retrieving media items.
-         *
-         * @see [EXTRA_RECENT]
-         * @see [ROOT_PLAYLIST]
-         */
-        val EXTRA_ROOT = "com.prime.player.core.root"
+        const val PLAYLIST_RECENT = com.prime.player.core.PLAYLIST_RECENT
+        const val PLAYLIST_QUEUE = com.prime.player.core.PLAYLIST_QUEUE
 
-        /**
-         * The root for queued [MediaItem]s.
-         * @see [ROOT_RECENT]
-         */
-        val ROOT_PLAYLIST = "com.prime.player.core.PLAYLIST"
-
-        /**
-         * The root key for recently played [MediaItem]s.
-         * @see [ROOT_PLAYLIST]
-         */
-        val ROOT_RECENT = "com.prime.player.core.RECENT"
-
-        /**
-         * Returns a spannable string representation of [value]
-         */
-        fun Title(value: CharSequence): CharSequence =
-            SpannableStringBuilder(value).apply {
-                setSpan(StyleSpan(Typeface.BOLD), 0, value.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
+        const val ROOT_QUEUE = com.prime.player.core.ROOT_QUEUE
     }
-
-    // This helps in implement the state of this service using persistent storage .
-    @Inject
-    lateinit var storage: Storage
 
 
     /**
@@ -206,6 +288,10 @@ class Playback : MediaLibraryService(), Callback {
     private lateinit var player: Player
     private lateinit var session: MediaLibrarySession
 
+    // This helps in implement the state of this service using persistent storage .
+    @Inject lateinit var preferences: Preferences
+    @Inject lateinit var playlists: Playlists
+
     /**
      * A listener for [Player] must be set after [onRestoreState]
      */
@@ -213,29 +299,28 @@ class Playback : MediaLibraryService(), Callback {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 // save current index in preference
-                storage.index = player.currentMediaItemIndex
+                preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex
                 if (mediaItem != null) {
-                    storage.addToRecent(mediaItem)
-                    session.notifyChildrenChanged(ROOT_RECENT, storage.recent.size, null)
-                    session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
+                    playlists.addToRecent(mediaItem)
+                    session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
                 }
             }
 
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-                storage.shuffle = shuffleModeEnabled
-                session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
+                preferences[PREF_KEY_SHUFFLE_MODE] = shuffleModeEnabled
+                session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
-                storage.repeatMode = repeatMode
+                preferences[PREF_KEY_REPEAT_MODE] = repeatMode
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 // construct list and update.
                 if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-                    storage.list = player.mediaItems
-                    storage.shuffled = player.shuffled
-                    session.notifyChildrenChanged(ROOT_PLAYLIST, 0, null)
+                    playlists.queue(player.mediaItems)
+                    preferences[PREF_KEY_ORDERS] = player.orders
+                    session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
                 }
             }
 
@@ -249,6 +334,7 @@ class Playback : MediaLibraryService(), Callback {
                 //player.seekToNextMediaItem()
             }
         }
+
 
     // init all the objects and restore the state.
     override fun onCreate() {
@@ -276,7 +362,7 @@ class Playback : MediaLibraryService(), Callback {
                 .setSessionActivity(activity)
                 .build()
 
-        onRestoreSavedState()
+        runBlocking { onRestoreSavedState() }
         player.addListener(listener)
     }
 
@@ -284,24 +370,26 @@ class Playback : MediaLibraryService(), Callback {
      * Restore the saved state of this service.
      */
     @SuppressLint("UnsafeOptInUsageError")
-    private fun onRestoreSavedState() {
+    private suspend fun  onRestoreSavedState() {
         with(player) {
-            shuffleModeEnabled = storage.shuffle
-            repeatMode = storage.repeatMode
-            setMediaItems(storage.list)
+            shuffleModeEnabled = preferences.value(PREF_KEY_SHUFFLE_MODE)
+            repeatMode = preferences.value(PREF_KEY_REPEAT_MODE)
+            setMediaItems(
+                playlists.getMembers(PLAYLIST_QUEUE).map { it.toMediaItem }
+            )
 
             // set saved shuffled.
             (this as ExoPlayer).setShuffleOrder(
                 DefaultShuffleOrder(
-                    storage.shuffled,
+                    preferences.value(PREF_KEY_ORDERS),
                     Random.nextLong()
                 )
             )
 
             // seek to current position
-            val index = storage.index
+            val index = preferences.value(PREF_KEY_INDEX)
             if (index != C.INDEX_UNSET)
-                seekTo(index, storage.bookmark)
+                seekTo(index, preferences.value(PREF_KEY_BOOKMARK))
         }
     }
 
@@ -321,7 +409,7 @@ class Playback : MediaLibraryService(), Callback {
                     .setMediaMetadata(
                         item.mediaMetadata
                             .buildUpon()
-                            .setTitle(Title(item.mediaMetadata.title ?: "Unknown"))
+                            .setTitle(Bold(item.mediaMetadata.title ?: "Unknown"))
                             // since user is only going to pass the title and subtitle.
                             // but the notification displays the title and the artist; hence this.
                             .setArtist(item.mediaMetadata.subtitle)
@@ -332,7 +420,6 @@ class Playback : MediaLibraryService(), Callback {
         )
     }
 
-
     // FixMe: Don't currently know how this affects.
     @SuppressLint("UnsafeOptInUsageError")
     override fun onGetLibraryRoot(
@@ -340,25 +427,8 @@ class Playback : MediaLibraryService(), Callback {
         browser: ControllerInfo,
         params: LibraryParams?
     ): ListenableFuture<LibraryResult<MediaItem>> {
-        val key = params?.extras?.getString(EXTRA_ROOT)
-            ?: return Futures.immediateFuture(
-                LibraryResult.ofItem(
-                    MediaItem.Builder().setMediaId(
-                        ROOT_PLAYLIST
-                    ).setMediaMetadata(
-                        MediaMetadata.Builder().setIsPlayable(false)
-                            .setFolderType(MediaMetadata.FOLDER_TYPE_MIXED).build()
-                    ).build(), params
-                )
-            )
-        val root = when (key) {
-            ROOT_PLAYLIST -> MediaItem.Builder().setMediaId(ROOT_PLAYLIST)
-            ROOT_RECENT -> MediaItem.Builder().setMediaId(ROOT_RECENT)
-            else -> throw java.lang.IllegalArgumentException("No such root exists: $key")
-        }.build()
-        return Futures.immediateFuture(LibraryResult.ofItem(root, params))
+        return Futures.immediateFuture(LibraryResult.ofItem(BROWSER_ROOT_QUEUE, params))
     }
-
 
     // return the individual media item pointed out by the [mediaId]
     override fun onGetItem(
@@ -383,8 +453,7 @@ class Playback : MediaLibraryService(), Callback {
         params: LibraryParams?
     ): ListenableFuture<LibraryResult<Void>> {
         val children = when (parentId) {
-            ROOT_PLAYLIST -> player.mediaItems
-            ROOT_RECENT -> storage.recent
+            ROOT_QUEUE -> player.queue
             else -> return Futures.immediateFuture(
                 LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
             )
@@ -392,7 +461,6 @@ class Playback : MediaLibraryService(), Callback {
         session.notifyChildrenChanged(browser, parentId, children.size, params)
         return Futures.immediateFuture(LibraryResult.ofVoid())
     }
-
 
     override fun onGetChildren(
         session: MediaLibrarySession,
@@ -404,8 +472,7 @@ class Playback : MediaLibraryService(), Callback {
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
         //TODO(Maybe add support for paging.)
         val children = when (parentId) {
-            ROOT_PLAYLIST -> player.queue
-            ROOT_RECENT -> storage.recent
+            ROOT_QUEUE -> player.queue
             else -> return Futures.immediateFuture(
                 LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
             )
