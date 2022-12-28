@@ -32,10 +32,11 @@ import org.json.JSONArray
 import javax.inject.Inject
 import kotlin.random.Random
 
+
 /**
  * A simple extension fun that constructs [Member] from this [MediaItem]
  */
-private inline fun MediaItem.toMember(id: Long, order: Long) =
+private inline fun MediaItem.toMember(id: Long, order: Int) =
     Member(
         id,
         mediaId,
@@ -46,24 +47,14 @@ private inline fun MediaItem.toMember(id: Long, order: Long) =
         mediaMetadata.artworkUri?.toString()
     )
 
-private const val PLAYLIST_RECENT = "_playlist_recent"
-private const val PLAYLIST_QUEUE = "_playlist_queue"
-
 /**
  * A simple extension fun that adds items to recent.
  */
 private fun Playlists.addToRecent(item: MediaItem) {
     GlobalScope.launch {
 
-        val playlistId = get(PLAYLIST_RECENT)?.id
-            ?: insert(
-                Playlist(
-                    name = PLAYLIST_RECENT,
-                    desc = "",
-                    dateCreated = System.currentTimeMillis(),
-                    dateModified = System.currentTimeMillis()
-                )
-            )
+        val playlistId = get(Playback.PLAYLIST_RECENT)?.id
+            ?: insert(Playlist(name = Playback.PLAYLIST_RECENT))
         // here two cases arise
         // case 1 the member already exists:
         // in this case we just have to update the order and nothing else
@@ -87,29 +78,21 @@ private fun Playlists.addToRecent(item: MediaItem) {
                 val limit = 200L
                 // delete above member
                 delete(playlistId, limit)
-                insert(
-                    item.toMember(playlistId, 0)
-                )
+                insert(item.toMember(playlistId, 0))
             }
         }
     }
 }
 
-
-private fun Playlists.queue(items: List<MediaItem>){
+private fun Playlists.queue(items: List<MediaItem>) {
     GlobalScope.launch {
 
-        val id = get(PLAYLIST_QUEUE)?.id ?: insert(
-            Playlist(
-                name = PLAYLIST_QUEUE,
-                desc = "",
-                dateModified = System.currentTimeMillis(),
-                dateCreated = System.currentTimeMillis()
-            )
+        val id = get(Playback.PLAYLIST_QUEUE)?.id ?: insert(
+            Playlist(name = Playback.PLAYLIST_QUEUE)
         )
 
         // delete all old
-        var order = 0L
+        var order = 0
         val members = items.map {
             it.toMember(id, order++)
         }
@@ -142,7 +125,6 @@ private val Player.queue1: List<MediaItem>
         }
         return list
     }
-
 
 private val Player.queue2: List<MediaItem>
     @SuppressLint("UnsafeOptInUsageError")
@@ -210,7 +192,6 @@ private val PREF_KEY_ORDERS = stringPreferenceKey(
     }
 )
 
-
 /**
  * Constructs a [MediaItem]
  */
@@ -255,23 +236,36 @@ private val BROWSER_ROOT_QUEUE =
 private val Member.toMediaItem
     get() = MediaItem(Uri.parse(uri), id, artwork?.let { Uri.parse(it) }, subtitle, Bold(title))
 
-
-
-
-
 /**
  * The Playback Service class using media3.
  */
 @AndroidEntryPoint
 class Playback : MediaLibraryService(), Callback {
-
     companion object {
-        const val PLAYLIST_RECENT = com.prime.player.core.PLAYLIST_RECENT
-        const val PLAYLIST_QUEUE = com.prime.player.core.PLAYLIST_QUEUE
 
+        /**
+         * The name of Global [Playlists]
+         */
+        @JvmField
+        val PLAYLIST_FAVOURITE = Playlists.PRIVATE_PLAYLIST_PREFIX + "favourite"
+
+        /**
+         * The name of Global [Playlists]
+         */
+        @JvmField
+        val PLAYLIST_RECENT = Playlists.PRIVATE_PLAYLIST_PREFIX + "recent"
+
+        /**
+         * The name of Global [Playlists]
+         */
+        @JvmField
+        val PLAYLIST_QUEUE = Playlists.PRIVATE_PLAYLIST_PREFIX + "queue"
+
+        /**
+         * The root of the playing queue
+         */
         const val ROOT_QUEUE = com.prime.player.core.ROOT_QUEUE
     }
-
 
     /**
      * The pending intent for the underlying activity.
@@ -289,8 +283,10 @@ class Playback : MediaLibraryService(), Callback {
     private lateinit var session: MediaLibrarySession
 
     // This helps in implement the state of this service using persistent storage .
-    @Inject lateinit var preferences: Preferences
-    @Inject lateinit var playlists: Playlists
+    @Inject
+    lateinit var preferences: Preferences
+    @Inject
+    lateinit var playlists: Playlists
 
     /**
      * A listener for [Player] must be set after [onRestoreState]
@@ -335,7 +331,6 @@ class Playback : MediaLibraryService(), Callback {
             }
         }
 
-
     // init all the objects and restore the state.
     override fun onCreate() {
         super.onCreate()
@@ -370,7 +365,7 @@ class Playback : MediaLibraryService(), Callback {
      * Restore the saved state of this service.
      */
     @SuppressLint("UnsafeOptInUsageError")
-    private suspend fun  onRestoreSavedState() {
+    private suspend fun onRestoreSavedState() {
         with(player) {
             shuffleModeEnabled = preferences.value(PREF_KEY_SHUFFLE_MODE)
             repeatMode = preferences.value(PREF_KEY_REPEAT_MODE)
@@ -444,6 +439,7 @@ class Playback : MediaLibraryService(), Callback {
             LibraryResult.ofItem(item, /* params = */ null)
         return Futures.immediateFuture(result)
     }
+
 
     //TODO: Find how can i return he playing queue with upcoming items only.
     override fun onSubscribe(

@@ -6,14 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.common.asComposeState
 import com.prime.player.core.Playback
-import com.prime.player.core.Remote
 import com.prime.player.core.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 private const val TAG = "LibraryViewModel"
@@ -27,26 +24,21 @@ private val TimeOutPolicy = SharingStarted.Lazily
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    repository: Repository
+    repository: Repository,
 ) : ViewModel() {
 
-    val reel = mutableStateOf<Pair<Long, Bitmap>?>(
-        null
-    )
+    val reel = mutableStateOf<Pair<Long, Bitmap>?>(null)
 
     /**
      * The recently played tracks.
      */
     val recent =
         // replace with actual recent playlist
-        repository.playlist(
-            repository.getPlaylist(Playback.PLAYLIST_RECENT)?.id ?: 0
-        )
-
+        repository.playlist(Playback.PLAYLIST_RECENT).asComposeState(null)
 
     val carousel =
         repository
-            .carousel
+            .recent(30)
             .transform { list ->
                 if (list.isEmpty()) {
                     emit(null)

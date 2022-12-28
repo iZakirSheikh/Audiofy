@@ -1,12 +1,9 @@
 package com.prime.player
 
 import android.app.Application
-import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
-import android.provider.MediaStore
 import androidx.compose.ui.unit.dp
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
@@ -14,15 +11,12 @@ import com.google.firebase.FirebaseApp
 import com.prime.player.common.FontFamily
 import com.prime.player.common.NightMode
 import com.prime.player.core.Playlists
-import com.prime.player.core.Remote
 import com.primex.preferences.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -75,17 +69,7 @@ class Audiofy : Application(), Configuration.Provider {
         val EXCLUDE_TRACK_DURATION =
             longPreferenceKey(TAG + "_min_duration_limit_of_track", defaultMinTrackLimit)
         val MAX_RECENT_PLAYLIST_SIZE = intPreferenceKey(TAG + "_max_recent_size", defaultValue = 20)
-
-        /**
-         * A prefix char for private playlists.
-         */
-        const val PRIVATE_PLAYLIST_PREFIX = '_'
-
-        /**
-         * The name of the playlist contains the favourites.
-         */
-        val PLAYLIST_FAVOURITES = PRIVATE_PLAYLIST_PREFIX + "favourites"
-
+        
         /**
          * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]
          */
@@ -109,22 +93,6 @@ class Audiofy : Application(), Configuration.Provider {
          * https://developers.google.com/android/reference/com/google/android/gms/common/GooglePlayServicesUtil.html#GOOGLE_PLAY_STORE_PACKAGE
          */
         const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
-
-        private const val ALBUM_ART_URI: String = "content://media/external/audio/albumart"
-
-        /**
-         * This Composes the [MediaStore.Audio.Media.EXTERNAL_CONTENT_URI] from the provided Album [id]
-         */
-        @JvmStatic
-        fun toAlbumArtUri(id: Long): Uri = ContentUris.withAppendedId(Uri.parse(ALBUM_ART_URI), id)
-
-        /**
-         * This Composes the [MediaStore.Audio.Media.EXTERNAL_CONTENT_URI] with the provided [Audio] [id]
-         */
-        @JvmStatic
-        fun toAudioTrackUri(id: Long) =
-            ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
-
     }
 
     @Inject
@@ -140,7 +108,6 @@ class Audiofy : Application(), Configuration.Provider {
         FirebaseApp.initializeApp(this)
     }
 }
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -162,13 +129,4 @@ object Singleton {
     fun resolver(
         @ApplicationContext context: Context
     ) = context.contentResolver
-}
-
-@Module
-@InstallIn(ActivityRetainedComponent::class)
-object Activity {
-
-    @ActivityRetainedScoped
-    @Provides
-    fun remote(@ApplicationContext context: Context) = Remote(context)
 }

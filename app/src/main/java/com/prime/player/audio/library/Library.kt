@@ -47,6 +47,8 @@ import com.prime.player.billing.purchased
 import com.prime.player.common.KenBurns
 import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
+import com.prime.player.core.Playback
+import com.prime.player.core.Repository
 import com.prime.player.settings.SettingsRoute
 import com.primex.core.*
 import com.primex.ui.*
@@ -178,7 +180,7 @@ private fun Carousal(
                             KenBurns(
                                 modifier = Modifier.gradient(vertical = false),
                                 view = {
-                                    load(Audiofy.toAlbumArtUri(it))
+                                    load(Repository.toAlbumArtUri(it))
                                 }
                             )
                         }
@@ -283,7 +285,7 @@ private fun Main(
             icon = Icons.Outlined.FavoriteBorder,
             modifier = Modifier.rotate(false),
             onClick = {
-                val direction = TracksRoute(Type.PLAYLISTS.name, Audiofy.PLAYLIST_FAVOURITES)
+                val direction = TracksRoute(Type.PLAYLISTS.name, Playback.PLAYLIST_FAVOURITE)
                 navigator.navigateTo(direction)
             }
         )
@@ -421,9 +423,9 @@ private fun observer(view: RecyclerView) =
 
 context(LibraryViewModel) @Composable
 private fun Recents(modifier: Modifier = Modifier) {
-    val recent by recent.collectAsState(emptyList())
+    val recent by recent
     Crossfade(
-        targetState = recent.isEmpty(),
+        targetState = recent.isNullOrEmpty(),
         modifier = modifier.height(RECENT_MAX_HEIGHT)
     ) { state ->
 

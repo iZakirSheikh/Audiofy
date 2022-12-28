@@ -266,7 +266,7 @@ private class RemoteImpl(private val context: Context) : Remote {
 
     override fun playTrack(id: Long) {
         val browser = browser ?: return
-        repeat(browser.mediaItemCount){pos ->
+        repeat(browser.mediaItemCount) { pos ->
             val item = browser.getMediaItemAt(pos)
             if (item.mediaId == "$id")
                 playTrackAt(pos)
@@ -285,25 +285,3 @@ private class RemoteImpl(private val context: Context) : Remote {
         //x.subscribe(Playback.ROOT_RECENT, null)
     }
 }
-
-
-val Audio.toMediaItem
-    get() =
-        MediaItem.Builder()
-            .setMediaId("$id")
-            .setRequestMetadata(
-                MediaItem.RequestMetadata.Builder()
-                    .setMediaUri(Audiofy.toAudioTrackUri(id))
-                    .build()
-            )
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setArtworkUri(Audiofy.toAlbumArtUri(albumId))
-                    .setTitle(name)
-                    .setSubtitle(artist)
-                    .setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-                    .setIsPlayable(true)
-                    // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
-                    .build()
-            )
-            .build()

@@ -24,7 +24,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -50,7 +49,7 @@ data class Meta(
 class TracksViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val remote: Remote
+    private val remote: Remote,
 ) : ViewModel() {
 
     private val args = TracksRouteArgsFactory.fromSavedStateHandle(handle = handle)
@@ -69,7 +68,7 @@ class TracksViewModel @Inject constructor(
         when (type) {
             Type.AUDIOS -> Text("Audios")
             Type.FOLDERS -> Text(FileUtils.name(uuid))
-            Type.PLAYLISTS -> Text(if (uuid.indexOf(Audiofy.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
+            Type.PLAYLISTS -> Text(if (uuid.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) != -1) "Favourites" else uuid)
             else -> Text(uuid)
         }
 
@@ -182,6 +181,7 @@ class TracksViewModel @Inject constructor(
                 else
                     context.getString(it.raw as Int)
             }
+
             launch {
                 channel?.show(
                     message = "Playing queue $title",
@@ -328,7 +328,7 @@ private inline val List<Audio>.meta: Meta
             cardinality = size,
             duration = sumOf { it.duration },
             size = sumOf { it.size },
-            artwork = latest?.let { Audiofy.toAlbumArtUri(it.albumId) },
+            artwork = latest?.let { Repository.toAlbumArtUri(it.albumId) },
             subtitle = latest?.let {
                 Text(
                     value = Util.formatAsRelativeTimeSpan(it.dateModified)

@@ -5,8 +5,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -43,13 +45,20 @@ import com.prime.player.common.NightMode
 import com.prime.player.common.compose.*
 import com.prime.player.common.compose.ToastHostState.Duration
 import com.prime.player.common.compose.ToastHostState.Result
+import com.prime.player.core.Remote
 import com.primex.core.activity
 import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
 import com.primex.ui.Label
 import com.primex.ui.MetroGreen
 import com.primex.ui.activity
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.components.ActivityRetainedComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -410,7 +419,6 @@ class MainActivity : ComponentActivity() {
         initSplashScreen(
             isColdStart
         )
-
         if (isColdStart) {
             val counter =
                 preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
@@ -457,4 +465,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+object Activity {
+    @ActivityRetainedScoped
+    @Provides
+    fun remote(@ApplicationContext context: Context) = Remote(context)
 }

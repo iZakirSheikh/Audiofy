@@ -39,7 +39,7 @@ import com.prime.player.common.*
 import com.prime.player.common.compose.*
 import com.prime.player.core.Audio
 import com.prime.player.core.Playlist
-import com.primex.core.Result
+import com.prime.player.core.Repository
 import com.primex.ui.*
 
 
@@ -57,7 +57,7 @@ fun Image(
     val request =
         remember(albumId) {
             ImageRequest.Builder(context)
-                .data(Audiofy.toAlbumArtUri(albumId))
+                .data(Repository.toAlbumArtUri(albumId))
                 .crossfade(fadeMills)
                 .build()
         }

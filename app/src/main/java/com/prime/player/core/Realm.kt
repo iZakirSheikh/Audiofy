@@ -1,14 +1,14 @@
 package com.prime.player.core
 
 import android.content.Context
+import androidx.compose.runtime.Stable
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prime.player.core.Playlist.Member
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 
-
-private const val AUDIO_COLUMN_ID = "audio_id"
 
 /**
  * The member table of playlist.
@@ -20,14 +20,14 @@ private const val MEMBER_COLUMN_ORDER = "play_order"
 private const val MEMBER_FILE_ID = "media_id"
 private const val MEMBER_FILE_URI = "uri"
 
-
+@Stable
 @Entity(tableName = "tbl_playlists")
 data class Playlist(
-    @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = PLAYLIST_COLUMN_ID) val id: Long = 0,
     @JvmField val name: String,
-    @ColumnInfo(defaultValue = "") val desc: String,
-    @JvmField @ColumnInfo(name = "date_created") val dateCreated: Long,
-    @JvmField @ColumnInfo(name = "date_modified") val dateModified: Long,
+    @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = PLAYLIST_COLUMN_ID) val id: Long = 0,
+    @ColumnInfo(defaultValue = "") val desc: String = "",
+    @JvmField @ColumnInfo(name = "date_created") val dateCreated: Long = System.currentTimeMillis(),
+    @JvmField @ColumnInfo(name = "date_modified") val dateModified: Long = System.currentTimeMillis(),
 ) {
     @Entity(
         tableName = TABLE_PLAYLIST_MEMBER,
@@ -44,10 +44,11 @@ data class Playlist(
             Index(value = [PLAYLIST_COLUMN_ID, MEMBER_FILE_URI], unique = false)
         ]
     )
+    @Stable
     data class Member(
         @JvmField @ColumnInfo(name = PLAYLIST_COLUMN_ID) val playlistID: Long,
         @JvmField @ColumnInfo(name = MEMBER_FILE_ID) val id: String,
-        @JvmField @ColumnInfo(name = MEMBER_COLUMN_ORDER) val order: Long,
+        @JvmField @ColumnInfo(name = MEMBER_COLUMN_ORDER) val order: Int,
         @JvmField @ColumnInfo(name = MEMBER_FILE_URI) val uri: String,
         @JvmField val title: String,
         @JvmField val subtitle: String,
@@ -55,7 +56,8 @@ data class Playlist(
     )
 }
 
-@Database(entities = [Playlist::class, Member::class], version = 4, exportSchema = false)
+
+@Database(entities = [Playlist::class, Member::class], version = 3, exportSchema = false)
 abstract class Realm : RoomDatabase() {
 
     abstract val playlists: Playlists
@@ -131,9 +133,13 @@ abstract class Realm : RoomDatabase() {
 @Dao
 interface Playlists {
 
-
     companion object {
         operator fun invoke(context: Context) = Realm.get(context).playlists
+
+        /**
+         * A prefix char for private playlists.
+         */
+        const val PRIVATE_PLAYLIST_PREFIX = '_'
     }
 
     // playlists
@@ -144,7 +150,7 @@ interface Playlists {
      * Returns the [MAX] [COLUMN_PLAY_ORDER] of [TABLE_NAME_MEMBER] associated with [playlistId] or null if [playlistId] !exists
      */
     @Query("SELECT MAX(play_order) FROM tbl_playlist_members WHERE playlist_id = :playlistId")
-    suspend fun lastPlayOrder(playlistId: Long): Long?
+    suspend fun lastPlayOrder(playlistId: Long): Int?
 
     /**
      * Update the playlist with new details.
@@ -175,7 +181,7 @@ interface Playlists {
      * @return All [Flow][Playlist]s matched by the query.
      */
     @Query("SELECT * FROM tbl_playlists WHERE :query IS NULL OR name LIKE '%' || :query || '%'")
-    fun playlists(query: String? = null): Flow<List<Playlist>>
+    fun observe(query: String? = null): Flow<List<Playlist>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(member: Member): Long
@@ -206,6 +212,17 @@ interface Playlists {
     suspend fun exists(playlistId: Long, uri: String): Boolean
 
     /**
+     * Checks if [Playlist] [name] exits
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlists WHERE name == :name)")
+    suspend fun exists(name: String): Boolean
+
+    suspend fun exists(name: String, uri: String): Boolean{
+        val id = get(name)?.id ?: 0
+        return exists(id, uri)
+    }
+
+    /**
      * Delete the [Playlist.Member] from the [Playlist]
      */
     @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
@@ -223,12 +240,23 @@ interface Playlists {
      */
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :playlistId ORDER BY play_order ASC")
-    fun playlist(playlistId: Long): Flow<List<Member>>
+    fun observe2(playlistId: Long): Flow<List<Member>>
+
+    /**
+     * Observes the [Playlist] spacified by the name.
+     *
+     * Currently we are use [observe2] internally but in future; the name will be queried using sql
+     * JOIN clause.
+     */
+    fun observe2(name: String): Flow<List<Member>> {
+        val id = runBlocking { get(name)?.id ?: 0 }
+        return observe2(id)
+    }
 
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order ASC")
     suspend fun getMembers(id: Long): List<Member>
 
-    suspend fun getMembers(name: String): List<Member>{
+    suspend fun getMembers(name: String): List<Member> {
         val x = get(name) ?: return emptyList()
         return getMembers(x.id)
     }
