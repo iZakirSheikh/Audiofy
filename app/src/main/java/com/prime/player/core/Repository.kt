@@ -91,9 +91,8 @@ class Repository @Inject constructor(
                 resolver.query2(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(MediaStore.Audio.Media.ALBUM_ID),
-                    null,
-                    null,
-                    order = "${MediaStore.Audio.Media.DATE_MODIFIED} DESC LIMIT $limit OFFSET 0"
+                    order = MediaStore.Audio.Media.DATE_MODIFIED,
+                    limit = limit,
                 ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
             }
 
@@ -119,7 +118,7 @@ class Repository @Inject constructor(
     val folders = resolver.folders()
     val artists = resolver.artists()
     val albums = resolver.albums()
-    val genres = flow { emit(emptyList<Genre>()) }
+    val genres = resolver.genres()
     fun audios(query: String? = null) = resolver.audios(query)
     fun folder(path: String) = resolver.folder(path)
     fun genre(name: String) = resolver.genre(name)

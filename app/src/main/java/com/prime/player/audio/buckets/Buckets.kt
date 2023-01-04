@@ -39,11 +39,9 @@ import com.prime.player.R
 import com.prime.player.audio.Image
 import com.prime.player.audio.Type
 import com.prime.player.audio.tracks.TracksRoute
-import com.prime.player.common.FileUtils
 import com.prime.player.common.Util
 import com.prime.player.common.compose.*
 import com.prime.player.common.formatAsRelativeTimeSpan
-import com.prime.player.common.toFormattedDataUnit
 import com.prime.player.core.*
 import com.primex.core.*
 import com.primex.ui.*
@@ -115,14 +113,13 @@ private fun Album(
     modifier: Modifier = Modifier,
     onAlbumClick: () -> Unit
 ) {
-    val count = value.tracks
+    val count = value.cardinality
     val context = LocalContext.current
     Generic(
         title = value.title,
         clickable = modifier.clickable(onClick = onAlbumClick),
 
-        subtitle = stringQuantityResource(R.plurals.file, count, count) +
-                " " + FileUtils.toFormattedDataUnit(context, value.size),
+        subtitle = stringQuantityResource(R.plurals.file, count, count),
 
         // icon of this album
         icon = {
@@ -157,9 +154,8 @@ private fun Genre(
         clickable = modifier.clickable(onClick = onGenreClick),
 
         subtitle = run {
-            val count = value.tracks
-            stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(context, value.size)
+            val count = value.cardinality
+            stringQuantityResource(R.plurals.file, count, count)
         },
         icon = {
             Surface(
@@ -198,11 +194,7 @@ private fun Folder(
         title = value.name,
         clickable = modifier.clickable(onClick = onFolderClick),
 
-        subtitle = run {
-            val count = value.cardinality
-            stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(context, value.size)
-        },
+        subtitle = "",
 
         icon = {
             Icon(
@@ -230,8 +222,7 @@ private fun Artist(
 
         subtitle = run {
             val count = value.tracks
-            stringQuantityResource(R.plurals.file, count, count) +
-                    " " + FileUtils.toFormattedDataUnit(context, value.size)
+            stringQuantityResource(R.plurals.file, count, count)
         },
 
         icon = {
