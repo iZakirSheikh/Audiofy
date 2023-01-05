@@ -243,15 +243,11 @@ interface Playlists {
     fun observe2(playlistId: Long): Flow<List<Member>>
 
     /**
-     * Observes the [Playlist] spacified by the name.
-     *
-     * Currently we are use [observe2] internally but in future; the name will be queried using sql
-     * JOIN clause.
-     */
-    fun observe2(name: String): Flow<List<Member>> {
-        val id = runBlocking { get(name)?.id ?: 0 }
-        return observe2(id)
-    }
+    * Observes the [Playlist] spacified by the name.
+    */
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM tbl_playlist_members LEFT JOIN tbl_playlists ON tbl_playlist_members.playlist_id == tbl_playlists.playlist_id WHERE tbl_playlists.name == :name ORDER BY tbl_playlist_members.play_order ASC")
+    fun observe2(name: String): Flow<List<Member>>
 
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order ASC")
     suspend fun getMembers(id: Long): List<Member>

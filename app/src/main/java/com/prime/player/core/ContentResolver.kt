@@ -282,6 +282,9 @@ suspend fun ContentResolver.getAlbums(
                 c.moveToPosition(it);
                 c.toAlbum
             }
+            // FixMe: The albums are not distinct.
+            // For now apply the function
+                .distinctBy { it.title }
         },
     ) ?: emptyList()
 }

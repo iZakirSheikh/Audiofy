@@ -82,6 +82,17 @@ class Repository @Inject constructor(
         fun toAlbumArtUri(id: Long): Uri = ContentUris.withAppendedId(Uri.parse(ALBUM_ART_URI), id)
     }
 
+    init {
+        // ensure that playlist favourites exists.
+        GlobalScope.launch {
+            if (!playlistz.exists(Playback.PLAYLIST_FAVOURITE)) playlistz.insert(
+                Playlist(
+                    Playback.PLAYLIST_FAVOURITE
+                )
+            )
+        }
+    }
+
     /**
      * Returns the [MediaStore.Audio.Media.ALBUM_ID] upto [limit] as flow.
      */

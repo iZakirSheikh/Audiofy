@@ -279,12 +279,32 @@ class Playback : MediaLibraryService(), Callback {
         }
     }
 
-    private lateinit var player: Player
-    private lateinit var session: MediaLibrarySession
+    private val player: Player by lazy {
+        ExoPlayer.Builder(this)
+            .setAudioAttributes(
+                // set audio attributes to it
+                AudioAttributes
+                    .Builder()
+                    .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
+                    .setUsage(C.USAGE_MEDIA)
+                    .build(),
+                true
+            )
+            .setHandleAudioBecomingNoisy(true)
+            .build()
+    }
+    private val session: MediaLibrarySession by lazy {
+        runBlocking { onRestoreSavedState() }
+        player.addListener(listener)
+        MediaLibrarySession.Builder(this, player, this)
+            .setSessionActivity(activity)
+            .build()
+    }
 
     // This helps in implement the state of this service using persistent storage .
     @Inject
     lateinit var preferences: Preferences
+
     @Inject
     lateinit var playlists: Playlists
 
@@ -330,36 +350,6 @@ class Playback : MediaLibraryService(), Callback {
                 //player.seekToNextMediaItem()
             }
         }
-
-    // init all the objects and restore the state.
-    override fun onCreate() {
-        super.onCreate()
-        // init player
-        player =
-            ExoPlayer
-                .Builder(this)
-                .setAudioAttributes(
-
-                    // set audio attributes to it
-                    AudioAttributes
-                        .Builder()
-                        .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
-                        .setUsage(C.USAGE_MEDIA)
-                        .build(),
-                    true
-                )
-                .setHandleAudioBecomingNoisy(true)
-                .build()
-
-        // init session and add callback, player etc.
-        session =
-            MediaLibrarySession.Builder(this, player, this)
-                .setSessionActivity(activity)
-                .build()
-
-        runBlocking { onRestoreSavedState() }
-        player.addListener(listener)
-    }
 
     /**
      * Restore the saved state of this service.
