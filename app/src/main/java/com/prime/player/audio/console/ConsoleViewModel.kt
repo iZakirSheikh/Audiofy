@@ -56,12 +56,6 @@ class ConsoleViewModel @Inject constructor(
     val playlists = repository.playlists
     val queue =
         remote.observe(Playback.ROOT_QUEUE)
-            .flowOn(Dispatchers.Main)
-            .map {
-                val x = it.map { repository.getAudioById(it.mediaId.toLong()) }
-                x.filterNotNull()
-            }
-            .flowOn(Dispatchers.Default)
 
     val favourite = mutableStateOf(false)
 

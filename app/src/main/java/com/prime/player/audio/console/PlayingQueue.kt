@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -45,14 +47,26 @@ import com.primex.ui.PrimeDialog
 
 @Composable
 private fun Track(
-    value: Audio,
+    value: MediaItem,
     playing: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     ListTile(
-        overlineText = { Label(text = value.album) },
-        text = { Label(text = value.name, fontWeight = FontWeight.SemiBold) },
-        secondaryText = { Label(text = value.artist, fontWeight = FontWeight.SemiBold) },
+        overlineText = null,
+        text = {
+            Label(
+                text = value.mediaMetadata.title.toString(),
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        secondaryText = {
+            Label(
+                text = value.mediaMetadata.subtitle.toString(),
+               // fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
         modifier = modifier,
         leading = {
             Surface(
@@ -61,7 +75,7 @@ private fun Track(
                 border = BorderStroke(2.dp, Color.White),
                 elevation = ContentElevation.medium,
                 content = {
-                    Image(albumId = value.albumId)
+                    Image(data = value.mediaMetadata.artworkUri)
                     if (playing) {
                         val composition by rememberLottieComposition(
                             spec = LottieCompositionSpec.RawRes(
@@ -104,19 +118,19 @@ fun ConsoleViewModel.PlayingQueue(
             LazyColumn(
                 state = state,
                 modifier = Modifier
-                    .heightIn(min  = 350.dp, max = 350.dp)
+                    .heightIn(min = 350.dp, max = 350.dp)
                     .verticalFadingEdge(color = Material.colors.surface, state = state),
                 contentPadding = PaddingValues(vertical = ContentPadding.medium)
             ) {
 
                 items(
                     list,
-                    key = { it.id },
+                    key = { it.mediaId },
                     contentType = { "Audio_file" }
                 ) { audio ->
 
                     Crossfade(
-                        targetState = audio == current,
+                        targetState = audio.mediaId.toLong() == current?.id,
                         modifier = Modifier
                             .wrapContentSize()
                             .animateContentSize(animationSpec = tween(Anim.LongDurationMills))
@@ -142,14 +156,14 @@ fun ConsoleViewModel.PlayingQueue(
 
                     Track(
                         value = audio,
-                        playing = current == audio && playing,
-                        modifier = Modifier.clickable(enabled = audio != current) {
-                            playTrack(audio.id)
+                        playing = current?.id == audio.mediaId.toLong() && playing,
+                        modifier = Modifier.clickable(enabled = audio.mediaId.toLong() != current?.id) {
+                            playTrack(audio.mediaId.toLong())
                         }
                     )
 
                     Crossfade(
-                        targetState = audio == current,
+                        targetState = audio.mediaId.toLong() == current?.id,
                         modifier = Modifier
                             .wrapContentSize()
                             .animateContentSize(animationSpec = tween(Anim.LongDurationMills))
