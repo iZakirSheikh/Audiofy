@@ -79,12 +79,6 @@ fun BillingManager(
 
         private val ref = this
 
-        private val mBillingClient =
-            BillingClient.newBuilder(context)
-                .setListener(this)
-                .enablePendingPurchases()
-                .build()
-
         // how long before the data source tries to reconnect to Google play
         private var delayReconnectMills =
             RECONNECT_TIMER_START_MILLISECONDS
@@ -104,13 +98,6 @@ fun BillingManager(
                     .setProductType(BillingClient.ProductType.SUBS)
                     .build()
             }
-
-        init {
-            // requires not everything to be null or empty.
-            require(!products.isNullOrEmpty() || !subscriptions.isNullOrEmpty())
-            mBillingClient.startConnection(this)
-
-        }
 
         /**
          * The list of items that the user have purchased.
@@ -140,6 +127,19 @@ fun BillingManager(
          */
         private val billingManagerScope =
             CoroutineScope(Dispatchers.IO)
+
+        private val mBillingClient =
+            BillingClient.newBuilder(context)
+                .setListener(this)
+                .enablePendingPurchases()
+                .build()
+
+        init {
+            // requires not everything to be null or empty.
+            require(!products.isNullOrEmpty() || !subscriptions.isNullOrEmpty())
+            mBillingClient.startConnection(this)
+
+        }
 
         override fun onPurchasesUpdated(
             result: BillingResult,

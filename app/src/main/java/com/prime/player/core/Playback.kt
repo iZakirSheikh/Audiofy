@@ -92,11 +92,11 @@ private fun Playlists.queue(items: List<MediaItem>) {
         )
 
         // delete all old
+        delete(id, 0)
         var order = 0
         val members = items.map {
             it.toMember(id, order++)
         }
-        delete(members as ArrayList<Member>)
         insert(members)
     }
 }
