@@ -5,6 +5,8 @@ plugins {
     id 'kotlinx-serialization'
     id 'dagger.hilt.android.plugin'
     id 'com.google.gms.google-services'
+    // Add the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -166,10 +168,12 @@ dependencies {
     implementation "com.github.levinzonr.compose-safe-routing:accompanist-navigation:$safe_args_version"
 
     // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:31.0.3')
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:31.1.1')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     // for support of multiple screen sizes
     implementation "androidx.window:window:1.0.0"
