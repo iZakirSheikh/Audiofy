@@ -22,6 +22,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
+import okhttp3.internal.toImmutableList
 
 
 /**
@@ -258,8 +259,15 @@ private class RemoteImpl(private val context: Context) : Remote {
 
     override fun onRequestPlay(shuffle: Boolean, index: Int, values: List<MediaItem>) {
         val browser = browser ?: return
-        browser.setMediaItems(values)
-        browser.seekTo(index, C.TIME_UNSET)
+        // convert list to mutable list
+        val l = ArrayList(values)
+        // remove index
+        val item = l.removeAt(index)
+        // re-add index at 0
+        l.add(0, item)
+        browser.shuffleModeEnabled = shuffle
+        browser.setMediaItems(l)
+        browser.seekTo(0, C.TIME_UNSET)
         browser.prepare()
         browser.play()
     }
