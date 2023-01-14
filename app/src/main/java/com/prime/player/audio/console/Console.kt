@@ -153,7 +153,7 @@ private fun ConsoleViewModel.MiniLayout(
                         bottom.linkTo(parent.bottom)
                     },
                 color = Material.colors.primary,
-                progress = progress / (current?.duration ?: 1)
+                progress = progress
             )
         }
     }
@@ -688,7 +688,6 @@ private fun ConsoleViewModel.Layout(
         Slider(
             value = value, onValueChange = { seekTo(it) },
             //steps = (duration / 45_000).toInt(),
-            valueRange = 0f..duration,
             modifier = Modifier.constrainAs(Slider) {
                 bottom.linkTo(Album.top, ContentPadding.small)
                 start.linkTo(Heart.end, ContentPadding.medium)

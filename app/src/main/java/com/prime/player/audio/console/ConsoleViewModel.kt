@@ -1,13 +1,10 @@
 package com.prime.player.audio.console
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.State
-import androidx.compose.runtime.structuralEqualityPolicy
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import com.prime.player.Audiofy
 import com.prime.player.R
@@ -16,21 +13,20 @@ import com.prime.player.common.compose.show
 import com.prime.player.core.*
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-private inline fun <T> mutableStateOf(
-    value: T,
-    policy: SnapshotMutationPolicy<T> = structuralEqualityPolicy()
-): State<T> = androidx.compose.runtime.mutableStateOf(value, policy)
+private inline fun <T> stateOf(value: T): State<T> = mutableStateOf(value)
 
 private const val TAG = "HomeViewModel"
+
+/**
+ * The token to add and remove progress
+ */
+private val PROGRESS_TOKEN = MainHandler.token
+
+private inline val Remote.progress get() = (position / duration.toFloat())
 
 @HiltViewModel
 class ConsoleViewModel @Inject constructor(
@@ -38,95 +34,97 @@ class ConsoleViewModel @Inject constructor(
     private val repository: Repository,
 ) : ViewModel() {
 
-    private val progressJob: Job? = null
+
+    private val onProgressUpdate = {
+        (progress as MutableState).value = remote.progress
+    }
+
 
     /**
      * This channel must be set from composable.
      */
     var messenger: ToastHostState? = null
-    val playing = mutableStateOf(remote.isPLaying)
-    val repeatMode = mutableStateOf(remote.repeatMode)
-    val progress = mutableStateOf(remote.position.toFloat())
-    val sleepAfter = mutableStateOf<Long?>(null)
-    val current = mutableStateOf<Audio?>(null)
-    val next: State<Audio?> = mutableStateOf<Audio?>(null)
-    val shuffle = mutableStateOf(false)
-    val playlistName = mutableStateOf("Unknown")
-    val artwork = mutableStateOf(Audiofy.DEFAULT_ALBUM_ART)
+    val playing = stateOf(remote.isPlaying)
+    val repeatMode = stateOf(remote.repeatMode)
+    val progress = stateOf(remote.progress)
+    val sleepAfter = stateOf<Long?>(null)
+    val current = stateOf<Audio?>(null)
+    val next: State<Audio?> = stateOf<Audio?>(null)
+    val shuffle = stateOf(false)
+    val playlistName = stateOf("Unknown")
+    val artwork = stateOf(Audiofy.DEFAULT_ALBUM_ART)
+    val favourite = stateOf(false)
+
     val playlists = repository.playlists
-    val queue =
-        remote.observe(Playback.ROOT_QUEUE)
-
-    val favourite = mutableStateOf(false)
-
-    private val listener =
-        object : Player.Listener {
-
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                viewModelScope.launch {
-                    val id = mediaItem?.mediaId?.toLong() ?: -1
-                    val item = repository.getAudioById(id)
-                    (favourite as MutableState).value = repository.isFavourite(id)
-                    (current as MutableState).value = item
-                    val next = remote.nextMediaItem
-                    val nextId = next?.mediaId?.toLong() ?: -1
-                    (this@ConsoleViewModel.next as MutableState).value =
-                        repository.getAudioById(nextId)
-                    (this@ConsoleViewModel.artwork as MutableState).value =
-                        remote.artwork() ?: Audiofy.DEFAULT_ALBUM_ART
-                }
-            }
-
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                (playing as MutableState).value = isPlaying
-            }
-
-            override fun onPlayerError(error: PlaybackException) {
-                super.onPlayerError(error)
-            }
-
-            override fun onRepeatModeChanged(rm: Int) {
-                (repeatMode as MutableState).value = rm
-                viewModelScope.launch {
-                    val next = remote.nextMediaItem
-                    val nextId = next?.mediaId?.toLong() ?: -1
-                    (this@ConsoleViewModel.next as MutableState).value =
-                        repository.getAudioById(nextId)
-                }
-            }
-
-            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-                (shuffle as MutableState).value = shuffleModeEnabled
-                viewModelScope.launch {
-                    val next = remote.nextMediaItem
-                    val nextId = next?.mediaId?.toLong() ?: -1
-                    (this@ConsoleViewModel.next as MutableState).value =
-                        repository.getAudioById(nextId)
-                }
-            }
-        }
-
+    val queue = remote.queue
 
     init {
-        viewModelScope.launch {
-            remote.await()
-            remote.add(listener)
-            listener.onMediaItemTransition(remote.current, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO)
-            listener.onIsPlayingChanged(remote.isPLaying)
-            listener.onRepeatModeChanged(remote.repeatMode)
-            listener.onShuffleModeEnabledChanged(remote.shuffle)
 
-            // FixMe: infinite loop
-            while (true) {
-                delay(1000)
-                (progress as MutableState).value = remote.position.toFloat()
-            }
+        // observe events of the player.
+        viewModelScope.launch {
+            remote.events
+                .collect {
+                    if (it == null) {
+                        // init with events.
+                        onPlayerEvent(value = Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)
+                        onPlayerEvent(value = Player.EVENT_REPEAT_MODE_CHANGED)
+                        onPlayerEvent(Player.EVENT_IS_PLAYING_CHANGED)
+                        onPlayerEvent(Player.EVENT_MEDIA_ITEM_TRANSITION)
+                        return@collect
+                    }
+                    // emit the event.
+                    repeat(it.size()) { index ->
+                        onPlayerEvent(it.get(index))
+                    }
+                }
         }
     }
 
-    override fun onCleared() {
-        viewModelScope.launch { remote.remove(listener) }
-        super.onCleared()
+    private suspend fun onPlayerEvent(value: Int) {
+        when (value) {
+            // when playing state is changed.
+            // update progress only when isPlaying is changed.
+            Player.EVENT_IS_PLAYING_CHANGED -> {
+                (playing as MutableState).value = remote.isPlaying
+                if (remote.isPlaying)
+                    MainHandler.repeat(PROGRESS_TOKEN, 1000, call = onProgressUpdate)
+                else
+                    MainHandler.remove(PROGRESS_TOKEN)
+            }
+            // when media is changed.
+            // update favourite, current next etc.
+            Player.EVENT_MEDIA_ITEM_TRANSITION -> {
+                val id = remote.current?.mediaId?.toLong() ?: -1
+                val item = repository.getAudioById(id)
+                (favourite as MutableState).value = repository.isFavourite(id)
+                (current as MutableState).value = item
+                val next = remote.next
+                val nextId = next?.mediaId?.toLong() ?: -1
+                (this@ConsoleViewModel.next as MutableState).value =
+                    repository.getAudioById(nextId)
+                (this@ConsoleViewModel.artwork as MutableState).value = remote.artwork()
+            }
+
+            // update next
+            // update shuffle mode.
+            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED -> {
+                (shuffle as MutableState).value = remote.shuffle
+                val next = remote.next
+                val nextId = next?.mediaId?.toLong() ?: -1
+                (this@ConsoleViewModel.next as MutableState).value =
+                    repository.getAudioById(nextId)
+            }
+
+            // update next
+            // aldo the repeat mode.
+            Player.EVENT_REPEAT_MODE_CHANGED -> {
+                (repeatMode as MutableState).value = remote.repeatMode
+                val next = remote.next
+                val nextId = next?.mediaId?.toLong() ?: -1
+                (this@ConsoleViewModel.next as MutableState).value =
+                    repository.getAudioById(nextId)
+            }
+        }
     }
 
 
@@ -135,7 +133,6 @@ class ConsoleViewModel @Inject constructor(
     fun skipToNext() = remote.skipToNext()
 
     fun skipToPrev() = remote.skipToPrev()
-
 
     fun cycleRepeatMode() {
         viewModelScope.launch {
@@ -154,8 +151,9 @@ class ConsoleViewModel @Inject constructor(
     }
 
     fun seekTo(duration: Float) {
+        val value = (duration * remote.duration)
         (progress as MutableState).value = duration
-        remote.seekTo(duration.toLong())
+        remote.seekTo(value.toLong())
     }
 
     fun setSleepAfter(minutes: Int) {

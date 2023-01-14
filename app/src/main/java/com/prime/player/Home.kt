@@ -109,16 +109,14 @@ private fun NavGraphBuilder.composable(
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun Home() {
+fun Home(show: Boolean) {
     // Currently; supports only 1 Part
     // add others in future
     // including support for more tools, like direction, prime factorization etc.
     // also support for navGraph.
     val controller = rememberAnimatedNavController()
     val scope = rememberCoroutineScope()
-    val consoleViewModel = hiltViewModel<ConsoleViewModel>()
 
-    val show = consoleViewModel.current.value != null
     //Handle messages etc.
     val state =
         rememberPlayerState(initial = PlayerValue.COLLAPSED)
@@ -135,6 +133,7 @@ fun Home() {
     ) {
         Player(
             sheet = {
+                val consoleViewModel = hiltViewModel<ConsoleViewModel>()
                 Console(consoleViewModel, state.isExpanded, { scope.launch { state.toggle() } })
             },
             state = state,

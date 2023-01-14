@@ -3,8 +3,7 @@ package com.prime.player.core
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.Bundle
-import androidx.annotation.IntRange
+import android.net.Uri
 import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -14,16 +13,16 @@ import androidx.media3.session.*
 import androidx.media3.session.MediaBrowser.Listener
 import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.work.await
-import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.ListenableFuture
 import com.prime.player.Audiofy
 import com.prime.player.common.getAlbumArt
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
-import okhttp3.internal.toImmutableList
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.*
 
+private val MediaBrowser.nextMediaItem
+    get() = if (hasNextMediaItem()) getMediaItemAt(
+        nextMediaItemIndex
+    ) else null
 
 /**
  * [Remote] is a wrapper around [MediaBrowser]
@@ -32,27 +31,27 @@ interface Remote {
 
     val position: Long
     val duration: Long
-    val isPLaying: Boolean
+    val isPlaying: Boolean
     val shuffle: Boolean
     val repeatMode: Int
     val meta: MediaMetadata?
     val current: MediaItem?
-    val nextMediaItem: MediaItem?
+    val next: MediaItem?
 
+    /**
+     * Observe the [List] [MediaItem]s
+     */
+    val queue: Flow<List<MediaItem>>
 
-    fun add(value: Listener): Boolean
+    /**
+     * observe the [Player.Events]
+     */
+    val events: Flow<Player.Events?>
 
-    fun remove(value: Listener): Boolean
-
-    fun add(value: Player.Listener)
-
-    fun remove(value: Player.Listener)
-
-    fun subscribe(parentId: String, params: LibraryParams? = null)
-
-    fun unsubscribe(parentId: String)
-
-    fun observe(parent: String, params: LibraryParams? = null): Flow<List<MediaItem>>
+    /**
+     * observes if the [Playback] is loaded and ready.
+     */
+    val loaded: Flow<Boolean>
 
     fun skipToNext()
 
@@ -68,69 +67,43 @@ interface Remote {
 
     fun playTrackAt(position: Int)
 
+    @Deprecated("use alternative by uri.")
     fun playTrack(id: Long)
+
+    /**
+     * Remove the [MediaItem] from [Playback] [queue] identified by [key].
+     */
+    suspend fun remove(key: Uri): Boolean
 
     fun onRequestPlay(shuffle: Boolean, index: Int = C.INDEX_UNSET, values: List<MediaItem>)
 
+    @Deprecated("find better alternative.")
     suspend fun artwork(): Bitmap
-
-    suspend fun await()
 }
 
-fun Remote(context: Context): Remote = RemoteImpl(context)
-
-
-private val MediaBrowser.nextMediaItem
-    get() = if (hasNextMediaItem()) getMediaItemAt(
-        nextMediaItemIndex
-    ) else null
 
 private class RemoteImpl(private val context: Context) : Remote {
-    private val listeners =
-        mutableSetOf<Listener>()
 
-    private val listener =
-        object : Listener {
-            override fun onDisconnected(controller: MediaController) {
-                listeners.forEach { it.onDisconnected(controller) }
-            }
-
-            override fun onSetCustomLayout(
-                controller: MediaController,
-                layout: MutableList<CommandButton>
-            ): ListenableFuture<SessionResult> {
-                return super.onSetCustomLayout(controller, layout)
-            }
-
-            override fun onExtrasChanged(controller: MediaController, extras: Bundle) {
-                listeners.forEach { it.onExtrasChanged(controller, extras) }
-            }
-
-            override fun onChildrenChanged(
-                browser: MediaBrowser,
-                parentId: String,
-                itemCount: Int,
-                params: LibraryParams?
-            ) {
-                listeners.forEach { it.onChildrenChanged(browser, parentId, itemCount, params) }
-            }
-
-            override fun onSearchResultChanged(
-                browser: MediaBrowser,
-                query: String,
-                itemCount: Int,
-                params: LibraryParams?
-            ) {
-                listeners.forEach { it.onSearchResultChanged(browser, query, itemCount, params) }
-            }
-        }
+    /**
+     * A simple channel to broadcast the [MediaBrowser.Listener.onChildrenChanged] parents.
+     */
+    private val channel = MutableSharedFlow<String>()
 
     private val fBrowser =
-        MediaBrowser.Builder(
-            context,
-            SessionToken(context, ComponentName(context, Playback::class.java))
-        )
-            .setListener(listener)
+        MediaBrowser
+            .Builder(context, SessionToken(context, ComponentName(context, Playback::class.java)))
+            .setListener(
+                object : Listener {
+                    override fun onChildrenChanged(
+                        browser: MediaBrowser,
+                        parentId: String,
+                        itemCount: Int,
+                        params: LibraryParams?
+                    ) {
+                        channel.tryEmit(parentId)
+                    }
+                }
+            )
             .buildAsync()
 
     val browser get() = if (fBrowser.isDone) fBrowser.get() else null
@@ -145,69 +118,66 @@ private class RemoteImpl(private val context: Context) : Remote {
         get() = browser?.mediaMetadata
     override val current: MediaItem?
         get() = browser?.currentMediaItem
-    override val nextMediaItem: MediaItem?
+    override val next: MediaItem?
         get() = browser?.nextMediaItem
 
-    override val isPLaying: Boolean
-        get() = browser?.playWhenReady ?: false
+    override val isPlaying: Boolean
+        get() = browser?.isPlaying ?: false
 
-    suspend fun getChildren(
-        parentId: String,
-        @IntRange(from = 0) page: Int,
-        @IntRange(from = 1) pageSize: Int,
-        params: LibraryParams?
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        val browser = fBrowser.await()
-        return browser.getChildren(parentId, page, pageSize, params)
-    }
-
-    override fun observe(parent: String, params: LibraryParams?) =
+    @OptIn(DelicateCoroutinesApi::class)
+    override val events: Flow<Player.Events?> =
         callbackFlow {
-            val listener = object : Listener {
-                override fun onChildrenChanged(
-                    browser: MediaBrowser,
-                    parentId: String,
-                    itemCount: Int,
-                    params: LibraryParams?
-                ) {
-                    runBlocking {
-                        val children = getChildren(parentId, 0, Int.MAX_VALUE, params).await()
-                        trySend(children.value as List<MediaItem>)
-                    }
+            val observer = object : Player.Listener {
+                override fun onEvents(player: Player, events: Player.Events) {
+                    trySend(events)
                 }
             }
-
-            // block
-            await()
-            listener.onChildrenChanged(browser!!, parent, Int.MAX_VALUE, params)
-            add(listener)
+            // init browser
+            val browser = fBrowser.await()
+            // init first one.
+            trySend(null)
+            // register
+            browser.addListener(observer)
+            // un-register on cancel
             awaitClose {
-                remove(listener)
+                browser.removeListener(observer)
             }
         }
+            // convert it to shared flow on GlobalScope.
+            .shareIn(
+                // what show I use to replace this.
+                GlobalScope,
+                // un-register when subscriber count is zero.
+                SharingStarted.WhileSubscribed(2000, replayExpirationMillis = 2200),
+                //
+                1
+            )
+    override val loaded: Flow<Boolean> =
+        events.map { current != null }
 
-    override fun add(value: Listener) = listeners.add(value)
+    @OptIn(FlowPreview::class)
+    override val queue: Flow<List<MediaItem>> = channel
+        // emit queue as first
+        .onStart { emit(Playback.ROOT_QUEUE) }
+        // filter queue
+        .filter { it == Playback.ROOT_QUEUE }
+        // debounce change
+        .debounce(500)
+        // map parent with children.
+        .map { parent ->
+            browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
+        }
 
-    override fun remove(value: Listener) = listeners.remove(value)
-
-    override fun subscribe(parentId: String, params: LibraryParams?) {
-        val browser = browser ?: return
-        browser.subscribe(parentId, params)
-    }
-
-    override fun unsubscribe(parentId: String) {
-        val browser = browser ?: return
-        browser.unsubscribe(parentId)
-    }
-
-    override fun add(value: Player.Listener) {
-        val browser = browser ?: return
-        browser.addListener(value)
-    }
-
-    override fun remove(value: Player.Listener) {
-        val browser = browser ?: return
-        browser.removeListener(value)
+    override suspend fun remove(key: Uri): Boolean {
+        val browser = browser ?: return false
+        repeat(browser.mediaItemCount) { pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.requestMetadata.mediaUri == key) {
+                browser.removeMediaItem(pos)
+                return true
+            }
+        }
+        return false
     }
 
     override fun skipToNext() {
@@ -272,6 +242,7 @@ private class RemoteImpl(private val context: Context) : Remote {
         browser.play()
     }
 
+    @Deprecated("use alternative by uri.")
     override fun playTrack(id: Long) {
         val browser = browser ?: return
         repeat(browser.mediaItemCount) { pos ->
@@ -282,14 +253,11 @@ private class RemoteImpl(private val context: Context) : Remote {
     }
 
 
+    @Deprecated("find better alternative.")
     override suspend fun artwork(): Bitmap {
         val uri = current?.mediaMetadata?.artworkUri ?: return Audiofy.DEFAULT_ALBUM_ART
         return context.getAlbumArt(uri)?.toBitmap() ?: Audiofy.DEFAULT_ALBUM_ART
     }
-
-    override suspend fun await() {
-        val x = fBrowser.await()
-        x.subscribe(Playback.ROOT_QUEUE, null)
-        //x.subscribe(Playback.ROOT_RECENT, null)
-    }
 }
+
+fun Remote(context: Context): Remote = RemoteImpl(context)

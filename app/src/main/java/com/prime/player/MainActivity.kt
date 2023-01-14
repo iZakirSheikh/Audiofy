@@ -398,6 +398,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var preferences: Preferences
+    @Inject
+    lateinit var remote: Remote
 
     override fun onResume() {
         super.onResume()
@@ -457,8 +459,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.navigationBarsPadding()
                     ) { has ->
                         when (has) {
-                            true -> Home()
-                            else -> PermissionRationale { permission.launchPermissionRequest() }
+                            false -> PermissionRationale { permission.launchPermissionRequest() }
+                            else -> {
+                                val show by remote.loaded.collectAsState(initial = false)
+                                Home(show)
+                            }
                         }
                     }
                 }
