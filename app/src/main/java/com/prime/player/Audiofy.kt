@@ -8,9 +8,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
-import com.prime.player.common.FontFamily
-import com.prime.player.common.NightMode
-import com.prime.player.core.Playlists
+import com.prime.player.core.FontFamily
+import com.prime.player.core.NightMode
+import com.prime.player.core.db.Playlists
 import com.primex.preferences.*
 import dagger.Module
 import dagger.Provides
@@ -27,7 +27,6 @@ private const val TAG = "Audiofy"
 @HiltAndroidApp
 class Audiofy : Application(), Configuration.Provider {
     companion object {
-
         private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
 
         /**
@@ -39,8 +38,7 @@ class Audiofy : Application(), Configuration.Provider {
             object : StringSaver<NightMode> {
                 override fun save(value: NightMode): String = value.name
                 override fun restore(value: String): NightMode = NightMode.valueOf(value)
-            }
-        )
+            })
 
         val FONT_FAMILY = stringPreferenceKey(
             TAG + "_font_family",
@@ -48,8 +46,7 @@ class Audiofy : Application(), Configuration.Provider {
             object : StringSaver<FontFamily> {
                 override fun save(value: FontFamily): String = value.name
                 override fun restore(value: String): FontFamily = FontFamily.valueOf(value)
-            }
-        )
+            })
 
 
         val FORCE_COLORIZE = booleanPreferenceKey(TAG + "_force_colorize", false)
@@ -69,11 +66,13 @@ class Audiofy : Application(), Configuration.Provider {
         val EXCLUDE_TRACK_DURATION =
             longPreferenceKey(TAG + "_min_duration_limit_of_track", defaultMinTrackLimit)
         val MAX_RECENT_PLAYLIST_SIZE = intPreferenceKey(TAG + "_max_recent_size", defaultValue = 20)
-        
+
         /**
          * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]
          */
         val MINI_PLAYER_HEIGHT = 68.dp
+
+        @Deprecated("This might be slowing down app startup")
         lateinit var DEFAULT_ALBUM_ART: Bitmap
 
         /**
@@ -126,7 +125,5 @@ object Singleton {
 
     @Singleton
     @Provides
-    fun resolver(
-        @ApplicationContext context: Context
-    ) = context.contentResolver
+    fun resolver(@ApplicationContext context: Context) = context.contentResolver
 }

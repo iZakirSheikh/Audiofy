@@ -1,14 +1,13 @@
 package com.prime.player
 
+
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -40,12 +39,14 @@ import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.prime.player.billing.*
-import com.prime.player.common.NightMode
-import com.prime.player.common.compose.*
-import com.prime.player.common.compose.ToastHostState.Duration
-import com.prime.player.common.compose.ToastHostState.Result
-import com.prime.player.core.Remote
+import com.prime.player.common.Placeholder
+import com.prime.player.common.ToastHostState
+import com.prime.player.common.show
+import com.prime.player.core.LocalWindowSizeClass
+import com.prime.player.core.NightMode
+import com.prime.player.core.billing.*
+import com.prime.player.core.calculateWindowSizeClass
+import com.prime.player.core.playback.Remote
 import com.primex.core.activity
 import com.primex.preferences.*
 import com.primex.ui.ColoredOutlineButton
@@ -62,6 +63,7 @@ import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
 
 private const val TAG = "MainActivity"
 
@@ -127,25 +129,21 @@ fun MainActivity.initSplashScreen(
     installSplashScreen().let { splashScreen ->
         // Animate entry of content
         // if cold start
-        if (isColdStart)
-            splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
-                val splashScreenView = splashScreenViewProvider.view
-                // Create your custom animation.
-                val alpha = ObjectAnimator.ofFloat(
-                    splashScreenView,
-                    View.ALPHA,
-                    1f,
-                    0f
-                )
-                alpha.interpolator = AnticipateInterpolator()
-                alpha.duration = 700L
+        if (isColdStart) splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val splashScreenView = splashScreenViewProvider.view
+            // Create your custom animation.
+            val alpha = ObjectAnimator.ofFloat(
+                splashScreenView, View.ALPHA, 1f, 0f
+            )
+            alpha.interpolator = AnticipateInterpolator()
+            alpha.duration = 700L
 
-                // Call SplashScreenView.remove at the end of your custom animation.
-                alpha.doOnEnd { splashScreenViewProvider.remove() }
+            // Call SplashScreenView.remove at the end of your custom animation.
+            alpha.doOnEnd { splashScreenViewProvider.remove() }
 
-                // Run your animation.
-                alpha.start()
-            }
+            // Run your animation.
+            alpha.start()
+        }
     }
 }
 
@@ -153,10 +151,9 @@ private const val MIN_LAUNCH_COUNT = 20
 private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
 private val MAX_DAY_AFTER_FIRST_REVIEW = TimeUnit.DAYS.toMillis(10)
 
-private val KEY_LAST_REVIEW_TIME =
-    longPreferenceKey(
-        TAG + "_last_review_time"
-    )
+private val KEY_LAST_REVIEW_TIME = longPreferenceKey(
+    TAG + "_last_review_time"
+)
 
 /**
  * A convince method for launching an in-app review.
@@ -168,40 +165,29 @@ private val KEY_LAST_REVIEW_TIME =
 fun Activity.launchReviewFlow() {
     require(this is MainActivity)
     lifecycleScope.launch {
-        val count =
-            preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
+        val count = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
 
         // the time when lastly asked for review
-        val lastAskedTime =
-            preferences.value(KEY_LAST_REVIEW_TIME)
+        val lastAskedTime = preferences.value(KEY_LAST_REVIEW_TIME)
 
-        val firstInstallTime =
-            com.primex.core.runCatching(TAG + "_review") {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                    packageManager.getPackageInfo(
-                        packageName,
-                        PackageManager.PackageInfoFlags.of(0)
-                    ).firstInstallTime
-                else
-                    packageManager.getPackageInfo(packageName, 0).firstInstallTime
-            }
+        val firstInstallTime = com.primex.core.runCatching(TAG + "_review") {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) packageManager.getPackageInfo(
+                packageName, PackageManager.PackageInfoFlags.of(0)
+            ).firstInstallTime
+            else packageManager.getPackageInfo(packageName, 0).firstInstallTime
+        }
 
         val currentTime = System.currentTimeMillis()
         // Only first time we should not ask immediately
         // however other than this whenever we do some thing of appreciation.
         // we should ask for review.
         var ask =
-            (lastAskedTime == null &&
-                    firstInstallTime != null &&
-                    count >= MIN_LAUNCH_COUNT &&
-                    currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW)
+            (lastAskedTime == null && firstInstallTime != null && count >= MIN_LAUNCH_COUNT && currentTime - firstInstallTime >= MAX_DAYS_BEFORE_FIRST_REVIEW)
 
         // check for other condition as well
         ask = ask ||
                 // if this is not the first review; ask only if after time passed.
-                (lastAskedTime != null &&
-                        count >= MIN_LAUNCH_COUNT &&
-                        currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW)
+                (lastAskedTime != null && count >= MIN_LAUNCH_COUNT && currentTime - lastAskedTime >= MAX_DAY_AFTER_FIRST_REVIEW)
         // return from here if not required to ask
         if (!ask) return@launch
         // The flow has finished. The API does not indicate whether the user
@@ -235,8 +221,7 @@ fun Activity.launchUpdateFlow(
             val channel = toastHostState
             manager.requestUpdateFlow().collect { result ->
                 when (result) {
-                    AppUpdateResult.NotAvailable -> if (report)
-                        channel.show("The app is already updated to the latest version.")
+                    AppUpdateResult.NotAvailable -> if (report) channel.show("The app is already updated to the latest version.")
                     is AppUpdateResult.InProgress -> {
                         val state = result.installState
 
@@ -256,9 +241,8 @@ fun Activity.launchUpdateFlow(
                         //when update first becomes available
                         //don't force it.
                         // make it required when staleness days overcome allowed limit
-                        val isFlexible =
-                            (info.clientVersionStalenessDays() ?: -1) <=
-                                    FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
+                        val isFlexible = (info.clientVersionStalenessDays()
+                            ?: -1) <= FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
 
                         // forcefully update; if it's flexible
                         if (!isFlexible) {
@@ -270,29 +254,22 @@ fun Activity.launchUpdateFlow(
                             title = "Update",
                             message = "An update has just been downloaded.",
                             label = "RESTART",
-                            duration = Duration.Indefinite,
+                            duration = ToastHostState.Duration.Indefinite,
                             accent = Color.MetroGreen
                         )
                         // complete update when ever user clicks on action.
-                        if (res == Result.ActionPerformed)
-                            manager.completeUpdate()
+                        if (res == ToastHostState.Result.ActionPerformed) manager.completeUpdate()
                     }
                     is AppUpdateResult.Available -> {
                         // if user choose to skip the update handle that case also.
-                        val isFlexible =
-                            (result.updateInfo.clientVersionStalenessDays()
-                                ?: -1) <=
-                                    FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
-                        if (isFlexible)
-                            result.startFlexibleUpdate(
-                                activity = this@launchUpdateFlow,
-                                RESULT_CODE_APP_UPDATE
-                            )
-                        else
-                            result.startImmediateUpdate(
-                                activity = this@launchUpdateFlow,
-                                RESULT_CODE_APP_UPDATE
-                            )
+                        val isFlexible = (result.updateInfo.clientVersionStalenessDays()
+                            ?: -1) <= FLEXIBLE_UPDATE_MAX_STALENESS_DAYS
+                        if (isFlexible) result.startFlexibleUpdate(
+                            activity = this@launchUpdateFlow, RESULT_CODE_APP_UPDATE
+                        )
+                        else result.startImmediateUpdate(
+                            activity = this@launchUpdateFlow, RESULT_CODE_APP_UPDATE
+                        )
                         // no message needs to be shown
                     }
                 }
@@ -307,9 +284,7 @@ fun Activity.launchUpdateFlow(
  * * The activity requires to be [MainActivity]
  */
 val ProvidableCompositionLocal<Context>.advertiser: Advertiser
-    @Composable
-    @ReadOnlyComposable
-    inline get() {
+    @Composable @ReadOnlyComposable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.advertiser
@@ -324,8 +299,7 @@ val ProvidableCompositionLocal<Context>.advertiser: Advertiser
  * * checks if the app version is AdFree; then proceeds.
  */
 fun Activity.showAd(
-    force: Boolean = false,
-    action: (() -> Unit)? = null
+    force: Boolean = false, action: (() -> Unit)? = null
 ) {
     require(this is MainActivity)
     val isAdFree = billingManager[Product.DISABLE_ADS].purchased
@@ -337,9 +311,7 @@ fun Activity.showAd(
  * A simple extension property on [LocalContext] that returns the activity the context is attached to.
  */
 val ProvidableCompositionLocal<Context>.billingManager: BillingManager
-    @ReadOnlyComposable
-    @Composable
-    inline get() {
+    @ReadOnlyComposable @Composable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.billingManager
@@ -351,9 +323,7 @@ val ProvidableCompositionLocal<Context>.billingManager: BillingManager
  * * The context must contain the [Activity] as [MainActivity]
  */
 val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
-    @ReadOnlyComposable
-    @Composable
-    inline get() {
+    @ReadOnlyComposable @Composable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.fAnalytics
@@ -365,22 +335,31 @@ val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
  * * The context must contain the [Activity] as [MainActivity]
  */
 val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
-    @ReadOnlyComposable
-    @Composable
-    inline get() {
+    @ReadOnlyComposable @Composable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.toastHostState
     }
 
 val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
-    @ReadOnlyComposable
-    @Composable
-    inline get() {
+    @ReadOnlyComposable @Composable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.inAppUpdateProgress
     }
+
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+object Activity {
+    @ActivityRetainedScoped
+    @Provides
+    fun remote(@ApplicationContext context: Context) = Remote(context)
+
+    @ActivityRetainedScoped
+    @Provides
+    fun toaster() = ToastHostState()
+}
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -388,7 +367,6 @@ class MainActivity : ComponentActivity() {
     val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
     val advertiser by lazy { Advertiser(this) }
     val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
-    val toastHostState by lazy { ToastHostState() }
 
     /**
      * The progress of the in-App update.
@@ -398,8 +376,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var preferences: Preferences
+
     @Inject
     lateinit var remote: Remote
+
+    @Inject
+    lateinit var toastHostState: ToastHostState
 
     override fun onResume() {
         super.onResume()
@@ -422,8 +404,7 @@ class MainActivity : ComponentActivity() {
             isColdStart
         )
         if (isColdStart) {
-            val counter =
-                preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
+            val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
             // update launch counter if
             // cold start.
             preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
@@ -472,11 +453,3 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-@Module
-@InstallIn(ActivityRetainedComponent::class)
-object Activity {
-    @ActivityRetainedScoped
-    @Provides
-    fun remote(@ApplicationContext context: Context) = Remote(context)
-}

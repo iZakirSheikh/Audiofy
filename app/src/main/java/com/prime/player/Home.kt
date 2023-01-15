@@ -3,8 +3,6 @@ package com.prime.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
@@ -18,22 +16,20 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.player.audio.buckets.Buckets
-import com.prime.player.audio.buckets.BucketsViewModel
-import com.prime.player.audio.console.Console
-import com.prime.player.audio.console.ConsoleViewModel
-import com.prime.player.audio.library.Library
-import com.prime.player.audio.library.LibraryViewModel
-import com.prime.player.audio.tracks.Tracks
-import com.prime.player.audio.tracks.TracksViewModel
-import com.prime.player.common.compose.*
-import com.prime.player.settings.MainGraphRoutes
+import com.prime.player.buckets.Buckets
+import com.prime.player.buckets.BucketsViewModel
+import com.prime.player.common.*
+import com.prime.player.console.Console
+import com.prime.player.console.ConsoleViewModel
+import com.prime.player.library.Library
+import com.prime.player.library.LibraryViewModel
 import com.prime.player.settings.Settings
 import com.prime.player.settings.SettingsViewModel
-import com.primex.core.rememberState
+import com.prime.player.tracks.MainGraphRoutes
+import com.prime.player.tracks.Tracks
+import com.prime.player.tracks.TracksViewModel
 import cz.levinzonr.saferoute.core.ProvideRouteSpecArgs
 import cz.levinzonr.saferoute.core.RouteSpec
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)

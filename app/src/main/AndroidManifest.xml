@@ -41,7 +41,7 @@
             tools:node="remove" />
 
         <service
-            android:name=".core.Playback"
+            android:name=".core.playback.Playback"
             android:foregroundServiceType="mediaPlayback"
             android:exported="true">
             <intent-filter>

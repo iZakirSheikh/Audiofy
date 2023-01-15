@@ -7,17 +7,17 @@ import android.provider.MediaStore
 import androidx.annotation.WorkerThread
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.prime.player.core.Playlist.Member
 import com.prime.player.core.Repository.Companion.toAlbumArtUri
+import com.prime.player.core.db.*
+import com.prime.player.core.db.Playlist.Member
 import dagger.hilt.android.scopes.ActivityRetainedScoped
-import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+import com.prime.player.core.playback.Playback
 
 private const val TAG = "Repository"
 
@@ -47,30 +47,19 @@ val Audio.key get() = uri.toString()
  * A simple extension fun that returns a Playable [MediaItem]
  */
 inline val Audio.toMediaItem
-    get() = MediaItem.Builder()
-        .setMediaId("$id")
-        .setRequestMetadata(
-            MediaItem.RequestMetadata.Builder()
-                .setMediaUri(uri)
-                .build()
-        )
-        .setMediaMetadata(
-            MediaMetadata.Builder()
-                .setArtworkUri(albumUri)
-                .setTitle(name)
-                .setSubtitle(artist)
-                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-                .setIsPlayable(true)
+    get() = MediaItem.Builder().setMediaId("$id").setRequestMetadata(
+            MediaItem.RequestMetadata.Builder().setMediaUri(uri).build()
+        ).setMediaMetadata(
+            MediaMetadata.Builder().setArtworkUri(albumUri).setTitle(name).setSubtitle(artist)
+                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
                 // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
                 .build()
-        )
-        .build()
+        ).build()
 
 
 @ActivityRetainedScoped
 class Repository @Inject constructor(
-    private val playlistz: Playlists,
-    private val resolver: ContentResolver
+    private val playlistz: Playlists, private val resolver: ContentResolver
 ) {
 
     companion object {
@@ -96,34 +85,29 @@ class Repository @Inject constructor(
     /**
      * Returns the [MediaStore.Audio.Media.ALBUM_ID] upto [limit] as flow.
      */
-    fun recent(limit: Int) =
-        resolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-            .map {
-                resolver.query2(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    arrayOf(MediaStore.Audio.Media.ALBUM_ID),
-                    order = MediaStore.Audio.Media.DATE_MODIFIED,
-                    limit = limit,
-                ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
-            }
+    fun recent(limit: Int) = resolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map {
+            resolver.query2(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Audio.Media.ALBUM_ID),
+                order = MediaStore.Audio.Media.DATE_MODIFIED,
+                limit = limit,
+            ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
+        }
 
     // TODO: Replace this with just uri or something as future versions of this app will cause problems
     val favourite: Flow<List<Audio>?>
-        get() = playlistz.observe2(Playback.PLAYLIST_FAVOURITE)
-            .map {
+        get() = playlistz.observe2(Playback.PLAYLIST_FAVOURITE).map {
                 it.mapNotNull { getAudioById(it.id.toLong()) }
             }
 
     /**
      * The playlists excluding the special ones like [PLAYLIST_RECENT] etc.
      */
-    val playlists =
-        playlistz
-            .observe()
-            .map { playlists ->
-                // drop private playlists.
-                playlists.dropWhile { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) == 0 }
-            }
+    val playlists = playlistz.observe().map { playlists ->
+            // drop private playlists.
+            //playlists.dropWhile { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) == 0 }
+        playlists.filter { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) != 0  }
+        }
 
 
     val folders = resolver.folders()
@@ -150,13 +134,11 @@ class Repository @Inject constructor(
     fun getAudioById(id: Long) = runBlocking { resolver.findAudio(id) }
 
     @WorkerThread
-    fun isFavourite(audioID: Long): Boolean =
-        runBlocking {
-            val id = playlistz
-                .get(Playback.PLAYLIST_FAVOURITE)?.id ?: return@runBlocking false
-            val key = toAudioTrackUri(audioID).toString()
-            playlistz.exists(playlistId = id, key)
-        }
+    fun isFavourite(audioID: Long): Boolean = runBlocking {
+        val id = playlistz.get(Playback.PLAYLIST_FAVOURITE)?.id ?: return@runBlocking false
+        val key = toAudioTrackUri(audioID).toString()
+        playlistz.exists(playlistId = id, key)
+    }
 
     suspend fun exists(playlistName: String): Boolean = playlistz.get(playlistName) != null
 
@@ -164,22 +146,18 @@ class Repository @Inject constructor(
      * Creates playlist if not exist otherwise returns the -1L
      */
     suspend fun createPlaylist(
-        name: String,
-        desc: String = ""
-    ): Long =
-        when {
-            exists(playlistName = name) -> -1L
-            else -> playlistz.insert(Playlist(name = name, desc = desc))
-        }
+        name: String, desc: String = ""
+    ): Long = when {
+        exists(playlistName = name) -> -1L
+        else -> playlistz.insert(Playlist(name = name, desc = desc))
+    }
 
-    suspend fun deletePlaylist(playlist: Playlist): Boolean =
-        playlistz.delete(playlist) == 1
+    suspend fun deletePlaylist(playlist: Playlist): Boolean = playlistz.delete(playlist) == 1
 
     suspend fun updatePlaylist(value: Playlist): Boolean = playlistz.update(value) == 1
 
     suspend fun addToPlaylist(
-        audioID: Long,
-        name: String
+        audioID: Long, name: String
     ): Boolean {
         val playlistsDb = playlistz
         val id = playlistsDb.get(name)?.id ?: createPlaylist(name)
@@ -187,11 +165,9 @@ class Repository @Inject constructor(
         val older = playlistsDb.lastPlayOrder(id) ?: 0
         val audio = getAudioById(audioID) ?: return false
         val member = audio.toMember(id, older + 1)
-        val memberId = playlistsDb.insert(member)
-            .also {
+        val memberId = playlistsDb.insert(member).also {
                 val playlist = playlistsDb.get(id) ?: return false
-                if (it != -1L)
-                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+                if (it != -1L) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
             }
         return memberId != -1L
     }
@@ -210,20 +186,16 @@ class Repository @Inject constructor(
         val playlistsDb = playlistz
         val playlist = playlistsDb.get(name) ?: return false
         val key = toAudioTrackUri(audioID).toString()
-        val count = playlistsDb.delete(playlist.id, key)
-            .also {
-                if (it == 1)
-                    playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+        val count = playlistsDb.delete(playlist.id, key).also {
+                if (it == 1) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
             }
         return count == 1
     }
 
     suspend fun toggleFav(audioID: Long): Boolean {
         val favourite = isFavourite(audioID = audioID)
-        val op = if (favourite)
-            removeFromPlaylist(Playback.PLAYLIST_FAVOURITE, audioID)
-        else
-            addToPlaylist(audioID, Playback.PLAYLIST_FAVOURITE,)
+        val op = if (favourite) removeFromPlaylist(Playback.PLAYLIST_FAVOURITE, audioID)
+        else addToPlaylist(audioID, Playback.PLAYLIST_FAVOURITE)
         return !favourite && op
     }
 }
