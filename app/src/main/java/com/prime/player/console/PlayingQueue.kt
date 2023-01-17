@@ -124,7 +124,7 @@ fun ConsoleViewModel.PlayingQueue(
                 ) { audio ->
 
                     Crossfade(
-                        targetState = audio.mediaId.toLong() == current?.id,
+                        targetState = audio.mediaId== current?.mediaId,
                         modifier = Modifier
                             .wrapContentSize()
                             .animateContentSize(animationSpec = tween(Anim.LongDurationMills))
@@ -150,14 +150,14 @@ fun ConsoleViewModel.PlayingQueue(
 
                     Track(
                         value = audio,
-                        playing = current?.id == audio.mediaId.toLong() && playing,
-                        modifier = Modifier.clickable(enabled = audio.mediaId.toLong() != current?.id) {
+                        playing = current?.mediaId == audio.mediaId && playing,
+                        modifier = Modifier.clickable(enabled = audio.mediaId != current?.mediaId) {
                             playTrack(audio.mediaId.toLong())
                         }
                     )
 
                     Crossfade(
-                        targetState = audio.mediaId.toLong() == current?.id,
+                        targetState = audio.mediaId == current?.mediaId,
                         modifier = Modifier
                             .wrapContentSize()
                             .animateContentSize(animationSpec = tween(Anim.LongDurationMills))

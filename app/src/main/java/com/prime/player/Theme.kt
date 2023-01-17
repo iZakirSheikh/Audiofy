@@ -131,7 +131,7 @@ val Colors.darkShadowColor
     @Composable inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
 
 
-private val defaultPrimaryColor = Color(0xFF5600E8)
+private val defaultPrimaryColor = Color.SkyBlue
 private val defaultSecondaryColor = Color.Rose
 
 private val defaultThemeShapes = Shapes(

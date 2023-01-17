@@ -1,17 +1,17 @@
-@file:Suppress("NOTHING_TO_INLINE")
-
 package com.prime.player.console
 
-import android.graphics.Typeface
-import android.net.Uri
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.media.audiofx.AudioEffect
 import android.widget.Toast
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,208 +20,238 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
 import com.prime.player.core.Util
-import com.prime.player.core.db.Audio
 import com.prime.player.core.formatAsDuration
-import com.prime.player.core.share
-import com.prime.player.tracks.TracksRoute
-import com.primex.core.*
+import com.primex.core.gradient
+import com.primex.core.lerp
+import com.primex.core.rememberState
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
 import com.primex.ui.*
-import com.primex.ui.views.MarqueText
-import cz.levinzonr.saferoute.core.navigateTo
+import com.primex.ui.dialog.BottomSheetDialog
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
-@OptIn(
-    ExperimentalAnimationApi::class,
-    ExperimentalAnimationGraphicsApi::class
-)
-@Composable
-private fun ConsoleViewModel.MiniLayout(
-    modifier: Modifier = Modifier
-) {
-    ConstraintLayout(
-        modifier
-    ) {
-        val (Artwork, Title, Subtitle, Heart, Play, ProgressBar) = createRefs()
-        val color = Material.colors.surface
+private const val TAG = "Console"
 
-        createHorizontalChain(Artwork, Title, Heart, Play)
-        val activity = LocalContext.activity
-        //artwork
-        val artwork by artwork
-        Image(
-            bitmap = artwork,
-            modifier = Modifier
-                .offset(x = -ContentPadding.medium)
-                .requiredWidth(75.dp)
-                .gradient(vertical = false, listOf(Color.Transparent, color))
-                .fillMaxHeight()
-                .constrainAs(Artwork) {},
+//Constraint reference of components.
+private val Signature = ConstrainedLayoutReference("_signature")
+private val Close = ConstrainedLayoutReference("_close")
+private val Heart = ConstrainedLayoutReference("_heart")
+
+
+private val Artwork = ConstrainedLayoutReference("_artwork")
+private val ProgressMills = ConstrainedLayoutReference("_progress_mills")
+
+private val Subtitle = ConstrainedLayoutReference("_subtitle")
+private val Title = ConstrainedLayoutReference("_title")
+
+private val ProgressBar = ConstrainedLayoutReference("_progress_bar")
+private val TuneUp = ConstrainedLayoutReference("_tune_up")
+
+
+private val SkipToPrevious = ConstrainedLayoutReference("_previous")
+private val SkipBack10 = ConstrainedLayoutReference("_skip_back_10")
+private val Toggle = ConstrainedLayoutReference("_toggle")
+private val SkipForward30 = ConstrainedLayoutReference("_skip_forward_30")
+private val SkipToNext = ConstrainedLayoutReference("_next")
+
+private val BottomRowLabel = ConstrainedLayoutReference("_bottom_row_label")
+private val Shuffle = ConstrainedLayoutReference("_shuffle")
+private val Repeat = ConstrainedLayoutReference("_repeat")
+private val Queue = ConstrainedLayoutReference("_queue")
+private val Speed = ConstrainedLayoutReference("_speed")
+private val Sleep = ConstrainedLayoutReference("_sleep")
+
+val edgeWidth = 10.dp
+fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
+    val edgeWidthPx = edgeWidth.toPx()
+    drawRect(
+        topLeft = Offset(if (leftEdge) 0f else size.width - edgeWidthPx, 0f),
+        size = Size(edgeWidthPx, size.height),
+        brush = Brush.horizontalGradient(
+            colors = listOf(Color.Transparent, Color.Black),
+            startX = if (leftEdge) 0f else size.width,
+            endX = if (leftEdge) edgeWidthPx else size.width - edgeWidthPx
+        ),
+        blendMode = BlendMode.DstIn
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.marque(iterations: Int) =
+    Modifier
+        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            drawFadedEdge(leftEdge = true)
+            drawFadedEdge(leftEdge = false)
+        }
+        .basicMarquee(
+            // Animate forever.
+            iterations = iterations,
         )
+        .then(this)
 
-        //INFO create vertical chain of title ans subtitle
-        constrain(
-            ref = createVerticalChain(Title, Subtitle, chainStyle = ChainStyle.Packed(0.5f)),
-            constrainBlock = {
-                top.linkTo(Artwork.top)
-                bottom.linkTo(Artwork.bottom)
-            }
-        )
+/**
+ * A simple extension fun to add to modifier.
+ */
+private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) = layoutId(id.id)
 
-        //title
-        val current by current
-        MarqueText(
-            text = current?.name ?: "",
-            modifier = Modifier.constrainAs(Title) {
-                width = Dimension.fillToConstraints
-            },
-            typeface = Typeface.DEFAULT_BOLD,
-            textSize = 12.sp
-        )
-
-        //subtitle
-        AnimatedLabel(
-            text = current?.album ?: stringResource(id = R.string.unknown),
-            fontWeight = FontWeight.SemiBold,
-            color = LocalContentColor.current.copy(0.8f),
-            modifier = Modifier.constrainAs(Subtitle) {
-                start.linkTo(Title.start)
-                end.linkTo(Title.end)
-                width = Dimension.fillToConstraints
-            },
-            style = Material.typography.caption2
-        )
-
-        val favourite by favourite
-        IconButton(
-            onClick = { toggleFav(); activity.launchReviewFlow() },
-            painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
-            modifier = Modifier.constrainAs(Heart) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-            },
-            contentDescription = null
-        )
-
-        //play/pause
-        val playing by playing
-        IconButton(
-            onClick = { togglePlay(); activity.launchReviewFlow() },
-            contentDescription = null,
-            painter = rememberAnimatedVectorResource(
-                id = R.drawable.avd_pause_to_play,
-                atEnd = !playing
-            ),
-            modifier = Modifier.constrainAs(Play) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-            }
-        )
-
-        val showProgress by preference(key = Audiofy.SHOW_MINI_PROGRESS_BAR)
-        if (showProgress) {
-            val progress by progress
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .constrainAs(ProgressBar) {
-                        bottom.linkTo(parent.bottom)
-                    },
-                color = Material.colors.primary,
-                progress = progress
-            )
+private inline fun ConstraintSetScope.hide(vararg ref: ConstrainedLayoutReference) {
+    ref.forEach {
+        constrain(it) {
+            //start.linkTo(parent.start)
+            end.linkTo(parent.start)
+            top.linkTo(parent.top)
+            bottom.linkTo(parent.bottom)
+            visibility = Visibility.Gone
         }
     }
 }
 
+private inline val MediaItem.title get() = mediaMetadata.title?.toString()
+private inline val MediaItem.subtitle get() = mediaMetadata.subtitle?.toString()
+
 @Composable
-private inline fun NeuButton(
-    painter: Painter,
-    noinline onClick: () -> Unit,
+@NonRestartableComposable
+private fun NeumorphicIconButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    shape: CornerBasedShape = RoundedCornerShape(30),
+    enabled: Boolean = true,
+    border: BorderStroke? =  BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
+    elevation: ButtonElevation = NeumorphicButtonDefaults.elevation(6.dp),
     iconScale: Float = 1.5f,
-    shape: RoundedCornerShape = CircleShape
+    painter: Painter
 ) {
     NeumorphicButton(
         onClick = onClick,
-        shape = shape,
-        elevation = NeumorphicButtonDefaults.elevation(defaultElevation = 12.dp),
-        border = if (Material.colors.isLight) null else BorderStroke(
-            1.dp,
-            Material.colors.outline.copy(0.06f)
-        ),
         modifier = modifier,
+        shape = shape,
+        enabled = enabled,
+        elevation = elevation,
+        border = border,
         colors = NeumorphicButtonDefaults.neumorphicButtonColors(
             lightShadowColor = Material.colors.lightShadowColor,
-            darkShadowColor = Material.colors.darkShadowColor
-        ),
-
-        content = {
-            Icon(
-                painter = painter,
-                contentDescription = null,
-                modifier = Modifier.scale(iconScale)
-            )
-        }
-    )
+            darkShadowColor = Material.colors.darkShadowColor,
+        )
+    ) {
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier.scale(iconScale)
+        )
+    }
 }
 
-private val ArtworkValleyWidth = 20.dp
-private val ArtworkBorderWidth = 8.dp
-private val ArtworkShape = CircleShape
-
-context(ConsoleViewModel) @Composable
-private inline fun Artwork(
-    modifier: Modifier = Modifier
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun NeumorphicVertButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    alpha: Float = LocalContentAlpha.current,
+    onClick: () -> Unit,
+    icon: Painter,
+    label: String,
 ) {
-    val artwork by artwork
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val elevation = NeumorphicButtonDefaults.elevation(5.dp)
+        val source = remember(::MutableInteractionSource)
+        val depth by elevation.elevation(enabled = enabled, interactionSource = source)
+        Neumorphic(
+            onClick = onClick,
+            modifier = Modifier,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
+            elevation = depth,
+            interactionSource = source,
+            border = BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
+            shape = RoundedCornerShape(30)
+        ) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.padding(12.dp),
+                tint = LocalContentColor.current.copy(alpha)
+            )
+        }
+
+
+        Label(
+            text = label,
+            style = Material.typography.caption2,
+            modifier = Modifier.padding(top = 6.dp),
+            color = LocalContentColor.current.copy(alpha)
+        )
+    }
+}
+
+
+private val ARTWORK_STROKE_DEFAULT_EXPANDED = 20.dp
+private val ARTWORK_STROKE_DEFAULT_COLLAPSED = 3.dp
+
+@Composable
+@NonRestartableComposable
+private fun Artwork(
+    data: Any?,
+    modifier: Modifier = Modifier,
+    stroke: Dp = ARTWORK_STROKE_DEFAULT_EXPANDED,
+) {
     val color = Material.colors.background
-
     Image(
-        bitmap = artwork,
+        data = data,
         contentScale = ContentScale.Crop,
-        durationMillis = Anim.LongDurationMills,
+        fadeMills = Anim.LongDurationMills,
 
+        // now apply the modifier.
         modifier = Modifier
             .shadow(
-                shape = ArtworkShape,
+                shape = CircleShape,
                 elevation = -12.dp,
                 lightShadowColor = Material.colors.lightShadowColor,
                 darkShadowColor = Material.colors.darkShadowColor,
                 spotLight = SpotLight.BOTTOM_RIGHT,
             )
-            .padding(ArtworkValleyWidth)
+            .padding(stroke)
             .shadow(
-                shape = ArtworkShape,
+                shape = CircleShape,
                 elevation = 12.dp,
                 lightShadowColor = Material.colors.lightShadowColor,
                 darkShadowColor = Material.colors.darkShadowColor,
                 spotLight = SpotLight.TOP_LEFT,
             )
-            .border(BorderStroke(ArtworkBorderWidth, color), ArtworkShape)
+            .border(BorderStroke(stroke / 2, color), CircleShape)
             .gradient(colors = listOf(Color.Transparent, Color.Black.copy(0.5f)), vertical = false)
             .background(color)
             .then(modifier)
@@ -229,661 +259,496 @@ private inline fun Artwork(
 }
 
 
-@Composable
-private inline fun MenuItem(
-    vector: Painter,
-    label: String,
-    noinline onClick: () -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier,
-) {
-    DropdownMenuItem(
-        modifier = modifier,
-        onClick = onClick,
-        enabled = enabled,
-        content = {
-            Icon(painter = vector, contentDescription = null)
-            Label(
-                text = label,
-                modifier = Modifier.padding(start = ContentPadding.medium)
-            )
-        }
-    )
-}
-
-
-@Composable
-private fun ConsoleViewModel.More(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit
-) {
-    var showSleepMenu by rememberState(initial = false)
-    SleepTimer(expanded = showSleepMenu) {
-        showSleepMenu = false
+private fun Activity.launchEqualizer(id: Int) {
+    if (id == AudioEffect.ERROR_BAD_VALUE) {
+        Toast.makeText(this, "No Session Id", Toast.LENGTH_LONG).show();
+        return
     }
-    val activity = LocalContext.activity
-
-    var showPlaylistViewer by rememberState(initial = false)
-    val playlists by playlists.collectAsState(initial = emptyList())
-    val context = LocalContext.current
-    Playlists(
-        value = playlists,
-        expanded = showPlaylistViewer,
-        onPlaylistClick = {
-            it?.let {
-                addToPlaylist(it)
-                Toast.makeText(context, "Adding tracks to Playlist ${it.name}.", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            showPlaylistViewer = false
-        }
-    )
-
-    val current by current
-    var showPropertiesDialog by rememberState(initial = false)
-    current?.Properties(
-        showPropertiesDialog,
-        onDismissRequest = {
-            showPropertiesDialog = false
-        }
-    )
-
-    var showPlayingQueue by rememberState(initial = false)
-    PlayingQueue(
-        expanded = showPlayingQueue,
-        onDismissRequest = {
-            showPlayingQueue = false
-        }
-    )
-
-    val navigator = LocalNavController.current
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-    ) {
-        MenuItem(
-            vector = rememberVectorPainter(image = Icons.Outlined.PlaylistAdd),
-            label = "Add to playlist",
-            onClick = {
-                showPlaylistViewer = true; activity.launchReviewFlow(); onDismissRequest()
-            }
-        )
-
-        MenuItem(
-            vector = rememberVectorPainter(image = Icons.Outlined.Person),
-            label = "Go to Artist",
-            enabled = current?.artist?.isNotBlank() ?: false,
-            onClick = {
-                val encoded = Uri.encode(current?.artist ?: return@MenuItem)
-                val direction = TracksRoute(Type.ARTISTS.name, encoded)
-                navigator.navigateTo(direction)
-                onDismissRequest()
+    val res = kotlin.runCatching {
+        startActivityForResult(
+            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, "your app package name");
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id);
+                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
             },
-        )
-
-        MenuItem(
-            vector = rememberVectorPainter(image = Icons.Outlined.Info),
-            label = "Info",
-            onClick = { showPropertiesDialog = true; onDismissRequest() }
-        )
-
-        MenuItem(
-            vector = rememberVectorPainter(image = Icons.Outlined.ModeNight),
-            label = "Sleep timer",
-            onClick = { showSleepMenu = true; onDismissRequest(); }
-        )
-
-        val context = LocalContext.current
-        MenuItem(
-            vector = rememberVectorPainter(image = Icons.Outlined.Share),
-            label = "Share",
-            onClick = { current?.let { context.share(it) }; onDismissRequest() }
-        )
-
-        Divider()
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-
-            content = {
-
-                val shuffle by shuffle
-                IconButton(
-                    onClick = { toggleShuffle(); activity.launchReviewFlow(); onDismissRequest() },
-                    painter = painterResource(id = R.drawable.ic_shuffle),
-                    contentDescription = null,
-                    tint = LocalContentColor.current.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled)
-                )
-
-                val mode by repeatMode
-                IconButton(
-                    onClick = { cycleRepeatMode();activity.launchReviewFlow(); onDismissRequest(); },
-                    painter = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
-                    contentDescription = null,
-                    tint = LocalContentColor.current.copy(
-                        if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled
-                        else ContentAlpha.high
-                    )
-                )
-
-                IconButton(
-                    onClick = {
-                        showPlayingQueue = true; activity.launchReviewFlow(); onDismissRequest()
-                    },
-                    imageVector = Icons.Outlined.PlaylistPlay,
-                    contentDescription = null
-                )
-            }
+            0
         )
     }
+
+    if (res.exceptionOrNull() is ActivityNotFoundException)
+        Toast.makeText(this, "There is no equalizer", Toast.LENGTH_SHORT).show();
 }
 
+
+
+
 @Composable
-private fun ConsoleViewModel.SleepTimer(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit
+fun Console(
+    viewModel: ConsoleViewModel,
+    progress: Float,
+    onRequestToggle: () -> Unit
 ) {
-    val activity = LocalContext.activity
-    DropdownMenu(
-        title = "Sleep Timer",
-        preserveIconSpace = true,
-        expanded = expanded,
-        items = listOf(
-            null to "5 Minutes",
-            null to "30 Minutes",
-            null to "1 Hour",
-            null to "3 Hours",
-            Icons.Outlined.Close to "Clear"
-        ),
-        onDismissRequest = onDismissRequest,
-    ) { index ->
-        val minutes =
-            when (index) {
-                0 -> 5
-                1 -> 30
-                2 -> 60
-                3 -> 180
-                4 -> -1
-                else -> error("No such value !!")
-            }
-        setSleepAfter(minutes)
-        activity.launchReviewFlow()
+    val controller = rememberSystemUiController()
+    val expanded = progress == 1f
+    val wasDark = remember {
+        controller.statusBarDarkContentEnabled
     }
-}
 
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-private fun Next(
-    value: Audio?,
-    modifier: Modifier = Modifier,
-) {
-    AnimatedContent(
-        targetState = value,
-        modifier = modifier.padding(end = ContentPadding.large),
-        transitionSpec = {
-            slideInVertically { height -> height } + fadeIn() with
-                    slideOutVertically { height -> -height } + fadeOut()
-        },
-        content = { new ->
-            if (new != null)
-                ListTile(
-                    centreVertically = true,
-                    text = {
-                        Label(
-                            text = new.name,
-                            style = Material.typography.body2
-                        )
-                    },
-                    secondaryText = {
-                        Label(
-                            text = new.album.uppercase(),
-                            style = Material.typography.overline
-                        )
-                    },
-                    leading = {
-                        Surface(
-                            elevation = ContentElevation.high,
-                            border = BorderStroke(2.dp, Color.White),
-                            shape = CircleShape,
-                            content = {
-                                Image(
-                                    albumId = new.albumId,
-                                    modifier = Modifier.requiredSize(56.dp),
-                                    fadeMills = 0
-                                )
-                            }
-                        )
-                    }
-                )
+
+    val isLight = Material.colors.isLight
+    val channel = LocalContext.toastHostState
+
+    DisposableEffect(key1 = isLight, key2 = expanded) {
+        // set icon color for current screen
+        controller.setStatusBarColor(Color.Transparent, if (expanded) isLight else wasDark)
+        viewModel.messenger = channel
+        onDispose {
+            // restore back the color of the old screen.
+            controller.setStatusBarColor(Color.Transparent, wasDark)
+            viewModel.messenger = null
         }
-    )
+    }
+
+    // actual content
+    CompositionLocalProvider(LocalContentColor provides Material.colors.onSurface) {
+        Vertical(
+            progress = progress,
+            resolver = viewModel,
+            onRequestToggle = onRequestToggle,
+            modifier = Modifier
+                .fillMaxSize()
+                // animate 2.5x scale between collapsed and expanded.
+                .scale(lerp(0.8f, 1f, (progress * 2.5f).coerceIn(0.0f..1.0f)))
+                // animate shadow including its shape.
+                .shadow(
+                    shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt()),
+                    lightShadowColor = Material.colors.darkShadowColor,
+                    darkShadowColor = Material.colors.darkShadowColor,
+                    elevation = lerp(8.dp, 0.dp, progress),
+                    spotLight = SpotLight.TOP_LEFT,
+                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Material.colors.surface)
+                )
+                .background(Material.colors.background)
+                // .background(color = lerp(Material.colors.surface, Material.colors.background, 0.0f, 1.0f,  progress))
+                // don't forget to disable it when expanded.
+                .clickable(
+                    onClick = onRequestToggle,
+                    indication = null,
+                    interactionSource = remember(::MutableInteractionSource),
+                    // only enabled when collapsed.
+                    enabled = !expanded
+                )
+        )
+    }
 }
 
-private val SignatureTextSize = 70.sp
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalAnimationGraphicsApi::class)
+private val collapsed = ConstraintSet {
+    hide(Signature, Close)
+    hide(ProgressBar, TuneUp, ProgressMills)
+    hide(SkipForward30, SkipToNext, SkipBack10, SkipToPrevious)
+    hide(BottomRowLabel)
+    hide(Queue, Speed, Sleep, Shuffle, Repeat)
+
+    constrain(Artwork) {
+        top.linkTo(parent.top)
+        bottom.linkTo(parent.bottom)
+        start.linkTo(parent.start, ContentPadding.medium)
+        height = Dimension.value(56.dp)
+        width = Dimension.ratio("1:1")
+    }
+
+    createVerticalChain(Title, Subtitle, chainStyle = ChainStyle.Packed)
+    constrain(Title) {
+        start.linkTo(Artwork.end, ContentPadding.medium)
+        end.linkTo(Heart.start, ContentPadding.medium)
+        width = Dimension.fillToConstraints
+    }
+
+
+    constrain(Subtitle) {
+        start.linkTo(Title.start)
+        end.linkTo(Title.end)
+        width = Dimension.fillToConstraints
+        visibility = Visibility.Visible
+    }
+
+    constrain(Heart) {
+        start.linkTo(Title.end)
+        top.linkTo(Artwork.top)
+        bottom.linkTo(Artwork.bottom)
+    }
+
+    // toggles
+    constrain(Toggle) {
+        start.linkTo(Heart.end)
+        end.linkTo(parent.end)
+        top.linkTo(Artwork.top)
+        bottom.linkTo(Artwork.bottom)
+    }
+}
+
+val expanded = ConstraintSet {
+    // signature
+    constrain(Signature) {
+        start.linkTo(parent.start, ContentPadding.normal)
+        top.linkTo(parent.top)
+    }
+
+    constrain(Close) {
+        end.linkTo(parent.end, ContentPadding.normal)
+        top.linkTo(Signature.top)
+        bottom.linkTo(Signature.bottom)
+    }
+
+    // artwork
+    constrain(Artwork) {
+        top.linkTo(Signature.bottom, ContentPadding.normal)
+        bottom.linkTo(Subtitle.top, ContentPadding.normal)
+        start.linkTo(parent.start)
+        end.linkTo(parent.end)
+        height = Dimension.fillToConstraints
+        width = Dimension.ratio("1:1")
+    }
+
+    constrain(ProgressMills){
+        end.linkTo(Artwork.end, ContentPadding.large)
+        top.linkTo(Artwork.top)
+        bottom.linkTo(Artwork.bottom)
+        visibility = Visibility.Visible
+    }
+
+    //title
+    constrain(Title) {
+        bottom.linkTo(ProgressBar.top, ContentPadding.normal)
+        start.linkTo(parent.start, ContentPadding.large)
+        end.linkTo(parent.end, ContentPadding.large)
+        width = Dimension.fillToConstraints
+    }
+
+    constrain(Subtitle) {
+        start.linkTo(Title.start)
+        bottom.linkTo(Title.top)
+    }
+
+    //progressbar
+    constrain(ProgressBar) {
+        bottom.linkTo(Toggle.top, ContentPadding.normal)
+        start.linkTo(Heart.end, ContentPadding.medium)
+        end.linkTo(TuneUp.start, ContentPadding.medium)
+        width = Dimension.fillToConstraints
+    }
+
+    constrain(Heart) {
+        top.linkTo(ProgressBar.top)
+        bottom.linkTo(ProgressBar.bottom)
+        start.linkTo(Title.start)
+    }
+
+    constrain(TuneUp) {
+        top.linkTo(ProgressBar.top)
+        bottom.linkTo(ProgressBar.bottom)
+        end.linkTo(Title.end)
+    }
+
+    // play controls row
+    constrain(Toggle) {
+        start.linkTo(parent.start)
+        end.linkTo(parent.end)
+        bottom.linkTo(Queue.top, ContentPadding.large)
+    }
+
+    constrain(SkipToPrevious) {
+        end.linkTo(Toggle.start, ContentPadding.normal)
+        top.linkTo(Toggle.top)
+        bottom.linkTo(Toggle.bottom)
+    }
+
+    constrain(SkipBack10) {
+        end.linkTo(SkipToPrevious.start, ContentPadding.medium)
+        top.linkTo(Toggle.top)
+        bottom.linkTo(Toggle.bottom)
+    }
+
+    constrain(SkipToNext) {
+        start.linkTo(Toggle.end, ContentPadding.normal)
+        top.linkTo(Toggle.top)
+        bottom.linkTo(Toggle.bottom)
+    }
+
+    constrain(SkipForward30) {
+        start.linkTo(SkipToNext.end, ContentPadding.medium)
+        top.linkTo(Toggle.top)
+        bottom.linkTo(Toggle.bottom)
+    }
+
+    val ref =
+        createHorizontalChain(Queue, Speed, Sleep, Shuffle, Repeat, chainStyle = ChainStyle.SpreadInside)
+    constrain(ref) {
+        start.linkTo(parent.start, ContentPadding.large)
+        end.linkTo(parent.end, ContentPadding.large)
+    }
+
+    constrain(Queue) {
+        bottom.linkTo(parent.bottom, ContentPadding.large)
+    }
+
+    constrain(Speed) {
+        bottom.linkTo(Queue.bottom)
+    }
+
+    constrain(Sleep) {
+        bottom.linkTo(Queue.bottom)
+    }
+
+    constrain(Shuffle) {
+        bottom.linkTo(Queue.bottom)
+    }
+
+    constrain(Repeat) {
+        bottom.linkTo(Queue.bottom)
+    }
+}
+
+@OptIn(
+    ExperimentalMotionApi::class, ExperimentalAnimationGraphicsApi::class,
+    ExperimentalAnimationApi::class, ExperimentalComposeApi::class
+)
 @Composable
-private fun ConsoleViewModel.Layout(
-    toggle: () -> Unit,
-    modifier: Modifier = Modifier
+fun Vertical(
+    modifier: Modifier = Modifier,
+    resolver: ConsoleViewModel,
+    progress: Float,
+    onRequestToggle: () -> Unit
 ) {
-    ConstraintLayout(
-        modifier = modifier
-    ) {
-        val (Signature, PlaylistLabel, ArtistLabel, Artwork, Slider, Album, Title, Play, UpNextLabel, UpNext) = createRefs()
+    MotionLayout(start = collapsed, end = expanded, progress = progress, modifier = modifier) {
 
         val primary = Material.colors.primary
         val activity = LocalContext.activity
+        val insets = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
             fontFamily = FontFamily.Cursive,
             color = primary,
             fontWeight = FontWeight.Bold,
-            fontSize = SignatureTextSize,
-            modifier = Modifier.constrainAs(Signature) {
-                start.linkTo(parent.start, ContentPadding.normal)
-                top.linkTo(parent.top)
-            }
+            fontSize = 70.sp,
+            modifier = Modifier
+                .padding(top = insets)
+                .layoutID(Signature)
         )
 
         // Close Button
-        NeuButton(
+        NeumorphicIconButton(
             painter = rememberVectorPainter(image = Icons.Default.Close),
-            onClick = toggle,
+            onClick = onRequestToggle,
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .size(46.dp)
-                .constrainAs(createRef()) {
-                    end.linkTo(parent.end, ContentPadding.normal)
-                    top.linkTo(Signature.top)
-                    bottom.linkTo(Signature.bottom)
-                }
+                .layoutID(Close)
         )
 
-        // playlist line
-
-        val playing by playing
-        val composable by rememberLottieComposition(
-            spec = LottieCompositionSpec.RawRes(
-                R.raw.playback_indicator
-            )
-        )
-
-        val (PlayBars, Playlist) = createRefs()
-        LottieAnimation(
-            composition = composable,
-            iterations = if (playing) Int.MAX_VALUE else 1,
-            modifier = Modifier
-                .size(24.dp)
-                .constrainAs(PlayBars) {
-                    start.linkTo(Signature.start, ContentPadding.medium)
-                    top.linkTo(PlaylistLabel.top)
-                    bottom.linkTo(Playlist.bottom)
-                }
-        )
-
-        Label(
-            text = "Playing From",
-            style = Material.typography.caption2,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .constrainAs(PlaylistLabel) {
-                    top.linkTo(Signature.bottom, ContentPadding.medium)
-                    start.linkTo(PlayBars.end, ContentPadding.medium)
-                },
-            color = Material.colors.onSurface
-        )
-
-        val playlistName by playlistName
-        Label(
-            text = playlistName,
-            color = LocalContentColor.current.copy(ContentAlpha.medium),
-            style = Material.typography.caption,
-            modifier = Modifier.constrainAs(Playlist) {
-                start.linkTo(PlaylistLabel.start)
-                top.linkTo(PlaylistLabel.bottom)
-                width = Dimension.percent(0.4f)
-            },
-        )
-
-        //artist
-        val (ArtistIcon, Artist) = createRefs()
-        Label(
-            text = "Artist",
-            style = Material.typography.caption2,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.constrainAs(ArtistLabel) {
-                top.linkTo(Playlist.bottom, ContentPadding.normal)
-                start.linkTo(ArtistIcon.end, ContentPadding.medium)
-            },
-            color = Material.colors.onSurface
-        )
-
-        val current by current
-        AnimatedLabel(
-            text = current?.artist ?: "",
-            color = LocalContentColor.current.copy(ContentAlpha.medium),
-            style = Material.typography.caption,
-            modifier = Modifier.constrainAs(Artist) {
-                start.linkTo(ArtistLabel.start)
-                top.linkTo(ArtistLabel.bottom)
-                width = Dimension.percent(0.4f)
-            },
-        )
-
-        Icon(
-            painter = painterResource(id = R.drawable.ic_artist),
-            contentDescription = null,
-            modifier = Modifier.constrainAs(ArtistIcon) {
-                start.linkTo(PlayBars.start)
-                top.linkTo(ArtistLabel.top)
-                bottom.linkTo(Artist.bottom)
-            }
-        )
-
-        // sleep after
-        val sleepAfterMills by sleepAfter
-        val (SleepAfterLabel, SleepAfter) = createRefs()
-        sleepAfterMills?.let {
-            Label(
-                text = "Sleep After",
-                style = Material.typography.caption2,
-                fontWeight = FontWeight.SemiBold,
-                color = Material.colors.onSurface,
-
-                modifier = Modifier
-                    .constrainAs(SleepAfterLabel) {
-                        top.linkTo(PlaylistLabel.top)
-                        bottom.linkTo(SleepAfter.top)
-                        start.linkTo(SleepAfter.start)
-                    },
-            )
-
-
-            Ticker(
-                text = Util.formatAsDuration(it),
-                color = Material.colors.onSurface,
-                font = Typeface.DEFAULT_BOLD,
-                size = 32.sp,
-
-                modifier = Modifier
-                    .offset(x = -2.dp, y = -10.dp)
-                    .constrainAs(SleepAfter) {
-                        top.linkTo(SleepAfterLabel.bottom)
-                        bottom.linkTo(Artist.bottom)
-                        end.linkTo(parent.end, ContentPadding.normal)
-                    },
-            )
-        }
-
+        // artwork
+        val artwork by resolver.artwork
         Artwork(
-            modifier = Modifier
-                .constrainAs(Artwork) {
-                    top.linkTo(Artist.bottom, ContentPadding.normal)
-                    bottom.linkTo(Slider.top, ContentPadding.medium)
-                    start.linkTo(parent.start, ContentPadding.normal)
-                    end.linkTo(parent.end, ContentPadding.normal)
-                    height = Dimension.fillToConstraints
-                    width = Dimension.ratio("1:1")
-                }
+            data = artwork,
+            modifier = Modifier.layoutID(Artwork),
+            // maybe make this a lambda call
+            stroke = lerp(ARTWORK_STROKE_DEFAULT_COLLAPSED, ARTWORK_STROKE_DEFAULT_EXPANDED, progress)
         )
 
-        //progress
-        val (Progress, MaxTime) = createRefs()
-        val position by progress
-        val tickerPaddingEnd = ArtworkValleyWidth + ArtworkBorderWidth + 3.dp
-        val onArtworkColor = Color.White
-        Ticker(
-            text = Util.formatAsDuration(position.toInt()),
-            size = 48.sp,
-            font = Typeface.DEFAULT_BOLD,
-            color = onArtworkColor,
-
-            modifier = Modifier.constrainAs(Progress) {
-                end.linkTo(Artwork.end, tickerPaddingEnd)
-                top.linkTo(Artwork.top)
-                bottom.linkTo(Artwork.bottom)
-            },
-        )
-
-        // track length
-        AnimatedLabel(
-            text = Util.formatAsDuration(current?.duration?.toLong() ?: 0),
+        //slider
+        val value by resolver.progress
+        val time = (value * resolver.duration).roundToLong()
+        Header(
+            text = Util.formatAsDuration(time),
+            color = Color.White,
             fontWeight = FontWeight.Bold,
-            style = Material.typography.caption.copy(
-                fontFamily = FontFamily.Default,
-            ),
-            color = onArtworkColor,
-
-            modifier = Modifier
-                .offset(y = 16.dp)
-                .constrainAs(MaxTime) {
-                    start.linkTo(Progress.start)
-                    bottom.linkTo(Progress.top)
-                },
+            modifier = Modifier.layoutID(ProgressMills),
+            style = Material.typography.h3
         )
 
-        // slider
-        val (Heart, More) = createRefs()
-        val favourite by favourite
+        // slider row
+        Slider(
+            value = value,
+            onValueChange = { resolver.seekTo(it) },
+            modifier = Modifier.layoutID(ProgressBar),
+            )
+
+        val favourite by resolver.favourite
         IconButton(
-            onClick = { toggleFav(); activity.launchReviewFlow() },
+            onClick = { resolver.toggleFav(); activity.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
             contentDescription = null,
-            modifier = Modifier.constrainAs(Heart) {
-                top.linkTo(Slider.top)
-                bottom.linkTo(Slider.bottom)
-                start.linkTo(Title.start)
-            }
+            modifier = Modifier.layoutID(Heart)
         )
 
-        val value by progress
-        val duration = current?.duration?.toFloat() ?: 0f
-        Slider(
-            value = value, onValueChange = { seekTo(it) },
-            //steps = (duration / 45_000).toInt(),
-            modifier = Modifier.constrainAs(Slider) {
-                bottom.linkTo(Album.top, ContentPadding.small)
-                start.linkTo(Heart.end, ContentPadding.medium)
-                end.linkTo(More.start, ContentPadding.medium)
-                width = Dimension.fillToConstraints
-            }
-        )
-
-        var expanded by rememberState(initial = false)
         IconButton(
-            onClick = { expanded = true },
-            modifier = Modifier.constrainAs(More) {
-                top.linkTo(Slider.top)
-                bottom.linkTo(Slider.bottom)
-                end.linkTo(Title.end)
-            },
-            content = {
-                Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
-                More(expanded = expanded) {
-                    expanded = false
-                }
-            }
+            onClick = { activity.launchEqualizer(resolver.audioSessionId) },
+            imageVector = Icons.Outlined.Tune,
+            contentDescription = null,
+            modifier = Modifier.layoutID(TuneUp)
         )
 
-        // Title group
+        //title
+        val current by resolver.current
         AnimatedLabel(
-            text = current?.album ?: stringResource(id = R.string.unknown),
+            text = current?.subtitle ?: stringResource(id = R.string.unknown),
             style = Material.typography.caption2,
             modifier = Modifier
                 .offset(y = 4.dp, x = 5.dp)
-                .constrainAs(Album) {
-                    start.linkTo(Title.start)
-                    bottom.linkTo(Title.top)
-                }
+                .layoutID(Subtitle)
         )
 
-        MarqueText(
-            text = current?.name ?: stringResource(id = R.string.unknown),
-            textSize = 40.sp,
-            typeface = Typeface.DEFAULT_BOLD,
 
-            modifier = Modifier.constrainAs(Title) {
-                bottom.linkTo(Play.top, ContentPadding.medium)
-                start.linkTo(parent.start, ContentPadding.large)
-                end.linkTo(parent.end, ContentPadding.large)
-                width = Dimension.fillToConstraints
-            },
+        Label(
+            text = current?.title ?: stringResource(id = R.string.unknown),
+            fontSize = lerp(18.sp, 40.sp, progress),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .marque(Int.MAX_VALUE)
+                .layoutID(Title),
         )
 
-        // play/toggle buttons
-        val (SkipToNext, SkipToPrev) = createRefs()
-        createHorizontalChain(SkipToPrev, Play, SkipToNext, chainStyle = ChainStyle.Packed)
-        NeuButton(
-            onClick = { togglePlay(); activity.launchReviewFlow() },
+        // controls
+        val playing by resolver.playing
+        NeumorphicIconButton(
+            onClick = { resolver.togglePlay(); activity.launchReviewFlow() },
 
             painter = rememberAnimatedVectorResource(
                 id = R.drawable.avd_pause_to_play,
                 atEnd = !playing
             ),
-
+            shape = RoundedCornerShape(30),
             modifier = Modifier
-                .padding(horizontal = ContentPadding.large)
-                .size(70.dp)
-                .constrainAs(Play) {
-                    bottom.linkTo(UpNextLabel.top, ContentPadding.medium)
-                }
+                .size(60.dp)
+                .layoutID(Toggle),
+            elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress)),
+            border = if (progress != 0f)  BorderStroke(1.dp, Material.colors.outline.copy(0.06f)) else null
         )
 
-        NeuButton(
-            onClick = { skipToPrev(); activity.launchReviewFlow() },
-            shape = RoundedCornerShape(10.dp),
+        IconButton(
+            onClick = { resolver.skipToPrev(); activity.launchReviewFlow() },
+            //   shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_prev),
-            iconScale = 0.8f,
-            modifier = Modifier.constrainAs(SkipToPrev) {
-                top.linkTo(Play.top)
-                bottom.linkTo(Play.bottom)
-            },
+            // iconScale = 0.8f,
+            contentDescription = null,
+            modifier = Modifier.layoutID(SkipToPrevious),
+            enabled = if (current != null) resolver.hasPreviousTrack else false
         )
 
-        NeuButton(
-            onClick = { skipToNext(); activity.launchReviewFlow() },
-            shape = RoundedCornerShape(10.dp),
+
+        IconButton(
+            onClick = { resolver.skipToNext(); activity.launchReviewFlow() },
+            //shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_next),
-            iconScale = 0.8f,
-            modifier = Modifier.constrainAs(SkipToNext) {
-                top.linkTo(Play.top)
-                bottom.linkTo(Play.bottom)
-            },
+            contentDescription = null,
+            //iconScale = 0.8f,
+            modifier = Modifier.layoutID(SkipToNext),
+            enabled = if (current != null) resolver.hasNextTrack else false
         )
 
-        //upNext
-        Header(
-            text = "Up Next",
-            modifier = Modifier.constrainAs(UpNextLabel) {
-                start.linkTo(parent.start, ContentPadding.large)
-                bottom.linkTo(UpNext.top)
-                width = Dimension.percent(0.5f)
-            },
-            fontWeight = FontWeight.Bold
+        IconButton(
+            onClick = { resolver.replay10() },
+            imageVector = Icons.Outlined.Replay10,
+            contentDescription = null,
+            modifier = Modifier.layoutID(SkipBack10)
         )
 
-        val next by next
-        Next(
-            value = next,
-            modifier = Modifier.constrainAs(UpNext) {
-                bottom.linkTo(parent.bottom)
-                start.linkTo(parent.start, ContentPadding.normal)
+        IconButton(
+            onClick = { resolver.forward30() },
+            imageVector = Icons.Outlined.Forward30,
+            contentDescription = null,
+            modifier = Modifier.layoutID(SkipForward30)
+        )
+
+        var showPlayingQueue by rememberState(initial = false)
+        resolver.PlayingQueue(
+            expanded = showPlayingQueue,
+            onDismissRequest = {
+                showPlayingQueue = false
             }
+        )
+
+        NeumorphicVertButton(
+            onClick = { showPlayingQueue = true },
+            icon = rememberVectorPainter(image = Icons.Outlined.Queue),
+            label = "Queue",
+            modifier = Modifier.layoutID(Queue)
+        )
+
+        var showSpeedController by rememberState(initial = false)
+        BottomSheetDialog(expanded = showSpeedController, onDismissRequest = { showSpeedController = false }) {
+            var speed by rememberState(initial = resolver.playbackSpeed)
+            SpeedControllerLayout(value = speed, onRequestChange = {speed = it; resolver.setPlaybackSpeed(it)})
+        }
+
+        NeumorphicVertButton(
+            onClick = { showSpeedController = true },
+            icon = rememberVectorPainter(image = Icons.Outlined.Speed),
+            label = "Speed",
+            modifier = Modifier.layoutID(Speed),
+            alpha = ContentAlpha.high
+        )
+
+        NeumorphicVertButton(
+            onClick = { /*TODO: Implement this.*/ resolver.setSleepAfter(1) },
+            icon = rememberVectorPainter(image = Icons.Outlined.Timer),
+            label = "Sleep",
+            modifier = Modifier.layoutID(Sleep),
+            alpha = ContentAlpha.high
+        )
+
+        val shuffle by resolver.shuffle
+        NeumorphicVertButton(
+            onClick = { resolver.toggleShuffle(); activity.launchReviewFlow(); },
+            icon = painterResource(id = R.drawable.ic_shuffle),
+            label = "Shuffle",
+            modifier = Modifier.layoutID(Shuffle),
+            alpha = if (shuffle) ContentAlpha.high else ContentAlpha.disabled
+        )
+
+        val mode by resolver.repeatMode
+        NeumorphicVertButton(
+            onClick = { resolver.cycleRepeatMode();activity.launchReviewFlow(); },
+            icon = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
+            label = "Repeat",
+            modifier = Modifier.layoutID(Repeat),
+            alpha = if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high
         )
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Console(
-    viewModel: ConsoleViewModel,
-    expanded: Boolean,
-    toggle: () -> Unit
-) {
-    with(viewModel) {
-        when (expanded) {
-            false -> {
-                AnimatedVisibility(
-                    visible = true,
-                    initiallyVisible = false,
-                    modifier = Modifier.fillMaxSize(),
-                    enter = scaleIn(),
+private fun SpeedControllerLayout(
+    value: Float,
+    modifier: Modifier = Modifier,
+    onRequestChange: (new: Float) -> Unit
+){
+    Surface(modifier = modifier) {
+        Column() {
+            TopAppBar(
+                title = { Label(text = "Playback Speed", style = Material.typography.body2) },
+                backgroundColor = Material.colors.background,
+            )
 
-                    content = {
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier.fillMaxSize(),
-                            content = {
-                                Surface(
-                                    modifier = Modifier
-                                        .clickable(
-                                            onClick = toggle,
-                                            indication = null,
-                                            interactionSource = remember(::MutableInteractionSource)
-                                        )
-                                        .fillMaxWidth(0.78f)
-                                        .requiredHeight(Audiofy.MINI_PLAYER_HEIGHT - 10.dp),
-                                    shape = CircleShape,
-                                    elevation = ContentElevation.high,
-                                    content = { MiniLayout() }
-                                )
-                            }
-                        )
+            Label(
+                text = "${String.format("%.2f", value)}x",
+                modifier = Modifier
+                    .padding(top = ContentPadding.normal)
+                    .align(Alignment.CenterHorizontally),
+                style = Material.typography.h6
+            )
 
-                    }
+            Slider(
+                value = value,
+                onValueChange = onRequestChange,
+                valueRange = 0.25f..2f,
+                steps = 6,
+                modifier = Modifier.padding(
+                    horizontal = ContentPadding.large,
                 )
-            }
-            else -> {
-
-                AnimatedVisibility(
-                    visible = true,
-                    initiallyVisible = false,
-                    modifier = Modifier.fillMaxSize(),
-
-                    enter = fadeIn(tween(Anim.LongDurationMills)) + scaleIn(
-                        initialScale = 0.92f,
-                        animationSpec = tween(220, delayMillis = 90)
-                    ),
-                    content = {
-
-                        val controller = rememberSystemUiController()
-                        val greyIcons = controller.statusBarDarkContentEnabled
-                        val isLight = Material.colors.isLight
-                        val channel = LocalContext.toastHostState
-                        DisposableEffect(key1 = greyIcons && isLight) {
-                            // set icon color for current screen
-                            controller.setStatusBarColor(Color.Transparent, isLight)
-                            viewModel.messenger = channel
-
-                            onDispose {
-                                // restore back the color of the old screen.
-                                controller.setStatusBarColor(Color.Transparent, greyIcons)
-                                viewModel.messenger = null
-                            }
-                        }
-
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            color = Material.colors.background,
-                            content = {
-                                Layout(
-                                    toggle = toggle,
-                                    modifier = Modifier
-                                        .statusBarsPadding()
-                                        .fillMaxSize()
-                                )
-                            },
-                        )
-                    }
-
-                )
-            }
+            )
         }
     }
 }

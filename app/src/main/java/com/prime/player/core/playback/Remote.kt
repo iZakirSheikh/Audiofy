@@ -37,6 +37,10 @@ interface Remote {
     val meta: MediaMetadata?
     val current: MediaItem?
     val next: MediaItem?
+    val audioSessionId: Int
+    val hasPreviousTrack: Boolean
+    var playbackSpeed: Float
+
 
     /**
      * Observe the [List] [MediaItem]s
@@ -89,15 +93,17 @@ private class RemoteImpl(private val context: Context) : Remote {
      */
     private val channel = MutableSharedFlow<String>()
 
-    private val fBrowser = MediaBrowser.Builder(
-        context, SessionToken(context, ComponentName(context, Playback::class.java))
-    ).setListener(object : Listener {
-        override fun onChildrenChanged(
-            browser: MediaBrowser, parentId: String, itemCount: Int, params: LibraryParams?
-        ) {
-            channel.tryEmit(parentId)
-        }
-    }).buildAsync()
+    private val fBrowser = MediaBrowser
+        .Builder(context, SessionToken(context, ComponentName(context, Playback::class.java)))
+        .setListener(
+            object : Listener {
+                override fun onChildrenChanged(
+                    browser: MediaBrowser, parentId: String, itemCount: Int, params: LibraryParams?
+                ) {
+                    channel.tryEmit(parentId)
+                }
+            }
+        ).buildAsync()
 
     val browser get() = if (fBrowser.isDone) fBrowser.get() else null
 
@@ -116,6 +122,16 @@ private class RemoteImpl(private val context: Context) : Remote {
 
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false
+
+    override var audioSessionId: Int = 0
+    override val hasPreviousTrack: Boolean
+        get() = browser?.hasPreviousMediaItem() ?: false
+
+    override var playbackSpeed: Float
+        get() = browser?.playbackParameters?.speed ?: 1f
+        set(value) {
+            browser?.setPlaybackSpeed(value)
+        }
 
     @OptIn(DelicateCoroutinesApi::class)
     override val events: Flow<Player.Events?> = callbackFlow {
@@ -144,7 +160,7 @@ private class RemoteImpl(private val context: Context) : Remote {
             //
             1
         )
-    override val loaded: Flow<Boolean> = events.map { current != null }
+    override val loaded: Flow<Boolean> = events.onStart { delay(3000) }.map { current != null }
 
     @OptIn(FlowPreview::class)
     override val queue: Flow<List<MediaItem>> = channel

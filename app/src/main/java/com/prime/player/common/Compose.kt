@@ -12,11 +12,20 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -141,4 +150,46 @@ inline fun RowScope.BottomNavigationItem(
         selectedContentColor = selectedContentColor,
         unselectedContentColor = unselectedContentColor,
         label = { Label(text = label) })
+}
+
+
+@Composable
+fun Search2(
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(50),
+    elevation: Dp = 4.dp,
+    color: Color = MaterialTheme.colors.surface,
+    placeholder: String? = null,
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    trailingIcon: @Composable (() -> Unit)? = null,
+    query: String,
+    onQueryChanged: (query: String) -> Unit,
+) {
+    Surface(
+        shape = shape,
+        modifier = Modifier
+            .scale(0.85f)
+            .then(modifier),
+        elevation = elevation,
+        color = color,
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChanged,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            placeholder = {
+                if (placeholder != null)
+                    Text(text = placeholder)
+            },
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.Search, contentDescription = null)
+            },
+            trailingIcon = trailingIcon,
+            keyboardActions = keyboardActions,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = androidx.compose.ui.text.input.ImeAction.Search)
+        )
+    }
+
 }

@@ -3,7 +3,7 @@ package com.prime.player.core.db
 import android.content.Context
 import androidx.compose.runtime.Stable
 import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prime.player.core.db.Playlist.Member
 import kotlinx.coroutines.flow.Flow

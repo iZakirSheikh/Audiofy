@@ -117,9 +117,9 @@ fun Home(show: Boolean) {
     val state =
         rememberPlayerState(initial = PlayerValue.COLLAPSED)
 
-    BackHandler(state.isExpanded) {
-        scope.launch { state.snapTo(PlayerValue.COLLAPSED) }
-    }
+    // collapse if expanded and
+    // back button is clicked.
+    BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
 
     val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
@@ -130,7 +130,7 @@ fun Home(show: Boolean) {
         Player(
             sheet = {
                 val consoleViewModel = hiltViewModel<ConsoleViewModel>()
-                Console(consoleViewModel, state.isExpanded, { scope.launch { state.toggle() } })
+                Console(consoleViewModel, state.progress.value) { scope.launch { state.toggle() } }
             },
             state = state,
             sheetPeekHeight = peekHeight,
@@ -145,10 +145,4 @@ fun Home(show: Boolean) {
     }
 }
 
-private suspend inline fun PlayerState.toggle() {
-    if (isExpanded) {
-        snapTo(targetValue = PlayerValue.COLLAPSED)
-    } else {
-        snapTo(targetValue = PlayerValue.EXPANDED)
-    }
-}
+private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()
