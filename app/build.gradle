@@ -5,6 +5,8 @@ plugins {
     id 'kotlinx-serialization'
     id 'dagger.hilt.android.plugin'
     id 'com.google.gms.google-services'
+    // Add the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -14,8 +16,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 14
-        versionName "1.0.1"
+        versionCode 25
+        versionName "2.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -85,7 +87,7 @@ dependencies {
     // required for recent view.
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
-    def compose_version = '1.4.0-alpha01'
+    def compose_version = '1.4.0-alpha04'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -104,13 +106,13 @@ dependencies {
 
     //test
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // room data base
-    def room_version = '2.4.3'
+    def room_version = '2.5.0'
     implementation("androidx.room:room-runtime:$room_version")
     kapt "androidx.room:room-compiler:$room_version"
     implementation("androidx.room:room-ktx:$room_version")
@@ -166,10 +168,12 @@ dependencies {
     implementation "com.github.levinzonr.compose-safe-routing:accompanist-navigation:$safe_args_version"
 
     // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:31.0.3')
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:31.1.1')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     // for support of multiple screen sizes
     implementation "androidx.window:window:1.0.0"
@@ -197,6 +201,12 @@ dependencies {
     //implementation("androidx.startup:startup-runtime:1.1.1")
 
     //Unity Ads
-    implementation 'com.unity3d.ads:unity-ads:4.4.1'
+    implementation 'com.unity3d.ads:unity-ads:4.5.0'
+
+    def media3_version = "1.0.0-beta03"
+    // For media playback using ExoPlayer
+    implementation("androidx.media3:media3-exoplayer:$media3_version")
+    // For exposing and controlling media sessions
+    implementation("androidx.media3:media3-session:$media3_version")
 
 }

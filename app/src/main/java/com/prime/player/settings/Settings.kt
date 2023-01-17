@@ -29,10 +29,10 @@ import androidx.core.app.ShareCompat
 import com.prime.player.*
 import com.prime.player.BuildConfig
 import com.prime.player.R
-import com.prime.player.billing.*
-import com.prime.player.common.FontFamily
-import com.prime.player.common.NightMode
-import com.prime.player.common.compose.*
+import com.prime.player.common.*
+import com.prime.player.core.FontFamily
+import com.prime.player.core.NightMode
+import com.prime.player.core.billing.*
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
 import com.primex.ui.*
@@ -227,13 +227,15 @@ fun Settings(
                         modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
                     )
 
-                    Preference(title = stringResource(R.string.rate_us),
+                    Preference(
+                        title = stringResource(R.string.rate_us),
                         summery = stringResource(id = R.string.review_msg),
                         icon = Icons.Outlined.Star,
                         modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
                     )
 
-                    Preference(title = stringResource(R.string.spread_the_word),
+                    Preference(
+                        title = stringResource(R.string.spread_the_word),
                         summery = stringResource(R.string.spread_the_word_summery),
                         icon = Icons.Outlined.Share,
                         modifier = Modifier.clickable(onClick = {
@@ -256,7 +258,8 @@ fun Settings(
 
                     // The app versiona and check for updates.
                     val version = BuildConfig.VERSION_NAME
-                    Preference(title = stringResource(R.string.app_version),
+                    Preference(
+                        title = stringResource(R.string.app_version),
                         summery = "$version \nClick to check for updates.",
                         icon = Icons.Outlined.TouchApp,
                         modifier = Modifier.clickable(onClick = {

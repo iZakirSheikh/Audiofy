@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.player.Audiofy
-import com.prime.player.common.NightMode
-import com.prime.player.common.asComposeState
+import com.prime.player.core.NightMode
+import com.prime.player.core.asComposeState
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
@@ -129,6 +129,4 @@ class SettingsViewModel @Inject constructor(
 }
 
 context (Preferences, ViewModel)
-        private fun <T> Flow<T>.asComposeState(): State<T> = asComposeState(
-    runBlocking { first() }
-)
+        private fun <T> Flow<T>.asComposeState(): State<T> = asComposeState(runBlocking { first() })

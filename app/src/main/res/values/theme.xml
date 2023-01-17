@@ -3,6 +3,7 @@
 
     <style name="Theme.Audiofy" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">

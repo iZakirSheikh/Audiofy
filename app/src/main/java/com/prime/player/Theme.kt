@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prime.player.common.FontFamily
+import com.prime.player.core.FontFamily
 import com.primex.ui.*
 import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
 
@@ -25,15 +25,14 @@ typealias Material = MaterialTheme
 /**
  * An Extra font family.
  */
-private val ProvidedFontFamily =
-    AndroidFontFamily(
-        //light
-        Font(R.font.lato_light, FontWeight.Light),
-        //normal
-        Font(R.font.lato_regular, FontWeight.Normal),
-        //bold
-        Font(R.font.lato_bold, FontWeight.Bold),
-    )
+private val ProvidedFontFamily = AndroidFontFamily(
+    //light
+    Font(R.font.lato_light, FontWeight.Light),
+    //normal
+    Font(R.font.lato_regular, FontWeight.Normal),
+    //bold
+    Font(R.font.lato_bold, FontWeight.Bold),
+)
 
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
@@ -46,13 +45,11 @@ private fun Typography(fontFamily: FontFamily): Typography {
             FontFamily.SAN_SERIF -> AndroidFontFamily.SansSerif
             FontFamily.SARIF -> AndroidFontFamily.Serif
             FontFamily.CURSIVE -> AndroidFontFamily.Cursive
-        },
-        button = TextStyle(
+        }, button = TextStyle(
             fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.25.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
-        ),
-        overline = TextStyle(
+        ), overline = TextStyle(
             fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 1.5.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
@@ -134,7 +131,7 @@ val Colors.darkShadowColor
     @Composable inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
 
 
-private val defaultPrimaryColor = Color(0xFF5600E8)
+private val defaultPrimaryColor = Color.SkyBlue
 private val defaultSecondaryColor = Color.Rose
 
 private val defaultThemeShapes = Shapes(

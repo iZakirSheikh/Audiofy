@@ -3,8 +3,6 @@ package com.prime.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
@@ -18,22 +16,20 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.player.audio.buckets.Buckets
-import com.prime.player.audio.buckets.BucketsViewModel
-import com.prime.player.audio.console.Console
-import com.prime.player.audio.console.ConsoleViewModel
-import com.prime.player.audio.library.Library
-import com.prime.player.audio.library.LibraryViewModel
-import com.prime.player.audio.tracks.Tracks
-import com.prime.player.audio.tracks.TracksViewModel
-import com.prime.player.common.compose.*
-import com.prime.player.settings.MainGraphRoutes
+import com.prime.player.buckets.Buckets
+import com.prime.player.buckets.BucketsViewModel
+import com.prime.player.common.*
+import com.prime.player.console.Console
+import com.prime.player.console.ConsoleViewModel
+import com.prime.player.library.Library
+import com.prime.player.library.LibraryViewModel
 import com.prime.player.settings.Settings
 import com.prime.player.settings.SettingsViewModel
-import com.primex.core.rememberState
+import com.prime.player.tracks.MainGraphRoutes
+import com.prime.player.tracks.Tracks
+import com.prime.player.tracks.TracksViewModel
 import cz.levinzonr.saferoute.core.ProvideRouteSpecArgs
 import cz.levinzonr.saferoute.core.RouteSpec
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -109,29 +105,21 @@ private fun NavGraphBuilder.composable(
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun Home() {
+fun Home(show: Boolean) {
     // Currently; supports only 1 Part
     // add others in future
     // including support for more tools, like direction, prime factorization etc.
     // also support for navGraph.
     val controller = rememberAnimatedNavController()
     val scope = rememberCoroutineScope()
-    val consoleViewModel = hiltViewModel<ConsoleViewModel>()
 
-    //FixMe - Needs to be corrected.
-    val connected by consoleViewModel.connected
-    LaunchedEffect(key1 = connected) {
-        //delay(1000)
-        consoleViewModel.connect()
-    }
-    val show = consoleViewModel.current.value != null
     //Handle messages etc.
     val state =
         rememberPlayerState(initial = PlayerValue.COLLAPSED)
 
-    BackHandler(state.isExpanded) {
-        scope.launch { state.snapTo(PlayerValue.COLLAPSED) }
-    }
+    // collapse if expanded and
+    // back button is clicked.
+    BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
 
     val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
@@ -141,7 +129,8 @@ fun Home() {
     ) {
         Player(
             sheet = {
-                Console(consoleViewModel, state.isExpanded, { scope.launch { state.toggle() } })
+                val consoleViewModel = hiltViewModel<ConsoleViewModel>()
+                Console(consoleViewModel, state.progress.value) { scope.launch { state.toggle() } }
             },
             state = state,
             sheetPeekHeight = peekHeight,
@@ -156,10 +145,4 @@ fun Home() {
     }
 }
 
-private suspend inline fun PlayerState.toggle() {
-    if (isExpanded) {
-        snapTo(targetValue = PlayerValue.COLLAPSED)
-    } else {
-        snapTo(targetValue = PlayerValue.EXPANDED)
-    }
-}
+private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()
