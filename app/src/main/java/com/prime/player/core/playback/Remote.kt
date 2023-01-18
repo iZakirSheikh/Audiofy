@@ -20,9 +20,7 @@ import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 
 private val MediaBrowser.nextMediaItem
-    get() = if (hasNextMediaItem()) getMediaItemAt(
-        nextMediaItemIndex
-    ) else null
+    get() = if (hasNextMediaItem()) getMediaItemAt(nextMediaItemIndex) else null
 
 /**
  * [Remote] is a wrapper around [MediaBrowser]
@@ -80,9 +78,9 @@ interface Remote {
     suspend fun remove(key: Uri): Boolean
 
     fun onRequestPlay(shuffle: Boolean, index: Int = C.INDEX_UNSET, values: List<MediaItem>)
-
+/*
     @Deprecated("find better alternative.")
-    suspend fun artwork(): Bitmap
+    suspend fun artwork(): Bitmap*/
 }
 
 
@@ -93,22 +91,27 @@ private class RemoteImpl(private val context: Context) : Remote {
      */
     private val channel = MutableSharedFlow<String>()
 
-    private val fBrowser = MediaBrowser
-        .Builder(context, SessionToken(context, ComponentName(context, Playback::class.java)))
-        .setListener(
-            object : Listener {
-                override fun onChildrenChanged(
-                    browser: MediaBrowser, parentId: String, itemCount: Int, params: LibraryParams?
-                ) {
-                    channel.tryEmit(parentId)
+    private val fBrowser =
+        MediaBrowser
+            .Builder(context, SessionToken(context, ComponentName(context, Playback::class.java)))
+            .setListener(
+                object : Listener {
+                    override fun onChildrenChanged(
+                        browser: MediaBrowser,
+                        parentId: String,
+                        itemCount: Int,
+                        params: LibraryParams?
+                    ) {
+                        channel.tryEmit(parentId)
+                    }
                 }
-            }
-        ).buildAsync()
-
+            ).buildAsync()
     val browser get() = if (fBrowser.isDone) fBrowser.get() else null
 
-    override val position get() = browser?.currentPosition ?: C.TIME_UNSET
-    override val duration get() = browser?.duration ?: C.TIME_UNSET
+    override val position
+        get() = browser?.currentPosition ?: C.TIME_UNSET
+    override val duration
+        get() = browser?.duration ?: C.TIME_UNSET
     override val shuffle: Boolean
         get() = browser?.shuffleModeEnabled ?: false
     override val repeatMode: Int
@@ -151,29 +154,30 @@ private class RemoteImpl(private val context: Context) : Remote {
             browser.removeListener(observer)
         }
     }
-        // convert it to shared flow on GlobalScope.
         .shareIn(
             // what show I use to replace this.
             GlobalScope,
             // un-register when subscriber count is zero.
-            SharingStarted.WhileSubscribed(2000, replayExpirationMillis = 2200),
+            SharingStarted.WhileSubscribed(2000, replayExpirationMillis = 5000),
             //
             1
         )
-    override val loaded: Flow<Boolean> = events.onStart { delay(3000) }.map { current != null }
+    override val loaded: Flow<Boolean> = events.map { current != null }
 
     @OptIn(FlowPreview::class)
-    override val queue: Flow<List<MediaItem>> = channel
-        // emit queue as first
-        .onStart { emit(Playback.ROOT_QUEUE) }
-        // filter queue
-        .filter { it == Playback.ROOT_QUEUE }
-        // debounce change
-        .debounce(500)
-        // map parent with children.
-        .map { parent ->
-            browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
-        }
+    override val queue: Flow<List<MediaItem>> =
+        channel
+            // emit queue as first
+            .onStart { emit(Playback.ROOT_QUEUE) }
+            // filter queue
+            .filter { it == Playback.ROOT_QUEUE }
+            // debounce change
+            .debounce(500)
+            // map parent with children.
+            .map { parent ->
+                browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
+            }
+
 
     override suspend fun remove(key: Uri): Boolean {
         val browser = browser ?: return false
@@ -257,13 +261,12 @@ private class RemoteImpl(private val context: Context) : Remote {
             if (item.mediaId == "$id") playTrackAt(pos)
         }
     }
-
-
-    @Deprecated("find better alternative.")
-    override suspend fun artwork(): Bitmap {
-        val uri = current?.mediaMetadata?.artworkUri ?: return Audiofy.DEFAULT_ALBUM_ART
-        return context.getAlbumArt(uri)?.toBitmap() ?: Audiofy.DEFAULT_ALBUM_ART
-    }
+    /*
+     @Deprecated("find better alternative.")
+     override suspend fun artwork(): Bitmap {
+         val uri = current?.mediaMetadata?.artworkUri ?: return Audiofy.DEFAULT_ALBUM_ART
+         return context.getAlbumArt(uri)?.toBitmap() ?: Audiofy.DEFAULT_ALBUM_ART
+     }*/
 }
 
 fun Remote(context: Context): Remote = RemoteImpl(context)

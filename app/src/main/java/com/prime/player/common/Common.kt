@@ -1,11 +1,8 @@
 package com.prime.player.common
 
-import android.graphics.Bitmap
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.AnimationConstants
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -22,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -47,6 +43,7 @@ import com.primex.ui.*
 
 @Composable
 @NonRestartableComposable
+@Deprecated("use the default one like AsyncImage.")
 fun Image(
     albumId: Long,
     modifier: Modifier = Modifier,
@@ -75,6 +72,7 @@ fun Image(
 
 @Composable
 @NonRestartableComposable
+@Deprecated("Use AsyncImage From Coil.")
 fun Image(
     data: Any?,
     modifier: Modifier = Modifier,
@@ -97,30 +95,6 @@ fun Image(
         contentScale = contentScale,
         alignment = alignment,
     )
-}
-
-@Composable
-fun Image(
-    bitmap: Bitmap?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
-    error: Bitmap = Audiofy.DEFAULT_ALBUM_ART,
-    alignment: Alignment = Alignment.Center,
-    durationMillis: Int = AnimationConstants.DefaultDurationMillis,
-) {
-    val value = bitmap ?: error
-
-    Crossfade(
-        targetState = value, modifier = modifier, animationSpec = tween(durationMillis)
-    ) { value ->
-        Image(
-            bitmap = value.asImageBitmap(),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = contentScale,
-            alignment = alignment,
-        )
-    }
 }
 
 
@@ -152,6 +126,7 @@ private fun Property(
  * A [Dialog] to show the properties of the [Audio] file.
  */
 @Composable
+@Deprecated("Re-write this")
 fun Audio.Properties(
     expanded: Boolean, onDismissRequest: () -> Unit
 ) {
@@ -214,6 +189,7 @@ fun Audio.Properties(
 
 
 @Composable
+@Deprecated("Re-write this")
 private fun Playlist(
     value: Playlist,
     onPlaylistClick: () -> Unit,
@@ -275,6 +251,7 @@ private fun Playlist(
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@Deprecated("Re-write this.")
 fun Playlists(
     value: List<Playlist>, expanded: Boolean, onPlaylistClick: (id: Playlist?) -> Unit
 ) {

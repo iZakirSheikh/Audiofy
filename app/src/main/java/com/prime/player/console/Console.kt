@@ -122,7 +122,8 @@ fun Modifier.marque(iterations: Int) =
 /**
  * A simple extension fun to add to modifier.
  */
-private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) = layoutId(id.id)
+private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) =
+    layoutId(id.id)
 
 private inline fun ConstraintSetScope.hide(vararg ref: ConstrainedLayoutReference) {
     ref.forEach {
@@ -136,8 +137,12 @@ private inline fun ConstraintSetScope.hide(vararg ref: ConstrainedLayoutReferenc
     }
 }
 
-private inline val MediaItem.title get() = mediaMetadata.title?.toString()
-private inline val MediaItem.subtitle get() = mediaMetadata.subtitle?.toString()
+private inline val MediaItem.title
+    get() =
+        mediaMetadata.title?.toString()
+private inline val MediaItem.subtitle
+    get() =
+        mediaMetadata.subtitle?.toString()
 
 @Composable
 @NonRestartableComposable
@@ -146,7 +151,10 @@ private fun NeumorphicIconButton(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = RoundedCornerShape(30),
     enabled: Boolean = true,
-    border: BorderStroke? =  BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
+    border: BorderStroke? = if (Material.colors.isLight) null else BorderStroke(
+        1.dp,
+        Material.colors.outline.copy(0.06f)
+    ),
     elevation: ButtonElevation = NeumorphicButtonDefaults.elevation(6.dp),
     iconScale: Float = 1.5f,
     painter: Painter
@@ -196,7 +204,10 @@ private fun NeumorphicVertButton(
             darkShadowColor = Material.colors.darkShadowColor,
             elevation = depth,
             interactionSource = source,
-            border = BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
+            border = if (Material.colors.isLight) null else BorderStroke(
+                1.dp,
+                Material.colors.outline.copy(0.06f)
+            ),
             shape = RoundedCornerShape(30)
         ) {
             Icon(
@@ -216,7 +227,6 @@ private fun NeumorphicVertButton(
         )
     }
 }
-
 
 private val ARTWORK_STROKE_DEFAULT_EXPANDED = 20.dp
 private val ARTWORK_STROKE_DEFAULT_COLLAPSED = 3.dp
@@ -259,6 +269,7 @@ private fun Artwork(
 }
 
 
+@Deprecated("Move this launching to Playback; because of easily availability of custom audioSessionId.")
 private fun Activity.launchEqualizer(id: Int) {
     if (id == AudioEffect.ERROR_BAD_VALUE) {
         Toast.makeText(this, "No Session Id", Toast.LENGTH_LONG).show();
@@ -279,9 +290,6 @@ private fun Activity.launchEqualizer(id: Int) {
         Toast.makeText(this, "There is no equalizer", Toast.LENGTH_SHORT).show();
 }
 
-
-
-
 @Composable
 fun Console(
     viewModel: ConsoleViewModel,
@@ -293,11 +301,10 @@ fun Console(
     val wasDark = remember {
         controller.statusBarDarkContentEnabled
     }
-
-
     val isLight = Material.colors.isLight
     val channel = LocalContext.toastHostState
 
+    // move messenger to view-model using hilt.
     DisposableEffect(key1 = isLight, key2 = expanded) {
         // set icon color for current screen
         controller.setStatusBarColor(Color.Transparent, if (expanded) isLight else wasDark)
@@ -311,6 +318,7 @@ fun Console(
 
     // actual content
     CompositionLocalProvider(LocalContentColor provides Material.colors.onSurface) {
+        //Maybe Use Modifier.composed {}
         Vertical(
             progress = progress,
             resolver = viewModel,
@@ -342,173 +350,181 @@ fun Console(
     }
 }
 
+private val collapsed =
+    ConstraintSet {
+        hide(Signature, Close)
+        hide(ProgressBar, TuneUp, ProgressMills)
+        hide(SkipForward30, SkipToNext, SkipBack10, SkipToPrevious)
+        hide(BottomRowLabel)
+        hide(Queue, Speed, Sleep, Shuffle, Repeat)
 
-private val collapsed = ConstraintSet {
-    hide(Signature, Close)
-    hide(ProgressBar, TuneUp, ProgressMills)
-    hide(SkipForward30, SkipToNext, SkipBack10, SkipToPrevious)
-    hide(BottomRowLabel)
-    hide(Queue, Speed, Sleep, Shuffle, Repeat)
+        constrain(Artwork) {
+            top.linkTo(parent.top)
+            bottom.linkTo(parent.bottom)
+            start.linkTo(parent.start, ContentPadding.medium)
+            height = Dimension.value(56.dp)
+            width = Dimension.ratio("1:1")
+        }
 
-    constrain(Artwork) {
-        top.linkTo(parent.top)
-        bottom.linkTo(parent.bottom)
-        start.linkTo(parent.start, ContentPadding.medium)
-        height = Dimension.value(56.dp)
-        width = Dimension.ratio("1:1")
+        createVerticalChain(Title, Subtitle, chainStyle = ChainStyle.Packed)
+        constrain(Title) {
+            start.linkTo(Artwork.end, ContentPadding.medium)
+            end.linkTo(Heart.start, ContentPadding.medium)
+            width = Dimension.fillToConstraints
+        }
+
+
+        constrain(Subtitle) {
+            start.linkTo(Title.start)
+            end.linkTo(Title.end)
+            width = Dimension.fillToConstraints
+            visibility = Visibility.Visible
+        }
+
+        constrain(Heart) {
+            start.linkTo(Title.end)
+            top.linkTo(Artwork.top)
+            bottom.linkTo(Artwork.bottom)
+        }
+
+        // toggles
+        constrain(Toggle) {
+            start.linkTo(Heart.end)
+            end.linkTo(parent.end)
+            top.linkTo(Artwork.top)
+            bottom.linkTo(Artwork.bottom)
+        }
     }
 
-    createVerticalChain(Title, Subtitle, chainStyle = ChainStyle.Packed)
-    constrain(Title) {
-        start.linkTo(Artwork.end, ContentPadding.medium)
-        end.linkTo(Heart.start, ContentPadding.medium)
-        width = Dimension.fillToConstraints
-    }
+val expanded =
+    ConstraintSet {
+        // signature
+        constrain(Signature) {
+            start.linkTo(parent.start, ContentPadding.normal)
+            top.linkTo(parent.top)
+        }
 
+        constrain(Close) {
+            end.linkTo(parent.end, ContentPadding.normal)
+            top.linkTo(Signature.top)
+            bottom.linkTo(Signature.bottom)
+        }
 
-    constrain(Subtitle) {
-        start.linkTo(Title.start)
-        end.linkTo(Title.end)
-        width = Dimension.fillToConstraints
-        visibility = Visibility.Visible
-    }
+        // artwork
+        constrain(Artwork) {
+            top.linkTo(Signature.bottom, ContentPadding.normal)
+            bottom.linkTo(Subtitle.top, ContentPadding.normal)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+            height = Dimension.fillToConstraints
+            width = Dimension.ratio("1:1")
+        }
 
-    constrain(Heart) {
-        start.linkTo(Title.end)
-        top.linkTo(Artwork.top)
-        bottom.linkTo(Artwork.bottom)
-    }
+        constrain(ProgressMills) {
+            end.linkTo(Artwork.end, ContentPadding.large)
+            top.linkTo(Artwork.top)
+            bottom.linkTo(Artwork.bottom)
+            visibility = Visibility.Visible
+        }
 
-    // toggles
-    constrain(Toggle) {
-        start.linkTo(Heart.end)
-        end.linkTo(parent.end)
-        top.linkTo(Artwork.top)
-        bottom.linkTo(Artwork.bottom)
-    }
-}
+        //title
+        constrain(Title) {
+            bottom.linkTo(ProgressBar.top, ContentPadding.normal)
+            start.linkTo(parent.start, ContentPadding.large)
+            end.linkTo(parent.end, ContentPadding.large)
+            width = Dimension.fillToConstraints
+        }
 
-val expanded = ConstraintSet {
-    // signature
-    constrain(Signature) {
-        start.linkTo(parent.start, ContentPadding.normal)
-        top.linkTo(parent.top)
-    }
+        constrain(Subtitle) {
+            start.linkTo(Title.start)
+            bottom.linkTo(Title.top)
+        }
 
-    constrain(Close) {
-        end.linkTo(parent.end, ContentPadding.normal)
-        top.linkTo(Signature.top)
-        bottom.linkTo(Signature.bottom)
-    }
+        //progressbar
+        constrain(ProgressBar) {
+            bottom.linkTo(Toggle.top, ContentPadding.normal)
+            start.linkTo(Heart.end, ContentPadding.medium)
+            end.linkTo(TuneUp.start, ContentPadding.medium)
+            width = Dimension.fillToConstraints
+        }
 
-    // artwork
-    constrain(Artwork) {
-        top.linkTo(Signature.bottom, ContentPadding.normal)
-        bottom.linkTo(Subtitle.top, ContentPadding.normal)
-        start.linkTo(parent.start)
-        end.linkTo(parent.end)
-        height = Dimension.fillToConstraints
-        width = Dimension.ratio("1:1")
-    }
+        constrain(Heart) {
+            top.linkTo(ProgressBar.top)
+            bottom.linkTo(ProgressBar.bottom)
+            start.linkTo(Title.start)
+        }
 
-    constrain(ProgressMills){
-        end.linkTo(Artwork.end, ContentPadding.large)
-        top.linkTo(Artwork.top)
-        bottom.linkTo(Artwork.bottom)
-        visibility = Visibility.Visible
-    }
+        constrain(TuneUp) {
+            top.linkTo(ProgressBar.top)
+            bottom.linkTo(ProgressBar.bottom)
+            end.linkTo(Title.end)
+        }
 
-    //title
-    constrain(Title) {
-        bottom.linkTo(ProgressBar.top, ContentPadding.normal)
-        start.linkTo(parent.start, ContentPadding.large)
-        end.linkTo(parent.end, ContentPadding.large)
-        width = Dimension.fillToConstraints
-    }
+        // play controls row
+        constrain(Toggle) {
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+            bottom.linkTo(Queue.top, ContentPadding.large)
+        }
 
-    constrain(Subtitle) {
-        start.linkTo(Title.start)
-        bottom.linkTo(Title.top)
-    }
+        constrain(SkipToPrevious) {
+            end.linkTo(Toggle.start, ContentPadding.normal)
+            top.linkTo(Toggle.top)
+            bottom.linkTo(Toggle.bottom)
+        }
 
-    //progressbar
-    constrain(ProgressBar) {
-        bottom.linkTo(Toggle.top, ContentPadding.normal)
-        start.linkTo(Heart.end, ContentPadding.medium)
-        end.linkTo(TuneUp.start, ContentPadding.medium)
-        width = Dimension.fillToConstraints
-    }
+        constrain(SkipBack10) {
+            end.linkTo(SkipToPrevious.start, ContentPadding.medium)
+            top.linkTo(Toggle.top)
+            bottom.linkTo(Toggle.bottom)
+        }
 
-    constrain(Heart) {
-        top.linkTo(ProgressBar.top)
-        bottom.linkTo(ProgressBar.bottom)
-        start.linkTo(Title.start)
-    }
+        constrain(SkipToNext) {
+            start.linkTo(Toggle.end, ContentPadding.normal)
+            top.linkTo(Toggle.top)
+            bottom.linkTo(Toggle.bottom)
+        }
 
-    constrain(TuneUp) {
-        top.linkTo(ProgressBar.top)
-        bottom.linkTo(ProgressBar.bottom)
-        end.linkTo(Title.end)
-    }
+        constrain(SkipForward30) {
+            start.linkTo(SkipToNext.end, ContentPadding.medium)
+            top.linkTo(Toggle.top)
+            bottom.linkTo(Toggle.bottom)
+        }
 
-    // play controls row
-    constrain(Toggle) {
-        start.linkTo(parent.start)
-        end.linkTo(parent.end)
-        bottom.linkTo(Queue.top, ContentPadding.large)
-    }
+        val ref =
+            createHorizontalChain(
+                Queue,
+                Speed,
+                Sleep,
+                Shuffle,
+                Repeat,
+                chainStyle = ChainStyle.SpreadInside
+            )
+        constrain(ref) {
+            start.linkTo(parent.start, ContentPadding.large)
+            end.linkTo(parent.end, ContentPadding.large)
+        }
 
-    constrain(SkipToPrevious) {
-        end.linkTo(Toggle.start, ContentPadding.normal)
-        top.linkTo(Toggle.top)
-        bottom.linkTo(Toggle.bottom)
-    }
+        constrain(Queue) {
+            bottom.linkTo(parent.bottom, ContentPadding.large)
+        }
 
-    constrain(SkipBack10) {
-        end.linkTo(SkipToPrevious.start, ContentPadding.medium)
-        top.linkTo(Toggle.top)
-        bottom.linkTo(Toggle.bottom)
-    }
+        constrain(Speed) {
+            bottom.linkTo(Queue.bottom)
+        }
 
-    constrain(SkipToNext) {
-        start.linkTo(Toggle.end, ContentPadding.normal)
-        top.linkTo(Toggle.top)
-        bottom.linkTo(Toggle.bottom)
-    }
+        constrain(Sleep) {
+            bottom.linkTo(Queue.bottom)
+        }
 
-    constrain(SkipForward30) {
-        start.linkTo(SkipToNext.end, ContentPadding.medium)
-        top.linkTo(Toggle.top)
-        bottom.linkTo(Toggle.bottom)
-    }
+        constrain(Shuffle) {
+            bottom.linkTo(Queue.bottom)
+        }
 
-    val ref =
-        createHorizontalChain(Queue, Speed, Sleep, Shuffle, Repeat, chainStyle = ChainStyle.SpreadInside)
-    constrain(ref) {
-        start.linkTo(parent.start, ContentPadding.large)
-        end.linkTo(parent.end, ContentPadding.large)
+        constrain(Repeat) {
+            bottom.linkTo(Queue.bottom)
+        }
     }
-
-    constrain(Queue) {
-        bottom.linkTo(parent.bottom, ContentPadding.large)
-    }
-
-    constrain(Speed) {
-        bottom.linkTo(Queue.bottom)
-    }
-
-    constrain(Sleep) {
-        bottom.linkTo(Queue.bottom)
-    }
-
-    constrain(Shuffle) {
-        bottom.linkTo(Queue.bottom)
-    }
-
-    constrain(Repeat) {
-        bottom.linkTo(Queue.bottom)
-    }
-}
 
 @OptIn(
     ExperimentalMotionApi::class, ExperimentalAnimationGraphicsApi::class,
@@ -521,9 +537,14 @@ fun Vertical(
     progress: Float,
     onRequestToggle: () -> Unit
 ) {
-    MotionLayout(start = collapsed, end = expanded, progress = progress, modifier = modifier) {
+    MotionLayout(
+        start = collapsed,
+        end = expanded,
+        progress = progress,
+        modifier = modifier
+    ) {
 
-        val primary = Material.colors.primary
+        val primary = Material.colors.onSurface
         val activity = LocalContext.activity
         val insets = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         // Signature
@@ -548,13 +569,18 @@ fun Vertical(
                 .layoutID(Close)
         )
 
+
         // artwork
         val artwork by resolver.artwork
         Artwork(
             data = artwork,
             modifier = Modifier.layoutID(Artwork),
             // maybe make this a lambda call
-            stroke = lerp(ARTWORK_STROKE_DEFAULT_COLLAPSED, ARTWORK_STROKE_DEFAULT_EXPANDED, progress)
+            stroke = lerp(
+                ARTWORK_STROKE_DEFAULT_COLLAPSED,
+                ARTWORK_STROKE_DEFAULT_EXPANDED,
+                progress
+            )
         )
 
         //slider
@@ -573,7 +599,7 @@ fun Vertical(
             value = value,
             onValueChange = { resolver.seekTo(it) },
             modifier = Modifier.layoutID(ProgressBar),
-            )
+        )
 
         val favourite by resolver.favourite
         IconButton(
@@ -590,6 +616,7 @@ fun Vertical(
             modifier = Modifier.layoutID(TuneUp)
         )
 
+
         //title
         val current by resolver.current
         AnimatedLabel(
@@ -600,11 +627,11 @@ fun Vertical(
                 .layoutID(Subtitle)
         )
 
-
         Label(
             text = current?.title ?: stringResource(id = R.string.unknown),
             fontSize = lerp(18.sp, 40.sp, progress),
             fontWeight = FontWeight.Bold,
+            color = Material.colors.onSurface,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
                 .layoutID(Title),
@@ -624,8 +651,12 @@ fun Vertical(
                 .size(60.dp)
                 .layoutID(Toggle),
             elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress)),
-            border = if (progress != 0f)  BorderStroke(1.dp, Material.colors.outline.copy(0.06f)) else null
+            border = if (progress != 0f && !Material.colors.isLight) BorderStroke(
+                1.dp,
+                Material.colors.outline.copy(0.06f)
+            ) else null
         )
+
 
         IconButton(
             onClick = { resolver.skipToPrev(); activity.launchReviewFlow() },
@@ -645,7 +676,7 @@ fun Vertical(
             contentDescription = null,
             //iconScale = 0.8f,
             modifier = Modifier.layoutID(SkipToNext),
-            enabled = if (current != null) resolver.hasNextTrack else false
+            enabled = if (current != null) resolver.hasNextTrack else false,
         )
 
         IconButton(
@@ -678,9 +709,13 @@ fun Vertical(
         )
 
         var showSpeedController by rememberState(initial = false)
-        BottomSheetDialog(expanded = showSpeedController, onDismissRequest = { showSpeedController = false }) {
+        BottomSheetDialog(
+            expanded = showSpeedController,
+            onDismissRequest = { showSpeedController = false }) {
             var speed by rememberState(initial = resolver.playbackSpeed)
-            SpeedControllerLayout(value = speed, onRequestChange = {speed = it; resolver.setPlaybackSpeed(it)})
+            SpeedControllerLayout(
+                value = speed,
+                onRequestChange = { speed = it; resolver.setPlaybackSpeed(it) })
         }
 
         NeumorphicVertButton(
@@ -724,7 +759,7 @@ private fun SpeedControllerLayout(
     value: Float,
     modifier: Modifier = Modifier,
     onRequestChange: (new: Float) -> Unit
-){
+) {
     Surface(modifier = modifier) {
         Column() {
             TopAppBar(

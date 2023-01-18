@@ -64,7 +64,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-
 private const val TAG = "MainActivity"
 
 private const val RESULT_CODE_APP_UPDATE = 1000
@@ -88,7 +87,6 @@ inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
     require(activity is MainActivity)
     return activity.preferences.observeAsState(key = key)
 }
-
 
 @Composable
 private fun PermissionRationale(
@@ -118,7 +116,6 @@ private fun resolveAppThemeState(): Boolean {
     }
 }
 
-
 /**
  * Manages SplashScreen
  */
@@ -146,6 +143,7 @@ fun MainActivity.initSplashScreen(
         }
     }
 }
+
 
 private const val MIN_LAUNCH_COUNT = 20
 private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
@@ -221,7 +219,8 @@ fun Activity.launchUpdateFlow(
             val channel = toastHostState
             manager.requestUpdateFlow().collect { result ->
                 when (result) {
-                    AppUpdateResult.NotAvailable -> if (report) channel.show("The app is already updated to the latest version.")
+                    AppUpdateResult.NotAvailable ->
+                        if (report) channel.show("The app is already updated to the latest version.")
                     is AppUpdateResult.InProgress -> {
                         val state = result.installState
 
@@ -307,6 +306,7 @@ fun Activity.showAd(
     advertiser.show(this, force, action)
 }
 
+
 /**
  * A simple extension property on [LocalContext] that returns the activity the context is attached to.
  */
@@ -316,6 +316,7 @@ val ProvidableCompositionLocal<Context>.billingManager: BillingManager
         require(activity is MainActivity)
         return activity.billingManager
     }
+
 
 /**
  * A simple extension property on [LocalContext] that returns the [FirebaseAnalytics].
@@ -329,6 +330,7 @@ val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
         return activity.fAnalytics
     }
 
+
 /**
  * A simple extension property on [LocalContext] that returns the [ToastHostState].
  * *Requirements*
@@ -341,12 +343,16 @@ val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
         return activity.toastHostState
     }
 
+/**
+ * A simple property of [ComponentActivity] that shows the progress of the update.
+ */
 val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
     @ReadOnlyComposable @Composable inline get() {
         val activity = current.activity
         require(activity is MainActivity)
         return activity.inAppUpdateProgress
     }
+
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
@@ -373,7 +379,7 @@ class MainActivity : ComponentActivity() {
      */
     val inAppUpdateProgress: State<Float> = mutableStateOf(Float.NaN)
 
-
+    // injectable code.
     @Inject
     lateinit var preferences: Preferences
 
@@ -403,6 +409,8 @@ class MainActivity : ComponentActivity() {
         initSplashScreen(
             isColdStart
         )
+
+        // only run this piece of code if cold start.
         if (isColdStart) {
             val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
             // update launch counter if
@@ -433,8 +441,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Material(isDark = resolveAppThemeState()) {
                     // scaffold
-                    // FixMe: Re-design the SnackBar Api.
-                    // Introduce: SideBar and Bottom Bar.
+                    // Maybe add support for intro.
                     Crossfade(
                         targetState = permission.status.isGranted,
                         modifier = Modifier.navigationBarsPadding()
@@ -452,4 +459,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

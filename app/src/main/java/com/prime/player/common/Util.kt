@@ -27,7 +27,10 @@ import com.primex.core.Text
 import com.primex.core.resolve
 import com.primex.core.spannedResource
 
+
 private const val TAG = "ComposeUtil"
+
+
 
 /**
  * Returns a Resources instance for the application's package.
@@ -211,7 +214,6 @@ private const val Indication = 0.1f
 @ReadOnlyComposable
 @NonRestartableComposable
 inline fun stringResource(value: Text) = spannedResource(value = value)
-
 
 @JvmName("stringResource1")
 @Composable
