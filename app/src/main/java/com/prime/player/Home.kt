@@ -33,12 +33,40 @@ import cz.levinzonr.saferoute.core.RouteSpec
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
-private val EnterTransition = scaleIn(
-    initialScale = 0.98f,
-    animationSpec = tween(220, delayMillis = 90)
-) + fadeIn(animationSpec = tween(700))
-
+private val EnterTransition =
+    scaleIn(initialScale = 0.98f, animationSpec = tween(220, delayMillis = 90)) +
+            fadeIn(animationSpec = tween(700))
 private val ExitTransition = fadeOut(tween(700))
+
+
+///missing fun
+@OptIn(ExperimentalAnimationApi::class)
+private fun NavGraphBuilder.composable(
+    spec: RouteSpec<*>,
+    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+    popEnterTransition: (
+    AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?
+    )? = enterTransition,
+    popExitTransition: (
+    AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?
+    )? = exitTransition,
+    content: @Composable (NavBackStackEntry) -> Unit
+) = composable(
+    spec.route,
+    spec.navArgs,
+    spec.deepLinks,
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
+    popEnterTransition = popEnterTransition,
+    popExitTransition = popExitTransition
+) {
+    ProvideRouteSpecArgs(spec = spec, entry = it) {
+        content.invoke(it)
+    }
+}
+
+private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -75,60 +103,29 @@ private fun NavGraph() {
     )
 }
 
-
-///missing fun
-@OptIn(ExperimentalAnimationApi::class)
-private fun NavGraphBuilder.composable(
-    spec: RouteSpec<*>,
-    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-    popEnterTransition: (
-    AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?
-    )? = enterTransition,
-    popExitTransition: (
-    AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?
-    )? = exitTransition,
-    content: @Composable (NavBackStackEntry) -> Unit
-) = composable(
-    spec.route,
-    spec.navArgs,
-    spec.deepLinks,
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
-    popEnterTransition = popEnterTransition,
-    popExitTransition = popExitTransition
-) {
-    ProvideRouteSpecArgs(spec = spec, entry = it) {
-        content.invoke(it)
-    }
-}
-
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun Home(show: Boolean) {
-    // Currently; supports only 1 Part
-    // add others in future
-    // including support for more tools, like direction, prime factorization etc.
-    // also support for navGraph.
+    // construct necessary variables.
     val controller = rememberAnimatedNavController()
+    // required for toggling player.
     val scope = rememberCoroutineScope()
-
     //Handle messages etc.
     val state =
         rememberPlayerState(initial = PlayerValue.COLLAPSED)
-
     // collapse if expanded and
     // back button is clicked.
     BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
-
     val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
     CompositionLocalProvider(
+        //TODO: maybe use the windowInsets somehow
         LocalWindowPadding provides windowPadding,
         LocalNavController provides controller,
     ) {
         Player(
             sheet = {
+                //FixMe: May be use some kind of scope.
                 val consoleViewModel = hiltViewModel<ConsoleViewModel>()
                 Console(consoleViewModel, state.progress.value) { scope.launch { state.toggle() } }
             },
@@ -144,5 +141,3 @@ fun Home(show: Boolean) {
         )
     }
 }
-
-private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()

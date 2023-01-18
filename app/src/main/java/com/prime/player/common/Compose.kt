@@ -71,6 +71,7 @@ inline fun Placeholder(
 
 @ExperimentalAnimationApi
 @Composable
+@Deprecated("Doesn't required.")
 fun AnimatedVisibility(
     visible: Boolean,
     modifier: Modifier = Modifier,
@@ -154,6 +155,7 @@ inline fun RowScope.BottomNavigationItem(
 
 
 @Composable
+@Deprecated("may be transfer it to library toolkit.")
 fun Search2(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(50),

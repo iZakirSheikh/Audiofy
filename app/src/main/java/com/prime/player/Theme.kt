@@ -25,14 +25,16 @@ typealias Material = MaterialTheme
 /**
  * An Extra font family.
  */
-private val ProvidedFontFamily = AndroidFontFamily(
-    //light
-    Font(R.font.lato_light, FontWeight.Light),
-    //normal
-    Font(R.font.lato_regular, FontWeight.Normal),
-    //bold
-    Font(R.font.lato_bold, FontWeight.Bold),
-)
+@Deprecated("Maybe use google font library.")
+private val ProvidedFontFamily =
+    AndroidFontFamily(
+        //light
+        Font(R.font.lato_light, FontWeight.Light),
+        //normal
+        Font(R.font.lato_regular, FontWeight.Normal),
+        //bold
+        Font(R.font.lato_bold, FontWeight.Bold),
+    )
 
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
@@ -46,11 +48,15 @@ private fun Typography(fontFamily: FontFamily): Typography {
             FontFamily.SARIF -> AndroidFontFamily.Serif
             FontFamily.CURSIVE -> AndroidFontFamily.Cursive
         }, button = TextStyle(
-            fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.25.sp,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            letterSpacing = 1.25.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
         ), overline = TextStyle(
-            fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 1.5.sp,
+            fontWeight = FontWeight.Normal,
+            fontSize = 10.sp,
+            letterSpacing = 1.5.sp,
             // a workaround for capitalizing
             fontFeatureSettings = "c2sc, smcp"
         )
@@ -79,7 +85,6 @@ val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
  */
 val MaterialTheme.forceColorize
     @Composable inline get() = preference(key = Audiofy.FORCE_COLORIZE)
-
 
 /**
  * checks If [GlobalKeys.FORCE_COLORIZE]
@@ -130,18 +135,21 @@ val Colors.lightShadowColor
 val Colors.darkShadowColor
     @Composable inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
 
-
 private val defaultPrimaryColor = Color.SkyBlue
 private val defaultSecondaryColor = Color.Rose
 
-private val defaultThemeShapes = Shapes(
-    small = RoundedCornerShape(4.dp),
-    medium = RoundedCornerShape(4.dp),
-    large = RoundedCornerShape(0.dp)
-)
+private val defaultThemeShapes =
+    Shapes(
+        small = RoundedCornerShape(4.dp),
+        medium = RoundedCornerShape(4.dp),
+        large = RoundedCornerShape(0.dp)
+    )
 
 @Composable
-fun Material(isDark: Boolean, content: @Composable () -> Unit) {
+fun Material(
+    isDark: Boolean,
+    content: @Composable () -> Unit
+) {
 
     val background by animateColorAsState(
         targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
@@ -181,3 +189,6 @@ fun Material(isDark: Boolean, content: @Composable () -> Unit) {
         content = content
     )
 }
+
+
+

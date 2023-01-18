@@ -48,13 +48,13 @@ val Audio.key get() = uri.toString()
  */
 inline val Audio.toMediaItem
     get() = MediaItem.Builder().setMediaId("$id").setRequestMetadata(
-            MediaItem.RequestMetadata.Builder().setMediaUri(uri).build()
-        ).setMediaMetadata(
-            MediaMetadata.Builder().setArtworkUri(albumUri).setTitle(name).setSubtitle(artist)
-                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
-                // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
-                .build()
-        ).build()
+        MediaItem.RequestMetadata.Builder().setMediaUri(uri).build()
+    ).setMediaMetadata(
+        MediaMetadata.Builder().setArtworkUri(albumUri).setTitle(name).setSubtitle(artist)
+            .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
+            // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
+            .build()
+    ).build()
 
 
 @ActivityRetainedScoped
@@ -86,28 +86,29 @@ class Repository @Inject constructor(
      * Returns the [MediaStore.Audio.Media.ALBUM_ID] upto [limit] as flow.
      */
     fun recent(limit: Int) = resolver.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map {
-            resolver.query2(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Media.ALBUM_ID),
-                order = MediaStore.Audio.Media.DATE_MODIFIED,
-                limit = limit,
-            ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
-        }
+        resolver.query2(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media.ALBUM_ID),
+            order = MediaStore.Audio.Media.DATE_MODIFIED,
+            limit = limit,
+        ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
+    }
 
     // TODO: Replace this with just uri or something as future versions of this app will cause problems
+    @Deprecated("can be a simple list of keys.")
     val favourite: Flow<List<Audio>?>
         get() = playlistz.observe2(Playback.PLAYLIST_FAVOURITE).map {
-                it.mapNotNull { getAudioById(it.id.toLong()) }
-            }
+            it.mapNotNull { getAudioById(it.id.toLong()) }
+        }
 
     /**
      * The playlists excluding the special ones like [PLAYLIST_RECENT] etc.
      */
     val playlists = playlistz.observe().map { playlists ->
-            // drop private playlists.
-            //playlists.dropWhile { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) == 0 }
-        playlists.filter { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) != 0  }
-        }
+        // drop private playlists.
+        //playlists.dropWhile { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) == 0 }
+        playlists.filter { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) != 0 }
+    }
 
 
     val folders = resolver.folders()
@@ -119,9 +120,12 @@ class Repository @Inject constructor(
     fun genre(name: String) = resolver.genre(name)
     fun artist(name: String) = resolver.artist(name)
     fun album(title: String) = resolver.album(title)
+
+    @Deprecated("replace with simple playlist of audios.")
     fun playlist(id: Long): Flow<List<Audio>> =
         playlistz.observe2(id).map { it.mapNotNull { getAudioById(it.id.toLong()) } }
 
+    @Deprecated("replace with simple playlist of audios.")
     fun playlist(name: String) =
         playlistz.observe2(name).map { it.mapNotNull { getAudioById(it.id.toLong()) } }
 
@@ -134,6 +138,7 @@ class Repository @Inject constructor(
     fun getAudioById(id: Long) = runBlocking { resolver.findAudio(id) }
 
     @WorkerThread
+    @Deprecated("replace with key.")
     fun isFavourite(audioID: Long): Boolean = runBlocking {
         val id = playlistz.get(Playback.PLAYLIST_FAVOURITE)?.id ?: return@runBlocking false
         val key = toAudioTrackUri(audioID).toString()
@@ -156,6 +161,7 @@ class Repository @Inject constructor(
 
     suspend fun updatePlaylist(value: Playlist): Boolean = playlistz.update(value) == 1
 
+    @Deprecated("replace with uri.")
     suspend fun addToPlaylist(
         audioID: Long, name: String
     ): Boolean {
@@ -166,12 +172,13 @@ class Repository @Inject constructor(
         val audio = getAudioById(audioID) ?: return false
         val member = audio.toMember(id, older + 1)
         val memberId = playlistsDb.insert(member).also {
-                val playlist = playlistsDb.get(id) ?: return false
-                if (it != -1L) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
-            }
+            val playlist = playlistsDb.get(id) ?: return false
+            if (it != -1L) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+        }
         return memberId != -1L
     }
 
+    @Deprecated("replace with something more general maybe.")
     suspend fun addToPlaylist(audios: List<Long>, name: String): List<Boolean> {
         return audios.map {
             addToPlaylist(it, name)
@@ -182,16 +189,18 @@ class Repository @Inject constructor(
     /**
      * Remove from playlist if first [Playlist] found and then if successfully removed.
      */
+    @Deprecated("audioID might not work in future.")
     suspend fun removeFromPlaylist(name: String, audioID: Long): Boolean {
         val playlistsDb = playlistz
         val playlist = playlistsDb.get(name) ?: return false
         val key = toAudioTrackUri(audioID).toString()
         val count = playlistsDb.delete(playlist.id, key).also {
-                if (it == 1) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
-            }
+            if (it == 1) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+        }
         return count == 1
     }
 
+    @Deprecated("audioID might not work in future.")
     suspend fun toggleFav(audioID: Long): Boolean {
         val favourite = isFavourite(audioID = audioID)
         val op = if (favourite) removeFromPlaylist(Playback.PLAYLIST_FAVOURITE, audioID)
