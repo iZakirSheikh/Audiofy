@@ -16,8 +16,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 26
-        versionName "2.0.2"
+        versionCode 27
+        versionName "2.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -149,7 +149,7 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Preferences and other widgets
-    def support_version = '1.0.0-alpha17'
+    def support_version = '1.0.0-alpha19'
     implementation "com.github.prime-zs:support:$support_version"
 
     //work manager

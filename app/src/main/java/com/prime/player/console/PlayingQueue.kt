@@ -233,11 +233,9 @@ fun ConsoleViewModel.PlayingQueue(
     onDismissRequest: () -> Unit
 ) {
     BottomSheetDialog(expanded = expanded, onDismissRequest = onDismissRequest) {
-        Surface {
+        Surface(shape = RoundedCornerShape(topStartPercent = 5, topEndPercent = 5)) {
             Layout(
-                resolver = this, onDismissRequest, modifier = Modifier.nestedScroll(
-                    rememberNestedScrollInteropConnection()
-                )
+                resolver = this, onDismissRequest
             )
         }
     }
