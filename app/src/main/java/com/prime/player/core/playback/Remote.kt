@@ -102,7 +102,8 @@ private class RemoteImpl(private val context: Context) : Remote {
                         itemCount: Int,
                         params: LibraryParams?
                     ) {
-                        channel.tryEmit(parentId)
+                        //FixMe: Maybe there is alternate way to publish updates.
+                        GlobalScope.launch { channel.emit(parentId) }
                     }
                 }
             ).buildAsync()
@@ -178,6 +179,14 @@ private class RemoteImpl(private val context: Context) : Remote {
                 browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
             }
 
+
+    init {
+        //TODO: Find Suitable place for this event to occur.
+        GlobalScope.launch(Dispatchers.Main) {
+            val browser = fBrowser.await()
+            browser.subscribe(Playback.ROOT_QUEUE, null)
+        }
+    }
 
     override suspend fun remove(key: Uri): Boolean {
         val browser = browser ?: return false
