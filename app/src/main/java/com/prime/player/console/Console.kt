@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -528,7 +529,7 @@ val expanded =
 
 @OptIn(
     ExperimentalMotionApi::class, ExperimentalAnimationGraphicsApi::class,
-    ExperimentalAnimationApi::class, ExperimentalComposeApi::class
+    ExperimentalAnimationApi::class, ExperimentalComposeApi::class, ExperimentalComposeUiApi::class
 )
 @Composable
 fun Vertical(

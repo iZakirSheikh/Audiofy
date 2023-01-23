@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -226,7 +227,7 @@ private fun Layout(
 }
 
 
-@OptIn(ExperimentalComposeApi::class)
+@OptIn(ExperimentalComposeApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ConsoleViewModel.PlayingQueue(
     expanded: Boolean,

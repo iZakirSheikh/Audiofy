@@ -430,7 +430,7 @@ fun Library(
             //
             val navigator = LocalNavController.current
             var query by rememberState(initial = "")
-            Search2(
+            Search(
                 query = query,
                 onQueryChanged = { query = it },
                 modifier = Modifier
