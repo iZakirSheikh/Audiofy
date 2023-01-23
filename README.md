@@ -1,4 +1,4 @@
-# Audiofy2
+# Audiofy: : Mp3, Mp4 Audio Player
 
 An Open-Source Audio Player App for all your needs!
 
