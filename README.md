@@ -4,9 +4,9 @@ An Open-Source Audio Player App for all your needs!
 
 ## 🌞 Preview 
 
-|   Shot-1    | Shot-2
-|---	|---
-|  ![](https://github.com/prime-zs/toolz2/blob/master/art/Screenshot_2022-05-16-09-50-15-79.png)    |  ![](https://github.com/prime-zs/toolz2/blob/master/art/Screenshot_2022-05-16-09-50-48-66.png)    
+|   Shot-1    | Shot-2 | Shot-3 | Shot-4 | Shot-5
+|---	        |---     |---     |---     |---
+|  ![](https://user-images.githubusercontent.com/46754437/214095103-22ba813a-d1ea-4af6-b81c-651b3a411a47.png)    |  ![](https://user-images.githubusercontent.com/46754437/214095652-883aac27-6e39-456e-b532-91d891baddf5.png)  | ![](https://user-images.githubusercontent.com/46754437/214095925-b44b940f-c9ae-4c75-a255-a30c97059049.png)  | ![](https://user-images.githubusercontent.com/46754437/214096188-6c921f46-e5d9-44d6-a5f6-af9965ccecad.png) | ![](https://user-images.githubusercontent.com/46754437/214096540-ec4d0d87-4ea8-4a7b-b852-5431570d9299.png)
 <br />
 
 ## Features
