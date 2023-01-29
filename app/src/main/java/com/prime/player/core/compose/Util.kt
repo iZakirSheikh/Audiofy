@@ -31,7 +31,6 @@ import com.primex.core.spannedResource
 private const val TAG = "ComposeUtil"
 
 
-
 /**
  * Returns a Resources instance for the application's package.
  */
@@ -41,9 +40,10 @@ val ProvidableCompositionLocal<Context>.resources: Resources
 /**
  * Used to access the [NavHostController] without passing it down the tree.
  */
-val LocalNavController = staticCompositionLocalOf<NavHostController> {
-    error("no local nav host controller found")
-}
+val LocalNavController =
+    staticCompositionLocalOf<NavHostController> {
+        error("no local nav host controller found")
+    }
 
 /**
  * Returns the current route of the [NavHostController]
@@ -60,6 +60,7 @@ val NavHostController.current
  * @param darkIcons: same as name suggests works in collaboration with color. if it is unspecified; uses
  * light icons as we will use primaryVariant as background.
  */
+@Deprecated("Make color of statusbar change at single place.")
 fun Modifier.statusBarsPadding2(
     color: Color = Color.Unspecified,
     darkIcons: Boolean = color.luminance() > 0.5,
@@ -101,9 +102,11 @@ fun Modifier.statusBarsPadding2(
 /**
  * The content padding for the screen under current [NavGraph]
  */
-val LocalWindowPadding = compositionLocalOf {
-    PaddingValues(0.dp)
-}
+@Deprecated("Not required. Pass directly.")
+val LocalWindowPadding =
+    compositionLocalOf {
+        PaddingValues(0.dp)
+    }
 
 // Setup animation related default things
 typealias Anim = AnimationConstants
@@ -227,8 +230,13 @@ inline fun Resources.stringResource(res: Text) = resolve(res)
 @JvmName("stringResource1")
 inline fun Resources.stringResource(res: Text?) = resolve(res)
 
+
+/**
+ * @return [content] if [condition] is true else null
+ */
 @Deprecated("rename for better naming.")
-fun composable(condition: Boolean, content: @Composable () -> Unit) = when (condition) {
-    true -> content
-    else -> null
-}
+fun composable(condition: Boolean, content: @Composable () -> Unit) =
+    when (condition) {
+        true -> content
+        else -> null
+    }

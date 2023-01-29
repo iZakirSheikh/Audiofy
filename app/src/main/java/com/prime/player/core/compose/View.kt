@@ -1,14 +1,12 @@
-package com.prime.player.common
+package com.prime.player.core.compose
 
 
 import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.SeekBar
-import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,46 +15,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.flaviofaria.kenburnsview.KenBurnsView
 import com.flaviofaria.kenburnsview.TransitionGenerator
-import com.robinhood.ticker.TickerUtils
-import com.robinhood.ticker.TickerView
 
 private const val TAG = "View"
-
-@Composable
-@Deprecated("find better alternative")
-fun Ticker(
-    modifier: Modifier = Modifier,
-    charList: String = TickerUtils.provideNumberList(),
-    color: Color = LocalContentColor.current,
-    duration: Long = 500,
-    prefScrollingDirection: TickerView.ScrollingDirection = TickerView.ScrollingDirection.ANY,
-    size: TextUnit = 16.sp,
-    text: String,
-    font: Typeface = Typeface.DEFAULT
-) {
-    val sizePx = with(LocalDensity.current) { size.toPx() }
-    AndroidView(modifier = modifier, factory = { context ->
-        TickerView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-    }) {
-        it.setCharacterLists(charList)
-        it.textColor = color.toArgb()
-        it.animationDuration = duration
-        it.setPreferredScrollingDirection(prefScrollingDirection)
-        it.textSize = sizePx
-        it.typeface = font
-        it.text = text
-    }
-}
 
 @Composable
 @Deprecated("find better alternative")
@@ -80,9 +43,7 @@ fun KenBurns(
 }
 
 
-@Deprecated(
-    message = "Don't use it!!", level = DeprecationLevel.HIDDEN
-)
+@Deprecated(message = "Don't use it!!", level = DeprecationLevel.HIDDEN)
 @Composable
 fun Seekbar(
     modifier: Modifier = Modifier,

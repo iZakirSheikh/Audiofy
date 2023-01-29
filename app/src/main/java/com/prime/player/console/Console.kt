@@ -43,11 +43,12 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
 import com.prime.player.core.Util
+import com.prime.player.core.compose.Image
+import com.prime.player.core.compose.rememberAnimatedVectorResource
 import com.prime.player.core.formatAsDuration
 import com.primex.core.gradient
 import com.primex.core.lerp
@@ -55,7 +56,6 @@ import com.primex.core.rememberState
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
 import com.primex.ui.*
-import com.primex.ui.dialog.BottomSheetDialog
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -126,6 +126,7 @@ fun Modifier.marque(iterations: Int) =
 private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) =
     layoutId(id.id)
 
+
 private inline fun ConstraintSetScope.hide(vararg ref: ConstrainedLayoutReference) {
     ref.forEach {
         constrain(it) {
@@ -152,10 +153,8 @@ private fun NeumorphicIconButton(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = RoundedCornerShape(30),
     enabled: Boolean = true,
-    border: BorderStroke? = if (Material.colors.isLight) null else BorderStroke(
-        1.dp,
-        Material.colors.outline.copy(0.06f)
-    ),
+    border: BorderStroke? = if (Theme.colors.isLight) null else
+        BorderStroke(1.dp, Theme.colors.outline.copy(0.06f)),
     elevation: ButtonElevation = NeumorphicButtonDefaults.elevation(6.dp),
     iconScale: Float = 1.5f,
     painter: Painter
@@ -168,8 +167,8 @@ private fun NeumorphicIconButton(
         elevation = elevation,
         border = border,
         colors = NeumorphicButtonDefaults.neumorphicButtonColors(
-            lightShadowColor = Material.colors.lightShadowColor,
-            darkShadowColor = Material.colors.darkShadowColor,
+            lightShadowColor = Theme.colors.lightShadowColor,
+            darkShadowColor = Theme.colors.darkShadowColor,
         )
     ) {
         Icon(
@@ -201,13 +200,13 @@ private fun NeumorphicVertButton(
         Neumorphic(
             onClick = onClick,
             modifier = Modifier,
-            lightShadowColor = Material.colors.lightShadowColor,
-            darkShadowColor = Material.colors.darkShadowColor,
+            lightShadowColor = Theme.colors.lightShadowColor,
+            darkShadowColor = Theme.colors.darkShadowColor,
             elevation = depth,
             interactionSource = source,
-            border = if (Material.colors.isLight) null else BorderStroke(
+            border = if (Theme.colors.isLight) null else BorderStroke(
                 1.dp,
-                Material.colors.outline.copy(0.06f)
+                Theme.colors.outline.copy(0.06f)
             ),
             shape = RoundedCornerShape(30)
         ) {
@@ -222,7 +221,7 @@ private fun NeumorphicVertButton(
 
         Label(
             text = label,
-            style = Material.typography.caption2,
+            style = Theme.typography.caption2,
             modifier = Modifier.padding(top = 6.dp),
             color = LocalContentColor.current.copy(alpha)
         )
@@ -239,7 +238,7 @@ private fun Artwork(
     modifier: Modifier = Modifier,
     stroke: Dp = ARTWORK_STROKE_DEFAULT_EXPANDED,
 ) {
-    val color = Material.colors.background
+    val color = Theme.colors.background
     Image(
         data = data,
         contentScale = ContentScale.Crop,
@@ -250,16 +249,16 @@ private fun Artwork(
             .shadow(
                 shape = CircleShape,
                 elevation = -12.dp,
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor,
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor,
                 spotLight = SpotLight.BOTTOM_RIGHT,
             )
             .padding(stroke)
             .shadow(
                 shape = CircleShape,
                 elevation = 12.dp,
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor,
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor,
                 spotLight = SpotLight.TOP_LEFT,
             )
             .border(BorderStroke(stroke / 2, color), CircleShape)
@@ -292,62 +291,36 @@ private fun Activity.launchEqualizer(id: Int) {
 }
 
 @Composable
-fun Console(
-    viewModel: ConsoleViewModel,
-    progress: Float,
-    onRequestToggle: () -> Unit
+private fun SpeedControllerLayout(
+    value: Float,
+    modifier: Modifier = Modifier,
+    onRequestChange: (new: Float) -> Unit
 ) {
-    val controller = rememberSystemUiController()
-    val expanded = progress == 1f
-    val wasDark = remember {
-        controller.statusBarDarkContentEnabled
-    }
-    val isLight = Material.colors.isLight
-    val channel = LocalContext.toastHostState
+    Surface(modifier = modifier) {
+        Column() {
+            TopAppBar(
+                title = { Label(text = "Playback Speed", style = Theme.typography.body2) },
+                backgroundColor = Theme.colors.background,
+            )
 
-    // move messenger to view-model using hilt.
-    DisposableEffect(key1 = isLight, key2 = expanded) {
-        // set icon color for current screen
-        controller.setStatusBarColor(Color.Transparent, if (expanded) isLight else wasDark)
-        viewModel.messenger = channel
-        onDispose {
-            // restore back the color of the old screen.
-            controller.setStatusBarColor(Color.Transparent, wasDark)
-            viewModel.messenger = null
+            Label(
+                text = "${String.format("%.2f", value)}x",
+                modifier = Modifier
+                    .padding(top = ContentPadding.normal)
+                    .align(Alignment.CenterHorizontally),
+                style = Theme.typography.h6
+            )
+
+            Slider(
+                value = value,
+                onValueChange = onRequestChange,
+                valueRange = 0.25f..2f,
+                steps = 6,
+                modifier = Modifier.padding(
+                    horizontal = ContentPadding.large,
+                )
+            )
         }
-    }
-
-    // actual content
-    CompositionLocalProvider(LocalContentColor provides Material.colors.onSurface) {
-        //Maybe Use Modifier.composed {}
-        Vertical(
-            progress = progress,
-            resolver = viewModel,
-            onRequestToggle = onRequestToggle,
-            modifier = Modifier
-                .fillMaxSize()
-                // animate 2.5x scale between collapsed and expanded.
-                .scale(lerp(0.8f, 1f, (progress * 2.5f).coerceIn(0.0f..1.0f)))
-                // animate shadow including its shape.
-                .shadow(
-                    shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt()),
-                    lightShadowColor = Material.colors.darkShadowColor,
-                    darkShadowColor = Material.colors.darkShadowColor,
-                    elevation = lerp(8.dp, 0.dp, progress),
-                    spotLight = SpotLight.TOP_LEFT,
-                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Material.colors.surface)
-                )
-                .background(Material.colors.background)
-                // .background(color = lerp(Material.colors.surface, Material.colors.background, 0.0f, 1.0f,  progress))
-                // don't forget to disable it when expanded.
-                .clickable(
-                    onClick = onRequestToggle,
-                    indication = null,
-                    interactionSource = remember(::MutableInteractionSource),
-                    // only enabled when collapsed.
-                    enabled = !expanded
-                )
-        )
     }
 }
 
@@ -545,9 +518,9 @@ fun Vertical(
         modifier = modifier
     ) {
 
-        val primary = Material.colors.onSurface
+        val primary = Theme.colors.onSurface
         val activity = LocalContext.activity
-        val insets = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val insets = WindowInsets.statusBars
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
@@ -556,7 +529,7 @@ fun Vertical(
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
             modifier = Modifier
-                .padding(top = insets)
+                .windowInsetsPadding(insets)
                 .layoutID(Signature)
         )
 
@@ -592,7 +565,7 @@ fun Vertical(
             color = Color.White,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.layoutID(ProgressMills),
-            style = Material.typography.h3
+            style = Theme.typography.h3
         )
 
         // slider row
@@ -617,12 +590,11 @@ fun Vertical(
             modifier = Modifier.layoutID(TuneUp)
         )
 
-
         //title
         val current by resolver.current
         AnimatedLabel(
             text = current?.subtitle ?: stringResource(id = R.string.unknown),
-            style = Material.typography.caption2,
+            style = Theme.typography.caption2,
             modifier = Modifier
                 .offset(y = 4.dp, x = 5.dp)
                 .layoutID(Subtitle)
@@ -632,7 +604,7 @@ fun Vertical(
             text = current?.title ?: stringResource(id = R.string.unknown),
             fontSize = lerp(18.sp, 40.sp, progress),
             fontWeight = FontWeight.Bold,
-            color = Material.colors.onSurface,
+            color = Theme.colors.onSurface,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
                 .layoutID(Title),
@@ -652,9 +624,9 @@ fun Vertical(
                 .size(60.dp)
                 .layoutID(Toggle),
             elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress)),
-            border = if (progress != 0f && !Material.colors.isLight) BorderStroke(
+            border = if (progress != 0f && !Theme.colors.isLight) BorderStroke(
                 1.dp,
-                Material.colors.outline.copy(0.06f)
+                Theme.colors.outline.copy(0.06f)
             ) else null
         )
 
@@ -755,36 +727,55 @@ fun Vertical(
     }
 }
 
+
 @Composable
-private fun SpeedControllerLayout(
-    value: Float,
-    modifier: Modifier = Modifier,
-    onRequestChange: (new: Float) -> Unit
+fun Console(
+    viewModel: ConsoleViewModel,
+    progress: Float,
+    onRequestToggle: () -> Unit
 ) {
-    Surface(modifier = modifier) {
-        Column() {
-            TopAppBar(
-                title = { Label(text = "Playback Speed", style = Material.typography.body2) },
-                backgroundColor = Material.colors.background,
-            )
+    val expanded = progress == 1f
+    val channel = LocalContext.toastHostState
 
-            Label(
-                text = "${String.format("%.2f", value)}x",
-                modifier = Modifier
-                    .padding(top = ContentPadding.normal)
-                    .align(Alignment.CenterHorizontally),
-                style = Material.typography.h6
-            )
-
-            Slider(
-                value = value,
-                onValueChange = onRequestChange,
-                valueRange = 0.25f..2f,
-                steps = 6,
-                modifier = Modifier.padding(
-                    horizontal = ContentPadding.large,
-                )
-            )
+    // move messenger to view-model using hilt.
+    DisposableEffect("messanger") {
+        // set icon color for current screen
+        viewModel.messenger = channel
+        onDispose {
+            viewModel.messenger = null
         }
+    }
+
+    // actual content
+    CompositionLocalProvider(LocalContentColor provides Theme.colors.onSurface) {
+        //Maybe Use Modifier.composed {}
+        Vertical(
+            progress = progress,
+            resolver = viewModel,
+            onRequestToggle = onRequestToggle,
+            modifier = Modifier
+                .fillMaxSize()
+                // animate 2.5x scale between collapsed and expanded.
+                .scale(lerp(0.8f, 1f, (progress * 2.5f).coerceIn(0.0f..1.0f)))
+                // animate shadow including its shape.
+                .shadow(
+                    shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt()),
+                    lightShadowColor = Theme.colors.darkShadowColor,
+                    darkShadowColor = Theme.colors.darkShadowColor,
+                    elevation = lerp(8.dp, 0.dp, progress),
+                    spotLight = SpotLight.TOP_LEFT,
+                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Theme.colors.surface)
+                )
+                .background(Theme.colors.background)
+                // .background(color = lerp(Material.colors.surface, Material.colors.background, 0.0f, 1.0f,  progress))
+                // don't forget to disable it when expanded.
+                .clickable(
+                    onClick = onRequestToggle,
+                    indication = null,
+                    interactionSource = remember(::MutableInteractionSource),
+                    // only enabled when collapsed.
+                    enabled = !expanded
+                )
+        )
     }
 }

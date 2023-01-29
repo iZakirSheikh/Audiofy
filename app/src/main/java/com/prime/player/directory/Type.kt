@@ -1,4 +1,4 @@
-package com.prime.player.common
+package com.prime.player.directory
 
 /**
  * The [Type] represents the different sections of the app.

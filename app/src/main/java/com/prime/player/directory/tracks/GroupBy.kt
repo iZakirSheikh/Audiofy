@@ -1,6 +1,4 @@
-package com.prime.player.tracks
-
-import javax.annotation.meta.When
+package com.prime.player.directory.tracks
 
 enum class GroupBy {
 

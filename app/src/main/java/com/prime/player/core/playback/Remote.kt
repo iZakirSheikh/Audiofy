@@ -2,9 +2,7 @@ package com.prime.player.core.playback
 
 import android.content.ComponentName
 import android.content.Context
-import android.graphics.Bitmap
 import android.net.Uri
-import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -12,9 +10,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.*
 import androidx.media3.session.MediaBrowser.Listener
 import androidx.media3.session.MediaLibraryService.LibraryParams
-import androidx.work.await
-import com.prime.player.Audiofy
-import com.prime.player.core.getAlbumArt
+import com.prime.player.core.await
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*

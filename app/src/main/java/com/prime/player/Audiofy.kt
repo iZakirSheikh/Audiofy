@@ -1,10 +1,9 @@
 package com.prime.player
 
 import android.app.Application
+import android.content.ContentResolver
 import android.content.Context
 import androidx.compose.ui.unit.dp
-import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.prime.player.core.FontFamily
 import com.prime.player.core.NightMode
@@ -17,14 +16,12 @@ import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val TAG = "Audiofy"
 
 @HiltAndroidApp
-class Audiofy : Application(), Configuration.Provider {
-
+class Audiofy : Application() {
     companion object {
         private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
 
@@ -59,11 +56,8 @@ class Audiofy : Application(), Configuration.Provider {
         /**
          * The counter counts the number of times this app was launched.
          */
-        val KEY_LAUNCH_COUNTER = intPreferenceKey(TAG + "_launch_counter")
-
-        @Deprecated("Not required.")
-        val SHOW_MINI_PROGRESS_BAR =
-            booleanPreferenceKey(TAG + "_show_mini_progress_bar", false)
+        val KEY_LAUNCH_COUNTER =
+            intPreferenceKey(TAG + "_launch_counter")
 
         /**
          * The length/duration of the track in mills considered above which to include
@@ -97,13 +91,6 @@ class Audiofy : Application(), Configuration.Provider {
         const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
     }
 
-
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
-
-    override fun getWorkManagerConfiguration(): Configuration =
-        Configuration.Builder().setWorkerFactory(workerFactory).build()
-
     override fun onCreate() {
         super.onCreate()
         // initialize firebase
@@ -129,6 +116,6 @@ object Singleton {
 
     @Singleton
     @Provides
-    fun resolver(@ApplicationContext context: Context) =
+    fun resolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
 }
