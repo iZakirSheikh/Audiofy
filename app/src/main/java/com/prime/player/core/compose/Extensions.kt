@@ -1,39 +1,60 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.prime.player.common
+package com.prime.player.core.compose
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.compose.animation.*
+import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.prime.player.*
 import com.prime.player.R
+import com.prime.player.common.*
 import com.primex.core.Result
-import com.primex.ui.Label
-import com.primex.ui.Placeholder
+import com.primex.ui.*
 
+@Composable
+inline fun Image(
+    data: Any?,
+    modifier: Modifier = Modifier,
+    fallback: Painter = painterResource(id = R.drawable.default_art),
+    contentScale: ContentScale = ContentScale.Crop,
+    alignment: Alignment = Alignment.Center,
+    fadeMills: Int = AnimationConstants.DefaultDurationMillis,
+) {
+    val context = LocalContext.current
+    val request = remember(data) {
+        ImageRequest.Builder(context).data(data).crossfade(fadeMills).build()
+    }
+
+    AsyncImage(
+        model = request,
+        contentDescription = null,
+        error = fallback,
+        modifier = modifier,
+        contentScale = contentScale,
+        alignment = alignment,
+    )
+}
 
 //This file holds the simple extension, utility methods of compose.
 /**
@@ -68,10 +89,9 @@ inline fun Placeholder(
     )
 }
 
-
 @ExperimentalAnimationApi
 @Composable
-@Deprecated("Doesn't required.")
+@Deprecated("Doesn't required.", level = DeprecationLevel.HIDDEN)
 fun AnimatedVisibility(
     visible: Boolean,
     modifier: Modifier = Modifier,
@@ -93,8 +113,8 @@ inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) 
         animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
 
-
 @Composable
+@Deprecated("Change this with maybe Paging.")
 inline fun <T> Placeholder(
     value: Result<T>,
     modifier: Modifier = Modifier,
@@ -125,30 +145,3 @@ inline fun <T> Placeholder(
     }
 }
 
-
-@Composable
-inline fun RowScope.BottomNavigationItem(
-    selected: Boolean,
-    noinline onClick: () -> Unit,
-    icon: Painter,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    label: String = "",
-    alwaysShowLabel: Boolean = true,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    selectedContentColor: Color = LocalContentColor.current,
-    unselectedContentColor: Color = selectedContentColor.copy(alpha = ContentAlpha.medium)
-) {
-    BottomNavigationItem(selected = selected,
-        onClick = onClick,
-        icon = {
-            Icon(painter = icon, contentDescription = "Bottom Nav Icon")
-        },
-        modifier = modifier,
-        enabled = enabled,
-        alwaysShowLabel = alwaysShowLabel,
-        interactionSource = interactionSource,
-        selectedContentColor = selectedContentColor,
-        unselectedContentColor = unselectedContentColor,
-        label = { Label(text = label) })
-}

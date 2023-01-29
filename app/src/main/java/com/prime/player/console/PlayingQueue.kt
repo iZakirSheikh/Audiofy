@@ -8,37 +8,25 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
-import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.LottieAnimation
@@ -47,10 +35,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
-import com.prime.player.tracks.Header
-import com.primex.core.verticalFadingEdge
 import com.primex.ui.*
-import com.primex.ui.dialog.BottomSheetDialog
 
 private const val TAG = "PlayingQueue"
 
@@ -95,7 +80,7 @@ fun Track(
         secondaryText = {
             Label(
                 text = meta.subtitle.toString(),
-                style = Material.typography.caption2
+                style = Theme.typography.caption2
             )
         },
 
@@ -132,14 +117,14 @@ private fun Layout(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val color = Material.colors.outline
+    val color = Theme.colors.outline
     Column(modifier = modifier) {
 
         // top bar mimicking youtube app.
         TopAppBar(
             title = { Label(text = "Playing Queue") },
-            backgroundColor = Material.colors.surface,
-            contentColor = Material.colors.onSurface,
+            backgroundColor = Theme.colors.surface,
+            contentColor = Theme.colors.onSurface,
             elevation = 0.dp,
             navigationIcon = {
                 Icon(
@@ -155,7 +140,7 @@ private fun Layout(
                     onClick = { resolver.toggleShuffle() },
                     painter = painterResource(id = R.drawable.ic_shuffle),
                     contentDescription = null,
-                    tint = Material.colors.onSurface.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled),
+                    tint = Theme.colors.onSurface.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled),
                 )
 
 

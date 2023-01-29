@@ -22,10 +22,17 @@ private const val CAROUSAL_DELAY_MILLS = 10_000L // 10 seconds
  */
 private val TimeOutPolicy = SharingStarted.Lazily
 
+typealias Library = LibraryViewModel
+
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     repository: Repository,
 ) : ViewModel() {
+
+    companion object {
+        const val route = "library"
+    }
+
 
     val reel = mutableStateOf<Pair<Long, Bitmap>?>(null)
 

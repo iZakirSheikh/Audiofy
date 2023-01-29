@@ -1,4 +1,4 @@
-package com.prime.player.common
+package com.prime.player.core.compose
 
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.*

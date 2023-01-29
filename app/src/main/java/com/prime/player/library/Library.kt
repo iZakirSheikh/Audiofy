@@ -37,31 +37,33 @@ import coil.load
 import com.flaviofaria.kenburnsview.RandomTransitionGenerator
 import com.prime.player.*
 import com.prime.player.R
-import com.prime.player.buckets.BucketsRoute
 import com.prime.player.common.*
-import com.prime.player.core.playback.Playback
 import com.prime.player.core.Repository
+import com.prime.player.core.albumUri
 import com.prime.player.core.billing.Product
 import com.prime.player.core.billing.observeAsState
 import com.prime.player.core.billing.purchased
+import com.prime.player.core.compose.Image
+import com.prime.player.core.compose.KenBurns
+import com.prime.player.core.compose.Placeholder
 import com.prime.player.core.db.Audio
-import com.prime.player.settings.SettingsRoute
-import com.prime.player.tracks.TracksRoute
+import com.prime.player.core.playback.Playback
+import com.prime.player.core.uri
+import com.prime.player.directory.Type
+import com.prime.player.directory.buckets.Buckets
+import com.prime.player.directory.tracks.Tracks
+import com.prime.player.settings.Settings
 import com.primex.core.*
 import com.primex.ui.*
-import com.primex.ui.Placeholder
 import com.primex.ui.views.Recycler
-import cz.levinzonr.saferoute.core.annotations.Route
-import cz.levinzonr.saferoute.core.annotations.RouteNavGraph
-import cz.levinzonr.saferoute.core.navigateTo
 
 private val REEL_HEIGHT = 100.dp
 context(LibraryViewModel) @Composable
 private fun Reel(modifier: Modifier = Modifier) {
     // observe the reel
     val reel by reel
-    val bg = Material.colors.overlay
-    val contentColor = if (reel != null) Color.White else Material.colors.onSurface
+    val bg = Theme.colors.overlay
+    val contentColor = if (reel != null) Color.White else Theme.colors.onSurface
     Surface(
         color = bg,
         contentColor = contentColor,
@@ -96,15 +98,13 @@ private fun Reel(modifier: Modifier = Modifier) {
 
                 modifier = Modifier
                     .padding(horizontal = ContentPadding.normal)
-                    .statusBarsPadding2(
-                        color = Color.Transparent,
-                        darkIcons = Material.colors.isLight && reel == null
-                    ),
+                    .statusBarsPadding(),
+
                 content = {
                     // the title
                     Text(
                         text = stringHtmlResource(id = R.string.title_audio_library_html),
-                        style = Material.typography.h5,
+                        style = Theme.typography.h5,
                         fontWeight = FontWeight.Light
                     )
 
@@ -127,8 +127,8 @@ private fun Reel(modifier: Modifier = Modifier) {
                     IconButton(imageVector = Icons.TwoTone.Settings,
                         contentDescription = null,
                         onClick = {
-                            val direction = SettingsRoute()
-                            navigator.navigateTo(direction)
+                            val direction = Settings.route
+                            navigator.navigate(direction)
                         })
                 },
             )
@@ -148,8 +148,8 @@ private fun Carousal(
         elevation = ContentElevation.high,
         shape = CarousalShape,
         onClick = {
-            val direction = BucketsRoute(Type.ALBUMS.name)
-            navigator.navigateTo(direction)
+            val direction = Buckets.direction(Type.ALBUMS)
+            navigator.navigate(direction)
             activity.showAd()
         },
 
@@ -171,7 +171,7 @@ private fun Carousal(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     // TODO: Remove background from the future version of the app.
                     //This is unnecessary
-                    .background(Material.colors.surface)
+                    .background(Theme.colors.surface)
                     .fillMaxWidth()
                     .height(56.dp)
                     .padding(horizontal = ContentPadding.normal),
@@ -206,12 +206,12 @@ private inline fun More(
 
         onItemClick = { position ->
             val direction = when (position) {
-                0 -> BucketsRoute(Type.GENRES.name)
-                1 -> TracksRoute(Type.AUDIOS.name, id = "")
-                2 -> BucketsRoute(Type.FOLDERS.name)
+                0 -> Buckets.direction(Type.GENRES)
+                1 -> Tracks.direction(Type.AUDIOS)
+                2 -> Buckets.direction(Type.FOLDERS)
                 else -> error("No such direction supported!!")
             }
-            navigator.navigateTo(direction)
+            navigator.navigate(direction)
         })
 }
 
@@ -224,14 +224,14 @@ private inline fun TextButton(
     modifier: Modifier = Modifier,
 ) {
     TextButton(onClick = onClick,
-        colors = ButtonDefaults.textButtonColors(contentColor = Material.colors.onBackground),
+        colors = ButtonDefaults.textButtonColors(contentColor = Theme.colors.onBackground),
         modifier = modifier,
         content = {
             Icon(imageVector = icon, contentDescription = null)
             Label(
                 text = text.uppercase(),
                 modifier = Modifier.padding(horizontal = ContentPadding.medium),
-                style = Material.typography.body2,
+                style = Theme.typography.body2,
                 fontWeight = FontWeight.SemiBold
             )
         })
@@ -254,8 +254,8 @@ private fun Main(
             icon = Icons.Outlined.FavoriteBorder,
             modifier = Modifier.rotate(false),
             onClick = {
-                val direction = TracksRoute(Type.PLAYLISTS.name, Playback.PLAYLIST_FAVOURITE)
-                navigator.navigateTo(direction)
+                val direction = Tracks.direction(Type.PLAYLISTS, Playback.PLAYLIST_FAVOURITE)
+                navigator.navigate(direction)
             })
 
         // 2nd row of buttons
@@ -271,12 +271,12 @@ private fun Main(
                 },
             )
             TextButton(text = "Playlists", icon = Icons.Outlined.FeaturedPlayList, onClick = {
-                val direction = BucketsRoute(Type.PLAYLISTS.name)
-                navigator.navigateTo(direction)
+                val direction = Buckets.direction(Type.PLAYLISTS)
+                navigator.navigate(direction)
             })
             TextButton(text = "Artists", icon = Icons.Outlined.Person, onClick = {
-                val direction = BucketsRoute(Type.ARTISTS.name)
-                navigator.navigateTo(direction)
+                val direction = Buckets.direction(Type.ARTISTS)
+                navigator.navigate(direction)
             })
         })
 
@@ -302,12 +302,12 @@ private fun Recent(
         modifier = modifier.width(70.dp),
 
         content = {
-            val color = Material.colors.onBackground
+            val color = Theme.colors.onBackground
             val shape = CircleShape
 
             Image(
-                albumId = value.albumId, fallback = error,
-
+                data = value.albumUri,
+                fallback = error,
                 modifier = Modifier
                     .border(width = 3.dp, color = color, shape = shape)
                     .padding(5.dp)
@@ -319,7 +319,7 @@ private fun Recent(
             Label(
                 text = value.name,
                 modifier = Modifier.padding(vertical = ContentPadding.small),
-                style = Material.typography.caption2,
+                style = Theme.typography.caption2,
                 fontWeight = FontWeight.SemiBold,
                 color = color
             )
@@ -404,7 +404,7 @@ private fun Recents(modifier: Modifier = Modifier) {
                 ) { audio ->
                     Recent(value = audio,
                         modifier = Modifier
-                            .clip(Material.shapes.small)
+                            .clip(Theme.shapes.small)
                             .clickable { }
                             .padding(4.dp),
                         error = fallback)
@@ -415,7 +415,6 @@ private fun Recents(modifier: Modifier = Modifier) {
 }
 
 
-@Route(navGraph = RouteNavGraph(start = true))
 @Composable
 fun Library(
     viewModel: LibraryViewModel
@@ -442,8 +441,8 @@ fun Library(
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         if (query.isNotBlank()) {
-                            val direction = TracksRoute(Type.AUDIOS.name, "", query)
-                            navigator.navigateTo(direction)
+                            val direction = Tracks.direction(Type.AUDIOS, query = query)
+                            navigator.navigate(direction)
                         }
                     },
                 )
@@ -455,7 +454,7 @@ fun Library(
                 modifier = Modifier
                     .padding(horizontal = ContentPadding.normal)
                     .offset(y = (-15).dp),
-                style = Material.typography.overline,
+                style = Theme.typography.overline,
                 fontSize = 18.sp,
                 letterSpacing = 8.sp,
                 fontWeight = FontWeight.SemiBold
@@ -474,7 +473,7 @@ fun Library(
                 modifier = Modifier.padding(
                     horizontal = ContentPadding.normal, vertical = ContentPadding.normal
                 ),
-                style = Material.typography.overline,
+                style = Theme.typography.overline,
                 fontSize = 18.sp,
                 letterSpacing = 8.sp,
                 fontWeight = FontWeight.SemiBold

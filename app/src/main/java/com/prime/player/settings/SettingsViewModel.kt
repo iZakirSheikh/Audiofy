@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
@@ -34,11 +33,17 @@ data class Preference<out P>(
     @JvmField val summery: Text? = null,
 )
 
+typealias Settings = SettingsViewModel.Companion
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferences: Preferences
 ) : ViewModel() {
+
+    companion object {
+        const val route = "settings"
+    }
+
 
     val darkUiMode = with(preferences) {
         preferences[Audiofy.NIGHT_MODE].map {
@@ -108,18 +113,6 @@ class SettingsViewModel @Inject constructor(
             )
         }.asComposeState()
     }
-
-    val showProgressInMini = with(preferences) {
-        preferences[Audiofy.SHOW_MINI_PROGRESS_BAR].map {
-            Preference(
-                value = it,
-                title = Text("MiniPlayer Progress Bar"),
-                summery = Text("Show/Hide progress bar in MiniPlayer."),
-                vector = Icons.Outlined.Report
-            )
-        }.asComposeState()
-    }
-
 
     fun <S, O> set(key: Key<S, O>, value: O) {
         viewModelScope.launch {
