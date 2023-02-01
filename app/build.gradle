@@ -83,8 +83,6 @@ dependencies {
     //Android KTX is a set of Kotlin extensions that are included with Android Jetpack and other Android libraries.
     implementation 'androidx.core:core-ktx:1.9.0'
     // required for recent view.
-    // FixMe: Remove this when updating Library.
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
     def compose_version = '1.4.0-alpha05'
     implementation "androidx.compose.ui:ui:$compose_version"
@@ -119,8 +117,6 @@ dependencies {
 
     // The Accompanist Libraries
     def accompanist_version = '0.27.1'
-
-    //implementation "com.google.accompanist:accompanist-coil:$accompanist_version"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation('io.coil-kt:coil-compose:2.2.2')
@@ -136,7 +132,7 @@ dependencies {
     implementation "com.airbnb.android:lottie-compose:$lottie_version"
 
     //Ken Burns
-    // FixMe: Build Comose alternative; check compose marque modifier.
+    // FixMe: Build Compose alternative; check compose marque modifier.
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Preferences and other widgets
