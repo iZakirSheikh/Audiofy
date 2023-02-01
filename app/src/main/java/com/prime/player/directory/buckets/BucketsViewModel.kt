@@ -1,15 +1,14 @@
-package com.prime.player.buckets
+package com.prime.player.directory.buckets
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prime.player.buckets.args.BucketsRouteArgsFactory
-import com.prime.player.common.ToastHostState
-import com.prime.player.common.Type
-import com.prime.player.common.show
 import com.prime.player.core.Repository
+import com.prime.player.core.compose.ToastHostState
+import com.prime.player.core.compose.show
 import com.prime.player.core.db.Playlist
 import com.prime.player.core.db.name
+import com.prime.player.directory.Type
 import com.primex.core.Result
 import com.primex.core.Text
 import com.primex.core.buildResult
@@ -21,12 +20,29 @@ import javax.inject.Inject
 
 typealias BucketResult = Map<String, List<Any>>
 
+
+typealias Buckets = BucketsViewModel.Companion
+
 @HiltViewModel
 class BucketsViewModel @Inject constructor(
-    handle: SavedStateHandle, private val repository: Repository
+    handle: SavedStateHandle,
+    private val repository: Repository
 ) : ViewModel() {
+    companion object {
+        private const val KEY_ARG_TYPE = "_type"
 
-    val type = BucketsRouteArgsFactory.fromSavedStateHandle(handle).type.let { Type.valueOf(it) }
+        const val route = "buckets/{$KEY_ARG_TYPE}"
+
+        /**
+         * Constructs the [direction] from [BucketsViewModel]
+         */
+        fun direction(type: Type) = "buckets/${type.name}"
+    }
+
+
+    val type = handle.get<String>(KEY_ARG_TYPE)!!.let {
+        Type.valueOf(it)
+    }
 
     val isTypePlaylists: Boolean = type == Type.PLAYLISTS
 
@@ -75,28 +91,47 @@ class BucketsViewModel @Inject constructor(
     }
 
     private val observables = when (type) {
-        Type.PLAYLISTS -> repository.playlists.map { it.groupBy { playlist -> playlist.name.firstChar } }
+        Type.PLAYLISTS ->
+            repository
+                .playlists
+                .map { it.groupBy { playlist -> playlist.name.firstChar } }
+        Type.FOLDERS ->
+            repository
+                .folders
+                .map { it.groupBy { folder -> folder.name.firstChar } }
 
-        Type.FOLDERS -> repository.folders.map { it.groupBy { folder -> folder.name.firstChar } }
+        Type.ARTISTS ->
+            repository
+                .artists
+                .map { it.groupBy { artist -> artist.name.firstChar } }
 
-        Type.ARTISTS -> repository.artists.map { it.groupBy { artist -> artist.name.firstChar } }
+        Type.ALBUMS ->
+            repository
+                .albums
+                .map { it.groupBy { album -> album.title.firstChar } }
 
-        Type.ALBUMS -> repository.albums.map { it.groupBy { album -> album.title.firstChar } }
-
-        Type.GENRES -> repository.genres.map { it.groupBy { genre -> genre.name.firstChar } }
+        Type.GENRES ->
+            repository
+                .genres
+                .map { it.groupBy { genre -> genre.name.firstChar } }
         //
         else -> error("No such Group type: $type")
     }
 
     @OptIn(FlowPreview::class)
-    val result: Result<BucketResult> = buildResult(emptyMap()) {
-        observables.debounce(300).distinctUntilChanged().map { it.toSortedMap() }.onEach {
-            emit(it)
-            // change state to empty.
-            if (it.isEmpty()) emit(Result.State.Empty)
-        }.catch { emit(Result.State.Error(Text("An Unknown error occurred."))) }
-            .launchIn(viewModelScope)
-    }
+    val result: Result<BucketResult> =
+        buildResult(emptyMap()) {
+            observables
+                .debounce(300)
+                .distinctUntilChanged()
+                .map { it.toSortedMap() }
+                .onEach {
+                    emit(it)
+                    // change state to empty.
+                    if (it.isEmpty()) emit(Result.State.Empty)
+                }.catch { emit(Result.State.Error(Text("An Unknown error occurred."))) }
+                .launchIn(viewModelScope)
+        }
 }
 
 private inline val String.firstChar

@@ -2,11 +2,9 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-    id 'kotlinx-serialization'
     id 'dagger.hilt.android.plugin'
     id 'com.google.gms.google-services'
-    // Add the Crashlytics Gradle plugin
-    id 'com.google.firebase.crashlytics'
+    id 'com.google.firebase.crashlytics' // Add the Crashlytics Gradle plugin
 }
 
 android {
@@ -16,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 28
-        versionName "2.0.4"
+        versionCode 29
+        versionName "2.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -85,13 +83,13 @@ dependencies {
     //Android KTX is a set of Kotlin extensions that are included with Android Jetpack and other Android libraries.
     implementation 'androidx.core:core-ktx:1.9.0'
     // required for recent view.
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
-    def compose_version = '1.4.0-alpha04'
+    def compose_version = '1.4.0-alpha05'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    implementation "androidx.compose.animation:animation-graphics:$compose_version"
 
     // Integration with activities
     implementation 'androidx.activity:activity-compose:1.6.1'
@@ -99,7 +97,7 @@ dependencies {
     // Material design icons
     implementation "androidx.compose.material:material-icons-core:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    implementation "androidx.compose.animation:animation-graphics:$compose_version"
+
 
     //constraint layout
     implementation 'androidx.constraintlayout:constraintlayout-compose:1.0.1'
@@ -119,9 +117,6 @@ dependencies {
 
     // The Accompanist Libraries
     def accompanist_version = '0.27.1'
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-
-    //implementation "com.google.accompanist:accompanist-coil:$accompanist_version"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation('io.coil-kt:coil-compose:2.2.2')
@@ -132,40 +127,20 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
-    //ticker view
-    implementation 'com.robinhood.ticker:ticker:2.0.4'
-
     //lottie
     def lottie_version = '5.2.0'
     implementation "com.airbnb.android:lottie-compose:$lottie_version"
 
-    // kotlin json serialization library
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
-
-    //palette to extract image colors
-    implementation "androidx.palette:palette-ktx:1.0.0"
-
     //Ken Burns
+    // FixMe: Build Compose alternative; check compose marque modifier.
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Preferences and other widgets
     def support_version = '1.0.0-alpha23'
     implementation "com.github.prime-zs:support:$support_version"
 
-    //work manager
-    def work_version = "2.7.1"
-    implementation("androidx.work:work-runtime-ktx:$work_version")
-    implementation("androidx.hilt:hilt-work:1.0.0")
-    // hilt support for work manager
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
-
     // Splash Screen API
     implementation 'androidx.core:core-splashscreen:1.0.0'
-
-    // Safe Args Compose
-    def safe_args_version = "2.5.0"
-    kapt("com.github.levinzonr.compose-safe-routing:processor-kapt:$safe_args_version")
-    implementation "com.github.levinzonr.compose-safe-routing:accompanist-navigation:$safe_args_version"
 
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
@@ -177,12 +152,6 @@ dependencies {
 
     // for support of multiple screen sizes
     implementation "androidx.window:window:1.0.0"
-
-    //required by playback service
-    implementation 'androidx.media:media:1.6.0'
-
-    //palette to extract image colors
-    implementation "androidx.palette:palette-ktx:1.0.0"
 
     //Play In-App Update:
     def in_app_update_version = '2.0.1'
@@ -198,7 +167,6 @@ dependencies {
     def billing_version = '5.1.0'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation "com.android.billingclient:billing-ktx:$billing_version"
-    //implementation("androidx.startup:startup-runtime:1.1.1")
 
     //Unity Ads
     implementation 'com.unity3d.ads:unity-ads:4.5.0'
@@ -208,5 +176,4 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
     implementation("androidx.media3:media3-session:$media3_version")
-
 }

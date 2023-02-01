@@ -1,4 +1,4 @@
-package com.prime.player.tracks
+package com.prime.player.directory.tracks
 
 import android.content.Context
 import android.content.Intent
@@ -11,11 +11,13 @@ import androidx.lifecycle.viewModelScope
 import com.prime.player.R
 import com.prime.player.common.*
 import com.prime.player.core.*
+import com.prime.player.core.compose.ToastHostState
+import com.prime.player.core.compose.show
 import com.prime.player.core.db.Audio
 import com.prime.player.core.db.Playlist
 import com.prime.player.core.db.Playlists
 import com.prime.player.core.playback.Remote
-import com.prime.player.tracks.args.TracksRouteArgsFactory
+import com.prime.player.directory.Type
 import com.primex.core.Result
 import com.primex.core.Text
 import com.primex.core.buildResult
@@ -44,6 +46,9 @@ data class Meta(
     val artwork: Uri? = null,
 )
 
+typealias Tracks = TracksViewModel.Companion
+
+private const val NULL_STRING = "@null"
 
 @HiltViewModel
 class TracksViewModel @Inject constructor(
@@ -52,17 +57,32 @@ class TracksViewModel @Inject constructor(
     private val remote: Remote,
 ) : ViewModel() {
 
-    private val args = TracksRouteArgsFactory.fromSavedStateHandle(handle = handle)
+    companion object {
+        private const val KEY_ARG_TYPE = "_type"
+        private const val KEY_ARG_ID = "_id"
+        private const val KEY_ARG_QUERY = "_query"
 
-    // extract all the args from the saved state handle.
-    val type = args.type.let { Type.valueOf(it) }
+        const val route = "tracks/{$KEY_ARG_TYPE}/{$KEY_ARG_ID}/{$KEY_ARG_QUERY}"
+
+        fun direction(
+            type: Type,
+            id: String = NULL_STRING,
+            query: String = NULL_STRING
+        ) =
+            "tracks/${type.name}/$id/$query"
+    }
+
+    val type = handle.get<String>(KEY_ARG_TYPE)!!.let { Type.valueOf(it) }
 
     /**
      * The unique id used to extract the contents of the particular bucket.
      */
-    private val uuid: String = args.id
-
-    val query = args.query?.let { if (it == "@null") null else it }
+    private val uuid: String = handle.get<String>(KEY_ARG_ID)!!.let {
+        if (it == NULL_STRING) "" else it
+    }
+    val query = handle.get<String?>(KEY_ARG_QUERY)!!.let {
+        if (it == NULL_STRING) null else it
+    }
 
     val title: Text =
         when (type) {

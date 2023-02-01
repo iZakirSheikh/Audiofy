@@ -16,25 +16,34 @@ import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import com.google.common.util.concurrent.Uninterruptibles
 import com.prime.player.R
 import com.prime.player.core.db.Audio
 import com.primex.core.Text
 import com.primex.core.TextPlural
 import com.primex.core.runCatching
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.annotations.Contract
 import java.util.*
+import java.util.concurrent.ExecutionException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.time.ExperimentalTime
-
 
 private const val TAG = "Util"
 
-object UrlUtil
-
+/**
+ * A local scope for some util funs.
+ */
 object Util
 
 context (ViewModel) @Suppress("NOTHING_TO_INLINE")
@@ -46,6 +55,9 @@ inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
 }
 
 
+/**
+ * A scope for [FileUtils] functions.
+ */
 object FileUtils {
     /**
      * The Unix separator character.
@@ -96,31 +108,20 @@ fun FileUtils.extension(url: String): String? =
 @Contract(pure = true)
 fun FileUtils.areAncestorsHidden(path: String): Boolean = path.contains(HIDDEN_PATTERN)
 
-
 /**
  * Returns [bytes] as formatted data unit.
  */
-@Deprecated("find new solution.")
+@Deprecated(message = "find new solution.")
 fun FileUtils.toFormattedDataUnit(
     context: Context,
     bytes: Long,
     short: Boolean = true,
-) = when (short) {
+): String = when (short) {
     true -> android.text.format.Formatter.formatShortFileSize(context, bytes)
     else -> android.text.format.Formatter.formatFileSize(context, bytes)
 }
 
-/**
- * Gets the file name from the provided url.
- */
-fun UrlUtil.name(url: String): String? {
-    // val decodedUrl = Uri.decode(url) ?: return null
-    //if (!url.endsWith("/") /*&& decodedUrl.indexOf('?') < 0*/) return null
-    val index = url.lastIndexOf('/') + 1
-    return if (index > 0) url.substring(index) else null
-}
-
-@Deprecated("find new solution.")
+@Deprecated("use imageLoader on context.")
 suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
     val request = ImageRequest.Builder(context = applicationContext).data(uri)
         // We scale the image to cover 128px x 128px (i.e. min dimension == 128px)
@@ -132,7 +133,6 @@ suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
         else -> null
     }
 }
-
 
 //language=RegExp
 private val ISO6709LocationPattern = Pattern.compile("([+\\-][0-9.]+)([+\\-][0-9.]+)")
@@ -183,7 +183,6 @@ fun Util.formatAsDuration2(mills: Long): Text {
         }
     }
 }
-
 
 /**
  * Return given duration in a human-friendly format. For example, "4
@@ -280,7 +279,6 @@ fun Util.formatAsTime(mills: Long): String {
     }
 }
 
-
 @WorkerThread
 @Deprecated("find better solution.")
 fun Context.share(audios: List<Audio>) {
@@ -326,3 +324,69 @@ fun Context.share(audio: Audio) {
         Toast.makeText(this, "Could not share this file,", Toast.LENGTH_SHORT).show()
     }
 }
+
+/**
+ * Awaits completion of `this` [ListenableFuture] without blocking a thread.
+ *
+ * This suspend function is cancellable.
+ *
+ * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this function
+ * stops waiting for the future and immediately resumes with [CancellationException][kotlinx.coroutines.CancellationException].
+ *
+ * This method is intended to be used with one-shot Futures, so on coroutine cancellation, the Future is cancelled as well.
+ * If cancelling the given future is undesired, use [Futures.nonCancellationPropagating] or
+ * [kotlinx.coroutines.NonCancellable].
+ */
+public suspend fun <T> ListenableFuture<T>.await(): T {
+    try {
+        if (isDone) return Uninterruptibles.getUninterruptibly(this)
+    } catch (e: ExecutionException) {
+        // ExecutionException is the only kind of exception that can be thrown from a gotten
+        // Future, other than CancellationException. Cancellation is propagated upward so that
+        // the coroutine running this suspend function may process it.
+        // Any other Exception showing up here indicates a very fundamental bug in a
+        // Future implementation.
+        throw e.cause!!
+    }
+
+    return suspendCancellableCoroutine { cont: CancellableContinuation<T> ->
+        addListener(
+            ToContinuation(this, cont),
+            MoreExecutors.directExecutor()
+        )
+        cont.invokeOnCancellation {
+            cancel(false)
+        }
+    }
+}
+
+/**
+ * Propagates the outcome of [futureToObserve] to [continuation] on completion.
+ *
+ * Cancellation is propagated as cancelling the continuation. If [futureToObserve] completes
+ * and fails, the cause of the Future will be propagated without a wrapping
+ * [ExecutionException] when thrown.
+ */
+private class ToContinuation<T>(
+    val futureToObserve: ListenableFuture<T>,
+    val continuation: CancellableContinuation<T>
+) : Runnable {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun run() {
+        if (futureToObserve.isCancelled) {
+            continuation.cancel()
+        } else {
+            try {
+                continuation.resume(Uninterruptibles.getUninterruptibly(futureToObserve))
+            } catch (e: ExecutionException) {
+                // ExecutionException is the only kind of exception that can be thrown from a gotten
+                // Future. Anything else showing up here indicates a very fundamental bug in a
+                // Future implementation.
+                continuation.resumeWithException(e.cause!!)
+            }
+        }
+    }
+}
+
+
+

@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalMaterialApi::class)
 @file:Suppress("FunctionName")
 
-package com.prime.player.buckets
+package com.prime.player.directory.buckets
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -38,15 +38,13 @@ import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
 import com.prime.player.core.*
+import com.prime.player.core.compose.Image
+import com.prime.player.core.compose.Placeholder
 import com.prime.player.core.db.*
-import com.prime.player.tracks.TracksRoute
+import com.prime.player.directory.Type
+import com.prime.player.directory.tracks.Tracks
 import com.primex.core.*
 import com.primex.ui.*
-import cz.levinzonr.saferoute.core.annotations.Route
-import cz.levinzonr.saferoute.core.annotations.RouteArg
-import cz.levinzonr.saferoute.core.annotations.RouteNavGraph
-import cz.levinzonr.saferoute.core.navigateTo
-
 
 private val AlbumShape =
     RoundedCornerShape(8.dp)
@@ -74,7 +72,7 @@ private inline fun Generic(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Material.shapes.medium)
+            .clip(Theme.shapes.medium)
             .then(clickable)
             // add padding after size.
             .padding(GridItemPadding)
@@ -92,13 +90,13 @@ private inline fun Generic(
             text = title,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Material.typography.caption,
+            style = Theme.typography.caption,
         )
 
         // Subtitle
         Label(
             text = subtitle,
-            style = Material.typography.caption2
+            style = Theme.typography.caption2
         )
     }
 }
@@ -128,7 +126,7 @@ private fun Album(
                     .aspectRatio(0.65f),
                 content = {
                     Image(
-                        albumId = value.id,
+                        data = value.uri,
                         fallback = fallback
                     )
                 },
@@ -157,7 +155,7 @@ private fun Genre(
         icon = {
             Surface(
                 color = Color.Transparent,
-                border = BorderStroke(3.dp, Material.colors.onBackground),
+                border = BorderStroke(3.dp, Theme.colors.onBackground),
                 shape = GenreShape,
 
                 modifier = Modifier
@@ -168,7 +166,7 @@ private fun Genre(
                     Label(
                         text = "${value.name[0].uppercaseChar()}",
                         fontWeight = FontWeight.Bold,
-                        style = Material.typography.h4,
+                        style = Theme.typography.h4,
                         modifier = Modifier.wrapContentSize(Alignment.Center)
                     )
                 }
@@ -231,8 +229,8 @@ private fun Artist(
                     .sizeIn(maxWidth = 66.dp)
                     .aspectRatio(1.0f),
                 elevation = ContentElevation.low,
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor,
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor,
 
                 content = {
                     Icon(
@@ -276,8 +274,8 @@ private fun Playlist(
                     .sizeIn(maxWidth = 70.dp)
                     .aspectRatio(1.0f),
                 elevation = ContentElevation.low,
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor,
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor,
 
                 content = {
                     Icon(
@@ -308,8 +306,8 @@ private inline fun EditDialog(
             label = placeholder,
             vectorIcon = Icons.TwoTone.Edit,
             textFieldShape = RoundedCornerShape(20),
-            topBarContentColor = Material.colors.onBackground,
-            topBarBackgroundColor = Material.colors.overlay
+            topBarContentColor = Theme.colors.onBackground,
+            topBarBackgroundColor = Theme.colors.overlay
         )
 }
 
@@ -383,10 +381,10 @@ private const val CONTENT_TYPE_HEADER = "grid_header"
 
 @Composable
 private fun Header(text: String) {
-    val color = Material.colors.secondary
+    val color = Theme.colors.secondary
     Header(
         text = text,
-        style = Material.typography.h4,
+        style = Theme.typography.h4,
         fontWeight = FontWeight.Bold,
         color = color,
 
@@ -414,8 +412,8 @@ context (BucketsViewModel) private inline fun LazyGridScope.Playlists(value: Lis
                 onLongClick = { expanded = true },
                 onPlaylistClick = {
                     val encoded = Uri.encode(playlist.name)
-                    navigator.navigateTo(
-                        TracksRoute(Type.PLAYLISTS.name, encoded)
+                    navigator.navigate(
+                        Tracks.direction(Type.PLAYLISTS, encoded)
                     )
                 }
             )
@@ -430,8 +428,8 @@ private inline fun LazyGridScope.Genres(value: List<Genre>) {
             value = genre,
             onGenreClick = {
                 val encoded = Uri.encode(genre.name)
-                navigator.navigateTo(
-                    TracksRoute(Type.GENRES.name, encoded)
+                navigator.navigate(
+                    Tracks.direction(Type.GENRES, encoded)
                 )
             }
         )
@@ -446,8 +444,8 @@ private inline fun LazyGridScope.Albums(value: List<Album>, fallback: Painter) {
             fallback = fallback,
             onAlbumClick = {
                 val encoded = Uri.encode(album.title)
-                navigator.navigateTo(
-                    TracksRoute(Type.ALBUMS.name, encoded)
+                navigator.navigate(
+                    Tracks.direction(Type.ALBUMS, encoded)
                 )
             }
         )
@@ -461,8 +459,8 @@ private inline fun LazyGridScope.Buckets(value: List<Folder>) {
             value = bucket,
             onFolderClick = {
                 val encoded = Uri.encode(bucket.path)
-                navigator.navigateTo(
-                    TracksRoute(Type.FOLDERS.name, encoded)
+                navigator.navigate(
+                    Tracks.direction(Type.FOLDERS, encoded)
                 )
             }
         )
@@ -476,8 +474,8 @@ private inline fun LazyGridScope.Artists(value: List<Artist>) {
             value = artist,
             onArtistClick = {
                 val uri = Uri.encode(artist.name)
-                navigator.navigateTo(
-                    TracksRoute(Type.ARTISTS.name, uri)
+                navigator.navigate(
+                    Tracks.direction(Type.ARTISTS, uri)
                 )
             }
         )
@@ -486,32 +484,24 @@ private inline fun LazyGridScope.Artists(value: List<Artist>) {
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Route(
-    args = [RouteArg(name = "type", type = String::class)],
-    navGraph = RouteNavGraph(start = false)
-)
 @Composable
 fun Buckets(
     viewModel: BucketsViewModel
 ) {
     Scaffold(
         topBar = {
-            val colorize by Material.colorStatusBar
             val navigator = LocalNavController.current
 
             NeumorphicTopAppBar(
                 title = { Label(text = viewModel.type.name) },
                 elevation = ContentElevation.low,
                 shape = CircleShape,
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor,
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor,
 
                 modifier = Modifier
-                    .statusBarsPadding2(
-                        color = if (colorize) Material.colors.primaryVariant else Color.Transparent,
-                        darkIcons = !colorize && Material.colors.isLight
-                    )
-                    .drawHorizontalDivider(color = Material.colors.onSurface)
+                    .statusBarsPadding()
+                    .drawHorizontalDivider(color = Theme.colors.onSurface)
                     .padding(vertical = ContentPadding.medium),
 
                 navigationIcon = {

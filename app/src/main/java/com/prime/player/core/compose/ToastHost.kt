@@ -1,4 +1,4 @@
-package com.prime.player.common
+package com.prime.player.core.compose
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
@@ -22,14 +22,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.prime.player.common.ToastHostState.Data
-import com.prime.player.common.ToastHostState.Duration
+import com.prime.player.common.composable
+import com.prime.player.core.compose.ToastHostState.Data
+import com.prime.player.core.compose.ToastHostState.Duration
 import com.primex.core.Text
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import com.prime.player.common.ToastHostState.Result
+import com.prime.player.core.compose.ToastHostState.Result
 import com.primex.core.obtain
 import com.primex.ui.Label
 import com.primex.ui.ListTile

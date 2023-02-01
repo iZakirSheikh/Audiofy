@@ -3,8 +3,11 @@ package com.prime.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,55 +19,32 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.player.buckets.Buckets
-import com.prime.player.buckets.BucketsViewModel
 import com.prime.player.common.*
 import com.prime.player.console.Console
 import com.prime.player.console.ConsoleViewModel
+import com.prime.player.core.compose.Player
+import com.prime.player.core.compose.PlayerState
+import com.prime.player.core.compose.PlayerValue
+import com.prime.player.core.compose.rememberPlayerState
+import com.prime.player.directory.buckets.Buckets
+import com.prime.player.directory.buckets.BucketsViewModel
+import com.prime.player.directory.tracks.Tracks
+import com.prime.player.directory.tracks.TracksViewModel
 import com.prime.player.library.Library
 import com.prime.player.library.LibraryViewModel
 import com.prime.player.settings.Settings
 import com.prime.player.settings.SettingsViewModel
-import com.prime.player.tracks.MainGraphRoutes
-import com.prime.player.tracks.Tracks
-import com.prime.player.tracks.TracksViewModel
-import cz.levinzonr.saferoute.core.ProvideRouteSpecArgs
-import cz.levinzonr.saferoute.core.RouteSpec
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 private val EnterTransition =
-    scaleIn(initialScale = 0.98f, animationSpec = tween(220, delayMillis = 90)) +
-            fadeIn(animationSpec = tween(700))
-private val ExitTransition = fadeOut(tween(700))
+    scaleIn(
+        initialScale = 0.98f,
+        animationSpec = tween(220, delayMillis = 90)
+    ) + fadeIn(animationSpec = tween(700))
 
-
-///missing fun
-@OptIn(ExperimentalAnimationApi::class)
-private fun NavGraphBuilder.composable(
-    spec: RouteSpec<*>,
-    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-    popEnterTransition: (
-    AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?
-    )? = enterTransition,
-    popExitTransition: (
-    AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?
-    )? = exitTransition,
-    content: @Composable (NavBackStackEntry) -> Unit
-) = composable(
-    spec.route,
-    spec.navArgs,
-    spec.deepLinks,
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
-    popEnterTransition = popEnterTransition,
-    popExitTransition = popExitTransition
-) {
-    ProvideRouteSpecArgs(spec = spec, entry = it) {
-        content.invoke(it)
-    }
-}
+private val ExitTransition =
+    fadeOut(tween(700))
 
 private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()
 
@@ -73,35 +53,35 @@ private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() els
 private fun NavGraph() {
     AnimatedNavHost(
         navController = LocalNavController.current,
-        startDestination = MainGraphRoutes.Library.route,
+        startDestination = Library.route,
         modifier = Modifier,
         enterTransition = { EnterTransition },
         exitTransition = { ExitTransition },
         builder = {
 
-            composable(MainGraphRoutes.Library) {
+            composable(Library.route) {
                 val viewModel = hiltViewModel<LibraryViewModel>()
                 Library(viewModel = viewModel)
             }
 
-            composable(MainGraphRoutes.Buckets) {
+            composable(Buckets.route) {
                 val viewModel = hiltViewModel<BucketsViewModel>()
                 Buckets(viewModel = viewModel)
             }
 
-            composable(MainGraphRoutes.Tracks) {
+            composable(Tracks.route) {
                 val viewModel = hiltViewModel<TracksViewModel>()
                 Tracks(viewModel = viewModel)
             }
 
-            composable(MainGraphRoutes.Settings) {
+            composable(Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 Settings(viewModel = viewModel)
             }
-
         }
     )
 }
+
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
@@ -134,10 +114,13 @@ fun Home(show: Boolean) {
             toast = LocalContext.toastHostState,
             progress = LocalContext.inAppUpdateProgress.value,
             content = {
-                Surface(modifier = Modifier.fillMaxSize(), color = Material.colors.background) {
+                Surface(modifier = Modifier.fillMaxSize(), color = Theme.colors.background) {
                     NavGraph()
                 }
-            }
+            },
+            modifier = Modifier
+                .background(Theme.colors.background)
+                .navigationBarsPadding()
         )
     }
 }

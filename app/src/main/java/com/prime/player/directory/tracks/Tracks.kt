@@ -1,4 +1,4 @@
-package com.prime.player.tracks
+package com.prime.player.directory.tracks
 
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
@@ -33,22 +33,16 @@ import androidx.constraintlayout.compose.*
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
+import com.prime.player.core.*
 import com.prime.player.core.billing.*
-import com.prime.player.core.FileUtils
-import com.prime.player.core.Util
-import com.prime.player.core.formatAsDuration
-import com.prime.player.core.toFormattedDataUnit
+import com.prime.player.core.compose.Image
 import com.prime.player.core.db.Audio
+import com.prime.player.directory.Type
 import com.primex.core.Text
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.raw
 import com.primex.core.rememberState
 import com.primex.ui.*
-import com.primex.ui.Placeholder
-import cz.levinzonr.saferoute.core.annotations.Route
-import cz.levinzonr.saferoute.core.annotations.RouteArg
-import cz.levinzonr.saferoute.core.navigateTo
-
 
 context(TracksViewModel) @Composable
 private fun TopAppBar(
@@ -81,8 +75,8 @@ private fun Toolbar(
         shape = TopBarShape,
         elevation = ContentElevation.low,
         modifier = modifier.padding(top = ContentPadding.medium),
-        lightShadowColor = Material.colors.lightShadowColor,
-        darkShadowColor = Material.colors.darkShadowColor,
+        lightShadowColor = Theme.colors.lightShadowColor,
+        darkShadowColor = Theme.colors.darkShadowColor,
 
         title = {
             Column(modifier = Modifier.fillMaxWidth(0.60f)) {
@@ -90,7 +84,7 @@ private fun Toolbar(
                 if (query != null) {
                     Label(
                         text = "$query",
-                        style = Material.typography.caption2
+                        style = Theme.typography.caption2
                     )
                 }
             }
@@ -148,10 +142,10 @@ private fun ActionBar(
         modifier = modifier.padding(top = ContentPadding.medium),
         elevation = ContentElevation.low,
         shape = TopBarShape,
-        contentColor = Material.colors.secondary,
+        contentColor = Theme.colors.secondary,
 
-        lightShadowColor = Material.colors.lightShadowColor,
-        darkShadowColor = Material.colors.darkShadowColor,
+        lightShadowColor = Theme.colors.lightShadowColor,
+        darkShadowColor = Theme.colors.darkShadowColor,
 
         navigationIcon = {
             IconButton(
@@ -227,7 +221,7 @@ private inline fun ConstraintLayoutScope.Text(
     // value
     Header(
         text = value,
-        style = Material.typography.h6,
+        style = Theme.typography.h6,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier.constrainAs(reference, block)
     )
@@ -240,7 +234,7 @@ private inline fun ConstraintLayoutScope.Text(
             end.linkTo(reference.end)
             top.linkTo(reference.bottom, ContentPadding.medium)
         },
-        style = Material.typography.caption2,
+        style = Theme.typography.caption2,
         color = LocalContentColor.current.copy(ContentAlpha.medium),
         fontWeight = FontWeight.SemiBold
     )
@@ -350,8 +344,8 @@ fun Header(
             onClick = { onRequestPlay(context, false, null, channel = channel) },
 
             colors = NeumorphicButtonDefaults.neumorphicButtonColors(
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor
+                lightShadowColor = Theme.colors.lightShadowColor,
+                darkShadowColor = Theme.colors.darkShadowColor
             ),
 
             modifier = Modifier
@@ -376,7 +370,7 @@ fun Header(
         // Title
         Header(
             text = title,
-            style = Material.typography.h5,
+            style = Theme.typography.h5,
             maxLines = 2,
             textAlign = TextAlign.Start,
 
@@ -393,7 +387,7 @@ fun Header(
         Label(
             text = subtitle,
             textAlign = TextAlign.Start,
-            style = Material.typography.caption2,
+            style = Theme.typography.caption2,
             fontWeight = FontWeight.SemiBold,
             color = LocalContentColor.current.copy(ContentAlpha.medium),
             maxLines = 2,
@@ -487,10 +481,10 @@ private fun Header(
     modifier: Modifier = Modifier
 ) {
     val title = stringResource(value = text)
-    val secondary = Material.colors.secondary
+    val secondary = Theme.colors.secondary
 
     val hModifier = Modifier
-        .drawHorizontalDivider(color = Material.colors.secondary)
+        .drawHorizontalDivider(color = Theme.colors.secondary)
         .fillMaxWidth()
         .then(modifier)
 
@@ -503,7 +497,7 @@ private fun Header(
             modifier = hModifier
                 .padding(top = ContentPadding.normal)
                 .padding(horizontal = ContentPadding.large),
-            style = Material.typography.h4,
+            style = Theme.typography.h4,
             fontWeight = FontWeight.Bold,
             color = secondary
         )
@@ -518,7 +512,7 @@ private fun Header(
             color = secondary,
             maxLines = 2,
             fontWeight = FontWeight.SemiBold,
-            style = Material.typography.body1,
+            style = Theme.typography.body1,
         )
     }
 }
@@ -575,13 +569,13 @@ private fun Audio.More(
             when (index) {
                 0 -> showPlaylistViewer = true
                 1 -> {
-                    val direction = TracksRoute(Type.ARTISTS.name, this.artist)
-                    navigator.navigateTo(direction)
+                    val direction = Tracks.direction(Type.ARTISTS, this.artist)
+                    navigator.navigate(direction)
                 }
                 2 -> showTrackInfo = true
                 3 -> {
-                    val direction = TracksRoute(Type.ALBUMS.name, this.album)
-                    navigator.navigateTo(direction)
+                    val direction = Tracks.direction(Type.ALBUMS, this.album)
+                    navigator.navigate(direction)
                 }
                 4 -> resolver.share(context)
             }
@@ -610,7 +604,7 @@ private fun Track(
         overlineText = {
             Label(
                 text = value.name,
-                style = Material.typography.body1,
+                style = Theme.typography.body1,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
             )
@@ -629,7 +623,7 @@ private fun Track(
         // secondary text
         secondaryText = {
             Label(
-                style = Material.typography.body2,
+                style = Theme.typography.body2,
                 text = value.album,
                 color = LocalContentColor.current.copy(ContentAlpha.medium),
 
@@ -641,7 +635,7 @@ private fun Track(
         modifier = Modifier
             .then(
                 if (drawDivider) Modifier.drawHorizontalDivider(
-                    color = Material.colors.onSurface,
+                    color = Theme.colors.onSurface,
                 ) else Modifier
             )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
@@ -656,8 +650,8 @@ private fun Track(
                 elevation = ContentElevation.high
             ) {
                 Image(
-                    albumId = value.albumId,
-                    fallback = fallback,
+                    data = value.albumUri,
+                    fallback = fallback ?: painterResource(id = R.drawable.default_art),
                     contentScale = ContentScale.Crop,
                 )
             }
@@ -712,26 +706,6 @@ private inline fun Audio.trailing(resolver: TracksViewModel) =
     }
 
 @OptIn(ExperimentalFoundationApi::class)
-@Route(
-    args = [
-        // type of the group whose tracks are to be displayed
-        RouteArg(
-            name = "type",
-            type = String::class
-        ),
-
-        // id of the particular group in type.
-        RouteArg(name = "id", type = String::class),
-
-        // optional query works only with all audios.
-        RouteArg(
-            name = "query",
-            type = String::class,
-            isOptional = true,
-            isNullable = true
-        ),
-    ]
-)
 @Composable
 fun Tracks(
     viewModel: TracksViewModel
@@ -739,21 +713,17 @@ fun Tracks(
     with(viewModel) {
         Scaffold(
             topBar = {
-                val colorize by Material.colorStatusBar
                 TopAppBar(
                     modifier = Modifier
-                        .statusBarsPadding2(
-                            color = if (colorize) Material.colors.primaryVariant else Color.Transparent,
-                            darkIcons = !colorize && Material.colors.isLight
-                        )
-                        .drawHorizontalDivider(color = Material.colors.onSurface)
+                        .statusBarsPadding()
+                        .drawHorizontalDivider(color = Theme.colors.onSurface)
                         .padding(bottom = ContentPadding.medium)
                 )
 
             },
             content = {
                 val purchase by LocalContext.billingManager.observeAsState(id = Product.DISABLE_ADS)
-                Placeholder(
+                com.prime.player.core.compose.Placeholder(
                     value = result,
                     modifier = Modifier.padding(it)
                 ) { data ->

@@ -39,13 +39,13 @@ import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.prime.player.common.Placeholder
-import com.prime.player.common.ToastHostState
-import com.prime.player.common.show
 import com.prime.player.core.LocalWindowSizeClass
 import com.prime.player.core.NightMode
 import com.prime.player.core.billing.*
 import com.prime.player.core.calculateWindowSizeClass
+import com.prime.player.core.compose.Placeholder
+import com.prime.player.core.compose.ToastHostState
+import com.prime.player.core.compose.show
 import com.prime.player.core.playback.Remote
 import com.primex.core.activity
 import com.primex.preferences.*
@@ -102,7 +102,7 @@ private fun PermissionRationale(
             modifier = Modifier.size(width = 200.dp, height = 46.dp),
             elevation = null,
         ) {
-            Label(text = "ALLOW", style = Material.typography.button)
+            Label(text = "ALLOW", style = Theme.typography.button)
         }
     }
 }
@@ -366,7 +366,6 @@ object Activity {
     fun toaster() = ToastHostState()
 }
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -439,12 +438,11 @@ class MainActivity : ComponentActivity() {
                 LocalWindowSizeClass provides sWindow,
                 LocalDensity provides modified
             ) {
-                Material(isDark = resolveAppThemeState()) {
+                Theme(isDark = resolveAppThemeState()) {
                     // scaffold
                     // Maybe add support for intro.
                     Crossfade(
-                        targetState = permission.status.isGranted,
-                        modifier = Modifier.navigationBarsPadding()
+                        targetState = permission.status.isGranted
                     ) { has ->
                         when (has) {
                             false -> PermissionRationale { permission.launchPermissionRequest() }

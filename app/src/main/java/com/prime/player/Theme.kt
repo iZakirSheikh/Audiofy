@@ -1,5 +1,6 @@
 package com.prime.player
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.tween
@@ -7,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -14,13 +16,17 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.player.core.FontFamily
 import com.primex.ui.*
 import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
 
 private const val TAG = "Theme"
 
-typealias Material = MaterialTheme
+/**
+ * A simple typealias of [MaterialTheme]
+ */
+typealias Theme = MaterialTheme
 
 /**
  * An Extra font family.
@@ -35,6 +41,7 @@ private val ProvidedFontFamily =
         //bold
         Font(R.font.lato_bold, FontWeight.Bold),
     )
+
 
 /**
  * Constructs the typography with the [fontFamily] provided with support for capitalizing.
@@ -66,9 +73,8 @@ private fun Typography(fontFamily: FontFamily): Typography {
 /**
  * A variant of caption.
  */
-private val caption2 = TextStyle(
-    fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 0.4.sp
-)
+private val caption2 =
+    TextStyle(fontWeight = FontWeight.Normal, fontSize = 10.sp, letterSpacing = 0.4.sp)
 
 /**
  * A variant of caption
@@ -87,11 +93,8 @@ val MaterialTheme.forceColorize
     @Composable inline get() = preference(key = Audiofy.FORCE_COLORIZE)
 
 /**
- * checks If [GlobalKeys.FORCE_COLORIZE]
+ * A vaiant of [MaterialTheme.shapes.small]
  */
-val MaterialTheme.colorStatusBar
-    @Composable inline get() = preference(key = Audiofy.COLOR_STATUS_BAR)
-
 private val small2 = RoundedCornerShape(8.dp)
 
 /**
@@ -108,7 +111,8 @@ val Colors.primaryContainer
 /**
  * On-primary container is applied to content (icons, text, etc.) that sits on top of primary container
  */
-val Colors.onPrimaryContainer @Composable inline get() = colors.primary
+val Colors.onPrimaryContainer
+    @Composable inline get() = colors.primary
 
 val Colors.secondaryContainer
     @Composable inline get() = colors.secondary.copy(MaterialTheme.CONTAINER_COLOR_ALPHA)
@@ -138,6 +142,7 @@ val Colors.darkShadowColor
 private val defaultPrimaryColor = Color.SkyBlue
 private val defaultSecondaryColor = Color.Rose
 
+
 private val defaultThemeShapes =
     Shapes(
         small = RoundedCornerShape(4.dp),
@@ -146,15 +151,13 @@ private val defaultThemeShapes =
     )
 
 @Composable
-fun Material(
-    isDark: Boolean,
-    content: @Composable () -> Unit
-) {
-
+fun Theme(isDark: Boolean, content: @Composable () -> Unit) {
     val background by animateColorAsState(
         targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
         animationSpec = tween(AnimationConstants.DefaultDurationMillis)
     )
+
+    // TODO: update status_bar here.
 
     val surface by animateColorAsState(
         targetValue = if (isDark) Color.TrafficBlack else Color.White,
@@ -163,6 +166,7 @@ fun Material(
 
     val primary = defaultPrimaryColor
     val secondary = defaultSecondaryColor
+
 
     val colors = Colors(
         primary = primary,
@@ -180,6 +184,19 @@ fun Material(
         isLight = !isDark
     )
 
+    // TODO: update status_bar here.
+    val colorize by preference(key = Audiofy.COLOR_STATUS_BAR)
+    val uiController = rememberSystemUiController()
+    val isStatusBarHidden by preference(key = Audiofy.HIDE_STATUS_BAR)
+    Log.d(TAG, "Theme: $colorize $isStatusBarHidden")
+    SideEffect {
+        uiController.setSystemBarsColor(
+            if (colorize) colors.primaryVariant else Color.Transparent,
+            darkIcons = !colorize && !isDark,
+        )
+        uiController.isStatusBarVisible = !isStatusBarHidden
+    }
+
     val fontFamily by preference(key = Audiofy.FONT_FAMILY)
 
     MaterialTheme(
@@ -189,6 +206,3 @@ fun Material(
         content = content
     )
 }
-
-
-
