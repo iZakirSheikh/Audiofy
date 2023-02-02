@@ -48,10 +48,7 @@ class SettingsViewModel @Inject constructor(
     val darkUiMode = with(preferences) {
         preferences[Audiofy.NIGHT_MODE].map {
             Preference(
-                value = when (it) {
-                    NightMode.YES -> true
-                    else -> false
-                },
+                value = it,
                 title = Text("Dark Mode"),
                 summery = Text("Click to change the app night/light mode."),
                 vector = Icons.Outlined.Lightbulb

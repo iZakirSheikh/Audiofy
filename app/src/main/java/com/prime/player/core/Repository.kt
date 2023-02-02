@@ -91,6 +91,7 @@ class Repository @Inject constructor(
             arrayOf(MediaStore.Audio.Media.ALBUM_ID),
             order = MediaStore.Audio.Media.DATE_MODIFIED,
             limit = limit,
+            ascending = false,
         ) { c -> Array(c.count) { c.moveToPosition(it); c.getLong(0) } } ?: emptyArray()
     }
 

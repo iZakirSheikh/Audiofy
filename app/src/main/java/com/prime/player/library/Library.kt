@@ -455,7 +455,7 @@ fun Library(viewModel: LibraryViewModel) {
 
         AnimatedVisibility(visible = showMore) {
             MediaStore(
-                Modifier.padding(horizontal = 22.dp, vertical = 8.dp)
+                Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
             )
         }
 
