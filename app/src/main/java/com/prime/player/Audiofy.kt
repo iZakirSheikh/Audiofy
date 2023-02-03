@@ -31,7 +31,7 @@ class Audiofy : Application() {
         val NIGHT_MODE =
             stringPreferenceKey(
                 "${TAG}_night_mode",
-                NightMode.NO,
+                NightMode.FOLLOW_SYSTEM,
                 object : StringSaver<NightMode> {
                     override fun save(value: NightMode): String = value.name
                     override fun restore(value: String): NightMode = NightMode.valueOf(value)

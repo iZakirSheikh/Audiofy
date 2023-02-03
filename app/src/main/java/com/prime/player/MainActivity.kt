@@ -14,6 +14,7 @@ import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalElevationOverlay
@@ -112,6 +113,7 @@ private fun resolveAppThemeState(): Boolean {
     val mode by preference(key = Audiofy.NIGHT_MODE)
     return when (mode) {
         NightMode.YES -> true
+        NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         else -> false
     }
 }

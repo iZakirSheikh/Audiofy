@@ -117,17 +117,20 @@ private fun Layout(
 
         //dark mode
         val darkTheme by resolver.darkUiMode
-        SwitchPreference(
-            checked = darkTheme.value,
+        DropDownPreference(
             title = stringResource(value = darkTheme.title),
-            summery = stringResource(value = darkTheme.summery),
+            defaultValue = darkTheme.value,
             icon = darkTheme.vector,
-            onCheckedChange = { new: Boolean ->
-                resolver.set(Audiofy.NIGHT_MODE, if (new) NightMode.YES else NightMode.NO)
+            entries = listOf(
+                "Dark Theme" to NightMode.YES,
+                "Light Theme" to NightMode.NO,
+                "Sync with System" to NightMode.FOLLOW_SYSTEM
+            ),
+            onRequestChange = {
+                resolver.set(Audiofy.NIGHT_MODE, it)
                 activity.showAd(force = true)
             }
         )
-
 
         //font
         val font by resolver.font
