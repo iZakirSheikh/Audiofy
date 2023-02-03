@@ -284,7 +284,7 @@ private fun Recents(
 }
 
 @Composable
-inline fun VertButton(
+private inline fun VertButton(
     icon: ImageVector,
     label: String,
     modifier: Modifier = Modifier,
@@ -308,7 +308,7 @@ inline fun VertButton(
  * The shortcut of Android [MediaStore]
  */
 @Composable
-fun MediaStore(modifier: Modifier = Modifier) {
+private fun MediaStore(modifier: Modifier = Modifier) {
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
@@ -455,7 +455,7 @@ fun Library(viewModel: LibraryViewModel) {
 
         AnimatedVisibility(visible = showMore) {
             MediaStore(
-                Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
+                Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp)
             )
         }
 
@@ -467,7 +467,7 @@ fun Library(viewModel: LibraryViewModel) {
             title = "Albums",
             icon = Icons.Outlined.Album,
             modifier = Modifier
-                .padding(start = ContentPadding.normal)
+               // .padding(start = ContentPadding.normal)
                 .padding(
                     horizontal = ContentPadding.normal,
                     vertical = 10.dp
