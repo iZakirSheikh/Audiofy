@@ -14,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 29
-        versionName "2.1.0"
+        versionCode 30
+        versionName "2.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -70,7 +70,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.0'
+        kotlinCompilerExtensionVersion '1.4.2'
     }
     packagingOptions {
         resources {
@@ -84,7 +84,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     // required for recent view.
 
-    def compose_version = '1.4.0-alpha05'
+    def compose_version = '1.4.0-beta01'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -144,7 +144,7 @@ dependencies {
 
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.1.1')
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'

@@ -122,8 +122,8 @@ private fun Layout(
             defaultValue = darkTheme.value,
             icon = darkTheme.vector,
             entries = listOf(
-                "Dark Theme" to NightMode.YES,
-                "Light Theme" to NightMode.NO,
+                "Dark" to NightMode.YES,
+                "Light" to NightMode.NO,
                 "Sync with System" to NightMode.FOLLOW_SYSTEM
             ),
             onRequestChange = {
