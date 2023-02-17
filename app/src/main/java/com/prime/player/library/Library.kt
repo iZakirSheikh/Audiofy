@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -40,7 +39,6 @@ import com.prime.player.common.ContentPadding
 import com.prime.player.common.LocalNavController
 import com.prime.player.common.LocalWindowPadding
 import com.prime.player.core.Repository
-import com.prime.player.core.albumUri
 import com.prime.player.core.billing.Product
 import com.prime.player.core.billing.observeAsState
 import com.prime.player.core.billing.purchased
@@ -48,11 +46,9 @@ import com.prime.player.core.compose.Image
 import com.prime.player.core.compose.KenBurns
 import com.prime.player.core.compose.OutlinedButton2
 import com.prime.player.core.compose.Placeholder
-import com.prime.player.core.db.Audio
+import com.prime.player.core.db.Playlist
 import com.prime.player.core.playback.Playback
-import com.prime.player.directory.Type
-import com.prime.player.directory.buckets.Buckets
-import com.prime.player.directory.tracks.Tracks
+import com.prime.player.directory.local.*
 import com.prime.player.settings.Settings
 import com.primex.core.gradient
 import com.primex.core.rememberState
@@ -231,7 +227,7 @@ private val RecentArtworkSize = 56.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Recents(
-    list: List<Audio>?, // TODO: Make it a general list
+    list: List<Playlist.Member>?, // TODO: Make it a general list
     modifier: Modifier = Modifier
 ) {
     Crossfade(
@@ -266,7 +262,7 @@ private fun Recents(
 
                     items(list ?: emptyList(), key = { it.id }) {
                         Recent(
-                            image = it.albumUri,
+                            image = it.artwork,
                             modifier = Modifier
                                 .clip(Theme.shapes.small)
                                 // TODO: Play on click
@@ -274,7 +270,7 @@ private fun Recents(
                                 .animateItemPlacement()
                                 .padding(4.dp),
                             error = fallback,
-                            title = it.name
+                            title = it.title
                         )
                     }
                 }
@@ -319,7 +315,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
         val navigator = LocalNavController.current
         VertButton(
             onClick = {
-                val direction = Buckets.direction(Type.GENRES)
+                val direction = Genres.direction()
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.Grain,
@@ -328,7 +324,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
 
         VertButton(
             onClick = {
-                val direction = Buckets.direction(Type.ARTISTS)
+                val direction = Artists.direction()
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.Person,
@@ -337,7 +333,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
 
         VertButton(
             onClick = {
-                val direction = Tracks.direction(Type.PLAYLISTS, Playback.PLAYLIST_FAVOURITE)
+                val direction = Members.direction(Playback.PLAYLIST_FAVOURITE)
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.HeartBroken,
@@ -346,7 +342,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
 
         VertButton(
             onClick = {
-                val direction = Tracks.direction(Type.AUDIOS)
+                val direction = Audios.direction(Audios.GET_EVERY)
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.Audiotrack,
@@ -355,7 +351,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
 
         VertButton(
             onClick = {
-                val direction = Buckets.direction(Type.PLAYLISTS)
+                val direction = Playlists.direction()
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.PlaylistAdd,
@@ -364,7 +360,7 @@ private fun MediaStore(modifier: Modifier = Modifier) {
 
         VertButton(
             onClick = {
-                val direction = Buckets.direction(Type.FOLDERS)
+                val direction = Folders.direction()
                 navigator.navigate(direction)
             },
             icon = Icons.Outlined.Folder,
@@ -403,7 +399,7 @@ fun Library(viewModel: LibraryViewModel) {
             keyboardActions = KeyboardActions(
                 onSearch = {
                     if (query.isNotBlank()) {
-                        val direction = Tracks.direction(Type.AUDIOS, query = query)
+                        val direction = Audios.direction(Audios.GET_EVERY, query = query)
                         navigator.navigate(direction)
                     }
                 },
@@ -467,7 +463,7 @@ fun Library(viewModel: LibraryViewModel) {
             title = "Albums",
             icon = Icons.Outlined.Album,
             modifier = Modifier
-               // .padding(start = ContentPadding.normal)
+                // .padding(start = ContentPadding.normal)
                 .padding(
                     horizontal = ContentPadding.normal,
                     vertical = 10.dp
@@ -475,7 +471,7 @@ fun Library(viewModel: LibraryViewModel) {
                 .aspectRatio(1.2f)
                 .fillMaxWidth()
         ) {
-            val direction = Buckets.direction(Type.ALBUMS)
+            val direction = Albums.direction()
             navigator.navigate(direction)
         }
 
