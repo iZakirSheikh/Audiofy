@@ -773,7 +773,8 @@ class Repository @Inject constructor(
         val audio = findAudio(audioID) ?: return false
         //TODO: Update dateModified.
         val older = playlistz.lastPlayOrder(audioID) ?: 0
-        val member = audio.toMember(audioID, older + 1)
+        val id = playlistz.get(name)?.id ?:  return false
+        val member = audio.toMember(id, older + 1)
         return insert(member)
     }
 

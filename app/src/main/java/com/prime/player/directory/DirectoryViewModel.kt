@@ -5,9 +5,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.primex.core.Text
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 private const val TAG = "Directory"
 
@@ -267,7 +269,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * This function toggles the selection state of the item with the specified key. If the item is already
      * selected, it is deselected. If it is not selected, it is selected.
      */
-    fun select(key: String) {
+    open fun select(key: String) {
         if (selected.contains(key))
             (selected as SnapshotStateList).remove(key)
         else
@@ -280,7 +282,13 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * This function deselects all items by clearing the [selected].
      */
     fun clear() {
-        (selected as SnapshotStateList).clear()
+        viewModelScope.launch {
+            val list = ArrayList(selected)
+            list.forEach {
+                // remove each.
+                select(it)
+            }
+        }
     }
 
     /**

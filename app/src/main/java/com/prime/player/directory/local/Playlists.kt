@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.prime.player.core.Repository
 import com.prime.player.core.compose.ToastHostState
 import com.prime.player.core.db.Audio
+import com.prime.player.core.db.Playlist
 import com.prime.player.core.playback.Remote
 import com.prime.player.directory.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
 
-typealias Playlists = GenresViewModel.Companion
+typealias Playlists = PlaylistsViewModel.Companion
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
@@ -21,10 +22,10 @@ class PlaylistsViewModel @Inject constructor(
     private val repository: Repository,
     private val toaster: ToastHostState,
     private val remote: Remote,
-) : DirectoryViewModel<Audio>(handle) {
+) : DirectoryViewModel<Playlist>(handle) {
 
     companion object {
-        private const val HOST = "_local_genres"
+        private const val HOST = "_local_playlist"
 
         val route = compose(HOST)
         fun direction(

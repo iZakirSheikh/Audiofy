@@ -1,5 +1,6 @@
 package com.prime.player.directory
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -147,7 +148,8 @@ private fun <T : Any> Toolbar(
         title = {
             Label(
                 text = title,
-                modifier = Modifier.padding(end = ContentPadding.normal)
+                modifier = Modifier.padding(end = ContentPadding.normal),
+                maxLines = 2
             )
         },
 
@@ -155,7 +157,13 @@ private fun <T : Any> Toolbar(
         navigationIcon = {
             val navigator = LocalNavController.current
             IconButton(
-                onClick = { navigator.navigateUp() },
+                // remove focus else navigateUp
+                onClick = {
+                    if (resolver.focused.isNotBlank())
+                        resolver.focused = ""
+                    else
+                        navigator.navigateUp()
+                },
                 imageVector = Icons.Outlined.ReplyAll,
                 contentDescription = null
             )
@@ -390,6 +398,9 @@ private fun Header(
     modifier: Modifier = Modifier
 ) {
     val title = stringResource(value = value)
+    if (title.isBlank())
+        return Spacer(modifier = modifier)
+
     val color = LocalContentColor.current
     Crossfade(
         targetState = title.length == 1,
@@ -543,6 +554,7 @@ private fun <T : Any> List(
     resolver: DirectoryViewModel<T>,
     cells: GridCells,
     key: ((item: T) -> Any)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     itemContent: @Composable LazyGridItemScope.(T) -> Unit
 ) {
     //TODO: Currently we are only representing the items. However, this logic will be moved
@@ -571,7 +583,7 @@ private fun <T : Any> List(
     LazyVerticalGrid(
         columns = cells,
         modifier = modifier,
-        contentPadding = LocalWindowPadding.current + PaddingValues(horizontal = ContentPadding.medium)
+        contentPadding = LocalWindowPadding.current + contentPadding
     ) {
         // used to pin the list to top.
         // such data search bar is not opened in hiding.
@@ -669,9 +681,19 @@ fun <T : Any> Directory(
     viewModel: DirectoryViewModel<T>,
     cells: GridCells,
     key: ((item: T) -> Any)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     onAction: (action: Action) -> Unit,
     itemContent: @Composable LazyGridItemScope.(T) -> Unit,
 ) {
+    // collapse if expanded and
+    // back button is clicked.
+    BackHandler(viewModel.selected.isNotEmpty() || viewModel.focused.isNotBlank()) {
+        if (viewModel.focused.isNotBlank())
+            viewModel.focused = ""
+        if (viewModel.selected.isNotEmpty())
+            viewModel.clear()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -708,6 +730,7 @@ fun <T : Any> Directory(
                 resolver = viewModel,
                 cells = cells,
                 modifier = Modifier.padding(it),
+                contentPadding = contentPadding,
                 itemContent = itemContent,
                 key = key
             )
