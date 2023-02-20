@@ -388,7 +388,9 @@ fun Library(viewModel: LibraryViewModel) {
         )
 
         MediaStore(
-            Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp)
+            Modifier.padding(
+               ContentPadding.normal
+            )
         )
 
         // recent header

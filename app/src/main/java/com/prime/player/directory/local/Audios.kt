@@ -422,7 +422,7 @@ private fun Audio(
                 onClick = { onAction(Action.Make) },
                 // TODO: Currently we don't know how to grant this focus
                 // Hence we have disabled it. if not in focus.
-                enabled = !checked
+                enabled = focused
             )
         },
         bottom = composable(focused) {
