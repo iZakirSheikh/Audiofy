@@ -56,7 +56,7 @@ import com.primex.core.stringHtmlResource
 import com.primex.ui.*
 
 @Composable
-fun Header(modifier: Modifier = Modifier) {
+fun TopBar(modifier: Modifier = Modifier) {
     TopAppBar(
         modifier = modifier,
         elevation = 0.dp,
@@ -308,61 +308,43 @@ private fun MediaStore(modifier: Modifier = Modifier) {
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
-            // may the user wants to add the padding.
+            // maybe the user wants to add the padding.
             .then(modifier),
     ) {
 
         val navigator = LocalNavController.current
         VertButton(
-            onClick = {
-                val direction = Genres.direction()
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Genres.direction()) },
             icon = Icons.Outlined.Grain,
             label = "Genres"
         )
 
         VertButton(
-            onClick = {
-                val direction = Artists.direction()
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Artists.direction()) },
             icon = Icons.Outlined.Person,
             label = "Artists"
         )
 
         VertButton(
-            onClick = {
-                val direction = Members.direction(Playback.PLAYLIST_FAVOURITE)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
             icon = Icons.Outlined.HeartBroken,
-            label = "Favourite"
+            label = "Favourites"
         )
 
         VertButton(
-            onClick = {
-                val direction = Audios.direction(Audios.GET_EVERY)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
             icon = Icons.Outlined.Audiotrack,
             label = "Audios"
         )
 
         VertButton(
-            onClick = {
-                val direction = Playlists.direction()
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Playlists.direction()) },
             icon = Icons.Outlined.PlaylistAdd,
             label = "Playlist"
         )
 
         VertButton(
-            onClick = {
-                val direction = Folders.direction()
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Folders.direction()) },
             icon = Icons.Outlined.Folder,
             label = "Folders"
         )
@@ -378,10 +360,9 @@ fun Library(viewModel: LibraryViewModel) {
             .verticalScroll(rememberScrollState())
             .background(color = Theme.colors.background),
     ) {
-
         // The TopBar.
         // TODO: Maybe make it collapsable.
-        Header(
+        TopBar(
             modifier = Modifier.statusBarsPadding()
         )
 
@@ -406,25 +387,11 @@ fun Library(viewModel: LibraryViewModel) {
             )
         )
 
-        //header
-        // TODO - Add support for navigate to recents.
-        Header(
-            text = "Recent",
-            modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
-            style = Theme.typography.h4,
-            fontWeight = FontWeight.Light
+        MediaStore(
+            Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp)
         )
 
-        //
-        val recent by viewModel.recent
-        Recents(
-            recent,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-
-        //header
-        var showMore by rememberState(true)
+        // recent header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -432,28 +399,28 @@ fun Library(viewModel: LibraryViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            //header
+            // TODO - Add support for navigate to recents.
             Header(
-                text = "Categories",
+                text = "Recent",
+                modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
                 style = Theme.typography.h4,
                 fontWeight = FontWeight.Light
             )
 
-            val rotate by animateFloatAsState(targetValue = if (showMore) 180f else 0f)
             IconButton(
-                onClick = { showMore = !showMore },
-                imageVector = Icons.Outlined.ExpandMore,
+                onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) },
+                imageVector = Icons.Outlined.NavigateNext,
                 contentDescription = null,
-                modifier = Modifier.graphicsLayer {
-                    this.rotationZ = rotate
-                }
             )
         }
 
-        AnimatedVisibility(visible = showMore) {
-            MediaStore(
-                Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp)
-            )
-        }
+        //
+        val recent by viewModel.recent
+        Recents(
+            recent,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         //Carousel
         // TODO - Add proper carousal support with other destinations as well.

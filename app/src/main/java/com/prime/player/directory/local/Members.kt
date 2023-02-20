@@ -295,7 +295,7 @@ fun Members(viewModel: MembersViewModel) {
         viewModel = viewModel,
         cells = GridCells.Fixed(1),
         onAction = onPerformAction,
-        key = { it.id },
+        key = { it.uri },
     ) { member ->
         // emit checked for each item.
         val checked by remember {
@@ -326,8 +326,6 @@ fun Members(viewModel: MembersViewModel) {
                         }
                     },
                     onLongClick = {
-                        // remove focus
-                        viewModel.focused = ""
                         viewModel.select(member.uri)
                     }
                 )

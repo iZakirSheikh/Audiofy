@@ -70,7 +70,7 @@ class PlaylistsViewModel @Inject constructor(
         //TODO: Add other fields in future versions.
         meta = MetaData(Text("Playlists"))
     }
-    
+
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
@@ -246,12 +246,14 @@ fun Playlists(viewModel: PlaylistsViewModel) {
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
+                        // only move forward if nothing is focused
                         if (selected.isEmpty()) {
                             val direction = Members.direction(it.name)
                             navigator.navigate(direction)
                         }
                     },
                     onLongClick = {
+                        // clear others since we need only 1 item to have focus.
                         viewModel.clear()
                         viewModel.select(it.name)
                     }

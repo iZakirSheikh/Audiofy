@@ -274,6 +274,9 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
             (selected as SnapshotStateList).remove(key)
         else
             (selected as SnapshotStateList).add(key)
+        // clear focus if selected contains items
+        if (selected.size == 1)
+            focused = ""
     }
 
     /**

@@ -555,8 +555,6 @@ fun Audios(viewModel: AudiosViewModel) {
                         }
                     },
                     onLongClick = {
-                        // remove focus
-                        viewModel.focused = ""
                         viewModel.select("${audio.id}")
                     }
                 )
