@@ -350,7 +350,7 @@ private fun <T : Any> ActionBar(
                         for (i in 2 until actions.size) {
                             val action = actions[i]
                             // don't include null.
-                            Action(value = action) { onAction(action) }
+                            Action(value = action) { onAction(action); showActionMenu = false }
                         }
                     }
                 }

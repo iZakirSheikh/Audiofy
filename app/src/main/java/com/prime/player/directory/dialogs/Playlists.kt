@@ -106,7 +106,7 @@ fun Playlists(
         ) {
             Crossfade(
                 targetState = value.isEmpty(),
-                modifier = Modifier.heightIn(min = 350.dp),
+                modifier = Modifier.height(350.dp),
             ) {
                 when (it) {
                     false -> {

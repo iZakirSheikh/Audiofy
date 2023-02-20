@@ -420,6 +420,9 @@ private fun Audio(
                 contentDescription = null,
                 imageVector = if (favourite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                 onClick = { onAction(Action.Make) },
+                // TODO: Currently we don't know how to grant this focus
+                // Hence we have disabled it. if not in focus.
+                enabled = !checked
             )
         },
         bottom = composable(focused) {
@@ -557,6 +560,7 @@ fun Audios(viewModel: AudiosViewModel) {
                         viewModel.select("${audio.id}")
                     }
                 )
+                .padding(horizontal = ContentPadding.normal)
         )
     }
 }

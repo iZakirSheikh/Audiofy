@@ -90,6 +90,25 @@ inline val Audio.toMediaItem
         ).build()
 
 /**
+ * Returns a [MediaItem] object that represents this [Member] file as a playable media item.
+ *
+ * @return the [MediaItem] object that represents this audio file
+ */
+inline val Member.toMediaItem
+    get() = MediaItem.Builder()
+        .setMediaId(id)
+        .setRequestMetadata(
+            MediaItem.RequestMetadata.Builder().setMediaUri(Uri.parse(uri)).build()
+        )
+        .setMediaMetadata(
+            MediaMetadata.Builder().setArtworkUri(artwork?.let { Uri.parse(it) }).setTitle(title)
+                .setSubtitle(subtitle)
+                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
+                // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
+                .build()
+        ).build()
+
+/**
  * Repository class for managing playlists and related audio files. This class is annotated with
  * `@ActivityRetainedScoped` and is designed to be used in Android app development.
  *
@@ -769,11 +788,11 @@ class Repository @Inject constructor(
     @Deprecated("use above one.")
     suspend fun addToPlaylist(
         audioID: Long, name: String
-    ): Boolean{
+    ): Boolean {
         val audio = findAudio(audioID) ?: return false
         //TODO: Update dateModified.
         val older = playlistz.lastPlayOrder(audioID) ?: 0
-        val id = playlistz.get(name)?.id ?:  return false
+        val id = playlistz.get(name)?.id ?: return false
         val member = audio.toMember(id, older + 1)
         return insert(member)
     }
@@ -806,4 +825,30 @@ class Repository @Inject constructor(
         else addToPlaylist(audioID, Playback.PLAYLIST_FAVOURITE)
         return !favourite && op
     }
+
+    /**
+     * Removes a member from a playlist with the given ID.
+     *
+     * @param id the ID of the playlist to remove the member from
+     * @param uri the URI of the member to remove from the playlist
+     *
+     * @return true if the member was successfully removed from the playlist, false otherwise
+     */
+    suspend fun removeFromPlaylist(id: Long, uri: String): Boolean {
+        return playlistz.delete(id, uri) == 1
+    }
+
+    /**
+     * Removes a member from the playlist with the given name.
+     *
+     * @param name the name of the playlist to remove the member from
+     * @param uri the URI of the member to remove from the playlist
+     *
+     * @return true if the member was successfully removed from the playlist, false otherwise
+     */
+    suspend fun removeFromPlaylist(name: String, uri: String): Boolean {
+        val playlist = playlistz.get(name) ?: return false
+        return playlistz.delete(playlist.id, uri) == 1
+    }
+
 }
