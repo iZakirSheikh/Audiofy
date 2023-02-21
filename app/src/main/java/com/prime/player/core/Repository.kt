@@ -684,7 +684,7 @@ class Repository @Inject constructor(
      */
     suspend fun insert(value: Playlist.Member): Boolean {
         val playlistsDb = playlistz
-        val order = playlistsDb.lastPlayOrder(value.playlistID) ?: return false
+        val order = playlistsDb.lastPlayOrder(value.playlistID) ?: -1
         // ensure that member is not inserted multiple times.
         // ensure that order is not > lastPlayOrder
         val checked = value.copy(order = value.order.coerceIn(0, order + 1))
@@ -849,6 +849,41 @@ class Repository @Inject constructor(
     suspend fun removeFromPlaylist(name: String, uri: String): Boolean {
         val playlist = playlistz.get(name) ?: return false
         return playlistz.delete(playlist.id, uri) == 1
+    }
+
+    /**
+     * Retrieves a [Member] from a playlist by its [id] and [uri].
+     * @param id the ID of the playlist to retrieve the member from
+     * @param uri the URI of the member to retrieve
+     * @return the [Member] object if it exists in the playlist, null otherwise
+     */
+    suspend fun getPlaylistMember(id: Long, uri: String): Member? {
+        return playlistz.get(id, uri)
+    }
+
+    /**
+     * @see getPlaylistMember
+     */
+    suspend fun getPlaylistMember(name: String, uri: String): Member? {
+        val playlist = playlistz.get(name) ?: return null
+        return playlistz.get(playlist.id, uri)
+    }
+
+    /**
+     * Returns the last play order value for the playlist with the specified [id].
+     * @param id the ID of the playlist to retrieve the last play order value for
+     * @return the last play order value for the playlist if it exists, null otherwise
+     */
+    suspend fun getLastPlayOrder(id: Long): Int? {
+        return playlistz.lastPlayOrder(id)
+    }
+
+    /**
+     * @see getLastPlayOrder
+     */
+    suspend fun getLastPlayOrder(name: String): Int? {
+        val playlist = playlistz.get(name) ?: return null
+        return playlistz.lastPlayOrder(playlist.id)
     }
 
 }

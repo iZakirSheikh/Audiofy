@@ -11,9 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.MoreTime
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -212,18 +210,56 @@ class AudiosViewModel @Inject constructor(
     fun addToPlaylist(name: String) {
         // focus or selected.
         viewModelScope.launch {
-            when {
-                // if focused is not empty that call ison it.
-                focused.isNotBlank() -> {
-                    val audio = repository.findAudio(focused.toLongOrNull() ?: 0) ?: return@launch
-                }
-                selected.isEmpty() -> {
-                    val list = selected.mapNotNull { repository.findAudio(it.toLongOrNull() ?: 0) }
-
-                }
-                else -> { /*TODO: Don't do anything*/
+            // The algo goes like this.
+            // This fun is called on selected item or focused one.
+            // so obtain the keys/ids
+            val list = when {
+                focused.isNotBlank() -> listOf(focused)
+                selected.isNotEmpty() -> selected
+                else -> {
+                    toaster.show("No item selected.", "Message")
+                    return@launch
                 }
             }
+
+            val playlist = repository.getPlaylist(name)
+            if (playlist == null) {
+                toaster.show(
+                    "It seems the playlist doesn't exist.",
+                    "Error",
+                    leading = Icons.Outlined.Error
+                )
+                return@launch
+            }
+
+            var order = repository.getLastPlayOrder(playlist.id) ?: -1
+
+            // you can;t just add to playlist using the keys.
+            val audios = list.mapNotNull {
+                repository.findAudio(it.toLongOrNull() ?: 0)?.toMember(playlist.id, order++)
+            }
+
+            var count = 0
+            audios.forEach {
+                val success = repository.insert(it)
+                if (success)
+                    count++
+            }
+
+            if (count < list.size)
+                toaster.show(
+                    "Added only $count items to $name",
+                    "Warning",
+                    leading = Icons.Outlined.Warning,
+                    accent = Color.Amber,
+                )
+            else
+                toaster.show(
+                    "Added $count items to $name",
+                    "Success",
+                    leading = Icons.Outlined.CheckCircle,
+                    accent = Color.MetroGreen,
+                )
         }
     }
 
@@ -387,19 +423,18 @@ private fun Audio(
         },
         text = {
             Label(
-                style = Theme.typography.body2,
+                style = Theme.typography.caption,
                 text = value.album,
-                color = LocalContentColor.current.copy(ContentAlpha.medium),
+                modifier = Modifier.padding(top = ContentPadding.small),
+                color = LocalContentColor.current.copy(ContentAlpha.disabled),
                 fontWeight = FontWeight.SemiBold,
             )
         },
         secondaryText = {
             Label(
                 text = value.artist,
-                modifier = Modifier.padding(top = ContentPadding.small),
-                color = LocalContentColor.current.copy(ContentAlpha.medium),
                 fontWeight = FontWeight.SemiBold,
-                style = Theme.typography.caption2
+                style = Theme.typography.caption
             )
         },
         leading = {
@@ -558,7 +593,7 @@ fun Audios(viewModel: AudiosViewModel) {
                         viewModel.select("${audio.id}")
                     }
                 )
-                .padding(horizontal = ContentPadding.normal)
+                .padding(horizontal = ContentPadding.medium)
         )
     }
 }
