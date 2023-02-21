@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.runtime.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -29,9 +32,7 @@ import com.prime.player.core.playback.Remote
 import com.prime.player.directory.*
 import com.primex.core.Text
 import com.primex.core.rememberState
-import com.primex.ui.Label
-import com.primex.ui.Neumorphic
-import com.primex.ui.TextInputDialog
+import com.primex.ui.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -78,11 +79,60 @@ class PlaylistsViewModel @Inject constructor(
         }
     }
 
-    fun createPlaylist(name: String) {}
+    fun createPlaylist(name: String) {
+        viewModelScope.launch {
+            val exists = repository.exists(name)
+            if (exists) {
+                toaster.show(
+                    message = "The playlist with name $name already exists.",
+                    title = "Error",
+                    leading = Icons.Outlined.ErrorOutline,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
+            val res = repository.create(Playlist(name))
+        }
+    }
 
-    fun delete() {}
+    fun delete() {
+        viewModelScope.launch {
+            viewModelScope.launch {
+                val playlist = selected.first().let { repository.getPlaylist(it) } ?: return@launch
+                val success = repository.delete(playlist)
+                if (!success)
+                    toaster.show(
+                        "An error occured while deleting ${playlist.name}",
+                        "Error",
+                        leading = Icons.Outlined.ErrorOutline,
+                        accent = Color.Rose
+                    )
+            }
+        }
+    }
 
-    fun rename(name: String) {}
+    fun rename(name: String) {
+        viewModelScope.launch {
+            val exists = repository.exists(name)
+            if (exists) {
+                toaster.show(
+                    message = "The playlist with name $name already exists.",
+                    title = "Error",
+                    leading = Icons.Outlined.ErrorOutline,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
+            val value = selected.first().let { repository.getPlaylist(it) } ?: return@launch
+            val update = value.copy(
+                name = name, dateModified = System.currentTimeMillis()
+            )
+            when (repository.update(update)) {
+                true -> toaster.show(message = "The name of the playlist has been update to $name")
+                else -> toaster.show(message = "An error occurred while update the name of the playlist to $name")
+            }
+        }
+    }
 
     override val actions: List<Action> = listOf(Action.Delete, Action.Edit)
     override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name)
@@ -227,6 +277,20 @@ fun Playlists(viewModel: PlaylistsViewModel) {
             confirm = null
         }
     )
+
+    if (confirm == Action.Delete)
+        AlertDialog(
+            title = "Delete",
+            message = "You are about to delete playlist. This can't be undone. \nAre you sure?",
+            vectorIcon = Icons.Outlined.DeleteForever,
+            onDismissRequest = { action ->
+                when (action) {
+                    true -> viewModel.delete()
+                    else -> {}
+                }
+                confirm = null
+            }
+        )
 
     // observe the selected items
     val selected = viewModel.selected

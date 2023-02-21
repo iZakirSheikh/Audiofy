@@ -1,22 +1,17 @@
 package com.prime.player.directory.local
 
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.DragIndicator
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -28,7 +23,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.player.R
 import com.prime.player.Theme
-import com.prime.player.caption2
 import com.prime.player.common.ContentElevation
 import com.prime.player.common.ContentPadding
 import com.prime.player.common.composable
@@ -36,7 +30,6 @@ import com.prime.player.core.*
 import com.prime.player.core.compose.Image
 import com.prime.player.core.compose.ToastHostState
 import com.prime.player.core.compose.show
-import com.prime.player.core.db.Audio
 import com.prime.player.core.db.Playlist.Member
 import com.prime.player.core.playback.Playback
 import com.prime.player.core.playback.Remote
@@ -81,7 +74,7 @@ class MembersViewModel @Inject constructor(
         ) = compose(HOST, Uri.encode(key), query, order, ascending, viewType)
     }
 
-    private val name = when (key) {
+    private val title = when (key) {
         Playback.PLAYLIST_FAVOURITE -> "Favourites"
         Playback.PLAYLIST_RECENT -> "History"
         else -> key
@@ -91,7 +84,7 @@ class MembersViewModel @Inject constructor(
         // emit the name to meta
         //TODO: Add other fields in future versions.
         meta = MetaData(
-            Text(name)
+            Text(title)
         )
     }
 
@@ -182,7 +175,7 @@ class MembersViewModel @Inject constructor(
             }
             if (count < list.size)
                 toaster.show(
-                    "Deleted $count items from $name",
+                    "Deleted $count items from $title",
                     "Delete",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
@@ -403,7 +396,7 @@ fun Members(viewModel: MembersViewModel) {
     }
 
     if (confirm == Action.Delete)
-        com.primex.ui.AlertDialog(
+        AlertDialog(
             title = "Delete",
             message = "You are about to remove items. This can't be undone. \nAre you sure?",
             vectorIcon = Icons.Outlined.DeleteForever,
