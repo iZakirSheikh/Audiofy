@@ -55,7 +55,6 @@ class FoldersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,
-    private val remote: Remote,
 ) : DirectoryViewModel<Folder>(handle) {
 
     companion object {
@@ -83,13 +82,6 @@ class FoldersViewModel @Inject constructor(
         }
     }
 
-    private val GroupBy.toMediaOrder
-        get() = when (this) {
-            GroupBy.None -> MediaStore.Audio.Artists.DEFAULT_SORT_ORDER
-            GroupBy.Name -> MediaStore.Audio.Artists.ARTIST
-            else -> error("Invalid order: $this ")
-        }
-
     override val actions: List<Action> = emptyList()
     override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name)
     override val mActions: List<Action?> = emptyList()
@@ -108,7 +100,7 @@ class FoldersViewModel @Inject constructor(
             .catch {
                 // any exception.
                 toaster.show(
-                    "Some unknown error occured!.",
+                    "Some unknown error occured!. ${it.message}",
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
