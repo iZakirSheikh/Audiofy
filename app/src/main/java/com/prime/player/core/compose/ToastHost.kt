@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -32,6 +34,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import com.prime.player.core.compose.ToastHostState.Result
 import com.primex.core.obtain
+import com.primex.ui.IconButton
 import com.primex.ui.Label
 import com.primex.ui.ListTile
 import com.primex.ui.TextButton
@@ -233,7 +236,8 @@ suspend fun ToastHostState.show(
     leading: Any? = null,
     accent: Color = Color.Unspecified,
     duration: Duration = Duration.Short
-) = show(Text(message),
+) = show(
+    Text(message),
     title?.let { Text(it) },
     label = label?.let { Text(it) },
     leading = leading,
@@ -252,7 +256,8 @@ suspend fun ToastHostState.show(
     leading: Any? = null,
     accent: Color = Color.Unspecified,
     duration: Duration = Duration.Short
-) = show(Text(message),
+) = show(
+    Text(message),
     title?.let { Text(it) },
     label = label?.let { Text(it) },
     leading = leading,
@@ -444,15 +449,23 @@ fun Toast(
                 )
             },
 
-            trailing = composable(data.label != null) {
-                TextButton(
-                    label = data.label!!.obtain,
-                    onClick = { data.action() },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = actionColor
+            trailing = {
+                if (data.label != null)
+                    TextButton(
+                        label = data.label!!.obtain,
+                        onClick = { data.action() },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = actionColor
+                        )
                     )
-                )
-            })
+                else
+                    IconButton(
+                        onClick = { data.dismiss() },
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = null
+                    )
+            }
+        )
     }
 }
 

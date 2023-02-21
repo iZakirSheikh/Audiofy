@@ -58,10 +58,8 @@ fun Track(
                 targetValue = if (isPlaying) 20 else 40,
                 animationSpec = tween(750)
             )
-            AsyncImage(
+            com.prime.player.core.compose.Image(
                 meta.artworkUri,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .shadow(5.dp, clip = true, shape = RoundedCornerShape(radius))
                     .border(2.dp, color = Color.White, RoundedCornerShape(radius))
@@ -188,8 +186,7 @@ private fun Layout(
                         Header(
                             text = "Up Next",
                             modifier = Modifier
-                                .padding(horizontal = ContentPadding.normal)
-                                .padding(top = ContentPadding.normal)
+                                .padding(ContentPadding.normal)
                                 .animateItemPlacement(),
                             fontWeight = FontWeight.Bold,
                             color = LocalContentColor.current
@@ -197,6 +194,7 @@ private fun Layout(
                     }
 
                 // other tracks.
+                // FixMe: use key instead of mediaId
                 item(key = item.mediaId) {
                     Track(
                         value = item,

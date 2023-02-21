@@ -259,7 +259,7 @@ class MembersViewModel @Inject constructor(
 
             var count = 0
             audios.forEach {
-                val success = repository.insert(it)
+                val success = repository.upsert(it)
                 if (success)
                     count++
             }

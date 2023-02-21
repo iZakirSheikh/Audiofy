@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -735,17 +736,6 @@ fun Console(
     onRequestToggle: () -> Unit
 ) {
     val expanded = progress == 1f
-    val channel = LocalContext.toastHostState
-
-    // move messenger to view-model using hilt.
-    DisposableEffect("messanger") {
-        // set icon color for current screen
-        viewModel.messenger = channel
-        onDispose {
-            viewModel.messenger = null
-        }
-    }
-
     // actual content
     CompositionLocalProvider(LocalContentColor provides Theme.colors.onSurface) {
         //Maybe Use Modifier.composed {}

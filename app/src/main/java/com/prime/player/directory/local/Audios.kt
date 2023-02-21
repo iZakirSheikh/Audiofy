@@ -33,7 +33,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.prime.player.R
 import com.prime.player.Theme
-import com.prime.player.caption2
 import com.prime.player.common.ContentElevation
 import com.prime.player.common.ContentPadding
 import com.prime.player.common.LocalNavController
@@ -241,7 +240,7 @@ class AudiosViewModel @Inject constructor(
 
             var count = 0
             audios.forEach {
-                val success = repository.insert(it)
+                val success = repository.upsert(it)
                 if (success)
                     count++
             }

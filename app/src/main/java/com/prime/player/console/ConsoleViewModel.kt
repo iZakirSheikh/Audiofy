@@ -1,9 +1,12 @@
 package com.prime.player.console
 
 import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -16,6 +19,7 @@ import com.prime.player.core.db.Audio
 import com.prime.player.core.db.Playlist
 import com.prime.player.core.playback.Remote
 import com.primex.core.Text
+import com.primex.ui.Amber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,12 +40,8 @@ private inline val Remote.progress get() = (position / duration.toFloat())
 class ConsoleViewModel @Inject constructor(
     private val remote: Remote,
     private val repository: Repository,
+    private val toaster: ToastHostState
 ) : ViewModel() {
-
-    /**
-     * This channel must be set from composable.
-     */
-    var messenger: ToastHostState? = null
     val playing = stateOf(remote.isPlaying)
     val repeatMode = stateOf(remote.repeatMode)
     val progress = stateOf(0f)
@@ -90,7 +90,7 @@ class ConsoleViewModel @Inject constructor(
                 viewModelScope.launch {
                     val mediaItem = remote.current
                     //FixMe: Remove dependency on ID.
-                    val id = mediaItem?.mediaId?.toLong() ?: -1
+                    val id = mediaItem?.requestMetadata?.mediaUri?.toString() ?: ""
                     (favourite as MutableState).value = repository.isFavourite(id)
                     // update the current media id.
                     (current as MutableState).value = mediaItem
@@ -134,16 +134,17 @@ class ConsoleViewModel @Inject constructor(
             val newMode = remote.repeatMode
             // (repeatMode as MutableState).value = newMode
 
-            messenger?.show(
+            toaster.show(
+                title = "Repeat Mode",
                 message = when (newMode) {
                     Player.REPEAT_MODE_OFF -> "Repeat mode none."
                     Player.REPEAT_MODE_ALL -> "Repeat mode all."
                     else -> "Repeat mode one."
-                }
+                },
+                leading = R.drawable.ic_repeat
             )
         }
     }
-
 
     fun seekTo(mills: Long) {
         viewModelScope.launch {
@@ -163,8 +164,11 @@ class ConsoleViewModel @Inject constructor(
     fun setSleepAfter(minutes: Int) {
         viewModelScope.launch {
             // currently not available.
-            messenger?.show(
-                message = "Temporarily disabled!!"
+            toaster.show(
+                message = "Temporarily disabled!!",
+                title = "Working on it.",
+                accent = Color.Amber,
+                leading = Icons.Outlined.MoreTime
             )
         }
     }
@@ -178,7 +182,6 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-
     fun toggleFav() {
         viewModelScope.launch {
             // service?.to
@@ -186,11 +189,13 @@ class ConsoleViewModel @Inject constructor(
             val id = current.value?.mediaId?.toLong() ?: return@launch
             val favourite = repository.toggleFav(id)
             (this@ConsoleViewModel.favourite as MutableState).value = favourite
-            messenger?.show(
+            toaster.show(
                 message = when (favourite) {
                     true -> Text(R.string.msg_fav_added)
                     else -> Text(R.string.msg_fav_removed)
-                }
+                },
+                title = Text("Favourites"),
+                leading = R.drawable.ic_heart
             )
         }
     }
@@ -200,8 +205,10 @@ class ConsoleViewModel @Inject constructor(
             remote.toggleShuffle()
             val newValue = remote.shuffle
             (shuffle as MutableState).value = newValue
-            messenger?.show(
-                message = if (newValue) "Shuffle enabled." else "Shuffle disabled."
+            toaster.show(
+                message = if (newValue) "Shuffle enabled." else "Shuffle disabled.",
+                title = "Shuffle",
+                leading = R.drawable.ic_shuffle,
             )
         }
     }
@@ -210,7 +217,6 @@ class ConsoleViewModel @Inject constructor(
 
     @Deprecated("write new one independent of id.")
     fun playTrack(id: Long) = remote.playTrack(id)
-
 
     @Deprecated("find alternate.")
     fun addToPlaylist(id: Playlist) {

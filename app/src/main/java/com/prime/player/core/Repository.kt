@@ -266,7 +266,6 @@ class Repository @Inject constructor(
         limit: Int = Int.MAX_VALUE
     ) = resolver.getAudios(query, order, ascending, offset = offset, limit = limit)
 
-
     /**
      * Returns a list of audios that are contained within the specified folder.
      *
@@ -293,6 +292,7 @@ class Repository @Inject constructor(
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
     ) = resolver.getFolder(path, query, order, ascending)
+
 
     /**
      * Returns a list of audios that belong to the specified genre.
@@ -348,6 +348,7 @@ class Repository @Inject constructor(
         ascending: Boolean = true,
     ) = resolver.getArtist(name, query, order, ascending)
 
+
     /**
      * Returns the [Audio]s from the album represented by the given [title].
      *
@@ -372,6 +373,7 @@ class Repository @Inject constructor(
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
     ) = resolver.getAlbum(title, query, order, ascending)
+
 
     /**
      * Returns an observable [Flow] of [Playlist] [Playlist.Member]s represented by the unique
@@ -418,6 +420,7 @@ class Repository @Inject constructor(
         filter: String? = null,
         ascending: Boolean = true,
     ) = resolver.getFolders(filter, ascending)
+
 
     /**
      * Returns a list of [Artist]s that match the given [filter], ordered by the specified [order]
@@ -517,7 +520,7 @@ class Repository @Inject constructor(
      *
      * @return A [Flow] of [Playlist.Member]s that belong to the playlist with the specified [id].
      */
-    fun playlist(id: Long): Flow<List<Playlist.Member>> =
+    fun playlist(id: Long): Flow<List<Member>> =
         playlistz.observe2(id)
 
     /**
@@ -534,7 +537,7 @@ class Repository @Inject constructor(
      *
      * @return A [Flow] of [Playlist.Member]s that belong to the playlist with the specified [name].
      */
-    fun playlist(name: String): Flow<List<Playlist.Member>> =
+    fun playlist(name: String): Flow<List<Member>> =
         playlistz.observe2(name)
 
     /**
@@ -608,11 +611,7 @@ class Repository @Inject constructor(
     suspend fun create(playlist: Playlist): Long {
         // check if early on if it might exist or not
         if (exists(playlist.name)) return -1L
-
-        // update the datModified to System.currentTimeMills and id to 0.
-        // the copy method will take care of these automatically.
-        val real = playlist.copy(dateCreated = playlist.dateCreated)
-        return playlistz.insert(real)
+        return playlistz.insert(playlist)
     }
 
     /**
@@ -660,43 +659,6 @@ class Repository @Inject constructor(
      */
     suspend fun update(value: Playlist): Boolean = playlistz.update(value) == 1
 
-
-    /**
-     * Inserts a new member into a playlist. If the member already exists in the playlist, updates
-     * the member's information.
-     *
-     * @param value The [Playlist.Member] to be inserted or updated in the playlist.
-     * @return `true` if the member was inserted or updated successfully, `false` otherwise.
-     *
-     * Usage example:
-     * ```
-     * val member =
-     *      Playlist.Member(playlistID = 1, uri = "spotify:track:4uLU6hMCjMI75M1A2tKUQC", order = 0)
-     * if (insert(member)) {
-     *     println("Member added to playlist.")
-     * } else {
-     *     println("Failed to add member to playlist.")
-     * }
-     * ```
-     *
-     * @since 1.0.0
-     * @author Zakir Shieikh
-     */
-    suspend fun insert(value: Playlist.Member): Boolean {
-        val playlistsDb = playlistz
-        val order = playlistsDb.lastPlayOrder(value.playlistID) ?: -1
-        // ensure that member is not inserted multiple times.
-        // ensure that order is not > lastPlayOrder
-        val checked = value.copy(order = value.order.coerceIn(0, order + 1))
-        return if (playlistsDb.exists(playlistId = value.playlistID, uri = value.uri)) {
-            // update the item
-            // TODO: The update is not implemented correctly
-            // update the code in future version.
-            playlistsDb.update(member = checked) != -1L
-        } else
-            playlistsDb.insert(member = checked) != -1L
-    }
-
     /**
      * Function that checks whether a member identified by [uri] exists in it.
      *
@@ -743,7 +705,7 @@ class Repository @Inject constructor(
      * @since 1.0.0
      * @author Zakir Sheikh
      */
-    suspend fun delete(value: Playlist.Member) = playlistz.delete(value) == 1
+    suspend fun delete(value: Member) = playlistz.delete(value) == 1
 
     /**
      * Utility function that checks if a song identified by [uri] is a favourite.
@@ -770,7 +732,6 @@ class Repository @Inject constructor(
     @Deprecated("use method with uri.")
     suspend fun isFavourite(id: Long) = isFavourite(toAudioTrackUri(id).toString())
 
-
     /**
      * Creates playlist if not exist otherwise returns the -1L
      */
@@ -794,7 +755,7 @@ class Repository @Inject constructor(
         val older = playlistz.lastPlayOrder(audioID) ?: 0
         val id = playlistz.get(name)?.id ?: return false
         val member = audio.toMember(id, older + 1)
-        return insert(member)
+        return upsert(member)
     }
 
     /**
@@ -886,4 +847,101 @@ class Repository @Inject constructor(
         return playlistz.lastPlayOrder(playlist.id)
     }
 
+    /**
+     * Inserts a new member into a playlist. If the member already exists in the playlist, updates
+     * the member's information.
+     *
+     * @param value The [Playlist.Member] to be inserted or updated in the playlist.
+     * @return `true` if the member was inserted or updated successfully, `false` otherwise.
+     *
+     * Usage example:
+     * ```
+     * val member =
+     *      Playlist.Member(playlistID = 1, uri = "spotify:track:4uLU6hMCjMI75M1A2tKUQC", order = 0)
+     * if (insert(member)) {
+     *     println("Member added to playlist.")
+     * } else {
+     *     println("Failed to add member to playlist.")
+     * }
+     * ```
+     *
+     * @since 1.0.0
+     * @author Zakir Sheikh
+     */
+    @Deprecated("Use simple insert")
+    suspend fun upsert(value: Member): Boolean{
+        // if the item is already in playlist return false;
+        // because we don't support same uri's in single playlist
+        if (exists(value.playlistID, value.uri))
+            return update(value)
+        else
+            return insert(value)
+    }
+
+    /**
+     * Inserts a new member into the playlist.
+     *
+     * @param value The member to insert into the playlist.
+     *
+     * @return `true` if the insertion was successful, `false` if the member is already in the playlist.
+     *
+     * @see exists
+     */
+    suspend fun insert(value: Member): Boolean {
+        val playlistsDb = playlistz
+        // if the item is already in playlist return false;
+        // because we don't support same uri's in single playlist
+        if (exists(value.playlistID, value.uri))
+            return false
+        val order = playlistsDb.lastPlayOrder(value.playlistID) ?: -1
+        // ensure that order is coerced in limit.
+        val member =
+            if (value.order < 0 || value.order > order + 1)
+                value.copy(order = value.order.coerceIn(0, order + 1), )
+        else
+            value
+        val success = playlistsDb.insert(member = member) != -1L
+        if (success){
+            // update the modified time of the playlist.
+            // here this should not be null
+            // but we should play safe
+            val old = playlistsDb.get(value.playlistID) ?: return true
+            update(old.copy(dateModified = System.currentTimeMillis()))
+        }
+        return success
+    }
+
+    /**
+     * Updates the given member in the playlist.
+     *
+     * @param value The member to update in the playlist.
+     *
+     * @return Returns `true` if the update was successful, `false` if the member is not in the playlist.
+     *
+     * @fixme What happens if the user has changed/updated the URI of the item?
+     * @see exists
+     */
+    suspend fun update(value: Member): Boolean {
+        val playlistsDb = playlistz
+        // if the item is not in playlist return false
+        // FixMe: what happens if the user have changed/updated the uri of the item.
+        if (!exists(value.playlistID, value.uri))
+            return false
+        val order = playlistsDb.lastPlayOrder(value.playlistID) ?: -1
+        // ensure that order is coerced in limit.
+        val member =
+            if (value.order < 0 || value.order > order + 1)
+                value.copy(order = value.order.coerceIn(0, order + 1), )
+            else
+                value
+        val success = playlistsDb.update(member = member) != -1L
+        if (success){
+            // update the modified time of the playlist.
+            // here this should not be null
+            // but we should play safe
+            val old = playlistsDb.get(value.playlistID) ?: return true
+            update(old.copy(dateModified = System.currentTimeMillis()))
+        }
+        return success
+    }
 }
