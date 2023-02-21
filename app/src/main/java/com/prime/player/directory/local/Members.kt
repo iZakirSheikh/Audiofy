@@ -1,6 +1,7 @@
 package com.prime.player.directory.local
 
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -12,9 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -33,15 +32,12 @@ import com.prime.player.caption2
 import com.prime.player.common.ContentElevation
 import com.prime.player.common.ContentPadding
 import com.prime.player.common.composable
-import com.prime.player.core.Repository
-import com.prime.player.core.addDistinct
-import com.prime.player.core.albumUri
+import com.prime.player.core.*
 import com.prime.player.core.compose.Image
 import com.prime.player.core.compose.ToastHostState
 import com.prime.player.core.compose.show
 import com.prime.player.core.db.Audio
 import com.prime.player.core.db.Playlist.Member
-import com.prime.player.core.key
 import com.prime.player.core.playback.Playback
 import com.prime.player.core.playback.Remote
 import com.prime.player.directory.*
@@ -49,15 +45,13 @@ import com.prime.player.directory.dialogs.Playlists
 import com.primex.core.Text
 import com.primex.core.obtain
 import com.primex.core.rememberState
-import com.primex.ui.IconButton
-import com.primex.ui.Label
-import com.primex.ui.ListTile
-import com.primex.ui.Rose
+import com.primex.ui.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
+import kotlin.random.Random
 
 private const val TAG = "AlbumsViewModel"
 
@@ -87,17 +81,17 @@ class MembersViewModel @Inject constructor(
         ) = compose(HOST, Uri.encode(key), query, order, ascending, viewType)
     }
 
+    private val name = when (key) {
+        Playback.PLAYLIST_FAVOURITE -> "Favourites"
+        Playback.PLAYLIST_RECENT -> "History"
+        else -> key
+    }
+
     init {
         // emit the name to meta
         //TODO: Add other fields in future versions.
         meta = MetaData(
-            Text(
-                when (key) {
-                    Playback.PLAYLIST_FAVOURITE -> "Favourites"
-                    Playback.PLAYLIST_RECENT -> "History"
-                    else -> key
-                }
-            )
+            Text(name)
         )
     }
 
@@ -143,13 +137,79 @@ class MembersViewModel @Inject constructor(
         }
     }
 
-    fun play(shuffle: Boolean) {}
+    fun play(shuffle: Boolean) {
+        // what to play
+        // from what index.
+        // clears the already queue.
+        viewModelScope.launch {
+            // Here priority of action is as follows.
+            // preference 1 is given to focused.
+            // preference 2 is given to selected.
+            // preference 3 is given to all what is obtained after applying filter.
+            val list = data.firstOrNull()?.values?.flatten() ?: return@launch
+            // don't do anything
+            if (list.isEmpty()) return@launch
+            // check which is focused
+            val index = when {
+                // pick random
+                shuffle -> Random.nextInt(0, list.size)
+                // find focused
+                focused.isNotBlank() -> list.indexOfFirst { it.uri == focused }
+                    .let { if (it == -1) 0 else it }
+                else -> 0
+            }
+            remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
+            toaster.show(title = "Playing", message = "Playing tracks enjoy.")
+        }
+    }
 
-    fun delete() {}
+    fun delete() {
+        viewModelScope.launch {
+            val list = when {
+                focused.isNotBlank() -> listOf(focused)
+                selected.isNotEmpty() -> selected
+                else -> {
+                    toaster.show("No item selected.", "Message")
+                    return@launch
+                }
+            }
 
-    fun playNext() {}
+            var count = 0
+            list.forEach {
+                val deleted = repository.removeFromPlaylist(key, it)
+                if (deleted)
+                    count++
+            }
+            if (count < list.size)
+                toaster.show(
+                    "Deleted $count items from $name",
+                    "Delete",
+                    leading = Icons.Outlined.Error,
+                    accent = Color.Rose,
+                )
 
-    fun addToQueue() {}
+        }
+    }
+
+    fun playNext() {
+        viewModelScope.launch {
+            toaster.show(
+                title = "Coming soon.",
+                message = "Requires more polishing. Please wait!",
+                leading = Icons.Outlined.MoreTime
+            )
+        }
+    }
+
+    fun addToQueue() {
+        viewModelScope.launch {
+            toaster.show(
+                title = "Coming soon.",
+                message = "Requires more polishing. Please wait!",
+                leading = Icons.Outlined.MoreTime
+            )
+        }
+    }
 
     override fun select(key: String) {
         super.select(key)
@@ -161,7 +221,72 @@ class MembersViewModel @Inject constructor(
         }
     }
 
-    fun addToPlaylist(name: String) {}
+    fun addToPlaylist(name: String) {
+        // focus or selected.
+        viewModelScope.launch {
+            // The algo goes like this.
+            // This fun is called on selected item or focused one.
+            // so obtain the keys/ids
+            if(key == name){
+                toaster.show(
+                    "The tracks are already in the playlist",
+                    "Message",
+                    leading = Icons.Outlined.Message
+                )
+                return@launch
+            }
+
+            val list = when {
+                focused.isNotBlank() -> listOf(focused)
+                selected.isNotEmpty() -> selected
+                else -> {
+                    toaster.show("No item selected.", "Message")
+                    return@launch
+                }
+            }
+
+            // TODO: Clear selection Maybe.
+
+            val playlist = repository.getPlaylist(name)
+            if (playlist == null) {
+                toaster.show(
+                    "It seems the playlist doesn't exist.",
+                    "Error",
+                    leading = Icons.Outlined.Error
+                )
+                return@launch
+            }
+
+            var order = repository.getLastPlayOrder(playlist.id) ?: -1
+
+            // you can;t just add to playlist using the keys.
+            val audios = list.mapNotNull {
+                repository.getPlaylistMember(playlist.id, it)?.copy(order = order++)
+            }
+
+            var count = 0
+            audios.forEach {
+                val success = repository.insert(it)
+                if (success)
+                    count++
+            }
+
+            if (count < list.size)
+                toaster.show(
+                    "Added only $count items to $name",
+                    "Warning",
+                    leading = Icons.Outlined.Warning,
+                    accent = Color.Amber,
+                )
+            else
+                toaster.show(
+                    "Added $count items to $name",
+                    "Success",
+                    leading = Icons.Outlined.CheckCircle,
+                    accent = Color.MetroGreen,
+                )
+        }
+    }
 
     fun selectAll() {}
 }
@@ -276,6 +401,22 @@ fun Members(viewModel: MembersViewModel) {
             }
         )
     }
+
+    if (confirm == Action.Delete)
+        com.primex.ui.AlertDialog(
+            title = "Delete",
+            message = "You are about to remove items. This can't be undone. \nAre you sure?",
+            vectorIcon = Icons.Outlined.DeleteForever,
+            onDismissRequest = { action ->
+                when (action) {
+                    true -> viewModel.delete()
+                    else -> {}
+                }
+                confirm = null
+            }
+        )
+
+
     // perform action. show dialogs maybe.
     val onPerformAction = { action: Action ->
         when (action) {
@@ -283,7 +424,7 @@ fun Members(viewModel: MembersViewModel) {
             Action.PlaylistAdd, Action.Properties -> confirm = action
             Action.AddToQueue -> viewModel.addToQueue()
             Action.PlayNext -> viewModel.playNext()
-            Action.Delete -> viewModel.delete()
+            Action.Delete -> confirm = action
             Action.SelectAll -> viewModel.selectAll()
             Action.Shuffle -> viewModel.play(true)
             Action.Play -> viewModel.play(false)
