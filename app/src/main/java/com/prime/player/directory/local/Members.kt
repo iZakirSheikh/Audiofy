@@ -93,7 +93,7 @@ class MembersViewModel @Inject constructor(
     override val actions: List<Action> =
         mutableStateListOf(Action.PlaylistAdd, Action.PlayNext, Action.AddToQueue, Action.Delete)
     override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name)
-    override val mActions: List<Action?> = listOf(Action.Play, Action.Shuffle)
+    override val mActions: List<Action?> = listOf(null, Action.Play, Action.Shuffle)
 
     override val data: Flow<Mapped<Member>> =
         filter.flatMapLatest { (order, query, ascending) ->
@@ -106,6 +106,14 @@ class MembersViewModel @Inject constructor(
                         else
                             data.filter { it.title.contains(query, true) }
                     val src = if (ascending) filtered else filtered.reversed()
+
+                    // Don't know if this is correct place to emit changes to Meta.
+                    val latest = src.maxByOrNull { it.order  }
+                    meta = meta?.copy(
+                        artwork = latest?.artwork.toString(),
+                        cardinality = src.size
+                    )
+
                     when (order) {
                         GroupBy.None -> mapOf(Text("") to src)
                         GroupBy.Name -> src.groupBy { Text(it.firstTitleChar) }

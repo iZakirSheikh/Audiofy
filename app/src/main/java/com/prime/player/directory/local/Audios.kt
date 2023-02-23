@@ -119,22 +119,31 @@ class AudiosViewModel @Inject constructor(
             Action.Properties,
         )
 
+
     init {
         // emit the name to meta
-        //TODO: Add other fields in future versions.
         meta = MetaData(
-            title = Text(
-                if (key == NULL_STRING) AnnotatedString("Audios")
-                else buildAnnotatedString {
-                    append("Audios\n")
+            Text(
+                buildAnnotatedString {
+                    append(
+                        when (type) {
+                            GET_EVERY -> "Audios"
+                            GET_FROM_GENRE -> "Genre"
+                            GET_FROM_FOLDER -> FileUtils.name(key)
+                            GET_FROM_ARTIST -> "Artist"
+                            GET_FROM_ALBUM -> "Album"
+                            else -> error("no such audios key.")
+                        }
+                    )
                     withStyle(SpanStyle(fontSize = 9.sp)) {
-                        append(key)
+                        // new line
+                        append("\n")
+                        // name of the album.
+                        append(if (key == GET_EVERY) "All Local Audio Files" else key)
                     }
-                },
-            ),
-                    artwork = ""
+                }
+            )
         )
-
         // if not artist/ exclude some options.
         if (type != GET_FROM_ARTIST)
             (actions as MutableList).add(actions.size - 2, Action.GoToArtist)
@@ -362,6 +371,15 @@ class AudiosViewModel @Inject constructor(
             .map {
                 val (order, query, ascending) = it
                 val list = source(query, order.toMediaOrder, ascending)
+
+                // Don't know if this is correct place to emit changes to Meta.
+                val latest = list.maxByOrNull { it.dateModified }
+                meta = meta?.copy(
+                    artwork = latest?.albumUri.toString(),
+                    cardinality = list.size,
+                    dateModified = latest?.dateModified ?: -1
+                )
+
                 when (order) {
                     GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
                     GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
