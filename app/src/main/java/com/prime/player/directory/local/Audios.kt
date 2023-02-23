@@ -130,8 +130,9 @@ class AudiosViewModel @Inject constructor(
                     withStyle(SpanStyle(fontSize = 9.sp)) {
                         append(key)
                     }
-                }
-            )
+                },
+            ),
+                    artwork = ""
         )
 
         // if not artist/ exclude some options.
@@ -166,7 +167,7 @@ class AudiosViewModel @Inject constructor(
 
     override val orders: List<GroupBy> =
         listOf(GroupBy.None, GroupBy.Name, GroupBy.Album, GroupBy.Artist, GroupBy.Length)
-    override val mActions: List<Action?> = listOf(Action.Play, Action.Shuffle)
+    override val mActions: List<Action?> = listOf(null, Action.Play, Action.Shuffle)
     inline val GroupBy.toMediaOrder
         get() = when (this) {
             GroupBy.Album -> MediaStore.Audio.Media.ALBUM

@@ -54,17 +54,16 @@ data class MetaData(
  * Since: 2.0
  *
  * Introduction:
- * This property is used to check if the [ListMeta] requires a simple view or an advanced one.
+ * This property is used to check if the [MetaData] requires a simple view or an advanced one.
  *
  * Usage Example:
  * ```
  * val metaData = MetaData(item = null, cardinality = -1)
  * val result = metaData.isSimple
  * ```
- * The above code will return `true` if the `item` property of the `metaData` object is `null` and
- * the `cardinality` property is equal to `-1`.
+ * The above code will return `true` if the `item` property [MetaData.artwork] object is `null`.
  */
-val MetaData.isSimple get() = dateModified == -1L && cardinality == -1
+val MetaData.isSimple get() = artwork == null
 
 /**
  * Represents the filter for the directory.

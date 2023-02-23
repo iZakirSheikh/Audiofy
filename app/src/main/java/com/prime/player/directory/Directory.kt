@@ -3,6 +3,8 @@ package com.prime.player.directory
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -14,16 +16,29 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ChainStyle
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
+import com.prime.player.core.Util
+import com.prime.player.core.compose.Image
 import com.prime.player.core.compose.Placeholder
+import com.prime.player.core.formatAsRelativeTimeSpan
 import com.primex.core.*
 import com.primex.ui.*
 
@@ -58,7 +73,7 @@ import com.primex.ui.*
  */
 @Composable
 @NonRestartableComposable
-fun Action(
+private fun Action(
     value: Action,
     modifier: Modifier = Modifier,
     checked: Boolean = false,
@@ -97,7 +112,6 @@ fun Action(
         )
     }
 }
-
 
 private val TopBarShape = CircleShape
 
@@ -234,7 +248,8 @@ private fun <T : Any> Toolbar(
             // main actions excluding first as it will be shown as fab
             // only show if it is > 1 because fab exclusion.
             val actions = resolver.mActions
-            if (actions.size > 1) {
+            val from = if (resolver.meta?.isSimple != false) 1 else 3
+            if (actions.size > from) {
                 var showActionMenu by rememberState(initial = false)
                 IconButton(onClick = { showActionMenu = true }) {
                     Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
@@ -245,7 +260,7 @@ private fun <T : Any> Toolbar(
                         expanded = showActionMenu,
                         onDismissRequest = { showActionMenu = false }
                     ) {
-                        for (i in 1 until actions.size) {
+                        for (i in from until actions.size) {
                             val action = actions[i]
                             // don't include null.
                             if (action != null)
@@ -372,7 +387,6 @@ private fun <T : Any> TopAppBar(
     modifier: Modifier = Modifier,
 ) {
     val showActionBar by remember { derivedStateOf { resolver.selected.isNotEmpty() } }
-    val isSimple = resolver.meta?.isSimple ?: true
     // show/ hide action bar
     Crossfade(
         targetState = showActionBar,
@@ -380,17 +394,14 @@ private fun <T : Any> TopAppBar(
     ) { show ->
         when (show) {
             true -> ActionBar(resolver, onAction = onAction)
-            // show spacer of zero size when not simple.
-            else -> if (isSimple) Toolbar(
-                resolver,
-                onAction = onAction
-            ) else Spacer(modifier = Modifier)
+            else -> Toolbar(resolver, onAction = onAction)
         }
     }
 }
 
 /**
  * Item header.
+ * //TODO: Handle padding in parent composable.
  */
 @Composable
 private fun Header(
@@ -440,6 +451,8 @@ private fun Header(
     }
 }
 
+private val HeaderArtWorkShape = RoundedCornerShape(20)
+
 /**
  * A composable that display the [value] of the list of directory.
  *
@@ -455,11 +468,173 @@ private fun Header(
  * ```
  */
 @Composable
-private fun Metadata(
-    value: MetaData,
-    modifier: Modifier = Modifier
+private fun <T : Any> Metadata(
+    resolver: DirectoryViewModel<T>,
+    onPerformAction: (action: Action) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    //TODO: Built in future versions.
+    // return spacer is meta is null
+    val meta = resolver.meta ?: return Spacer(modifier = modifier)
+    // What is the meta?
+    // A MetaData provides additional info regarding the directory.
+    // The 2nd two slots of mActions are filled by this.
+    // TODO: Future versions might animate between vertical/horizontal.
+    ConstraintLayout(modifier) {
+        val (Artwork, Title, Cardinality, Date, Action1, Action2, Divider) = createRefs()
+
+        // create the chain
+        // This will determine the size of the MetaData Composable.
+        constrain(
+            ref = createVerticalChain(Artwork, Action1, chainStyle = ChainStyle.Packed),
+            constrainBlock = {
+                // Divider will act as the center anchor of Play Button
+                top.linkTo(parent.top, ContentPadding.normal)
+                bottom.linkTo(parent.bottom, ContentPadding.large)
+            }
+        )
+
+
+        // Artwork.
+        // Because this composable only is hown when artwork isn't null; so
+        Image(
+            data = meta.artwork ?: "",
+            modifier = Modifier
+                .shadow(ContentElevation.high, HeaderArtWorkShape)
+                .constrainAs(Artwork) {
+                    start.linkTo(parent.start, ContentPadding.normal)
+                    width = Dimension.value(76.dp)
+                    height = Dimension.ratio("0.61")
+                }
+        )
+
+        // Title
+        // since meta is Text hence annotated string can be used to populate subtitle.
+        Header(
+            text = stringResource(value = meta.title),
+            style = Theme.typography.h4,
+            maxLines = 2,
+            textAlign = TextAlign.Start,
+
+            modifier = Modifier.constrainAs(Title) {
+                start.linkTo(Artwork.end, ContentPadding.normal)
+                end.linkTo(parent.end, ContentPadding.normal)
+                top.linkTo(Artwork.top)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // line 3 of details
+        constrain(
+            ref = createHorizontalChain(
+                Cardinality,
+                Divider,
+                Date,
+                chainStyle = ChainStyle.SpreadInside
+            ),
+            constrainBlock = {
+                start.linkTo(Artwork.end, ContentPadding.normal)
+                end.linkTo(parent.end, ContentPadding.normal)
+            }
+        )
+
+        //Tracks
+        val count = meta.cardinality
+        val color = LocalContentColor.current
+        Text(
+            modifier = Modifier.constrainAs(Cardinality) {
+                top.linkTo(Title.bottom, ContentPadding.normal)
+                width = Dimension.percent(0.20f)
+            },
+            text = buildAnnotatedString {
+                append("$count\n")
+                withStyle(
+                    SpanStyle(
+                        color = color.copy(ContentAlpha.medium),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        baselineShift = BaselineShift(-0.7f)
+                    )
+                ) {
+                    append("Files")
+                }
+            },
+            textAlign = TextAlign.Center,
+            style = Theme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        //Divider 2
+        Divider(
+            modifier = Modifier.constrainAs(Divider) {
+                height = Dimension.value(56.dp)
+                top.linkTo(Cardinality.top, -ContentPadding.small)
+                width = Dimension.value(1.dp)
+            }
+        )
+
+        val date =
+            if (meta.dateModified == -1L) "N/A" else Util.formatAsRelativeTimeSpan(meta.dateModified)
+        Text(
+            text = buildAnnotatedString {
+                append("$date\n")
+                withStyle(
+                    SpanStyle(
+                        color = color.copy(ContentAlpha.medium),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        baselineShift = BaselineShift(-0.7f)
+                    )
+                ) {
+                    append("Modified")
+                }
+            },
+            textAlign = TextAlign.Center,
+            style = Theme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.constrainAs(Date) {
+                top.linkTo(Cardinality.top)
+                width = Dimension.fillToConstraints
+            },
+        )
+
+        val actions = resolver.mActions
+        val second = actions.getOrNull(2)
+        if (second != null)
+            OutlinedButton(
+                label = stringResource(value = second.title),
+                onClick = { onPerformAction(second) },
+                leading = rememberVectorPainter(image = second.icon),
+                colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
+                border = ButtonDefaults.outlinedBorder,
+                modifier = Modifier.constrainAs(Action2) {
+                    start.linkTo(parent.start, ContentPadding.normal)
+                    bottom.linkTo(Action1.bottom)
+                    width = Dimension.percent(0.45f)
+                },
+                contentPadding = PaddingValues(11.dp),
+                shape = Theme.shapes.small2
+            )
+
+        val first = actions.getOrNull(1)
+        if (first != null)
+            Button(
+                label = stringResource(value = first.title),
+                onClick = { onPerformAction(first) },
+                leading = rememberVectorPainter(image = first.icon),
+                modifier = Modifier
+                    .padding(top = ContentPadding.large)
+                    .constrainAs(Action1) {
+                        end.linkTo(parent.end, ContentPadding.normal)
+                        width = Dimension.percent(if (second != null) 0.45f else 0.9f)
+                    },
+                contentPadding = PaddingValues(9.dp),
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 0.dp
+                ),
+                shape = Theme.shapes.small2
+            )
+    }
 }
 
 // recyclable items.
@@ -467,6 +642,8 @@ private const val CONTENT_TYPE_HEADER = "_header"
 private const val CONTENT_TYPE_LIST_META = "_list_meta"
 private const val CONTENT_TYPE_LIST_ITEM = "_list_item"
 private const val CONTENT_TYPE_BANNER = "_banner_ad"
+private const val CONTENT_TYPE_SEARCH_VIEW = "_search_view"
+private const val CONTENT_TYPE_PINNED_SPACER = "_pinned_spacer"
 
 /**
  * SearchBar
@@ -500,7 +677,6 @@ private fun <T : Any> SearchBar(
     )
 }
 
-
 private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) =
     { GridItemSpan(maxLineSpan) }
 
@@ -512,7 +688,6 @@ private inline fun <T> LazyGridScope.content(
 ) {
     // actual list
     items.forEach { (header, list) ->
-
         //emit  list header
         item(
             key = header.raw,
@@ -547,6 +722,7 @@ private inline fun <T> LazyGridScope.content(
  * @param key A key function to extract a unique identifier from the item.
  * @param itemContent The composable function that represents each item in the list.
  */
+@Suppress("UNCHECKED_CAST")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun <T : Any> List(
@@ -555,6 +731,7 @@ private fun <T : Any> List(
     cells: GridCells,
     key: ((item: T) -> Any)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    onAction: (action: Action) -> Unit,
     itemContent: @Composable LazyGridItemScope.(T) -> Unit
 ) {
     //TODO: Currently we are only representing the items. However, this logic will be moved
@@ -587,30 +764,45 @@ private fun <T : Any> List(
     ) {
         // used to pin the list to top.
         // such data search bar is not opened in hiding.
-        item("pined_spacer", span = fullLineSpan) {
+        item(
+            contentType = CONTENT_TYPE_PINNED_SPACER,
+            span = fullLineSpan
+        ) {
             Spacer(modifier = Modifier.padding(ContentPadding.small))
         }
 
-        // The search bar; callable.
+        // list meta
+        // it is debatable weather to use if inside or outside.
         item(
-            "search_view",
-            contentType = "search_view",
+            contentType = CONTENT_TYPE_LIST_META,
+            span = fullLineSpan
+        ) {
+            if (resolver.meta?.isSimple == false)
+                Metadata(resolver = resolver, onPerformAction = onAction)
+        }
+
+        // Search Node
+        item(
+            contentType = CONTENT_TYPE_SEARCH_VIEW,
             span = fullLineSpan,
         ) {
             val filter by resolver.filter.collectAsState()
             val show = filter.second != null
             // animate visibility based on show is
-            AnimatedVisibility(show) {
-                SearchBar(
-                    resolver = resolver,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = ContentPadding.large,
-                            vertical = ContentPadding.medium,
-                        ),
-                )
-            }
+            AnimatedVisibility(
+                show,
+                content = {
+                    SearchBar(
+                        resolver = resolver,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = ContentPadding.large,
+                                vertical = ContentPadding.medium,
+                            ),
+                    )
+                },
+            )
         }
 
         // actual content
@@ -687,19 +879,20 @@ fun <T : Any> Directory(
 ) {
     // collapse if expanded and
     // back button is clicked.
+    // TODO: Maybe check if filter is null or not.
     BackHandler(viewModel.selected.isNotEmpty() || viewModel.focused.isNotBlank()) {
         if (viewModel.focused.isNotBlank())
             viewModel.focused = ""
-        if (viewModel.selected.isNotEmpty())
+        else if (viewModel.selected.isNotEmpty())
             viewModel.clear()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                viewModel,
-                onAction,
-                Modifier
+                resolver = viewModel,
+                onAction = onAction,
+                modifier = Modifier
                     .statusBarsPadding()
                     .drawHorizontalDivider(color = Theme.colors.onSurface)
                     .padding(bottom = ContentPadding.medium),
@@ -732,10 +925,9 @@ fun <T : Any> Directory(
                 modifier = Modifier.padding(it),
                 contentPadding = contentPadding,
                 itemContent = itemContent,
-                key = key
+                key = key,
+                onAction = onAction
             )
         }
     )
 }
-
-
