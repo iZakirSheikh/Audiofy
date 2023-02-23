@@ -607,9 +607,10 @@ private fun <T : Any> Metadata(
                 colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                 border = ButtonDefaults.outlinedBorder,
                 modifier = Modifier.constrainAs(Action2) {
-                    start.linkTo(parent.start, ContentPadding.normal)
                     bottom.linkTo(Action1.bottom)
-                    width = Dimension.percent(0.45f)
+                    end.linkTo(parent.end, ContentPadding.large)
+                    start.linkTo(Action1.end, ContentPadding.small)
+                    width = Dimension.fillToConstraints
                 },
                 contentPadding = PaddingValues(11.dp),
                 shape = Theme.shapes.small2
@@ -624,8 +625,12 @@ private fun <T : Any> Metadata(
                 modifier = Modifier
                     .padding(top = ContentPadding.large)
                     .constrainAs(Action1) {
-                        end.linkTo(parent.end, ContentPadding.normal)
-                        width = Dimension.percent(if (second != null) 0.45f else 0.9f)
+                        start.linkTo(Artwork.start, ContentPadding.medium)
+                        if (second != null)
+                            end.linkTo(Action2.start, ContentPadding.small)
+                        else
+                            end.linkTo(parent.end, ContentPadding.large)
+                        width = Dimension.fillToConstraints
                     },
                 contentPadding = PaddingValues(9.dp),
                 elevation = ButtonDefaults.elevation(

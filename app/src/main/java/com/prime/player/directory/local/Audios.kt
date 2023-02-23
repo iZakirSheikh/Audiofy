@@ -129,7 +129,7 @@ class AudiosViewModel @Inject constructor(
                         when (type) {
                             GET_EVERY -> "Audios"
                             GET_FROM_GENRE -> "Genre"
-                            GET_FROM_FOLDER -> FileUtils.name(key)
+                            GET_FROM_FOLDER -> "Folder"
                             GET_FROM_ARTIST -> "Artist"
                             GET_FROM_ALBUM -> "Album"
                             else -> error("no such audios key.")
@@ -139,7 +139,13 @@ class AudiosViewModel @Inject constructor(
                         // new line
                         append("\n")
                         // name of the album.
-                        append(if (key == GET_EVERY) "All Local Audio Files" else key)
+                        append(
+                            when (type) {
+                                GET_EVERY -> "All Local Audio Files"
+                                GET_FROM_FOLDER -> FileUtils.name(key)
+                                else -> key
+                            }
+                        )
                     }
                 }
             )

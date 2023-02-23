@@ -186,7 +186,7 @@ fun Playlist(
             .wrapContentHeight()
             .then(
                 if (checked)
-                    Modifier.scale(0.8f)
+                    Modifier.scale(0.65f)
                 else
                     Modifier
             ),
@@ -314,13 +314,18 @@ fun Playlists(viewModel: PlaylistsViewModel) {
                         if (selected.isEmpty()) {
                             val direction = Members.direction(it.name)
                             navigator.navigate(direction)
+                        } else {
+                            // clear others since we need only 1 item to have focus.
+                            viewModel.clear()
+                            viewModel.select(it.name)
                         }
                     },
                     onLongClick = {
                         // clear others since we need only 1 item to have focus.
                         viewModel.clear()
                         viewModel.select(it.name)
-                    }
+                    },
+                    enabled = !checked
                 )
                 .animateItemPlacement()
         )
