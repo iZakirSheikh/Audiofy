@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 private const val TAG = "AlbumsViewModel"
@@ -87,6 +88,7 @@ class MembersViewModel @Inject constructor(
             Text(title)
         )
     }
+
 
     val playlists = repository.playlists
 
@@ -138,25 +140,33 @@ class MembersViewModel @Inject constructor(
         }
     }
 
+    /**
+     * @see AudiosViewModel.play
+     */
     fun play(shuffle: Boolean) {
-        // what to play
-        // from what index.
-        // clears the already queue.
         viewModelScope.launch {
-            // Here priority of action is as follows.
-            // preference 1 is given to focused.
-            // preference 2 is given to selected.
-            // preference 3 is given to all what is obtained after applying filter.
-            val list = data.firstOrNull()?.values?.flatten() ?: return@launch
+            // because the order is necessary to play intented item first.
+            val src = data.firstOrNull()?.values?.flatten() ?: return@launch
+            val list =
+                src.let {
+                    // return same list if selected is empty else return the only selected items from the list.
+                    val arr = ArrayList(selected)
+                    // consume selected.
+                    clear()
+                    if (arr.isEmpty())
+                        it
+                    else
+                        arr.mapNotNull { id -> it.find { it.uri == id } }
+                }
             // don't do anything
             if (list.isEmpty()) return@launch
+            val focused = focused
             // check which is focused
             val index = when {
                 // pick random
                 shuffle -> Random.nextInt(0, list.size)
                 // find focused
-                focused.isNotBlank() -> list.indexOfFirst { it.uri == focused }
-                    .let { if (it == -1) 0 else it }
+                focused.isNotBlank() -> list.indexOfFirst { it.uri == focused }.let { if (it == -1) 0 else it }
                 else -> 0
             }
             remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
@@ -164,16 +174,25 @@ class MembersViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Deletes the selected or focused item(s) from the playlist.
+     * If no item is selected, shows a toast message and returns.
+     * If an item is focused, deletes that item.
+     * If multiple items are selected, deletes all selected items.
+     * Shows a toast message indicating the number of items deleted.
+     */
     fun delete() {
         viewModelScope.launch {
             val list = when {
                 focused.isNotBlank() -> listOf(focused)
-                selected.isNotEmpty() -> selected
+                selected.isNotEmpty() -> ArrayList(selected)
                 else -> {
                     toaster.show("No item selected.", "Message")
                     return@launch
                 }
             }
+            // consume selected
+            clear()
 
             var count = 0
             list.forEach {
@@ -188,9 +207,9 @@ class MembersViewModel @Inject constructor(
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
                 )
-
         }
     }
+
 
     fun playNext() {
         viewModelScope.launch {
@@ -202,6 +221,7 @@ class MembersViewModel @Inject constructor(
         }
     }
 
+
     fun addToQueue() {
         viewModelScope.launch {
             toaster.show(
@@ -212,6 +232,25 @@ class MembersViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Overrides the `select` method of the parent class to add or remove the given item key from the
+     * list of selected items. Also adds or removes the `SelectAll` action from the list of available
+     * actions depending on the number of selected items.
+     *
+     * The algorithm of this function is as follows:
+     *
+     * 1. Call the `select` method of the parent class with the given item key to add or remove it
+     *    from the list of selected items.
+     *
+     * 2. Get the mutable list of actions by casting the `actions` property to a `SnapshotStateList`.
+     *
+     * 3. Depending on the number of selected items, add or remove the `SelectAll` action from the list
+     *    of available actions:
+     *    - If no items are selected, remove the `SelectAll` action if it exists.
+     *    - If one item is selected, add the `SelectAll` action if it doesn't exist.
+     *
+     * @param key The key of the item to select or deselect.
+     */
     override fun select(key: String) {
         super.select(key)
         // add actions if selected.size == 1
@@ -222,12 +261,12 @@ class MembersViewModel @Inject constructor(
         }
     }
 
+    /**
+     * @see AudiosViewModel.addToPlaylist
+     */
     fun addToPlaylist(name: String) {
         // focus or selected.
         viewModelScope.launch {
-            // The algo goes like this.
-            // This fun is called on selected item or focused one.
-            // so obtain the keys/ids
             if(key == name){
                 toaster.show(
                     "The tracks are already in the playlist",
@@ -237,16 +276,20 @@ class MembersViewModel @Inject constructor(
                 return@launch
             }
 
+            // The algo goes like this.
+            // This fun is called on selected item or focused one.
+            // so obtain the keys/ids
             val list = when {
                 focused.isNotBlank() -> listOf(focused)
-                selected.isNotEmpty() -> selected
+                selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
                     toaster.show("No item selected.", "Message")
                     return@launch
                 }
             }
 
-            // TODO: Clear selection Maybe.
+            // consume selected
+            clear()
 
             val playlist = repository.getPlaylist(name)
             if (playlist == null) {
@@ -291,7 +334,6 @@ class MembersViewModel @Inject constructor(
 
     fun selectAll() {}
 }
-
 
 private val ARTWORK_SIZE = 56.dp
 private val MEMBER_ICON_SHAPE = RoundedCornerShape(30)

@@ -1,5 +1,6 @@
 package com.prime.player.directory.local
 
+import android.os.FileUtils
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -46,6 +47,8 @@ typealias Playlists = PlaylistsViewModel.Companion
 private val Playlist.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
 
+private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
+
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
     handle: SavedStateHandle,
@@ -81,6 +84,15 @@ class PlaylistsViewModel @Inject constructor(
 
     fun createPlaylist(name: String) {
         viewModelScope.launch {
+            if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
+                toaster.show(
+                    message = "The provided name is an invalid",
+                    title = "Error",
+                    leading = Icons.Outlined.ErrorOutline,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
             val exists = repository.exists(name)
             if (exists) {
                 toaster.show(
@@ -97,22 +109,32 @@ class PlaylistsViewModel @Inject constructor(
 
     fun delete() {
         viewModelScope.launch {
-            viewModelScope.launch {
-                val playlist = selected.first().let { repository.getPlaylist(it) } ?: return@launch
-                val success = repository.delete(playlist)
-                if (!success)
-                    toaster.show(
-                        "An error occured while deleting ${playlist.name}",
-                        "Error",
-                        leading = Icons.Outlined.ErrorOutline,
-                        accent = Color.Rose
-                    )
-            }
+            val item = selected.firstOrNull() ?: return@launch
+            // consume
+            clear()
+            val playlist = repository.getPlaylist(item) ?: return@launch
+            val success = repository.delete(playlist)
+            if (!success)
+                toaster.show(
+                    "An error occured while deleting ${playlist.name}",
+                    "Error",
+                    leading = Icons.Outlined.ErrorOutline,
+                    accent = Color.Rose
+                )
         }
     }
 
     fun rename(name: String) {
         viewModelScope.launch {
+            if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
+                toaster.show(
+                    message = "The provided name is an invalid",
+                    title = "Error",
+                    leading = Icons.Outlined.ErrorOutline,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
             val exists = repository.exists(name)
             if (exists) {
                 toaster.show(
@@ -124,6 +146,8 @@ class PlaylistsViewModel @Inject constructor(
                 return@launch
             }
             val value = selected.first().let { repository.getPlaylist(it) } ?: return@launch
+            // consume
+            clear()
             val update = value.copy(
                 name = name, dateModified = System.currentTimeMillis()
             )
