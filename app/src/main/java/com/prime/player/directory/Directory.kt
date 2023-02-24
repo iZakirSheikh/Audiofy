@@ -585,7 +585,7 @@ private fun <T : Any> Metadata(
                         baselineShift = BaselineShift(-0.7f)
                     )
                 ) {
-                    append("Modified")
+                    append("Last Updated")
                 }
             },
             textAlign = TextAlign.Center,
@@ -608,8 +608,8 @@ private fun <T : Any> Metadata(
                 border = ButtonDefaults.outlinedBorder,
                 modifier = Modifier.constrainAs(Action2) {
                     bottom.linkTo(Action1.bottom)
-                    end.linkTo(parent.end, ContentPadding.large)
-                    start.linkTo(Action1.end, ContentPadding.small)
+                    end.linkTo(Action1.start, ContentPadding.small)
+                    start.linkTo(Artwork.start, ContentPadding.medium)
                     width = Dimension.fillToConstraints
                 },
                 contentPadding = PaddingValues(11.dp),
@@ -625,11 +625,11 @@ private fun <T : Any> Metadata(
                 modifier = Modifier
                     .padding(top = ContentPadding.large)
                     .constrainAs(Action1) {
-                        start.linkTo(Artwork.start, ContentPadding.medium)
+                        end.linkTo(parent.end, ContentPadding.large)
                         if (second != null)
-                            end.linkTo(Action2.start, ContentPadding.small)
+                            start.linkTo(Action2.end, ContentPadding.small)
                         else
-                            end.linkTo(parent.end, ContentPadding.large)
+                            start.linkTo(Artwork.start, ContentPadding.medium)
                         width = Dimension.fillToConstraints
                     },
                 contentPadding = PaddingValues(9.dp),

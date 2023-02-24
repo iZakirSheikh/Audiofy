@@ -55,16 +55,18 @@ fun Track(
         leading = {
             // change between rectangle and circle.
             val radius by animateIntAsState(
-                targetValue = if (isPlaying) 20 else 40,
+                targetValue = if (isPlaying) 15 else 40,
                 animationSpec = tween(750)
             )
             com.prime.player.core.compose.Image(
                 meta.artworkUri,
                 modifier = Modifier
+                    .padding(end = ContentPadding.medium)
                     .shadow(5.dp, clip = true, shape = RoundedCornerShape(radius))
                     .border(2.dp, color = Color.White, RoundedCornerShape(radius))
-                    .then(if (isPlaying) Modifier.aspectRatio(1.5f) else Modifier.size(56.dp))
+                    .then(if (isPlaying) Modifier.aspectRatio(1.5f) else Modifier.size(53.dp))
                     .animateContentSize(tween(750, delayMillis = 100))
+
             )
         },
         text = {
@@ -173,7 +175,7 @@ private fun Layout(
                     item(key = item.mediaId) {
                         Track(
                             value = item,
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItemPlacement().padding(horizontal = ContentPadding.normal),
                             isPlaying = true
                         )
                     }
@@ -201,7 +203,8 @@ private fun Layout(
                         modifier = Modifier
                             .offset(y = -ContentPadding.medium)
                             .clickable { resolver.playTrack(item.mediaId.toLong()) }
-                            .animateItemPlacement(),
+                            .animateItemPlacement()
+                            .padding(horizontal = ContentPadding.normal),
                     )
                 }
             }
