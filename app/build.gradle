@@ -70,7 +70,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.2'
+        kotlinCompilerExtensionVersion '1.4.3'
     }
     packagingOptions {
         resources {
@@ -84,7 +84,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     // required for recent view.
 
-    def compose_version = '1.4.0-beta01'
+    def compose_version = '1.4.0-beta02'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -128,7 +128,7 @@ dependencies {
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
     //lottie
-    def lottie_version = '5.2.0'
+    def lottie_version = '6.0.0'
     implementation "com.airbnb.android:lottie-compose:$lottie_version"
 
     //Ken Burns
@@ -144,7 +144,7 @@ dependencies {
 
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+    implementation platform('com.google.firebase:firebase-bom:31.2.2')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
@@ -171,7 +171,7 @@ dependencies {
     //Unity Ads
     implementation 'com.unity3d.ads:unity-ads:4.5.0'
 
-    def media3_version = "1.0.0-beta03"
+    def media3_version = '1.0.0-rc01'
     // For media playback using ExoPlayer
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
