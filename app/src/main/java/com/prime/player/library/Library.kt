@@ -68,7 +68,8 @@ fun TopBar(modifier: Modifier = Modifier) {
             IconButton(
                 onClick = { /*TODO*/ },
                 painter = painterResource(id = R.drawable.ic_app),
-                contentDescription = "about us"
+                contentDescription = "about us",
+                tint =  Color.Unspecified
             )
         },
 
