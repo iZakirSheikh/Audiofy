@@ -14,7 +14,7 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 30
+        versionCode 31
         versionName "2.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -171,7 +171,7 @@ dependencies {
     //Unity Ads
     implementation 'com.unity3d.ads:unity-ads:4.5.0'
 
-    def media3_version = '1.0.0-rc01'
+    def media3_version = '1.0.0-beta03'
     // For media playback using ExoPlayer
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
