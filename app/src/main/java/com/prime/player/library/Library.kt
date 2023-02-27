@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -40,7 +39,6 @@ import com.prime.player.common.ContentPadding
 import com.prime.player.common.LocalNavController
 import com.prime.player.common.LocalWindowPadding
 import com.prime.player.core.Repository
-import com.prime.player.core.albumUri
 import com.prime.player.core.billing.Product
 import com.prime.player.core.billing.observeAsState
 import com.prime.player.core.billing.purchased
@@ -48,11 +46,9 @@ import com.prime.player.core.compose.Image
 import com.prime.player.core.compose.KenBurns
 import com.prime.player.core.compose.OutlinedButton2
 import com.prime.player.core.compose.Placeholder
-import com.prime.player.core.db.Audio
+import com.prime.player.core.db.Playlist
 import com.prime.player.core.playback.Playback
-import com.prime.player.directory.Type
-import com.prime.player.directory.buckets.Buckets
-import com.prime.player.directory.tracks.Tracks
+import com.prime.player.directory.local.*
 import com.prime.player.settings.Settings
 import com.primex.core.gradient
 import com.primex.core.rememberState
@@ -60,7 +56,7 @@ import com.primex.core.stringHtmlResource
 import com.primex.ui.*
 
 @Composable
-fun Header(modifier: Modifier = Modifier) {
+fun TopBar(modifier: Modifier = Modifier) {
     TopAppBar(
         modifier = modifier,
         elevation = 0.dp,
@@ -72,7 +68,8 @@ fun Header(modifier: Modifier = Modifier) {
             IconButton(
                 onClick = { /*TODO*/ },
                 painter = painterResource(id = R.drawable.ic_app),
-                contentDescription = "about us"
+                contentDescription = "about us",
+                tint =  Color.Unspecified
             )
         },
 
@@ -231,7 +228,7 @@ private val RecentArtworkSize = 56.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Recents(
-    list: List<Audio>?, // TODO: Make it a general list
+    list: List<Playlist.Member>?, // TODO: Make it a general list
     modifier: Modifier = Modifier
 ) {
     Crossfade(
@@ -266,7 +263,7 @@ private fun Recents(
 
                     items(list ?: emptyList(), key = { it.id }) {
                         Recent(
-                            image = it.albumUri,
+                            image = it.artwork,
                             modifier = Modifier
                                 .clip(Theme.shapes.small)
                                 // TODO: Play on click
@@ -274,7 +271,7 @@ private fun Recents(
                                 .animateItemPlacement()
                                 .padding(4.dp),
                             error = fallback,
-                            title = it.name
+                            title = it.title
                         )
                     }
                 }
@@ -312,61 +309,43 @@ private fun MediaStore(modifier: Modifier = Modifier) {
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
-            // may the user wants to add the padding.
+            // maybe the user wants to add the padding.
             .then(modifier),
     ) {
 
         val navigator = LocalNavController.current
         VertButton(
-            onClick = {
-                val direction = Buckets.direction(Type.GENRES)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Genres.direction()) },
             icon = Icons.Outlined.Grain,
             label = "Genres"
         )
 
         VertButton(
-            onClick = {
-                val direction = Buckets.direction(Type.ARTISTS)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Artists.direction()) },
             icon = Icons.Outlined.Person,
             label = "Artists"
         )
 
         VertButton(
-            onClick = {
-                val direction = Tracks.direction(Type.PLAYLISTS, Playback.PLAYLIST_FAVOURITE)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
             icon = Icons.Outlined.HeartBroken,
-            label = "Favourite"
+            label = "Favourites"
         )
 
         VertButton(
-            onClick = {
-                val direction = Tracks.direction(Type.AUDIOS)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
             icon = Icons.Outlined.Audiotrack,
             label = "Audios"
         )
 
         VertButton(
-            onClick = {
-                val direction = Buckets.direction(Type.PLAYLISTS)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Playlists.direction()) },
             icon = Icons.Outlined.PlaylistAdd,
             label = "Playlist"
         )
 
         VertButton(
-            onClick = {
-                val direction = Buckets.direction(Type.FOLDERS)
-                navigator.navigate(direction)
-            },
+            onClick = { navigator.navigate(Folders.direction()) },
             icon = Icons.Outlined.Folder,
             label = "Folders"
         )
@@ -382,10 +361,9 @@ fun Library(viewModel: LibraryViewModel) {
             .verticalScroll(rememberScrollState())
             .background(color = Theme.colors.background),
     ) {
-
         // The TopBar.
         // TODO: Maybe make it collapsable.
-        Header(
+        TopBar(
             modifier = Modifier.statusBarsPadding()
         )
 
@@ -403,32 +381,20 @@ fun Library(viewModel: LibraryViewModel) {
             keyboardActions = KeyboardActions(
                 onSearch = {
                     if (query.isNotBlank()) {
-                        val direction = Tracks.direction(Type.AUDIOS, query = query)
+                        val direction = Audios.direction(Audios.GET_EVERY, query = query)
                         navigator.navigate(direction)
                     }
                 },
             )
         )
 
-        //header
-        // TODO - Add support for navigate to recents.
-        Header(
-            text = "Recent",
-            modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
-            style = Theme.typography.h4,
-            fontWeight = FontWeight.Light
+        MediaStore(
+            Modifier.padding(
+               ContentPadding.normal
+            )
         )
 
-        //
-        val recent by viewModel.recent
-        Recents(
-            recent,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-
-        //header
-        var showMore by rememberState(true)
+        // recent header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -436,28 +402,28 @@ fun Library(viewModel: LibraryViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            //header
+            // TODO - Add support for navigate to recents.
             Header(
-                text = "Categories",
+                text = "Recent",
+                modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
                 style = Theme.typography.h4,
                 fontWeight = FontWeight.Light
             )
 
-            val rotate by animateFloatAsState(targetValue = if (showMore) 180f else 0f)
             IconButton(
-                onClick = { showMore = !showMore },
-                imageVector = Icons.Outlined.ExpandMore,
+                onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) },
+                imageVector = Icons.Outlined.NavigateNext,
                 contentDescription = null,
-                modifier = Modifier.graphicsLayer {
-                    this.rotationZ = rotate
-                }
             )
         }
 
-        AnimatedVisibility(visible = showMore) {
-            MediaStore(
-                Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp)
-            )
-        }
+        //
+        val recent by viewModel.recent
+        Recents(
+            recent,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         //Carousel
         // TODO - Add proper carousal support with other destinations as well.
@@ -467,7 +433,7 @@ fun Library(viewModel: LibraryViewModel) {
             title = "Albums",
             icon = Icons.Outlined.Album,
             modifier = Modifier
-               // .padding(start = ContentPadding.normal)
+                // .padding(start = ContentPadding.normal)
                 .padding(
                     horizontal = ContentPadding.normal,
                     vertical = 10.dp
@@ -475,7 +441,7 @@ fun Library(viewModel: LibraryViewModel) {
                 .aspectRatio(1.2f)
                 .fillMaxWidth()
         ) {
-            val direction = Buckets.direction(Type.ALBUMS)
+            val direction = Albums.direction()
             navigator.navigate(direction)
         }
 

@@ -1,4 +1,4 @@
-package com.prime.player.directory.tracks
+package com.prime.player.directory.dialogs
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon

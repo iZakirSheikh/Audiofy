@@ -433,8 +433,15 @@ class MainActivity : ComponentActivity() {
             val fontScale by preference(key = Audiofy.FONT_SCALE)
             val modified = Density(density = density.density, fontScale = fontScale)
 
+            // ask different permission as per api level.
             val permission =
-                rememberPermissionState(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                rememberPermissionState(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                        android.Manifest.permission.READ_MEDIA_AUDIO
+                    else
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            
             CompositionLocalProvider(
                 LocalElevationOverlay provides null,
                 LocalWindowSizeClass provides sWindow,

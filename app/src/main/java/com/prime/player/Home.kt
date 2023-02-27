@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -14,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -26,10 +23,7 @@ import com.prime.player.core.compose.Player
 import com.prime.player.core.compose.PlayerState
 import com.prime.player.core.compose.PlayerValue
 import com.prime.player.core.compose.rememberPlayerState
-import com.prime.player.directory.buckets.Buckets
-import com.prime.player.directory.buckets.BucketsViewModel
-import com.prime.player.directory.tracks.Tracks
-import com.prime.player.directory.tracks.TracksViewModel
+import com.prime.player.directory.local.*
 import com.prime.player.library.Library
 import com.prime.player.library.LibraryViewModel
 import com.prime.player.settings.Settings
@@ -64,19 +58,44 @@ private fun NavGraph() {
                 Library(viewModel = viewModel)
             }
 
-            composable(Buckets.route) {
-                val viewModel = hiltViewModel<BucketsViewModel>()
-                Buckets(viewModel = viewModel)
-            }
-
-            composable(Tracks.route) {
-                val viewModel = hiltViewModel<TracksViewModel>()
-                Tracks(viewModel = viewModel)
-            }
-
             composable(Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 Settings(viewModel = viewModel)
+            }
+
+            composable(Albums.route) {
+                val viewModel = hiltViewModel<AlbumsViewModel>()
+                Albums(viewModel = viewModel)
+            }
+
+            composable(Artists.route) {
+                val viewModel = hiltViewModel<ArtistsViewModel>()
+                Artists(viewModel = viewModel)
+            }
+
+            composable(Audios.route) {
+                val viewModel = hiltViewModel<AudiosViewModel>()
+                Audios(viewModel = viewModel)
+            }
+
+            composable(Folders.route) {
+                val viewModel = hiltViewModel<FoldersViewModel>()
+                Folders(viewModel = viewModel)
+            }
+
+            composable(Genres.route) {
+                val viewModel = hiltViewModel<GenresViewModel>()
+                Genres(viewModel = viewModel)
+            }
+
+            composable(Playlists.route) {
+                val viewModel = hiltViewModel<PlaylistsViewModel>()
+                Playlists(viewModel = viewModel)
+            }
+
+            composable(Members.route) {
+                val viewModel = hiltViewModel<MembersViewModel>()
+                Members(viewModel = viewModel)
             }
         }
     )

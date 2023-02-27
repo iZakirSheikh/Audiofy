@@ -389,4 +389,13 @@ private class ToContinuation<T>(
 }
 
 
-
+/**
+ * Adds the specified element to the list if it is not already present.
+ *
+ * @param value the value to add to the list
+ * @return `true` if the element was added, `false` if the list already contains the element
+ */
+inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
+    return if (contains(value)) return false
+    else add(value)
+}

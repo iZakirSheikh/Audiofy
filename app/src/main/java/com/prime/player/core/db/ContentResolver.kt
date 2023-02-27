@@ -349,7 +349,7 @@ suspend fun ContentResolver.getFolders(
     return query2(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         arrayOf(MediaStore.Audio.Media.DATA),
-        selection = if (filter == null) DUMMY_SELECTION else "${MediaStore.Audio.Genres.NAME} LIKE ?",
+        selection = if (filter == null) DUMMY_SELECTION else "${MediaStore.Audio.Media.DATA} LIKE ?",
         if (filter != null) arrayOf("%$filter%") else null,
         order = MediaStore.Audio.Media.DATA,
         ascending = ascending

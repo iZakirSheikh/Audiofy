@@ -1,4 +1,4 @@
-package com.prime.player.directory.tracks
+package com.prime.player.directory.dialogs
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -106,7 +106,7 @@ fun Playlists(
         ) {
             Crossfade(
                 targetState = value.isEmpty(),
-                modifier = Modifier.heightIn(max = 350.dp),
+                modifier = Modifier.height(350.dp),
             ) {
                 when (it) {
                     false -> {
