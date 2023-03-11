@@ -23,10 +23,11 @@ private val MediaBrowser.nextMediaItem
  */
 interface Remote {
 
+    var shuffle: Boolean
+
     val position: Long
     val duration: Long
     val isPlaying: Boolean
-    val shuffle: Boolean
     val repeatMode: Int
     val meta: MediaMetadata?
     val current: MediaItem?
@@ -61,6 +62,7 @@ interface Remote {
 
     fun seekTo(mills: Long)
 
+    @Deprecated("Use the property")
     fun toggleShuffle()
 
     fun playTrackAt(position: Int)
@@ -68,15 +70,23 @@ interface Remote {
     @Deprecated("use alternative by uri.")
     fun playTrack(id: Long)
 
+    fun playTrack(uri: Uri)
+
     /**
      * Remove the [MediaItem] from [Playback] [queue] identified by [key].
      */
     suspend fun remove(key: Uri): Boolean
 
+    @Deprecated("use the individual ones.")
     fun onRequestPlay(shuffle: Boolean, index: Int = C.INDEX_UNSET, values: List<MediaItem>)
-/*
-    @Deprecated("find better alternative.")
-    suspend fun artwork(): Bitmap*/
+
+    suspend fun clear()
+
+    fun play(playWhenReady: Boolean = true)
+
+    fun pause()
+
+    suspend fun set(values: List<MediaItem>)
 }
 
 
@@ -87,30 +97,23 @@ private class RemoteImpl(private val context: Context) : Remote {
      */
     private val channel = MutableSharedFlow<String>()
 
-    private val fBrowser =
-        MediaBrowser
-            .Builder(context, SessionToken(context, ComponentName(context, Playback::class.java)))
-            .setListener(
-                object : Listener {
-                    override fun onChildrenChanged(
-                        browser: MediaBrowser,
-                        parentId: String,
-                        itemCount: Int,
-                        params: LibraryParams?
-                    ) {
-                        //FixMe: Maybe there is alternate way to publish updates.
-                        GlobalScope.launch { channel.emit(parentId) }
-                    }
-                }
-            ).buildAsync()
+    private val fBrowser = MediaBrowser.Builder(
+            context,
+            SessionToken(context, ComponentName(context, Playback::class.java))
+        ).setListener(object : Listener {
+            override fun onChildrenChanged(
+                browser: MediaBrowser, parentId: String, itemCount: Int, params: LibraryParams?
+            ) {
+                //FixMe: Maybe there is alternate way to publish updates.
+                GlobalScope.launch { channel.emit(parentId) }
+            }
+        }).buildAsync()
     val browser get() = if (fBrowser.isDone) fBrowser.get() else null
 
     override val position
         get() = browser?.currentPosition ?: C.TIME_UNSET
     override val duration
         get() = browser?.duration ?: C.TIME_UNSET
-    override val shuffle: Boolean
-        get() = browser?.shuffleModeEnabled ?: false
     override val repeatMode: Int
         get() = browser?.repeatMode ?: Player.REPEAT_MODE_OFF
     override val meta: MediaMetadata?
@@ -119,6 +122,12 @@ private class RemoteImpl(private val context: Context) : Remote {
         get() = browser?.currentMediaItem
     override val next: MediaItem?
         get() = browser?.nextMediaItem
+
+    override var shuffle: Boolean
+        get() = browser?.shuffleModeEnabled ?: false
+        set(value) {
+            browser?.shuffleModeEnabled = value
+        }
 
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false
@@ -150,8 +159,7 @@ private class RemoteImpl(private val context: Context) : Remote {
         awaitClose {
             browser.removeListener(observer)
         }
-    }
-        .shareIn(
+    }.shareIn(
             // what show I use to replace this.
             GlobalScope,
             // un-register when subscriber count is zero.
@@ -162,18 +170,17 @@ private class RemoteImpl(private val context: Context) : Remote {
     override val loaded: Flow<Boolean> = events.map { current != null }
 
     @OptIn(FlowPreview::class)
-    override val queue: Flow<List<MediaItem>> =
-        channel
-            // emit queue as first
-            .onStart { emit(Playback.ROOT_QUEUE) }
-            // filter queue
-            .filter { it == Playback.ROOT_QUEUE }
-            // debounce change
-            .debounce(500)
-            // map parent with children.
-            .map { parent ->
-                browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
-            }
+    override val queue: Flow<List<MediaItem>> = channel
+        // emit queue as first
+        .onStart { emit(Playback.ROOT_QUEUE) }
+        // filter queue
+        .filter { it == Playback.ROOT_QUEUE }
+        // debounce change
+        .debounce(500)
+        // map parent with children.
+        .map { parent ->
+            browser?.getChildren(parent, 0, Int.MAX_VALUE, null)?.await()?.value ?: emptyList()
+        }
 
 
     init {
@@ -233,6 +240,7 @@ private class RemoteImpl(private val context: Context) : Remote {
         browser.seekTo(mills)
     }
 
+    @Deprecated("Use the property")
     override fun toggleShuffle() {
         val browser = browser ?: return
         browser.shuffleModeEnabled = !browser.shuffleModeEnabled
@@ -243,6 +251,7 @@ private class RemoteImpl(private val context: Context) : Remote {
         browser.seekTo(position, C.TIME_UNSET)
     }
 
+    @Deprecated("use the individual ones.")
     override fun onRequestPlay(shuffle: Boolean, index: Int, values: List<MediaItem>) {
         val browser = browser ?: return
         // convert list to mutable list
@@ -266,12 +275,37 @@ private class RemoteImpl(private val context: Context) : Remote {
             if (item.mediaId == "$id") playTrackAt(pos)
         }
     }
-    /*
-     @Deprecated("find better alternative.")
-     override suspend fun artwork(): Bitmap {
-         val uri = current?.mediaMetadata?.artworkUri ?: return Audiofy.DEFAULT_ALBUM_ART
-         return context.getAlbumArt(uri)?.toBitmap() ?: Audiofy.DEFAULT_ALBUM_ART
-     }*/
+
+
+    override fun playTrack(uri: Uri) {
+        // plays track if found otherwise does nothing.
+        val browser = browser ?: return
+        repeat(browser.mediaItemCount) { pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.requestMetadata.mediaUri == uri) playTrackAt(pos)
+        }
+    }
+
+    override suspend fun clear() {
+        val browser = fBrowser.await()
+        browser.clearMediaItems()
+    }
+
+    override fun play(playWhenReady: Boolean) {
+        val browser = browser ?: return
+        browser.playWhenReady = playWhenReady
+        browser.play()
+    }
+
+    override fun pause() {
+        val browser = browser ?: return
+        browser.pause()
+    }
+
+    override suspend fun set(values: List<MediaItem>) {
+        val browser = fBrowser.await()
+        browser.setMediaItems(values)
+    }
 }
 
 fun Remote(context: Context): Remote = RemoteImpl(context)
