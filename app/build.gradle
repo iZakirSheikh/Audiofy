@@ -14,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 31
-        versionName "2.2.0"
+        versionCode 33
+        versionName "2.2.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -84,11 +84,11 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     // required for recent view.
 
-    def compose_version = '1.4.0-beta02'
+    def compose_version = '1.4.0-rc01'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.0'
     implementation "androidx.compose.animation:animation-graphics:$compose_version"
 
     // Integration with activities
