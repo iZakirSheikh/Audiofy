@@ -15,8 +15,8 @@ import com.prime.player.R
 import com.prime.player.core.*
 import com.prime.player.core.compose.ToastHostState
 import com.prime.player.core.compose.show
-import com.prime.player.core.db.Audio
 import com.prime.player.core.db.Playlist
+import com.prime.player.core.playback.Playback
 import com.prime.player.core.playback.Remote
 import com.primex.core.Text
 import com.primex.ui.Amber
@@ -90,8 +90,8 @@ class ConsoleViewModel @Inject constructor(
                 viewModelScope.launch {
                     val mediaItem = remote.current
                     //FixMe: Remove dependency on ID.
-                    val id = mediaItem?.requestMetadata?.mediaUri?.toString() ?: ""
-                    (favourite as MutableState).value = repository.isFavourite(id)
+                    val uri = mediaItem?.requestMetadata?.mediaUri?.toString() ?: ""
+                    (favourite as MutableState).value = repository.isFavourite(uri)
                     // update the current media id.
                     (current as MutableState).value = mediaItem
                     (this@ConsoleViewModel.artwork as MutableState).value =
@@ -173,25 +173,28 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun addToPlaylist(playlist: Playlist, value: Audio) {
-        viewModelScope.launch {
-            repository.addToPlaylist(
-                value.id,
-                playlist.name
-            )
-        }
-    }
-
     fun toggleFav() {
         viewModelScope.launch {
-            // service?.to
-            //service?.toggleFav()
-            val id = current.value?.mediaId?.toLong() ?: return@launch
-            val favourite = repository.toggleFav(id)
-            (this@ConsoleViewModel.favourite as MutableState).value = favourite
+            val item = current.value ?: return@launch
+            // the playlist is created already.
+            val playlist = repository.getPlaylist(Playback.PLAYLIST_FAVOURITE) ?: return@launch
+            val favourite = repository.isFavourite(item.key)
+            val res = if (favourite)
+                repository.removeFromPlaylist(playlist.id, item.key)
+            else
+                repository.insert(
+                    Member(
+                        item,
+                        playlist.id,
+                        (repository.getLastPlayOrder(playlist.id) ?: 0) + 1
+                    )
+                )
+            // update teh favourite
+            (this@ConsoleViewModel.favourite as MutableState).value = !favourite && res
             toaster.show(
-                message = when (favourite) {
-                    true -> Text(R.string.msg_fav_added)
+                message = when {
+                    !res -> Text("An error occured while adding/removing the item to favourite playlist")
+                    !favourite -> Text(R.string.msg_fav_added)
                     else -> Text(R.string.msg_fav_removed)
                 },
                 title = Text("Favourites"),
@@ -202,8 +205,8 @@ class ConsoleViewModel @Inject constructor(
 
     fun toggleShuffle() {
         viewModelScope.launch {
-            remote.toggleShuffle()
             val newValue = remote.shuffle
+            remote.shuffle = newValue
             (shuffle as MutableState).value = newValue
             toaster.show(
                 message = if (newValue) "Shuffle enabled." else "Shuffle disabled.",
@@ -218,14 +221,13 @@ class ConsoleViewModel @Inject constructor(
     @Deprecated("write new one independent of id.")
     fun playTrack(id: Long) = remote.playTrack(id)
 
+    fun playTrack(uri: Uri) = remote.playTrack(uri)
+
     @Deprecated("find alternate.")
     fun addToPlaylist(id: Playlist) {
-        val audioId = current.value?.mediaId?.toLong() ?: return
+        val item = current.value ?: return
         viewModelScope.launch {
-            repository.addToPlaylist(
-                audioId,
-                id.name
-            )
+            /*TODO: Add necessary logic*/
         }
     }
 
