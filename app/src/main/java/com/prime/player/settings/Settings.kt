@@ -30,6 +30,7 @@ import com.prime.player.common.*
 import com.prime.player.core.FontFamily
 import com.prime.player.core.NightMode
 import com.prime.player.core.billing.*
+import com.prime.player.core.launchPlayStore
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
 import com.primex.ui.*
@@ -81,19 +82,6 @@ private fun Context.shareApp() {
         .setText("Let me recommend you this application ${Audiofy.GOOGLE_STORE}").startChooser()
 }
 
-private fun Context.launchPlayStore() {
-    try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
-            setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
-            addFlags(
-                Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-            )
-        }
-        startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
-    }
-}
 
 @Composable
 private fun Layout(

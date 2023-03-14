@@ -1,5 +1,6 @@
 package com.prime.player.core
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -19,6 +20,7 @@ import coil.request.SuccessResult
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
+import com.prime.player.Audiofy
 import com.prime.player.R
 import com.prime.player.core.db.Audio
 import com.primex.core.Text
@@ -398,4 +400,19 @@ private class ToContinuation<T>(
 inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
     return if (contains(value)) return false
     else add(value)
+}
+
+
+fun Context.launchPlayStore() {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
+            setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+            )
+        }
+        startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
+    }
 }

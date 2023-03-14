@@ -23,18 +23,17 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
-import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.player.*
 import com.prime.player.R
 import com.prime.player.common.*
+import com.prime.player.core.key
 import com.primex.ui.*
 
 private const val TAG = "PlayingQueue"
@@ -172,7 +171,7 @@ private fun Layout(
 
                 // current playing track
                 if (index == 0) {
-                    item(key = item.mediaId) {
+                    item(key = item.key) {
                         Track(
                             value = item,
                             modifier = Modifier.animateItemPlacement().padding(horizontal = ContentPadding.normal),
@@ -197,12 +196,12 @@ private fun Layout(
 
                 // other tracks.
                 // FixMe: use key instead of mediaId
-                item(key = item.mediaId) {
+                item(key = item.key) {
                     Track(
                         value = item,
                         modifier = Modifier
                             .offset(y = -ContentPadding.medium)
-                            .clickable { resolver.playTrack(item.mediaId.toLong()) }
+                            .clickable { resolver.playTrack(item.requestMetadata.mediaUri!!) }
                             .animateItemPlacement()
                             .padding(horizontal = ContentPadding.normal),
                     )

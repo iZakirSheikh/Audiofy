@@ -15,7 +15,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.runtime.*
@@ -66,33 +65,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "MainActivity"
-
 private const val RESULT_CODE_APP_UPDATE = 1000
 
-/**
- * A simple fun that uses [MainActivity] to fetch [Preference] as state.
- */
 @Composable
-inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
-    val activity = LocalContext.activity
-    require(activity is MainActivity)
-    return activity.preferences.observeAsState(key = key)
-}
-
-/**
- * @see [preference]
- */
-@Composable
-inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
-    val activity = LocalContext.activity
-    require(activity is MainActivity)
-    return activity.preferences.observeAsState(key = key)
-}
-
-@Composable
-private fun PermissionRationale(
-    onRequestPermission: () -> Unit
-) {
+private fun PermissionRationale(onRequestPermission: () -> Unit) {
     Placeholder(
         iconResId = R.raw.lt_permission,
         title = stringResource(R.string.storage_permission),
@@ -108,22 +84,10 @@ private fun PermissionRationale(
     }
 }
 
-@Composable
-private fun resolveAppThemeState(): Boolean {
-    val mode by preference(key = Audiofy.NIGHT_MODE)
-    return when (mode) {
-        NightMode.YES -> true
-        NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
-        else -> false
-    }
-}
-
 /**
  * Manages SplashScreen
  */
-fun MainActivity.initSplashScreen(
-    isColdStart: Boolean
-) {
+private fun ComponentActivity.initSplashScreen(isColdStart: Boolean) {
     // Install Splash Screen and Play animation when cold start.
     installSplashScreen().let { splashScreen ->
         // Animate entry of content
@@ -146,6 +110,224 @@ fun MainActivity.initSplashScreen(
     }
 }
 
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+object Activity {
+    @ActivityRetainedScoped
+    @Provides
+    fun remote(@ApplicationContext context: Context) = Remote(context)
+
+    @ActivityRetainedScoped
+    @Provides
+    fun toaster() = ToastHostState()
+}
+
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+
+    val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
+    val advertiser by lazy { Advertiser(this) }
+    val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
+
+    /**
+     * The progress of the in-App update.
+     */
+    val inAppUpdateProgress: State<Float> = mutableStateOf(Float.NaN)
+
+    // injectable code.
+    @Inject
+    lateinit var preferences: Preferences
+
+    @Inject
+    lateinit var remote: Remote
+
+    @Inject
+    lateinit var toastHostState: ToastHostState
+
+    override fun onResume() {
+        super.onResume()
+        billingManager.refresh()
+    }
+
+    override fun onDestroy() {
+        billingManager.release()
+        super.onDestroy()
+    }
+
+    @SuppressLint("WrongThread")
+    @OptIn(ExperimentalPermissionsApi::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // The app has started from scratch if savedInstanceState is null.
+        val isColdStart = savedInstanceState == null //why?
+        // show splash screen
+        initSplashScreen(
+            isColdStart
+        )
+
+        // only run this piece of code if cold start.
+        if (isColdStart) {
+            val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
+            // update launch counter if
+            // cold start.
+            preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
+            // check for updates on startup
+            // don't report
+            // check silently
+            launchUpdateFlow()
+            // TODO: Try to reconcile if it is any good to ask for reviews here.
+            // launchReviewFlow()
+        }
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            val sWindow = calculateWindowSizeClass(activity = this)
+            // observe the change to density
+            val density = LocalDensity.current
+            val fontScale by preference(key = Audiofy.FONT_SCALE)
+            val modified = Density(density = density.density, fontScale = fontScale)
+
+            // ask different permission as per api level.
+            val permission =
+                rememberPermissionState(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                        android.Manifest.permission.READ_MEDIA_AUDIO
+                    else
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+
+            CompositionLocalProvider(
+                LocalElevationOverlay provides null,
+                LocalWindowSizeClass provides sWindow,
+                LocalDensity provides modified
+            ) {
+                Theme(isDark = resolveAppThemeState()) {
+                    // scaffold
+                    // Maybe add support for intro.
+                    Crossfade(
+                        targetState = permission.status.isGranted
+                    ) { has ->
+                        when (has) {
+                            false -> PermissionRationale { permission.launchPermissionRequest() }
+                            else -> {
+                                val show by remote.loaded.collectAsState(initial = false)
+                                Home(show)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+* A simple fun that uses [MainActivity] to fetch [Preference] as state.
+*/
+@Composable
+inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
+/**
+ * @see [preference]
+ */
+@Composable
+inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
+    val activity = LocalContext.activity
+    require(activity is MainActivity)
+    return activity.preferences.observeAsState(key = key)
+}
+
+
+@Composable
+private fun resolveAppThemeState(): Boolean {
+    val mode by preference(key = Audiofy.NIGHT_MODE)
+    return when (mode) {
+        NightMode.YES -> true
+        NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        else -> false
+    }
+}
+
+/**
+ * A simple extension property on [LocalContext] that returns the [Advertiser] of the [MainActivity].
+ * *Requirements*
+ * * The activity requires to be [MainActivity]
+ */
+val ProvidableCompositionLocal<Context>.advertiser: Advertiser
+    @Composable @ReadOnlyComposable inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.advertiser
+    }
+
+
+/**
+ * A utility extension fun for showing interstitially ads.
+ *
+ * *Requirements*
+ * * The activity requires to be [MainActivity]
+ * * checks if the app version is AdFree; then proceeds.
+ */
+fun Activity.showAd(
+    force: Boolean = false, action: (() -> Unit)? = null
+) {
+    require(this is MainActivity)
+    val isAdFree = billingManager[Product.DISABLE_ADS].purchased
+    if (isAdFree) return // don't do anything
+    advertiser.show(this, force, action)
+}
+
+
+/**
+ * A simple extension property on [LocalContext] that returns the activity the context is attached to.
+ */
+val ProvidableCompositionLocal<Context>.billingManager: BillingManager
+    @ReadOnlyComposable @Composable inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.billingManager
+    }
+
+
+/**
+ * A simple extension property on [LocalContext] that returns the [FirebaseAnalytics].
+ * *Requirements*
+ * * The context must contain the [Activity] as [MainActivity]
+ */
+val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
+    @ReadOnlyComposable @Composable inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.fAnalytics
+    }
+
+
+/**
+ * A simple extension property on [LocalContext] that returns the [ToastHostState].
+ * *Requirements*
+ * * The context must contain the [Activity] as [MainActivity]
+ */
+val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
+    @ReadOnlyComposable @Composable inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.toastHostState
+    }
+
+/**
+ * A simple property of [ComponentActivity] that shows the progress of the update.
+ */
+val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
+    @ReadOnlyComposable @Composable inline get() {
+        val activity = current.activity
+        require(activity is MainActivity)
+        return activity.inAppUpdateProgress
+    }
 
 private const val MIN_LAUNCH_COUNT = 20
 private val MAX_DAYS_BEFORE_FIRST_REVIEW = TimeUnit.DAYS.toMillis(7)
@@ -279,190 +461,4 @@ fun Activity.launchUpdateFlow(
     }
 }
 
-/**
- * A simple extension property on [LocalContext] that returns the [Advertiser] of the [MainActivity].
- * *Requirements*
- * * The activity requires to be [MainActivity]
- */
-val ProvidableCompositionLocal<Context>.advertiser: Advertiser
-    @Composable @ReadOnlyComposable inline get() {
-        val activity = current.activity
-        require(activity is MainActivity)
-        return activity.advertiser
-    }
 
-
-/**
- * A utility extension fun for showing interstitially ads.
- *
- * *Requirements*
- * * The activity requires to be [MainActivity]
- * * checks if the app version is AdFree; then proceeds.
- */
-fun Activity.showAd(
-    force: Boolean = false, action: (() -> Unit)? = null
-) {
-    require(this is MainActivity)
-    val isAdFree = billingManager[Product.DISABLE_ADS].purchased
-    if (isAdFree) return // don't do anything
-    advertiser.show(this, force, action)
-}
-
-
-/**
- * A simple extension property on [LocalContext] that returns the activity the context is attached to.
- */
-val ProvidableCompositionLocal<Context>.billingManager: BillingManager
-    @ReadOnlyComposable @Composable inline get() {
-        val activity = current.activity
-        require(activity is MainActivity)
-        return activity.billingManager
-    }
-
-
-/**
- * A simple extension property on [LocalContext] that returns the [FirebaseAnalytics].
- * *Requirements*
- * * The context must contain the [Activity] as [MainActivity]
- */
-val ProvidableCompositionLocal<Context>.fAnalytics: FirebaseAnalytics
-    @ReadOnlyComposable @Composable inline get() {
-        val activity = current.activity
-        require(activity is MainActivity)
-        return activity.fAnalytics
-    }
-
-
-/**
- * A simple extension property on [LocalContext] that returns the [ToastHostState].
- * *Requirements*
- * * The context must contain the [Activity] as [MainActivity]
- */
-val ProvidableCompositionLocal<Context>.toastHostState: ToastHostState
-    @ReadOnlyComposable @Composable inline get() {
-        val activity = current.activity
-        require(activity is MainActivity)
-        return activity.toastHostState
-    }
-
-/**
- * A simple property of [ComponentActivity] that shows the progress of the update.
- */
-val ProvidableCompositionLocal<Context>.inAppUpdateProgress: State<Float>
-    @ReadOnlyComposable @Composable inline get() {
-        val activity = current.activity
-        require(activity is MainActivity)
-        return activity.inAppUpdateProgress
-    }
-
-
-@Module
-@InstallIn(ActivityRetainedComponent::class)
-object Activity {
-    @ActivityRetainedScoped
-    @Provides
-    fun remote(@ApplicationContext context: Context) = Remote(context)
-
-    @ActivityRetainedScoped
-    @Provides
-    fun toaster() = ToastHostState()
-}
-
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-
-    val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
-    val advertiser by lazy { Advertiser(this) }
-    val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
-
-    /**
-     * The progress of the in-App update.
-     */
-    val inAppUpdateProgress: State<Float> = mutableStateOf(Float.NaN)
-
-    // injectable code.
-    @Inject
-    lateinit var preferences: Preferences
-
-    @Inject
-    lateinit var remote: Remote
-
-    @Inject
-    lateinit var toastHostState: ToastHostState
-
-    override fun onResume() {
-        super.onResume()
-        billingManager.refresh()
-    }
-
-    override fun onDestroy() {
-        billingManager.release()
-        super.onDestroy()
-    }
-
-    @SuppressLint("WrongThread")
-    @OptIn(ExperimentalPermissionsApi::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // The app has started from scratch if savedInstanceState is null.
-        val isColdStart = savedInstanceState == null //why?
-        // show splash screen
-        initSplashScreen(
-            isColdStart
-        )
-
-        // only run this piece of code if cold start.
-        if (isColdStart) {
-            val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
-            // update launch counter if
-            // cold start.
-            preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
-            // check for updates on startup
-            // don't report
-            // check silently
-            launchUpdateFlow()
-            // TODO: Try to reconcile if it is any good to ask for reviews here.
-            // launchReviewFlow()
-        }
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        setContent {
-            val sWindow = calculateWindowSizeClass(activity = this)
-            // observe the change to density
-            val density = LocalDensity.current
-            val fontScale by preference(key = Audiofy.FONT_SCALE)
-            val modified = Density(density = density.density, fontScale = fontScale)
-
-            // ask different permission as per api level.
-            val permission =
-                rememberPermissionState(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                        android.Manifest.permission.READ_MEDIA_AUDIO
-                    else
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            
-            CompositionLocalProvider(
-                LocalElevationOverlay provides null,
-                LocalWindowSizeClass provides sWindow,
-                LocalDensity provides modified
-            ) {
-                Theme(isDark = resolveAppThemeState()) {
-                    // scaffold
-                    // Maybe add support for intro.
-                    Crossfade(
-                        targetState = permission.status.isGranted
-                    ) { has ->
-                        when (has) {
-                            false -> PermissionRationale { permission.launchPermissionRequest() }
-                            else -> {
-                                val show by remote.loaded.collectAsState(initial = false)
-                                Home(show)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
