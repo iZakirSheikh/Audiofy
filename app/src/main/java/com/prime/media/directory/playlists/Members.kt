@@ -1,4 +1,4 @@
-package com.prime.media.directory.local
+package com.prime.media.directory.playlists
 
 import android.net.Uri
 import androidx.compose.animation.animateContentSize
@@ -23,29 +23,22 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.Theme
-import com.prime.media.common.ContentElevation
-import com.prime.media.common.ContentPadding
-import com.prime.media.common.composable
 import com.prime.media.core.*
-import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
-import com.primex.core.Text
-import com.primex.core.obtain
-import com.primex.core.rememberState
-import com.primex.ui.*
+import com.primex.core.*
+import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.random.Random
+import com.primex.core.Text
 
 private const val TAG = "AlbumsViewModel"
 
@@ -407,7 +400,7 @@ private fun Member(
                         modifier = Modifier.padding(ContentPadding.small)
                     ) {
                         Label(
-                            text = it.title.obtain,
+                            text = it.title.get,
                             modifier = Modifier.padding(end = ContentPadding.small),
                             style = Theme.typography.caption
                         )
@@ -446,7 +439,7 @@ fun Members(viewModel: MembersViewModel) {
     }
 
     if (confirm == Action.Delete)
-        AlertDialog(
+        com.primex.material2.dialog.AlertDialog(
             title = "Delete",
             message = "You are about to remove items. This can't be undone. \nAre you sure?",
             vectorIcon = Icons.Outlined.DeleteForever,

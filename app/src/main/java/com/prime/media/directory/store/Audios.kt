@@ -1,4 +1,4 @@
-package com.prime.media.directory.local
+package com.prime.media.directory.store
 
 import android.content.Context
 import android.net.Uri
@@ -32,10 +32,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.prime.media.R
 import com.prime.media.Theme
-import com.prime.media.common.ContentElevation
-import com.prime.media.common.ContentPadding
-import com.prime.media.common.LocalNavController
-import com.prime.media.common.composable
+import com.prime.media.core.compose.ContentElevation
+import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.composable
 import com.prime.media.core.*
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.ToastHostState
@@ -46,7 +46,7 @@ import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.directory.dialogs.Properties
 import com.primex.core.*
-import com.primex.ui.*
+import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.collections.ArrayList
 import kotlin.random.Random.Default.nextInt
+import com.primex.core.Text
 
 private const val TAG = "AudiosViewModel"
 
@@ -576,7 +577,7 @@ private fun Audio(
                         modifier = Modifier.padding(ContentPadding.small)
                     ) {
                         Label(
-                            text = it.title.obtain,
+                            text = it.title.get,
                             modifier = Modifier.padding(end = ContentPadding.small),
                             style = Theme.typography.caption
                         )

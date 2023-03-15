@@ -1,36 +1,34 @@
-package com.prime.media.directory.local
+package com.prime.media.directory.store
 
 import android.provider.MediaStore
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.*
-import com.prime.media.common.ContentPadding
-import com.prime.media.common.LocalNavController
+import com.prime.media.R
+import com.prime.media.Theme
+import com.prime.media.caption2
 import com.prime.media.core.Repository
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
-import com.prime.media.core.db.Genre
+import com.prime.media.core.compose.*
+import com.prime.media.core.db.Album
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.uri
 import com.prime.media.directory.*
+import com.prime.media.small2
+import com.primex.core.Rose
 import com.primex.core.Text
-import com.primex.ui.Label
-import com.primex.ui.Rose
+import com.primex.material2.Label
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -39,22 +37,21 @@ import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
 
+private val Album.firstTitleChar
+    inline get() = title.uppercase(Locale.ROOT)[0].toString()
 
-typealias Genres = GenresViewModel.Companion
-
-private val Genre.firstTitleChar
-    inline get() = name.uppercase(Locale.ROOT)[0].toString()
+typealias Albums = AlbumsViewModel.Companion
 
 @HiltViewModel
-class GenresViewModel @Inject constructor(
+class AlbumsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,
     private val remote: Remote,
-) : DirectoryViewModel<Genre>(handle) {
+) : DirectoryViewModel<Album>(handle) {
 
     companion object {
-        private const val HOST = "_local_genres"
+        private const val HOST = "_local_audio_albums"
 
         val route = compose(HOST)
         fun direction(
@@ -68,7 +65,7 @@ class GenresViewModel @Inject constructor(
     init {
         // emit the name to meta
         //TODO: Add other fields in future versions.
-        meta = MetaData(Text("Genres"))
+        meta = MetaData(Text("Albums"))
     }
 
     override fun toggleViewType() {
@@ -78,27 +75,26 @@ class GenresViewModel @Inject constructor(
         }
     }
 
+    override val mActions: List<Action?> = emptyList()
+    override val actions: List<Action> = emptyList()
+    override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name, GroupBy.Artist)
     private val GroupBy.toMediaOrder
         get() = when (this) {
-            GroupBy.None -> MediaStore.Audio.Genres.DEFAULT_SORT_ORDER
-            GroupBy.Name -> MediaStore.Audio.Genres.NAME
+            GroupBy.None -> MediaStore.Audio.Albums.DEFAULT_SORT_ORDER
+            GroupBy.Name -> MediaStore.Audio.Albums.ALBUM
+            GroupBy.Artist -> MediaStore.Audio.Albums.ARTIST
             else -> error("Invalid order: $this ")
         }
 
-    override val actions: List<Action> = emptyList()
-    override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name)
-    override val mActions: List<Action?> = emptyList()
-
-
-    override val data: Flow<Any> =
-        repository.observe(MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI)
+    override val data: Flow<Mapped<Album>> =
+        repository.observe(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI)
             .combine(filter) { f1, f2 -> f2 }.map {
                 val (order, query, ascending) = it
-                val list = repository.getGenres(query, order.toMediaOrder, ascending)
+                val list = repository.getAlbums(query, order.toMediaOrder, ascending)
                 when (order) {
                     GroupBy.None -> mapOf(Text("") to list)
-                    GroupBy.Name -> list.groupBy { genre -> Text(genre.firstTitleChar) }
-                    GroupBy.Artist -> list.groupBy { genre -> Text(genre.name) }
+                    GroupBy.Name -> list.groupBy { album -> Text(album.firstTitleChar) }
+                    GroupBy.Artist -> list.groupBy { album -> Text(album.artist) }
                     else -> error("$order invalid")
                 }
             }
@@ -114,14 +110,13 @@ class GenresViewModel @Inject constructor(
             }
 }
 
-
 private val TILE_WIDTH = 80.dp
 private val GridItemPadding =
     PaddingValues(vertical = 6.dp, horizontal = 10.dp)
 
 @Composable
-fun Genre(
-    value: Genre,
+fun Album(
+    value: Album,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -138,27 +133,22 @@ fun Genre(
     ) {
 
         Surface(
-            color = Color.Transparent,
-            border = BorderStroke(3.dp, Theme.colors.onBackground),
-            shape = CircleShape,
-
+            shape = Theme.shapes.small2,
+            elevation = ContentElevation.medium,
             modifier = Modifier
-                .sizeIn(maxWidth = 70.dp)
-                .aspectRatio(1.0f),
-
+                .fillMaxWidth()
+                .aspectRatio(0.65f),
             content = {
-                Label(
-                    text = "${value.name[0].uppercaseChar()}",
-                    fontWeight = FontWeight.Bold,
-                    style = Theme.typography.h4,
-                    modifier = Modifier.wrapContentSize(Alignment.Center)
+                Image(
+                    data = value.uri,
+                    fallback = painterResource(id = R.drawable.default_art)
                 )
-            }
+            },
         )
 
         // title
         Label(
-            text = value.name,
+            text = value.title,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
             style = Theme.typography.caption,
@@ -166,7 +156,7 @@ fun Genre(
 
         // Subtitle
         Label(
-            text = "${value.cardinality} Tracks",
+            text = "Year: ${value.firstYear}",
             style = Theme.typography.caption2
         )
     }
@@ -174,20 +164,20 @@ fun Genre(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Genres(viewModel: GenresViewModel) {
+fun Albums(viewModel: AlbumsViewModel) {
     val navigator = LocalNavController.current
     Directory(
         viewModel = viewModel,
         cells = GridCells.Adaptive(TILE_WIDTH + (4.dp * 2)),
-        onAction = {},
+        onAction = { /*TODO: Currently we don't support more actions.*/},
         key = { it.id },
         contentPadding = PaddingValues(horizontal = ContentPadding.normal),
     ) {
-        Genre(
+        Album(
             value = it,
             modifier = Modifier
                 .clickable {
-                    val direction = Audios.direction(Audios.GET_FROM_GENRE, it.name)
+                    val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
                     navigator.navigate(direction)
                 }
                 .animateItemPlacement()

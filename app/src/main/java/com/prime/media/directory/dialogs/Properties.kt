@@ -12,12 +12,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.common.*
 import com.prime.media.core.Util
+import com.prime.media.core.compose.*
 import com.prime.media.core.db.Audio
 import com.prime.media.core.formatAsDuration
 import com.prime.media.core.formatAsRelativeTimeSpan
-import com.primex.ui.*
+import com.primex.material2.*
+import com.primex.material2.dialog.PrimeDialog
 
 @Composable
 private fun Property(

@@ -136,8 +136,8 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Preferences and other widgets
-    def support_version = '1.0.0-alpha23'
-    implementation "com.github.prime-zs:support:$support_version"
+    def support_version = 'v1.0.0-alpha05'
+    implementation "com.github.prime-zs:toolkit:$support_version"
 
     // Splash Screen API
     implementation 'androidx.core:core-splashscreen:1.0.0'

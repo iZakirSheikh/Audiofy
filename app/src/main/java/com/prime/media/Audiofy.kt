@@ -7,13 +7,17 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.FirebaseApp
 import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
+import com.prime.media.core.compose.ToastHostState
 import com.prime.media.core.db.Playlists
+import com.prime.media.core.playback.Remote
 import com.primex.preferences.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -22,6 +26,7 @@ private const val TAG = "Audiofy"
 
 @HiltAndroidApp
 class Audiofy : Application() {
+
     companion object {
         private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
 
@@ -107,7 +112,7 @@ object Singleton {
     @Provides
     @Singleton
     fun preferences(@ApplicationContext context: Context) =
-        Preferences(context)
+        Preferences(context, "preferences.db")
 
     @Singleton
     @Provides
@@ -118,4 +123,16 @@ object Singleton {
     @Provides
     fun resolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
+}
+
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+object Activity {
+    @ActivityRetainedScoped
+    @Provides
+    fun remote(@ApplicationContext context: Context) = Remote(context)
+
+    @ActivityRetainedScoped
+    @Provides
+    fun toaster() = ToastHostState()
 }

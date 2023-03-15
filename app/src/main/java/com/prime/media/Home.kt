@@ -16,14 +16,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.prime.media.common.*
+import com.prime.media.core.compose.*
 import com.prime.media.console.Console
 import com.prime.media.console.ConsoleViewModel
 import com.prime.media.core.compose.Player
 import com.prime.media.core.compose.PlayerState
 import com.prime.media.core.compose.PlayerValue
 import com.prime.media.core.compose.rememberPlayerState
-import com.prime.media.directory.local.*
+import com.prime.media.directory.playlists.Members
+import com.prime.media.directory.playlists.MembersViewModel
+import com.prime.media.directory.playlists.Playlists
+import com.prime.media.directory.playlists.PlaylistsViewModel
+import com.prime.media.directory.store.*
 import com.prime.media.library.Library
 import com.prime.media.library.LibraryViewModel
 import com.prime.media.settings.Settings
@@ -117,6 +121,7 @@ fun Home(show: Boolean) {
     BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
     val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
+    val provider = LocalsProvider.current
     CompositionLocalProvider(
         //TODO: maybe use the windowInsets somehow
         LocalWindowPadding provides windowPadding,
@@ -130,8 +135,8 @@ fun Home(show: Boolean) {
             },
             state = state,
             sheetPeekHeight = peekHeight,
-            toast = LocalContext.toastHostState,
-            progress = LocalContext.inAppUpdateProgress.value,
+            toast = provider.toastHostState,
+            progress = provider.inAppUpdateProgress.value,
             content = {
                 Surface(modifier = Modifier.fillMaxSize(), color = Theme.colors.background) {
                     NavGraph()

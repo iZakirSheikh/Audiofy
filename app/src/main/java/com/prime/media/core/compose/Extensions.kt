@@ -7,7 +7,6 @@ import androidx.annotation.RawRes
 import androidx.compose.animation.*
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
@@ -28,9 +27,8 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.common.*
-import com.primex.core.Result
-import com.primex.ui.*
+import com.prime.media.core.compose.*
+import com.primex.material2.*
 
 @Composable
 inline fun Image(
@@ -113,35 +111,4 @@ inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) 
         animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
 
-@Composable
-@Deprecated("Change this with maybe Paging.")
-inline fun <T> Placeholder(
-    value: Result<T>,
-    modifier: Modifier = Modifier,
-    crossinline success: @Composable (data: T) -> Unit,
-) {
-    val (state, data) = value
-    Crossfade(
-        targetState = state,
-        animationSpec = tween(Anim.ActivityLongDurationMills),
-        modifier = modifier
-    ) {
-        when (it) {
-            Result.State.Loading -> Placeholder(
-                iconResId = R.raw.lt_loading_dots_blue,
-                title = "Loading",
-            )
-            is Result.State.Processing -> Placeholder(
-                iconResId = R.raw.lt_loading_hand, title = "Processing."
-            )
-            is Result.State.Error -> Placeholder(
-                iconResId = R.raw.lt_error, title = "Error"
-            )
-            Result.State.Empty -> Placeholder(
-                iconResId = R.raw.lt_empty_box, title = "Oops Empty!!"
-            )
-            Result.State.Success -> success(data)
-        }
-    }
-}
 

@@ -24,7 +24,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.prime.media.common.composable
+import com.prime.media.core.compose.composable
 import com.prime.media.core.compose.ToastHostState.Data
 import com.prime.media.core.compose.ToastHostState.Duration
 import com.primex.core.Text
@@ -33,11 +33,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import com.prime.media.core.compose.ToastHostState.Result
-import com.primex.core.obtain
-import com.primex.ui.IconButton
-import com.primex.ui.Label
-import com.primex.ui.ListTile
-import com.primex.ui.TextButton
+import com.primex.core.get
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.ListTile
+import com.primex.material2.TextButton
 import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 
@@ -433,7 +433,7 @@ fun Toast(
             // the title
             text = {
                 Label(
-                    text = data.message.obtain,
+                    text = data.message.get,
                     color = LocalContentColor.current.copy(ContentAlpha.medium),
                     style = MaterialTheme.typography.caption,
                     maxLines = 2,
@@ -442,7 +442,7 @@ fun Toast(
 
             overlineText = composable(data.title != null) {
                 Label(
-                    text = data.title!!.obtain,
+                    text = data.title!!.get,
                     color = LocalContentColor.current.copy(ContentAlpha.high),
                     style = MaterialTheme.typography.body2,
                     fontWeight = FontWeight.SemiBold
@@ -452,7 +452,7 @@ fun Toast(
             trailing = {
                 if (data.label != null)
                     TextButton(
-                        label = data.label!!.obtain,
+                        label = data.label!!.get,
                         onClick = { data.action() },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = actionColor

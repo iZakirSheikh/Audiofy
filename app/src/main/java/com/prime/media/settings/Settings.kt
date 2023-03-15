@@ -23,14 +23,19 @@ import androidx.core.app.ShareCompat
 import com.prime.media.*
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.common.*
 import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
-import com.prime.media.core.billing.*
+import com.prime.media.core.billing.Banner
+import com.prime.media.core.billing.Placement
+import com.prime.media.core.billing.Product
+import com.prime.media.core.billing.purchased
+import com.prime.media.core.compose.*
 import com.prime.media.core.launchPlayStore
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
-import com.primex.ui.*
+import com.primex.core.stringResource
+import com.primex.material2.*
+import com.primex.material2.neumorphic.NeumorphicTopAppBar
 
 private val RESERVE_PADDING = 56.dp
 
@@ -95,7 +100,7 @@ private fun Layout(
             .verticalScroll(state),
     ) {
 
-        val activity = LocalContext.activity
+        val provider = LocalsProvider.current
 
         PrefHeader(text = stringResource(R.string.appearance))
 
@@ -112,7 +117,7 @@ private fun Layout(
             ),
             onRequestChange = {
                 resolver.set(Audiofy.NIGHT_MODE, it)
-                activity.showAd(force = true)
+                provider.showAd(force = true)
             }
         )
 
@@ -124,7 +129,7 @@ private fun Layout(
             icon = font.vector,
             onRequestChange = { family: FontFamily ->
                 resolver.set(Audiofy.FONT_FAMILY, family)
-                activity.showAd(force = true)
+                provider.showAd(force = true)
             }
         )
 
@@ -140,11 +145,11 @@ private fun Layout(
             iconChange = Icons.Outlined.TextFormat,
             onValueChange = { value: Float ->
                 resolver.set(Audiofy.FONT_SCALE, value)
-                activity.showAd(force = true)
+                provider.showAd(force = true)
             }
         )
 
-        val purchase by LocalContext.billingManager.observeAsState(id = Product.DISABLE_ADS)
+        val purchase by purchase(id = Product.DISABLE_ADS)
         if (!purchase.purchased) Banner(
             placementID = Placement.BANNER_SETTINGS,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -159,7 +164,7 @@ private fun Layout(
             onCheckedChange = { should: Boolean ->
                 resolver.set(Audiofy.FORCE_COLORIZE, should)
                 if (should) resolver.set(Audiofy.COLOR_STATUS_BAR, true)
-                activity.showAd(force = true)
+                provider.showAd(force = true)
             }
         )
 
@@ -172,7 +177,7 @@ private fun Layout(
             enabled = !forceAccent.value,
             onCheckedChange = { should: Boolean ->
                 resolver.set(Audiofy.COLOR_STATUS_BAR, should)
-                activity.showAd(force = true)
+                provider.showAd(force = true)
             }
         )
 
@@ -195,14 +200,14 @@ private fun Layout(
             title = stringResource(R.string.feedback),
             summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
             icon = Icons.Outlined.Feedback,
-            modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
+            modifier = Modifier.clickable(onClick = { provider.launchAppStore() })
         )
 
         Preference(
             title = stringResource(R.string.rate_us),
             summery = stringResource(id = R.string.review_msg),
             icon = Icons.Outlined.Star,
-            modifier = Modifier.clickable(onClick = { context.launchPlayStore() })
+            modifier = Modifier.clickable(onClick = { provider.launchAppStore() })
         )
 
         Preference(
@@ -231,7 +236,7 @@ private fun Layout(
             summery = "$version \nClick to check for updates.",
             icon = Icons.Outlined.TouchApp,
             modifier = Modifier.clickable(onClick = {
-                activity.launchUpdateFlow()
+                provider.launchUpdateFlow()
             })
         )
 

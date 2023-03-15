@@ -18,8 +18,8 @@ import com.prime.media.core.compose.show
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
+import com.primex.core.Amber
 import com.primex.core.Text
-import com.primex.ui.Amber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

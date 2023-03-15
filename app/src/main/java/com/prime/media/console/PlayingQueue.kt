@@ -32,9 +32,9 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.common.*
+import com.prime.media.core.compose.*
 import com.prime.media.core.key
-import com.primex.ui.*
+import com.primex.material2.*
 
 private const val TAG = "PlayingQueue"
 

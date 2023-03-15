@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -38,30 +37,21 @@ import androidx.compose.ui.zIndex
 import coil.load
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.common.ContentElevation
-import com.prime.media.common.ContentPadding
-import com.prime.media.common.LocalNavController
-import com.prime.media.common.LocalWindowPadding
 import com.prime.media.core.Repository
 import com.prime.media.core.albumUri
 import com.prime.media.core.billing.Product
-import com.prime.media.core.billing.observeAsState
 import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.KenBurns
-import com.prime.media.core.compose.OutlinedButton2
-import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.*
 import com.prime.media.core.key
-import com.prime.media.core.launchPlayStore
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
-import com.prime.media.directory.local.*
+import com.prime.media.directory.playlists.Members
+import com.prime.media.directory.playlists.Playlists
+import com.prime.media.directory.store.*
 import com.prime.media.settings.Settings
-import com.primex.core.gradient
+import com.primex.core.*
 import com.primex.core.padding
-import com.primex.core.rememberState
-import com.primex.core.stringHtmlResource
-import com.primex.ui.*
+import com.primex.material2.*
 
 private const val TAG = "Library"
 private val TOP_BAR_HEIGHT = 160.dp
@@ -104,17 +94,14 @@ private fun TopBar(modifier: Modifier = Modifier) {
         // 2. Action to navigate to settings section of the app.
         actions = {
             // Buy full version button.
-            val billing = LocalContext.billingManager
-            val purchase by billing.observeAsState(id = Product.DISABLE_ADS)
-            val activity = LocalContext.activity
+            val provider = LocalsProvider.current
+            val purchase by purchase(id = Product.DISABLE_ADS)
             if (!purchase.purchased)
                 IconButton(
                     painter = painterResource(id = R.drawable.ic_remove_ads),
                     contentDescription = null,
                     onClick = {
-                        billing.launchBillingFlow(
-                            activity, Product.DISABLE_ADS
-                        )
+                        provider.launchBillingFlow(Product.DISABLE_ADS)
                     }
                 )
 
@@ -349,7 +336,9 @@ private fun Tile(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxHeight().aspectRatio(0.7f),
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(0.7f),
         content = {
             val color = Theme.colors.onBackground
             val shape = CircleShape
@@ -460,7 +449,7 @@ private fun RateUs(modifier: Modifier = Modifier) {
                 )
             }
             // message
-            val context = LocalContext.current
+            val provider = LocalsProvider.current
             Text(
                 text = stringResource(R.string.review_msg),
                 style = Theme.typography.caption,
@@ -469,7 +458,7 @@ private fun RateUs(modifier: Modifier = Modifier) {
             // button
             OutlinedButton(
                 label = stringResource(id = R.string.rate_us),
-                onClick = { context.launchPlayStore() },
+                onClick = { provider.launchAppStore() },
                 border = ButtonDefaults.outlinedBorder,
                 modifier = Modifier.padding(top = ContentPadding.normal),
                 shape = CircleShape,

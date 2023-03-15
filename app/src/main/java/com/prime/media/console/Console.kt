@@ -45,17 +45,19 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.common.*
 import com.prime.media.core.Util
-import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.rememberAnimatedVectorResource
+import com.prime.media.core.compose.*
 import com.prime.media.core.formatAsDuration
+import com.primex.core.activity
 import com.primex.core.gradient
 import com.primex.core.lerp
 import com.primex.core.rememberState
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
-import com.primex.ui.*
+import com.primex.material2.*
+import com.primex.material2.neumorphic.Neumorphic
+import com.primex.material2.neumorphic.NeumorphicButton
+import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -519,7 +521,7 @@ fun Vertical(
     ) {
 
         val primary = Theme.colors.onSurface
-        val activity = LocalContext.activity
+        val provider = LocalsProvider.current
         val insets = WindowInsets.statusBars
         // Signature
         Text(
@@ -577,14 +579,15 @@ fun Vertical(
 
         val favourite by resolver.favourite
         IconButton(
-            onClick = { resolver.toggleFav(); activity.launchReviewFlow() },
+            onClick = { resolver.toggleFav(); provider.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
             contentDescription = null,
             modifier = Modifier.layoutID(Heart)
         )
 
+        val context = LocalContext.current
         IconButton(
-            onClick = { activity.launchEqualizer(resolver.audioSessionId) },
+            onClick = { context.activity.launchEqualizer(resolver.audioSessionId) },
             imageVector = Icons.Outlined.Tune,
             contentDescription = null,
             modifier = Modifier.layoutID(TuneUp)
@@ -613,7 +616,7 @@ fun Vertical(
         // controls
         val playing by resolver.playing
         NeumorphicIconButton(
-            onClick = { resolver.togglePlay(); activity.launchReviewFlow() },
+            onClick = { resolver.togglePlay(); provider.launchReviewFlow() },
 
             painter = rememberAnimatedVectorResource(
                 id = R.drawable.avd_pause_to_play,
@@ -632,7 +635,7 @@ fun Vertical(
 
 
         IconButton(
-            onClick = { resolver.skipToPrev(); activity.launchReviewFlow() },
+            onClick = { resolver.skipToPrev(); provider.launchReviewFlow() },
             //   shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_prev),
             // iconScale = 0.8f,
@@ -643,7 +646,7 @@ fun Vertical(
 
 
         IconButton(
-            onClick = { resolver.skipToNext(); activity.launchReviewFlow() },
+            onClick = { resolver.skipToNext(); provider.launchReviewFlow() },
             //shape = RoundedCornerShape(10.dp),
             painter = painterResource(id = R.drawable.ic_skip_to_next),
             contentDescription = null,
@@ -709,7 +712,7 @@ fun Vertical(
 
         val shuffle by resolver.shuffle
         NeumorphicVertButton(
-            onClick = { resolver.toggleShuffle(); activity.launchReviewFlow(); },
+            onClick = { resolver.toggleShuffle(); provider.launchReviewFlow(); },
             icon = painterResource(id = R.drawable.ic_shuffle),
             label = "Shuffle",
             modifier = Modifier.layoutID(Shuffle),
@@ -718,7 +721,7 @@ fun Vertical(
 
         val mode by resolver.repeatMode
         NeumorphicVertButton(
-            onClick = { resolver.cycleRepeatMode();activity.launchReviewFlow(); },
+            onClick = { resolver.cycleRepeatMode();provider.launchReviewFlow(); },
             icon = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
             label = "Repeat",
             modifier = Modifier.layoutID(Repeat),

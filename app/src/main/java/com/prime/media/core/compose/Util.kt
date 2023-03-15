@@ -1,4 +1,4 @@
-package com.prime.media.common
+package com.prime.media.core.compose
 
 import android.content.Context
 import android.content.res.Resources
@@ -25,7 +25,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.primex.core.Text
 import com.primex.core.resolve
-import com.primex.core.spannedResource
 
 
 private const val TAG = "ComposeUtil"
@@ -202,7 +201,7 @@ object ContentElevation {
  * The recommended divider Alpha
  */
 val ContentAlpha.Divider
-    get() = com.prime.media.common.Divider
+    get() = com.prime.media.core.compose.Divider
 private const val Divider = 0.12f
 
 
@@ -210,20 +209,8 @@ private const val Divider = 0.12f
  * The recommended LocalIndication Alpha
  */
 val ContentAlpha.Indication
-    get() = com.prime.media.common.Indication
+    get() = com.prime.media.core.compose.Indication
 private const val Indication = 0.1f
-
-@Composable
-@ReadOnlyComposable
-@NonRestartableComposable
-inline fun stringResource(value: Text) = spannedResource(value = value)
-
-@JvmName("stringResource1")
-@Composable
-@ReadOnlyComposable
-@NonRestartableComposable
-inline fun stringResource(value: Text?) = value?.let { spannedResource(value = it) }
-
 
 inline fun Resources.stringResource(res: Text) = resolve(res)
 
@@ -240,3 +227,6 @@ fun composable(condition: Boolean, content: @Composable () -> Unit) =
         true -> content
         else -> null
     }
+
+@Composable
+fun stringResource(value: Text?)  = if(value == null) null else com.primex.core.stringResource(value = value)

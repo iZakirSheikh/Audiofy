@@ -1,4 +1,4 @@
-package com.prime.media.directory.local
+package com.prime.media.directory.playlists
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -21,18 +21,22 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
-import com.prime.media.common.ContentElevation
-import com.prime.media.common.ContentPadding
-import com.prime.media.common.LocalNavController
+import com.prime.media.core.compose.ContentElevation
+import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.Repository
 import com.prime.media.core.compose.ToastHostState
 import com.prime.media.core.compose.show
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
+import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.rememberState
-import com.primex.ui.*
+import com.primex.material2.*
+import com.primex.material2.dialog.AlertDialog
+import com.primex.material2.dialog.TextInputDialog
+import com.primex.material2.neumorphic.Neumorphic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

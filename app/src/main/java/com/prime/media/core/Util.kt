@@ -10,6 +10,7 @@ import android.os.StrictMode
 import android.text.format.DateUtils.*
 import android.widget.Toast
 import androidx.annotation.WorkerThread
+import androidx.compose.material.Text
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -24,7 +25,6 @@ import com.prime.media.Audiofy
 import com.prime.media.R
 import com.prime.media.core.db.Audio
 import com.primex.core.Text
-import com.primex.core.TextPlural
 import com.primex.core.runCatching
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -173,15 +173,15 @@ fun Util.formatAsDuration2(mills: Long): Text {
     return when {
         mills >= HOUR_IN_MILLIS -> {
             val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
-            TextPlural(R.plurals.duration_hours, hours, hours)
+            Text(R.plurals.duration_hours, hours, hours)
         }
         mills >= MINUTE_IN_MILLIS -> {
             val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
-            TextPlural(R.plurals.duration_minutes, minutes, minutes)
+            Text(R.plurals.duration_minutes, minutes, minutes)
         }
         else -> {
             val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
-            TextPlural(R.plurals.duration_seconds, seconds, seconds)
+            Text(R.plurals.duration_seconds, seconds, seconds)
         }
     }
 }
