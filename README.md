@@ -2,7 +2,7 @@
 
 An Open-Source Audio Player App for all your needs!
 
-<a href="https://play.google.com/store/apps/details?id=com.prime.player" target="_blank">
+<a href="https://play.google.com/store/apps/details?id=com.prime.media" target="_blank">
 <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"/></a></div>
 
 ## 🌞 Preview 
