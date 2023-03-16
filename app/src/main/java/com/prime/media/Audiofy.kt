@@ -112,7 +112,7 @@ object Singleton {
     @Provides
     @Singleton
     fun preferences(@ApplicationContext context: Context) =
-        Preferences(context, "preferences.db")
+        Preferences(context, "Shared_Preferences")
 
     @Singleton
     @Provides

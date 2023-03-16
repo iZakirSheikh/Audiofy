@@ -13,4 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-app/src/main/java/com/prime/player/core/billing/Private.kt
+app/src/main/java/com/prime/media/core/billing/Private.kt

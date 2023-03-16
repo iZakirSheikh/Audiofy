@@ -236,7 +236,7 @@ private fun Layout(
             summery = "$version \nClick to check for updates.",
             icon = Icons.Outlined.TouchApp,
             modifier = Modifier.clickable(onClick = {
-                provider.launchUpdateFlow()
+                provider.launchUpdateFlow(true)
             })
         )
 

@@ -14,9 +14,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.LocalElevationOverlay
+import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -199,18 +202,22 @@ private const val RESULT_CODE_APP_UPDATE = 1000
 
 @Composable
 private fun PermissionRationale(onRequestPermission: () -> Unit) {
-    Placeholder(
-        iconResId = R.raw.lt_permission,
-        title = stringResource(R.string.storage_permission),
-        message = stringResource(R.string.storage_permission_message),
-    ) {
-        OutlinedButton(
-            onClick = onRequestPermission,
-            modifier = Modifier.size(width = 200.dp, height = 46.dp),
-            elevation = null,
-            label = "ALLOW",
-            border = ButtonDefaults.outlinedBorder
-        )
+    Surface(color = Theme.colors.background, modifier = Modifier.fillMaxSize()) {
+        Placeholder(
+            iconResId = R.raw.lt_permission,
+            title = stringResource(R.string.storage_permission),
+            message = stringResource(R.string.storage_permission_message),
+        ) {
+            OutlinedButton(
+                onClick = onRequestPermission,
+                modifier = Modifier.size(width = 200.dp, height = 46.dp),
+                elevation = null,
+                label = "ALLOW",
+                border = ButtonDefaults.outlinedBorder,
+                shape = CircleShape,
+                colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
+            )
+        }
     }
 }
 
