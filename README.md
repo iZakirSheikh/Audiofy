@@ -114,7 +114,7 @@ DM me at 👇
     Apache 2.0 License
 
 
-    Copyright 2021 Spikey sanju
+    Copyright 2021 Zakir Sheikh
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
