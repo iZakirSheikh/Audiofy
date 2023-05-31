@@ -14,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 35
-        versionName "2.2.2"
+        versionCode 36
+        versionName "2.2.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -49,7 +49,9 @@ android {
 
         debug {
             // makes it possible to install both release and debug versions in same device.
-            applicationIdSuffix ".debug"
+            applicationIdSuffix = ".debug"
+            resValue "string", "app_name", "Audiofy Debug"
+            versionNameSuffix = "-debug"
         }
     }
     compileOptions {
@@ -62,37 +64,38 @@ android {
         freeCompilerArgs = [
                 "-Xopt-in=kotlin.RequiresOptIn",
                 "-Xcontext-receivers",
-               // "-Xuse-k2",
-               // "-Xjdk-release=1.8"
+                // "-Xuse-k2",
+                // "-Xjdk-release=1.8"
         ]
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.3'
+        kotlinCompilerExtensionVersion '1.4.7'
     }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    namespace 'com.prime.media'
 }
 
 dependencies {
     //Android KTX is a set of Kotlin extensions that are included with Android Jetpack and other Android libraries.
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     // required for recent view.
 
-    def compose_version = '1.4.0-rc01'
+    def compose_version = '1.5.0-beta01'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
     implementation "androidx.compose.animation:animation-graphics:$compose_version"
 
     // Integration with activities
-    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.activity:activity-compose:1.7.2'
 
     // Material design icons
     implementation "androidx.compose.material:material-icons-core:$compose_version"
@@ -110,16 +113,16 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // room data base
-    def room_version = '2.5.0'
+    def room_version = '2.5.1'
     implementation("androidx.room:room-runtime:$room_version")
     kapt "androidx.room:room-compiler:$room_version"
     implementation("androidx.room:room-ktx:$room_version")
 
     // The Accompanist Libraries
-    def accompanist_version = '0.27.1'
+    def accompanist_version = '0.31.3-beta'
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
-    implementation('io.coil-kt:coil-compose:2.2.2')
+    implementation('io.coil-kt:coil-compose:2.4.0')
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
 
     //hilt
@@ -140,11 +143,11 @@ dependencies {
     implementation "com.github.prime-zs:toolkit:$support_version"
 
     // Splash Screen API
-    implementation 'androidx.core:core-splashscreen:1.0.0'
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
@@ -154,7 +157,7 @@ dependencies {
     implementation "androidx.window:window:1.0.0"
 
     //Play In-App Update:
-    def in_app_update_version = '2.0.1'
+    def in_app_update_version = '2.1.0'
     implementation("com.google.android.play:app-update:$in_app_update_version")
     implementation("com.google.android.play:app-update-ktx:$in_app_update_version")
 
@@ -164,14 +167,14 @@ dependencies {
     implementation("com.google.android.play:review-ktx:$in_app_review")
 
     // google play in-app billing
-    def billing_version = '5.1.0'
+    def billing_version = '6.0.0'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation "com.android.billingclient:billing-ktx:$billing_version"
 
     //Unity Ads
-    implementation 'com.unity3d.ads:unity-ads:4.5.0'
+    implementation 'com.unity3d.ads:unity-ads:4.7.1'
 
-    def media3_version = '1.0.0-beta03'
+    def media3_version = '1.0.2'
     // For media playback using ExoPlayer
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions

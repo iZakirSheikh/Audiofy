@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:395273193376:android:1bffdeb26f98ce4a0e46c5",
+        "android_client_info": {
+          "package_name": "com.prime.mediaplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "395273193376-25rhk3332e3gntapskvshc4lv3g0jm03.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKeIYrSFPr7tbeSiAj07kHWOUG0w3fFRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "395273193376-25rhk3332e3gntapskvshc4lv3g0jm03.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:395273193376:android:d177d81aff07ac610e46c5",
         "android_client_info": {
           "package_name": "com.prime.player"
@@ -36,7 +65,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:395273193376:android:de6523f61d9df5730e46c5",
+        "mobilesdk_app_id": "1:395273193376:android:d177d81aff07ac610e46c5",
         "android_client_info": {
           "package_name": "com.prime.player.debug"
         }

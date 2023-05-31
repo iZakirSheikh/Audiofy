@@ -595,7 +595,7 @@ fun Vertical(
 
         //title
         val current by resolver.current
-        AnimatedLabel(
+        Label(
             text = current?.subtitle ?: stringResource(id = R.string.unknown),
             style = Theme.typography.caption2,
             modifier = Modifier

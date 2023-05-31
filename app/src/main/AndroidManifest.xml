@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.prime.media">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -23,6 +22,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.Splash">
+
+        <!---->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -36,9 +37,7 @@
             </intent-filter>
         </activity>
 
-
-
-
+        <!---->
         <service
             android:name=".core.playback.Playback"
             android:foregroundServiceType="mediaPlayback"

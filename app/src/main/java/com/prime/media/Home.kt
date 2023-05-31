@@ -34,7 +34,6 @@ import com.prime.media.settings.Settings
 import com.prime.media.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
 private val EnterTransition =
     scaleIn(
         initialScale = 0.98f,
@@ -106,7 +105,7 @@ private fun NavGraph() {
 }
 
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Home(show: Boolean) {
     // construct necessary variables.
