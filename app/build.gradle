@@ -8,14 +8,14 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 36
-        versionName "2.2.3"
+        versionCode 37
+        versionName "2.2.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -87,7 +87,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.10.1'
     // required for recent view.
 
-    def compose_version = '1.5.0-beta01'
+    def compose_version = '1.6.0-alpha01'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -113,13 +113,13 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // room data base
-    def room_version = '2.5.1'
+    def room_version = '2.5.2'
     implementation("androidx.room:room-runtime:$room_version")
     kapt "androidx.room:room-compiler:$room_version"
     implementation("androidx.room:room-ktx:$room_version")
 
     // The Accompanist Libraries
-    def accompanist_version = '0.31.3-beta'
+    def accompanist_version = '0.31.4-beta'
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation('io.coil-kt:coil-compose:2.4.0')
@@ -131,7 +131,7 @@ dependencies {
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
     //lottie
-    def lottie_version = '6.0.0'
+    def lottie_version = '6.0.1'
     implementation "com.airbnb.android:lottie-compose:$lottie_version"
 
     //Ken Burns
@@ -147,14 +147,14 @@ dependencies {
 
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:32.0.0')
+    implementation platform('com.google.firebase:firebase-bom:32.1.1')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     // for support of multiple screen sizes
-    implementation "androidx.window:window:1.0.0"
+    implementation "androidx.window:window:1.1.0"
 
     //Play In-App Update:
     def in_app_update_version = '2.1.0'
@@ -167,14 +167,14 @@ dependencies {
     implementation("com.google.android.play:review-ktx:$in_app_review")
 
     // google play in-app billing
-    def billing_version = '6.0.0'
+    def billing_version = '6.0.1'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation "com.android.billingclient:billing-ktx:$billing_version"
 
     //Unity Ads
     implementation 'com.unity3d.ads:unity-ads:4.7.1'
 
-    def media3_version = '1.0.2'
+    def media3_version = '1.1.0-rc01'
     // For media playback using ExoPlayer
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
