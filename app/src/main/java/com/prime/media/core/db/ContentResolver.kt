@@ -1,11 +1,15 @@
 package com.prime.media.core.db
 
 import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.Context
 import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.compose.runtime.Stable
 import com.prime.media.core.FileUtils
@@ -16,6 +20,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext as using
+
 
 private const val TAG = "ContentResolver2"
 
@@ -643,5 +648,79 @@ fun ContentResolver.folder(
     ascending: Boolean = true,
 ) = observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map {
     getFolder(path, filter, order, ascending)
+}
+
+/**
+ * Finds the audio associated with the provided [path].
+ */
+suspend fun ContentResolver.findAudio(path: String): Audio? {
+    return query2(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        AUDIO_PROJECTION,
+        "${MediaStore.Audio.Media.DATA} == ?",
+        arrayOf("$path"),
+        limit = 1
+    ) { if (!it.moveToFirst()) return@query2 null else it.toAudio }
+}
+
+/**
+ * Find the audio associated with the media store content [uri]
+ */
+private suspend fun ContentResolver.findAudio(uri: Uri): Audio? {
+    return query2(uri, AUDIO_PROJECTION, limit = 1) {
+        if (!it.moveToFirst()) return@query2 null else it.toAudio
+    }
+}
+
+
+private const val EXTERNAL_STORAGE_DOCUMENT_AUTHORITY = "com.android.externalstorage.documents"
+private const val DOWNLOAD_DOCUMENT_AUTHORITY = "com.android.providers.downloads.documents"
+private const val MEDIA_DOCUMENT_AUTHORITY = "com.android.providers.media.documents"
+
+private const val EXTERNAL_PATH = "/storage/"
+
+/**
+ * Finds the audio associated with the [uri].
+ * * Note the [uri] might be document, content uri or something else.
+ * @see <a href="https://gist.github.com/Linus-DuJun/34d1b346c4643f482c17960335f5960d">Source 1 </a
+ * @see <a href="https://gist.github.com/r0b0t3d/492f375ec6267a033c23b4ab8ab11e6a">Source 2</a>
+ */
+suspend fun Context.findAudio(uri: Uri): Audio? {
+    if (ContentResolver.SCHEME_FILE.equals(uri.scheme, ignoreCase = true)) // File
+        return contentResolver.findAudio(path = uri.path ?: return null)
+    if (uri.scheme == ContentResolver.SCHEME_CONTENT && uri.authority == MediaStore.AUTHORITY)
+        return contentResolver.findAudio(uri)
+    if (!DocumentsContract.isDocumentUri(this, uri))
+        return null
+    // handle different cases.
+    when (uri.authority) {
+        EXTERNAL_STORAGE_DOCUMENT_AUTHORITY -> {
+            val docId = DocumentsContract.getDocumentId(uri) ?: ""
+            val split = docId.split(":")
+            val path = if (split[0].equals("primary", ignoreCase = true)) {
+                Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+            } else {
+                EXTERNAL_PATH + split[0] + "/" + split[1]
+            }
+            return contentResolver.findAudio(path)
+        }
+
+        DOWNLOAD_DOCUMENT_AUTHORITY -> {
+            val id = DocumentsContract.getDocumentId(uri) ?: return null
+            val uri = ContentUris.withAppendedId(
+                Uri.parse("content://downloads/public_downloads"), id.toLong()
+            )
+            return findAudio(uri)
+        }
+
+        MEDIA_DOCUMENT_AUTHORITY -> {
+            val docId = DocumentsContract.getDocumentId(uri)
+            val split = docId.split(":")
+            val id = split[1].toLong() // id
+            return contentResolver.findAudio(id)
+        }
+
+        else -> return null
+    }
 }
 
