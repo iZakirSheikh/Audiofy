@@ -158,7 +158,7 @@ class AudiosViewModel @Inject constructor(
     }
 
     override val orders: List<GroupBy> =
-        listOf(GroupBy.None, GroupBy.Name, GroupBy.Album, GroupBy.Artist, GroupBy.Length)
+        listOf(GroupBy.None, GroupBy.Name, GroupBy.DateModified, GroupBy.Album, GroupBy.Artist, GroupBy.Length)
     override val mActions: List<Action?> = listOf(null, Action.Play, Action.Shuffle)
     inline val GroupBy.toMediaOrder
         get() = when (this) {
@@ -210,7 +210,7 @@ class AudiosViewModel @Inject constructor(
                     GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
                     GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
                     GroupBy.DateAdded -> TODO()
-                    GroupBy.DateModified -> TODO()
+                    GroupBy.DateModified -> list.groupBy { Text(value = Util.formatAsRelativeTimeSpan(it.dateModified)) }
                     GroupBy.Folder -> TODO()
                     GroupBy.Name -> list.groupBy { audio -> Text(audio.firstTitleChar) }
                     GroupBy.None -> mapOf(Text("") to list)
@@ -228,7 +228,7 @@ class AudiosViewModel @Inject constructor(
             .catch {
                 // any exception.
                 toaster.show(
-                    "Some unknown error occured!.",
+                    "Some unknown error occured!. $it",
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,

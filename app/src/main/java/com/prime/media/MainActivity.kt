@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Memory
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.doOnEnd
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -48,7 +51,9 @@ import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.ToastHostState
 import com.prime.media.core.compose.ToastHostState.Duration
 import com.prime.media.core.compose.show
+import com.prime.media.core.db.findAudio
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.toMediaItem
 import com.primex.core.MetroGreen
 import com.primex.core.Text
 import com.primex.material2.OutlinedButton
@@ -81,7 +86,7 @@ interface Provider {
      *
      */
     val inAppUpdateProgress: State<Float>
-    
+
     val toastHostState: ToastHostState
 
     /**
@@ -111,7 +116,7 @@ interface Provider {
     /**
      * @see show
      */
-    suspend fun show(
+    fun show(
         title: String,
         text: String = "",
         action: String? = null,
@@ -292,6 +297,13 @@ private fun resolveAppThemeState(): Boolean {
     }
 }
 
+
+private val STORAGE_PERMISSION =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        android.Manifest.permission.READ_MEDIA_AUDIO
+    else
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), Provider {
     private val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
@@ -300,7 +312,7 @@ class MainActivity : ComponentActivity(), Provider {
 
 
     override val inAppUpdateProgress: State<Float> =
-        mutableStateOf(Float.NaN)
+        mutableFloatStateOf(Float.NaN)
 
     // injectable code.
     @Inject
@@ -342,7 +354,7 @@ class MainActivity : ComponentActivity(), Provider {
         }
     }
 
-    override suspend fun show(
+    override fun show(
         title: String,
         text: String,
         action: String?,
@@ -450,6 +462,7 @@ class MainActivity : ComponentActivity(), Provider {
                     when (result) {
                         AppUpdateResult.NotAvailable ->
                             if (report) channel.show("The app is already updated to the latest version.")
+
                         is AppUpdateResult.InProgress -> {
                             val state = result.installState
 
@@ -464,6 +477,7 @@ class MainActivity : ComponentActivity(), Provider {
                             (inAppUpdateProgress as MutableState).value = progress
                             Log.i(TAG, "check: $progress")
                         }
+
                         is AppUpdateResult.Downloaded -> {
                             val info = manager.requestAppUpdateInfo()
                             //when update first becomes available
@@ -488,6 +502,7 @@ class MainActivity : ComponentActivity(), Provider {
                             // complete update when ever user clicks on action.
                             if (res == ToastHostState.Result.ActionPerformed) manager.completeUpdate()
                         }
+
                         is AppUpdateResult.Available -> {
                             // if user choose to skip the update handle that case also.
                             val isFlexible = (result.updateInfo.clientVersionStalenessDays()
@@ -528,6 +543,8 @@ class MainActivity : ComponentActivity(), Provider {
         }
         //manually handle decor.
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // pass intetn to onNewIntent
+        onNewIntent(intent)
         // set content to the app.
         setContent {
             // observe the change to density
@@ -537,10 +554,7 @@ class MainActivity : ComponentActivity(), Provider {
             // ask different permission as per api level.
             val permission =
                 rememberPermissionState(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                        android.Manifest.permission.READ_MEDIA_AUDIO
-                    else
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    STORAGE_PERMISSION
                 )
             CompositionLocalProvider(
                 LocalElevationOverlay provides null,
@@ -565,6 +579,36 @@ class MainActivity : ComponentActivity(), Provider {
                     }
                 }
             )
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent == null || intent.action != Intent.ACTION_VIEW)
+            return
+        // This message will not be shown, since home is not loaded yet.
+        val isPermitted =
+            ContextCompat.checkSelfPermission(this, STORAGE_PERMISSION) == PackageManager.PERMISSION_GRANTED
+        if (!isPermitted) {
+            show(
+                "Storage Permission",
+                "This app requires access to your device's storage to function properly. Please grant permission to continue.",
+                icon = Icons.TwoTone.Memory
+            )
+            return
+        }
+        val data = intent?.data ?: return
+        lifecycleScope.launch {
+            val audio = runCatching { findAudio(data) }.getOrNull()
+            if (audio == null) {
+                show(
+                    "Error",
+                    "An error has occurred. We apologize for the inconvenience. Please wait while we address this issue."
+                )
+                return@launch
+            }
+            remote.set(listOf(audio.toMediaItem))
+            remote.play()
         }
     }
 }

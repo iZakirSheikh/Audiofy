@@ -143,7 +143,7 @@ private class RemoteImpl(private val context: Context) : Remote {
         }
 
     @OptIn(DelicateCoroutinesApi::class)
-    override val events: Flow<Player.Events?> = callbackFlow {
+    override val events: Flow<Player.Events?> = callbackFlow<Player.Events?> {
         val observer = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
                 trySend(events)
@@ -159,7 +159,9 @@ private class RemoteImpl(private val context: Context) : Remote {
         awaitClose {
             browser.removeListener(observer)
         }
-    }.shareIn(
+    }
+        .flowOn(Dispatchers.Main)
+        .shareIn(
             // what show I use to replace this.
             GlobalScope,
             // un-register when subscriber count is zero.
