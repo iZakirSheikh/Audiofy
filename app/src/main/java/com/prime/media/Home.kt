@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -19,10 +18,10 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.prime.media.core.compose.*
 import com.prime.media.console.Console
 import com.prime.media.console.ConsoleViewModel
-import com.prime.media.core.compose.Player
-import com.prime.media.core.compose.PlayerState
-import com.prime.media.core.compose.PlayerValue
-import com.prime.media.core.compose.rememberPlayerState
+import com.prime.media.core.compose.scaffold.Scaffold2
+import com.prime.media.core.compose.scaffold.ScaffoldState2
+import com.prime.media.core.compose.scaffold.SheetState
+import com.prime.media.core.compose.scaffold.rememberScaffoldState2
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -30,8 +29,9 @@ import com.prime.media.directory.playlists.PlaylistsViewModel
 import com.prime.media.directory.store.*
 import com.prime.media.library.Library
 import com.prime.media.library.LibraryViewModel
+import com.prime.media.impl.SettingsViewModel
 import com.prime.media.settings.Settings
-import com.prime.media.settings.SettingsViewModel
+import com.prime.media.settings.Settings.Companion
 import kotlinx.coroutines.launch
 
 private val EnterTransition =
@@ -43,7 +43,7 @@ private val EnterTransition =
 private val ExitTransition =
     fadeOut(tween(700))
 
-private suspend inline fun PlayerState.toggle() = if (isExpanded) collapse() else expand()
+private suspend inline fun ScaffoldState2.toggle() = if (isExpanded) collapse() else expand()
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -61,7 +61,7 @@ private fun NavGraph() {
                 Library(viewModel = viewModel)
             }
 
-            composable(Settings.route) {
+            composable(com.prime.media.settings.Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 Settings(viewModel = viewModel)
             }
@@ -114,7 +114,7 @@ fun Home(show: Boolean) {
     val scope = rememberCoroutineScope()
     //Handle messages etc.
     val state =
-        rememberPlayerState(initial = PlayerValue.COLLAPSED)
+        rememberScaffoldState2(initial = SheetState.COLLAPSED)
     // collapse if expanded and
     // back button is clicked.
     BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
@@ -126,7 +126,7 @@ fun Home(show: Boolean) {
         LocalWindowPadding provides windowPadding,
         LocalNavController provides controller,
     ) {
-        Player(
+        Scaffold2(
             sheet = {
                 //FixMe: May be use some kind of scope.
                 val consoleViewModel = hiltViewModel<ConsoleViewModel>()
@@ -134,7 +134,7 @@ fun Home(show: Boolean) {
             },
             state = state,
             sheetPeekHeight = peekHeight,
-            toast = provider.toastHostState,
+            channel = provider.toastHostState,
             progress = provider.inAppUpdateProgress.value,
             content = {
                 Surface(modifier = Modifier.fillMaxSize(), color = Theme.colors.background) {

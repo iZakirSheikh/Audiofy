@@ -37,12 +37,14 @@ import androidx.compose.ui.zIndex
 import coil.load
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Repository
-import com.prime.media.core.albumUri
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.impl.Repository
+import com.prime.media.impl.albumUri
 import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.*
-import com.prime.media.core.key
+import com.prime.media.impl.key
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
@@ -428,7 +430,7 @@ private inline fun <T> List(
 private fun RateUs(modifier: Modifier = Modifier) {
     Surface(modifier = modifier, color = Theme.colors.overlay) {
         Column(
-            Modifier.padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal),
+            Modifier.padding(horizontal = ContentPadding.xLarge, vertical = ContentPadding.normal),
         ) {
             // top row
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,6 +1,6 @@
 @file:Suppress("DeprecatedCallableAddReplaceWith")
 
-package com.prime.media.core
+package com.prime.media.impl
 
 import android.content.ContentResolver
 import android.content.ContentUris
@@ -9,7 +9,7 @@ import android.provider.MediaStore
 import androidx.annotation.WorkerThread
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.prime.media.core.Repository.Companion.toAlbumArtUri
+import com.prime.media.impl.Repository.Companion.toAlbumArtUri
 import com.prime.media.core.db.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback

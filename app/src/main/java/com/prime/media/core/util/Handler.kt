@@ -1,4 +1,4 @@
-package com.prime.media.core
+package com.prime.media.core.util
 
 import android.os.Handler
 import android.os.Looper
@@ -8,6 +8,8 @@ private typealias callback = () -> Unit
 
 private const val UNTIL_INFINITY = -1
 
+
+@Deprecated("Don't use it; use coroutines instead.")
 /**
  * A singleton handler linked with [Looper.getMainLooper].
  */

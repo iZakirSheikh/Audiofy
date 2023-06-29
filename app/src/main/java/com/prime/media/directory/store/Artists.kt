@@ -20,8 +20,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Repository
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.impl.Repository
 import com.prime.media.core.compose.*
+import com.prime.media.core.compose.channel.Channel
+
 import com.prime.media.core.db.Artist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
@@ -48,7 +52,7 @@ private val Artist.firstTitleChar
 class ArtistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Artist>(handle) {
 
@@ -107,7 +111,7 @@ class ArtistsViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 }

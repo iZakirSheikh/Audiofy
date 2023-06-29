@@ -1,7 +1,6 @@
 package com.prime.media
 
 import android.animation.ObjectAnimator
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -48,12 +47,11 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.prime.media.core.NightMode
 import com.prime.media.core.billing.*
 import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.ToastHostState.Duration
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.compose.channel.Channel.Duration
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.toMediaItem
+import com.prime.media.impl.toMediaItem
 import com.primex.core.MetroGreen
 import com.primex.core.Text
 import com.primex.material2.OutlinedButton
@@ -87,7 +85,7 @@ interface Provider {
      */
     val inAppUpdateProgress: State<Float>
 
-    val toastHostState: ToastHostState
+    val toastHostState: Channel
 
     /**
      * A utility extension function for showing interstitial ads.
@@ -99,9 +97,9 @@ interface Provider {
     fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
 
     /**
-     * This uses the provider to submit message to [ToastHostState]
+     * This uses the provider to submit message to [Channel]
      *
-     * @see ToastHostState.show
+     * @see Channel.show
      */
     fun show(
         title: Text,
@@ -319,7 +317,7 @@ class MainActivity : ComponentActivity(), Provider {
     lateinit var preferences: Preferences
 
     @Inject
-    override lateinit var toastHostState: ToastHostState
+    override lateinit var toastHostState: Channel
 
     @Inject
     lateinit var remote: Remote
@@ -500,7 +498,7 @@ class MainActivity : ComponentActivity(), Provider {
                                 accent = Color.MetroGreen
                             )
                             // complete update when ever user clicks on action.
-                            if (res == ToastHostState.Result.ActionPerformed) manager.completeUpdate()
+                            if (res == Channel.Result.ActionPerformed) manager.completeUpdate()
                         }
 
                         is AppUpdateResult.Available -> {

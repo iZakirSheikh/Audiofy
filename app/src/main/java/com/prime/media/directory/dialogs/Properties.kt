@@ -12,11 +12,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
-import com.prime.media.core.compose.*
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.util.DateUtil
 import com.prime.media.core.db.Audio
-import com.prime.media.core.formatAsDuration
-import com.prime.media.core.formatAsRelativeTimeSpan
+import com.prime.media.core.util.formatAsDuration
+import com.prime.media.core.util.formatAsRelativeTimeSpan
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 
@@ -94,13 +94,13 @@ fun Audio.Properties(
 
                 Property(
                     title = "Duration",
-                    subtitle = Util.formatAsDuration(audio.duration),
+                    subtitle = DateUtil.formatAsDuration(audio.duration),
                     icon = Icons.Default.Timer3
                 )
 
                 Property(
                     title = "Date Modified",
-                    subtitle = Util.formatAsRelativeTimeSpan(audio.dateModified).toString(),
+                    subtitle = DateUtil.formatAsRelativeTimeSpan(audio.dateModified).toString(),
                     icon = Icons.Outlined.Update
                 )
             }

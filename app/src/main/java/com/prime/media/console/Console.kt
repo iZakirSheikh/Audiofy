@@ -45,9 +45,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.Anim
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.LongDurationMills
+import com.prime.media.core.util.DateUtil
 import com.prime.media.core.compose.*
-import com.prime.media.core.formatAsDuration
+import com.prime.media.core.util.formatAsDuration
 import com.primex.core.activity
 import com.primex.core.gradient
 import com.primex.core.lerp
@@ -319,7 +322,7 @@ private fun SpeedControllerLayout(
                 valueRange = 0.25f..2f,
                 steps = 6,
                 modifier = Modifier.padding(
-                    horizontal = ContentPadding.large,
+                    horizontal = ContentPadding.xLarge,
                 )
             )
         }
@@ -397,7 +400,7 @@ val expanded =
         }
 
         constrain(ProgressMills) {
-            end.linkTo(Artwork.end, ContentPadding.large)
+            end.linkTo(Artwork.end, ContentPadding.xLarge)
             top.linkTo(Artwork.top)
             bottom.linkTo(Artwork.bottom)
             visibility = Visibility.Visible
@@ -406,8 +409,8 @@ val expanded =
         //title
         constrain(Title) {
             bottom.linkTo(ProgressBar.top, ContentPadding.normal)
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
+            start.linkTo(parent.start, ContentPadding.xLarge)
+            end.linkTo(parent.end, ContentPadding.xLarge)
             width = Dimension.fillToConstraints
         }
 
@@ -440,7 +443,7 @@ val expanded =
         constrain(Toggle) {
             start.linkTo(parent.start)
             end.linkTo(parent.end)
-            bottom.linkTo(Queue.top, ContentPadding.large)
+            bottom.linkTo(Queue.top, ContentPadding.xLarge)
         }
 
         constrain(SkipToPrevious) {
@@ -477,12 +480,12 @@ val expanded =
                 chainStyle = ChainStyle.SpreadInside
             )
         constrain(ref) {
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
+            start.linkTo(parent.start, ContentPadding.xLarge)
+            end.linkTo(parent.end, ContentPadding.xLarge)
         }
 
         constrain(Queue) {
-            bottom.linkTo(parent.bottom, ContentPadding.large)
+            bottom.linkTo(parent.bottom, ContentPadding.xLarge)
         }
 
         constrain(Speed) {
@@ -563,7 +566,7 @@ fun Vertical(
         val value by resolver.progress
         val time = (value * resolver.duration).roundToLong()
         Header(
-            text = Util.formatAsDuration(time),
+            text = DateUtil.formatAsDuration(time),
             color = Color.White,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.layoutID(ProgressMills),

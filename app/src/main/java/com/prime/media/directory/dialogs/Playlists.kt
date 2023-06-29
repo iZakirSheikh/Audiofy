@@ -19,10 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.util.DateUtil
 import com.prime.media.core.compose.*
 import com.prime.media.core.db.Playlist
-import com.prime.media.core.formatAsRelativeTimeSpan
+import com.prime.media.core.util.formatAsRelativeTimeSpan
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 import com.primex.material2.neumorphic.Neumorphic
@@ -78,7 +80,7 @@ private fun Playlist(
 
         // Subtitle
         Label(
-            text = "Modified - ${Util.formatAsRelativeTimeSpan(value.dateModified)}",
+            text = "Modified - ${DateUtil.formatAsRelativeTimeSpan(value.dateModified)}",
             style = Theme.typography.caption2
         )
     }

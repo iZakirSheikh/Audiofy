@@ -25,11 +25,16 @@ import com.prime.media.R
 import com.prime.media.Theme
 import com.prime.media.core.*
 import com.prime.media.core.compose.*
+import com.prime.media.core.compose.channel.Channel
+
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.util.addDistinct
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
+import com.prime.media.impl.Repository
+import com.prime.media.impl.toMediaItem
 import com.primex.core.*
 import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,7 +56,7 @@ private val Member.firstTitleChar
 class MembersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Member>(handle) {
 
@@ -122,7 +127,7 @@ class MembersViewModel @Inject constructor(
                 "Error",
                 leading = Icons.Outlined.Error,
                 accent = Color.Rose,
-                duration = ToastHostState.Duration.Indefinite
+                duration = Channel.Duration.Indefinite
             )
         }
 

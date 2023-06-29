@@ -37,6 +37,7 @@ fun KenBurns(
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                clipToOutline = true
             }
         }, update = view
     )

@@ -32,9 +32,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.util.DateUtil
 import com.prime.media.core.compose.*
-import com.prime.media.core.formatAsRelativeTimeSpan
+import com.prime.media.core.util.formatAsRelativeTimeSpan
 import com.primex.core.*
 import com.primex.material2.*
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
@@ -428,7 +430,7 @@ private fun Header(
                 color = color,
                 modifier = Modifier
                     .padding(top = ContentPadding.normal)
-                    .padding(horizontal = ContentPadding.large),
+                    .padding(horizontal = ContentPadding.xLarge),
             )
             // draw a multiline line header
             // in case the length of the title string is 1
@@ -441,7 +443,7 @@ private fun Header(
                 modifier = Modifier
                     // don't fill whole line.
                     .fillMaxWidth(0.7f)
-                    .padding(top = ContentPadding.large, bottom = ContentPadding.medium)
+                    .padding(top = ContentPadding.xLarge, bottom = ContentPadding.medium)
                     .padding(horizontal = ContentPadding.normal)
             )
         }
@@ -486,7 +488,7 @@ private fun <T : Any> Metadata(
             constrainBlock = {
                 // Divider will act as the center anchor of Play Button
                 top.linkTo(parent.top, ContentPadding.normal)
-                bottom.linkTo(parent.bottom, ContentPadding.large)
+                bottom.linkTo(parent.bottom, ContentPadding.xLarge)
             }
         )
 
@@ -570,7 +572,7 @@ private fun <T : Any> Metadata(
         )
 
         val date =
-            if (meta.dateModified == -1L) "N/A" else Util.formatAsRelativeTimeSpan(meta.dateModified)
+            if (meta.dateModified == -1L) "N/A" else DateUtil.formatAsRelativeTimeSpan(meta.dateModified)
         Text(
             text = buildAnnotatedString {
                 append("$date\n")
@@ -620,9 +622,9 @@ private fun <T : Any> Metadata(
                 onClick = { onPerformAction(first) },
                 leading = rememberVectorPainter(image = first.icon),
                 modifier = Modifier
-                    .padding(top = ContentPadding.large)
+                    .padding(top = ContentPadding.xLarge)
                     .constrainAs(Action1) {
-                        end.linkTo(parent.end, ContentPadding.large)
+                        end.linkTo(parent.end, ContentPadding.xLarge)
                         if (second != null)
                             start.linkTo(Action2.end, ContentPadding.small)
                         else
@@ -799,7 +801,7 @@ private fun <T : Any> List(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = ContentPadding.large,
+                                horizontal = ContentPadding.xLarge,
                                 vertical = ContentPadding.medium,
                             ),
                     )

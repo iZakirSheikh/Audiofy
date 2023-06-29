@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.FirebaseApp
 import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
-import com.prime.media.core.compose.ToastHostState
+import com.prime.media.core.compose.channel.Channel
 import com.prime.media.core.db.Playlists
 import com.prime.media.core.playback.Remote
 import com.primex.preferences.*
@@ -134,5 +134,5 @@ object Activity {
 
     @ActivityRetainedScoped
     @Provides
-    fun toaster() = ToastHostState()
+    fun toaster() = Channel()
 }

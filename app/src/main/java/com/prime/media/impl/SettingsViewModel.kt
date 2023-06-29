@@ -1,17 +1,18 @@
-package com.prime.media.settings
+package com.prime.media.impl
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.ZoomIn
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.media.Audiofy
-import com.prime.media.core.asComposeState
+import com.prime.media.core.compose.asComposeState
+import com.prime.media.settings.Preference
+import com.prime.media.settings.Settings
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
@@ -24,27 +25,12 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
-@Immutable
-data class Preference<out P>(
-    val value: P,
-    @JvmField val title: Text,
-    val vector: ImageVector? = null,
-    @JvmField val summery: Text? = null,
-)
-
-typealias Settings = SettingsViewModel.Companion
-
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferences: Preferences
-) : ViewModel() {
+) : ViewModel(), Settings {
 
-    companion object {
-        const val route = "settings"
-    }
-
-
-    val darkUiMode = with(preferences) {
+    override val darkUiMode by with(preferences) {
         preferences[Audiofy.NIGHT_MODE].map {
             Preference(
                 value = it,
@@ -55,7 +41,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    val font = with(preferences) {
+    override val font by with(preferences) {
         preferences[Audiofy.FONT_FAMILY].map {
             Preference(
                 vector = Icons.Default.TextFields,
@@ -66,7 +52,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    val colorStatusBar = with(preferences) {
+    override val colorStatusBar by with(preferences) {
         preferences[Audiofy.COLOR_STATUS_BAR].map {
             Preference(
                 vector = null,
@@ -77,7 +63,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    val hideStatusBar = with(preferences) {
+    override val hideStatusBar by with(preferences) {
         preferences[Audiofy.HIDE_STATUS_BAR].map {
             Preference(
                 value = it,
@@ -88,7 +74,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    val forceAccent = with(preferences) {
+    override val forceAccent by with(preferences) {
         preferences[Audiofy.FORCE_COLORIZE].map {
             Preference(
                 value = it,
@@ -99,7 +85,7 @@ class SettingsViewModel @Inject constructor(
     }
 
 
-    val fontScale = with(preferences) {
+    override val fontScale by with(preferences) {
         preferences[Audiofy.FONT_SCALE].map {
             Preference(
                 value = it,
@@ -110,7 +96,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    fun <S, O> set(key: Key<S, O>, value: O) {
+    override fun <S, O> set(key: Key<S, O>, value: O) {
         viewModelScope.launch {
             preferences[key] = value
         }

@@ -12,9 +12,9 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.compose.runtime.Stable
-import com.prime.media.core.FileUtils
-import com.prime.media.core.name
-import com.prime.media.core.parent
+import com.prime.media.core.util.FileUtils
+import com.prime.media.core.util.name
+import com.prime.media.core.util.parent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow

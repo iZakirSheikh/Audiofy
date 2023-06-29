@@ -32,19 +32,30 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.prime.media.R
 import com.prime.media.Theme
-import com.prime.media.core.compose.ContentElevation
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.composable
 import com.prime.media.core.*
 import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.channel.Channel
+
 import com.prime.media.core.db.Audio
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.util.FileUtils
+import com.prime.media.core.util.DateUtil
+import com.prime.media.core.util.addDistinct
+import com.prime.media.core.util.formatAsRelativeTimeSpan
+import com.prime.media.core.util.name
+import com.prime.media.core.util.share
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.directory.dialogs.Properties
+import com.prime.media.impl.Repository
+import com.prime.media.impl.albumUri
+import com.prime.media.impl.key
+import com.prime.media.impl.toMediaItem
+import com.prime.media.impl.toMember
 import com.primex.core.*
 import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,7 +79,7 @@ typealias Audios = AudiosViewModel.Companion
 class AudiosViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Audio>(handle) {
 
@@ -210,7 +221,7 @@ class AudiosViewModel @Inject constructor(
                     GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
                     GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
                     GroupBy.DateAdded -> TODO()
-                    GroupBy.DateModified -> list.groupBy { Text(value = Util.formatAsRelativeTimeSpan(it.dateModified)) }
+                    GroupBy.DateModified -> list.groupBy { Text(value = DateUtil.formatAsRelativeTimeSpan(it.dateModified)) }
                     GroupBy.Folder -> TODO()
                     GroupBy.Name -> list.groupBy { audio -> Text(audio.firstTitleChar) }
                     GroupBy.None -> mapOf(Text("") to list)
@@ -232,7 +243,7 @@ class AudiosViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 

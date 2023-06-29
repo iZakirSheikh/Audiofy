@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.Repository
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.impl.Repository
+import com.prime.media.core.compose.channel.Channel
+
 import com.prime.media.core.db.*
 import com.prime.media.directory.*
 import com.primex.core.Text
@@ -45,7 +45,7 @@ private val Folder.firstTitleChar
 class FoldersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
 ) : DirectoryViewModel<Folder>(handle) {
 
     companion object {
@@ -95,7 +95,7 @@ class FoldersViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 }

@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
-import com.prime.media.core.compose.ContentElevation
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.Repository
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.impl.Repository
+import com.prime.media.core.compose.channel.Channel
+
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
@@ -56,7 +56,7 @@ private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
 class PlaylistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Playlist>(handle) {
 

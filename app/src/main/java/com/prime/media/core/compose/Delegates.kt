@@ -10,9 +10,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,15 +18,18 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.compose.*
 import com.primex.material2.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 inline fun Image(
@@ -112,3 +113,10 @@ inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) 
     )
 
 
+context (ViewModel) @Suppress("NOTHING_TO_INLINE")
+@Deprecated("find new solution.")
+inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
+    val state = mutableStateOf(initial)
+    onEach { state.value = it }.launchIn(viewModelScope)
+    return state
+}
