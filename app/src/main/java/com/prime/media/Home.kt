@@ -23,7 +23,6 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.prime.media.console.Console
-import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.scaffold.Scaffold2
@@ -31,21 +30,22 @@ import com.prime.media.core.compose.scaffold.ScaffoldState2
 import com.prime.media.core.compose.scaffold.SheetState
 import com.prime.media.core.compose.scaffold.rememberScaffoldState2
 import com.prime.media.directory.playlists.Members
-import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
-import com.prime.media.directory.playlists.PlaylistsViewModel
 import com.prime.media.directory.store.Albums
-import com.prime.media.directory.store.AlbumsViewModel
 import com.prime.media.directory.store.Artists
-import com.prime.media.directory.store.ArtistsViewModel
 import com.prime.media.directory.store.Audios
-import com.prime.media.directory.store.AudiosViewModel
 import com.prime.media.directory.store.Folders
-import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
-import com.prime.media.directory.store.GenresViewModel
+import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
+import com.prime.media.impl.playlists.MembersViewModel
+import com.prime.media.impl.playlists.PlaylistsViewModel
+import com.prime.media.impl.store.AlbumsViewModel
+import com.prime.media.impl.store.ArtistsViewModel
+import com.prime.media.impl.store.AudiosViewModel
+import com.prime.media.impl.store.FoldersViewModel
+import com.prime.media.impl.store.GenresViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.Settings
 import kotlinx.coroutines.launch
@@ -89,32 +89,32 @@ private fun NavGraph() {
 
             composable(Artists.route) {
                 val viewModel = hiltViewModel<ArtistsViewModel>()
-                Artists(viewModel = viewModel)
+                Artists(state = viewModel)
             }
 
             composable(Audios.route) {
                 val viewModel = hiltViewModel<AudiosViewModel>()
-                Audios(viewModel = viewModel)
+                Audios(state = viewModel)
             }
 
             composable(Folders.route) {
                 val viewModel = hiltViewModel<FoldersViewModel>()
-                Folders(viewModel = viewModel)
+                Folders(state = viewModel)
             }
 
             composable(Genres.route) {
                 val viewModel = hiltViewModel<GenresViewModel>()
-                Genres(viewModel = viewModel)
+                Genres(state = viewModel)
             }
 
             composable(Playlists.route) {
                 val viewModel = hiltViewModel<PlaylistsViewModel>()
-                Playlists(viewModel = viewModel)
+                Playlists(state = viewModel)
             }
 
             composable(Members.route) {
                 val viewModel = hiltViewModel<MembersViewModel>()
-                Members(viewModel = viewModel)
+                Members(state = viewModel)
             }
         }
     )

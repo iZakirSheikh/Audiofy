@@ -1,4 +1,4 @@
-package com.prime.media.core.compose.directory
+package com.prime.media.impl
 
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -6,8 +6,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prime.media.core.compose.directory.Directory
+import com.prime.media.core.compose.directory.GroupBy
+import com.prime.media.core.compose.directory.ViewType
 import com.primex.core.Text
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -113,7 +115,8 @@ typealias Filter = Triple<GroupBy, String?, Boolean>
  * @author Zakir Sheikh
  * @since 2.0
  */
-abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel() {
+@Deprecated("Implement Directory interface instead.")
+abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel(), Directory<T> {
     /**
      * Holds some of the default values and params use in the directory.
      */
@@ -190,7 +193,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * Extract all the params and use in child/sub-classes.
      * The non-null key representing this directory with default value
      */
-    val key = handle.get<String>(PARAM_KEY)!!
+    override val key = handle.get<String>(PARAM_KEY)!!
 
     /**
      * Represents the current filter applied to the directory.
@@ -199,7 +202,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * @property query The current search query.
      * @property ascending The current sorting order, ascending if true.
      */
-    val filter = MutableStateFlow(
+    override val filter = MutableStateFlow(
         Filter(
             handle.get<String>(PARAM_GROUP_BY)!!.let { GroupBy.map(it) },
             handle.get<String>(PARAM_QUERY)!!.let { if (it == NULL_STRING) null else it },
@@ -214,10 +217,10 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * @param order The new grouping criteria.
      * @param ascending The new sorting order, ascending if true.
      */
-    fun filter(
-        value: String? = filter.value.second,
-        order: GroupBy = filter.value.first,
-        ascending: Boolean = filter.value.third
+    override fun filter(
+        value: String?,
+        order: GroupBy,
+        ascending: Boolean
     ) {
         filter.value = filter.value.copy(order, value, ascending)
     }
@@ -231,34 +234,25 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * The initial value of the [viewType] is obtained by calling [handle.get] with [PARAM_VIEW_TYPE] as the key.
      * The returned string is then mapped to its corresponding [ViewType] object using the [ViewType.map] method.
      */
-    var viewType: ViewType by mutableStateOf(
+    override var viewType: ViewType by mutableStateOf(
         handle.get<String>(PARAM_VIEW_TYPE)!!.let {
             ViewType.map(it)
         }
     )
 
     /**
-     * Toggles the viewType.
-     *
-     * This function is used to switch between different view types for the directory.
-     * The exact implementation of this function is left abstract and should be defined
-     * in a subclass.
-     */
-    abstract fun toggleViewType()
-
-    /**
      * Meta information for the [DirectoryViewModel], includes the title, etc.
      *
      * Initial value is `null`.
      */
-    var meta: MetaData? by mutableStateOf(null)
+    override var meta: MetaData? by mutableStateOf(null)
 
     /**
      * Keys of items that are selected.
      *
      * An observable [List] of [String] representing the keys of selected items.
      */
-    val selected: List<String> = mutableStateListOf()
+    override val selected: List<String> = mutableStateListOf()
 
     /**
      * Toggles the selection of an item.
@@ -268,7 +262,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      * This function toggles the selection state of the item with the specified key. If the item is already
      * selected, it is deselected. If it is not selected, it is selected.
      */
-    open fun select(key: String) {
+    override fun select(key: String) {
         if (selected.contains(key))
             (selected as SnapshotStateList).remove(key)
         else
@@ -283,7 +277,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      *
      * This function deselects all items by clearing the [selected].
      */
-    fun clear() {
+    override fun clear() {
         viewModelScope.launch {
             val list = ArrayList(selected)
             list.forEach {
@@ -298,32 +292,6 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
      *
      * Mutable. Can be directly used to update the focused item.
      */
-    var focused: String by mutableStateOf("")
+    override var focused: String by mutableStateOf("")
 
-    /**
-     * A list of supported actions.
-     *
-     * Visible only when the value of [selected] is greater than 0.
-     */
-    abstract val actions: List<Action>
-
-    /**
-     * A list of supported orders.
-     */
-    abstract val orders: List<GroupBy>
-
-    /**
-     * The primary action of the directory.
-     *
-     * Used to display the floating action button (FAB), similar to playlists.
-     *
-     * The index of the items in the list determines their priority, with `0` being the FAB and `1`
-     * and `2` being header buttons 1 and 2, respectively, from the right.
-     */
-    abstract val mActions: List<Action?>
-
-    /**
-     * The data of the directory. Might represent both paged flow and normal flow.
-     */
-    abstract val data: Flow<Any>
 }

@@ -8,7 +8,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteForever
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.runtime.*
@@ -16,173 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
 import com.prime.media.*
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.impl.Repository
-import com.prime.media.core.compose.channel.Channel
 import com.prime.media.core.compose.directory.Action
 import com.prime.media.core.compose.directory.Directory
-import com.prime.media.core.compose.directory.DirectoryViewModel
-import com.prime.media.core.compose.directory.GroupBy
-import com.prime.media.core.compose.directory.Mapped
-import com.prime.media.core.compose.directory.MetaData
-import com.prime.media.core.compose.directory.ViewType
 
 import com.prime.media.core.db.Playlist
-import com.prime.media.core.playback.Remote
-import com.primex.core.Rose
-import com.primex.core.Text
 import com.primex.core.rememberState
 import com.primex.material2.*
 import com.primex.material2.dialog.AlertDialog
 import com.primex.material2.dialog.TextInputDialog
 import com.primex.material2.neumorphic.Neumorphic
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import java.util.*
-import javax.inject.Inject
-
-private const val TAG = "AlbumsViewModel"
-
-typealias Playlists = PlaylistsViewModel.Companion
-
-private val Playlist.firstTitleChar
-    inline get() = name.uppercase(Locale.ROOT)[0].toString()
-
-private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
-
-@HiltViewModel
-class PlaylistsViewModel @Inject constructor(
-    handle: SavedStateHandle,
-    private val repository: Repository,
-    private val channel: Channel,
-    private val remote: Remote,
-) : DirectoryViewModel<Playlist>(handle) {
-
-    companion object {
-        private const val HOST = "_local_playlists"
-
-        val route = compose(HOST)
-        fun direction(
-            query: String = NULL_STRING,
-            order: GroupBy = GroupBy.Name,
-            ascending: Boolean = true,
-            viewType: ViewType = ViewType.List
-        ) = compose(HOST, NULL_STRING, query, order, ascending, viewType)
-    }
-
-    init {
-        // emit the name to meta
-        //TODO: Add other fields in future versions.
-        meta = MetaData(Text("Playlists"))
-    }
-
-    override fun toggleViewType() {
-        // we only currently support single viewType. Maybe in future might support more.
-        viewModelScope.launch {
-            channel.show("Toggle not implemented yet.", "ViewType")
-        }
-    }
-
-    fun createPlaylist(name: String) {
-        viewModelScope.launch {
-            if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                channel.show(
-                    message = "The provided name is an invalid",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
-                    accent = Color.Rose
-                )
-                return@launch
-            }
-            val exists = repository.exists(name)
-            if (exists) {
-                channel.show(
-                    message = "The playlist with name $name already exists.",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
-                    accent = Color.Rose
-                )
-                return@launch
-            }
-            val res = repository.create(Playlist(name))
-        }
-    }
-
-    fun delete() {
-        viewModelScope.launch {
-            val item = selected.firstOrNull() ?: return@launch
-            // consume
-            clear()
-            val playlist = repository.getPlaylist(item) ?: return@launch
-            val success = repository.delete(playlist)
-            if (!success)
-                channel.show(
-                    "An error occured while deleting ${playlist.name}",
-                    "Error",
-                    leading = Icons.Outlined.ErrorOutline,
-                    accent = Color.Rose
-                )
-        }
-    }
-
-    fun rename(name: String) {
-        viewModelScope.launch {
-            if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                channel.show(
-                    message = "The provided name is an invalid",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
-                    accent = Color.Rose
-                )
-                return@launch
-            }
-            val exists = repository.exists(name)
-            if (exists) {
-                channel.show(
-                    message = "The playlist with name $name already exists.",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
-                    accent = Color.Rose
-                )
-                return@launch
-            }
-            val value = selected.first().let { repository.getPlaylist(it) } ?: return@launch
-            // consume
-            clear()
-            val update = value.copy(
-                name = name, dateModified = System.currentTimeMillis()
-            )
-            when (repository.update(update)) {
-                true -> channel.show(message = "The name of the playlist has been update to $name")
-                else -> channel.show(message = "An error occurred while update the name of the playlist to $name")
-            }
-        }
-    }
-
-    override val actions: List<Action> = listOf(Action.Delete, Action.Edit)
-    override val orders: List<GroupBy> = listOf(GroupBy.None, GroupBy.Name)
-    override val mActions: List<Action?> = listOf(Action.PlaylistAdd)
-
-    override val data: Flow<Mapped<Playlist>> =
-        filter.combine(repository.playlists) { f, d ->
-            val (order, query, ascending) = f
-            val filtered = if (query == null) d else d.filter { it.name.contains(query, true) }
-            val src = if (ascending) filtered else filtered.reversed()
-            when (order) {
-                GroupBy.None -> mapOf(Text("") to src)
-                GroupBy.Name -> src.groupBy { Text(it.firstTitleChar) }
-                else -> error("$order invalid")
-            }
-        }
-}
 
 private val TILE_WIDTH = 80.dp
 private val GridItemPadding =
@@ -276,7 +122,7 @@ private inline fun EditDialog(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Playlists(viewModel: PlaylistsViewModel) {
+fun Playlists(state: Playlists) {
     val navigator = LocalNavController.current
     var confirm by rememberState<Action?>(initial = null)
 
@@ -290,7 +136,7 @@ fun Playlists(viewModel: PlaylistsViewModel) {
                 null -> {}
                 // other wise if name might exist.
                 // else create the playlist.
-                else -> viewModel.createPlaylist(name)
+                else -> state.createPlaylist(name)
             }
             confirm = null
         }
@@ -305,7 +151,7 @@ fun Playlists(viewModel: PlaylistsViewModel) {
                 // just dismiss
                 null -> {}
                 // try to rename to new name.
-                else -> viewModel.rename(new)
+                else -> state.rename(new)
             }
             confirm = null
         }
@@ -318,7 +164,7 @@ fun Playlists(viewModel: PlaylistsViewModel) {
             vectorIcon = Icons.Outlined.DeleteForever,
             onDismissRequest = { action ->
                 when (action) {
-                    true -> viewModel.delete()
+                    true -> state.delete()
                     else -> {}
                 }
                 confirm = null
@@ -326,9 +172,9 @@ fun Playlists(viewModel: PlaylistsViewModel) {
         )
 
     // observe the selected items
-    val selected = viewModel.selected
+    val selected = state.selected
     Directory(
-        viewModel = viewModel,
+        viewModel = state,
         cells = GridCells.Adaptive(TILE_WIDTH + (4.dp * 2)),
         onAction = { confirm = it },
         key = { it.id },
@@ -349,14 +195,14 @@ fun Playlists(viewModel: PlaylistsViewModel) {
                             navigator.navigate(direction)
                         } else {
                             // clear others since we need only 1 item to have focus.
-                            viewModel.clear()
-                            viewModel.select(it.name)
+                            state.clear()
+                            state.select(it.name)
                         }
                     },
                     onLongClick = {
                         // clear others since we need only 1 item to have focus.
-                        viewModel.clear()
-                        viewModel.select(it.name)
+                        state.clear()
+                        state.select(it.name)
                     },
                     enabled = !checked
                 )
