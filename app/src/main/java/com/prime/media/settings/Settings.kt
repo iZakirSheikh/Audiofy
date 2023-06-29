@@ -1,9 +1,7 @@
 package com.prime.media.settings
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
 import com.primex.core.Text
 import com.primex.preferences.Key
@@ -38,16 +36,6 @@ interface Settings {
                 }
             )
 
-        val FONT_FAMILY =
-            stringPreferenceKey(
-                TAG + "_font_family",
-                FontFamily.PROVIDED,
-                object : StringSaver<FontFamily> {
-                    override fun save(value: FontFamily): String = value.name
-                    override fun restore(value: String): FontFamily = FontFamily.valueOf(value)
-                }
-            )
-
         val FORCE_COLORIZE = booleanPreferenceKey(TAG + "_force_colorize", false)
         val COLOR_STATUS_BAR = booleanPreferenceKey(TAG + "_color_status_bar", false)
         val HIDE_STATUS_BAR = booleanPreferenceKey(TAG + "_hide_status_bar", false)
@@ -66,7 +54,6 @@ interface Settings {
     }
 
     val darkUiMode: Preference<NightMode>
-    val font: Preference<FontFamily>
     val colorStatusBar: Preference<Boolean>
     val hideStatusBar: Preference<Boolean>
     val forceAccent: Preference<Boolean>

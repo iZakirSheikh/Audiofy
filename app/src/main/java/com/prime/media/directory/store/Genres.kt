@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.*
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.caption2
 import com.prime.media.core.compose.directory.Directory
 
 import com.prime.media.core.db.Genre

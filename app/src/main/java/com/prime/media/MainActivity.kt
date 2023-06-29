@@ -46,9 +46,12 @@ import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.prime.media.core.NightMode
 import com.prime.media.core.billing.*
+import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.compose.channel.Channel
 import com.prime.media.core.compose.channel.Channel.Duration
+import com.prime.media.core.compose.preference
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.playback.Remote
 import com.prime.media.impl.toMediaItem
@@ -61,136 +64,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-/**
- * An interface defining the methods and properties needed for common app functionality,
- * such as in-app updates, showing ads, and launching the app store.
- *
- * This interface is intended to be implemented by a class that is scoped to the entire app,
- * and is accessible from all parts of the app hierarchy.
- *
- * @see DefaultProvider
- */
-@Stable
-interface Provider {
-
-    /**
-     * A simple property that represents the progress of the in-app update.
-     *
-     * The progress is represented as a [State] object, which allows you to observe changes to the
-     * progress value.
-     *
-     * The progress value is a float between 0.0 and 1.0, indicating the percentage of the update
-     * that has been completed. The Float.NaN represents a default value when no update is going on.
-     *
-     */
-    val inAppUpdateProgress: State<Float>
-
-    val toastHostState: Channel
-
-    /**
-     * A utility extension function for showing interstitial ads.
-     * * Note: The ad will not be shown if the app is adFree Version.
-     *
-     * @param force If `true`, the ad will be shown regardless of the AdFree status.
-     * @param action A callback to be executed after the ad is shown.
-     */
-    fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
-
-    /**
-     * This uses the provider to submit message to [Channel]
-     *
-     * @see Channel.show
-     */
-    fun show(
-        title: Text,
-        text: Text = Text(""),
-        action: Text? = null,
-        icon: Any? = null,
-        accent: Color = Color.Unspecified,
-        duration: Duration = Duration.Short
-    )
-
-
-    /**
-     * @see show
-     */
-    fun show(
-        title: String,
-        text: String = "",
-        action: String? = null,
-        icon: Any? = null,
-        accent: Color = Color.Unspecified,
-        duration: Duration = Duration.Short
-    )
-
-
-    /**
-     * A utility method to launch the in-app update flow, with an option to report low-priority
-     * issues to the user via a Toast.
-     *
-     * @param report If `true`, low-priority issues will be reported to the user using the
-     *               ToastHostState channel.
-     */
-    fun launchUpdateFlow(report: Boolean = false)
-
-    /**
-     * This is a convenient method for launching an in-app review process, with some built-in
-     * conditions and guardrails.
-     * Specifically, this method will only launch the review dialog if certain criteria are met,
-     * as follows:
-     *
-     * - The app has been launched at least [MIN_LAUNCH_COUNT] times.
-     * - At least [MAX_DAYS_BEFORE_FIRST_REVIEW] days have passed since the first launch.
-     * - If a review has already been prompted, at least [MAX_DAYS_AFTER_FIRST_REVIEW] days have
-     * passed since the last review prompt.
-     *
-     * These criteria are designed to ensure that the review prompt is only shown at appropriate
-     * intervals, and that users are not repeatedly prompted to leave a review.
-     *
-     * Note that this method should not be used to prompt for a review after every cold boot or launch of the app.
-     */
-    fun launchReviewFlow()
-
-    /**
-     * Launches the Google Play Store app for this app's package.
-     *
-     * This function creates an intent to open the Google Play Store app for this app's package.
-     * If the Google Play Store app is not installed, the intent will open the Play Store website instead.
-     *
-     * Note: This function requires the `android.permission.INTERNET` permission to be declared in your app's manifest file.
-     */
-    fun launchAppStore()
-
-    @Composable
-    @NonRestartableComposable
-    fun <S, O> observeAsState(key: Key.Key1<S, O>): State<O?>
-
-    @Composable
-    @NonRestartableComposable
-    fun <S, O> observeAsState(key: Key.Key2<S, O>): State<O>
-
-    @Composable
-    @NonRestartableComposable
-    fun observeAsState(product: String): State<Purchase?>
-
-    fun launchBillingFlow(id: String)
-}
-
-/**
- * A [staticCompositionLocalOf] variable that provides access to the [Provider] interface.
- *
- * The [Provider] interface defines common methods that can be implemented by an activity that
- * uses a single view with child views.
- * This local composition allows child views to access the implementation of the [Provider]
- * interface provided by their parent activity.
- *
- * If the [Provider] interface is not defined, an error message will be thrown.
- */
-val LocalsProvider =
-    staticCompositionLocalOf<Provider> {
-        error("Provider not defined.")
-    }
 
 private const val TAG = "MainActivity"
 
@@ -252,39 +125,6 @@ private fun ComponentActivity.initSplashScreen(isColdStart: Boolean) {
     }
 }
 
-/**
- * A composable function that uses the [LocalsProvider] to fetch [Preference] as state.
- * @param key A key to identify the preference value.
- * @return A [State] object that represents the current value of the preference identified by the provided key.
- * The value can be null if no preference value has been set for the given key.
- */
-@Composable
-inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
-    val provider = LocalsProvider.current
-    return provider.observeAsState(key = key)
-}
-
-/**
- * @see [preference]
- */
-@Composable
-inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
-    val provider = LocalsProvider.current
-    return provider.observeAsState(key = key)
-}
-
-/**
- * A composable function that uses the [LocalsProvider] to fetch the purchase state of a product.
- * @param id The product ID to identify the purchase state.
- * @return A [State] object that represents the current purchase state of the provided product ID.
- * The value can be null if there is no purchase associated with the given product ID.
- */
-@Composable
-inline fun purchase(id: String): State<Purchase?> {
-    val provider = LocalsProvider.current
-    return provider.observeAsState(product = id)
-}
-
 @Composable
 @NonRestartableComposable
 private fun resolveAppThemeState(): Boolean {
@@ -304,7 +144,7 @@ private val STORAGE_PERMISSION =
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity(), Provider {
+class MainActivity : ComponentActivity(), SystemFacade {
     private val fAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
     private val advertiser by lazy { Advertiser(this) }
     private val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
@@ -318,7 +158,7 @@ class MainActivity : ComponentActivity(), Provider {
     lateinit var preferences: Preferences
 
     @Inject
-    override lateinit var toastHostState: Channel
+    override lateinit var channel: Channel
 
     @Inject
     lateinit var remote: Remote
@@ -349,7 +189,7 @@ class MainActivity : ComponentActivity(), Provider {
         duration: Duration
     ) {
         lifecycleScope.launch {
-            toastHostState.show(title, text, action, icon, accent, duration)
+            channel.show(title, text, action, icon, accent, duration)
         }
     }
 
@@ -362,7 +202,7 @@ class MainActivity : ComponentActivity(), Provider {
         duration: Duration
     ) {
         lifecycleScope.launch {
-            toastHostState.show(title, text, action, icon, accent, duration)
+            channel.show(title, text, action, icon, accent, duration)
         }
     }
 
@@ -456,7 +296,7 @@ class MainActivity : ComponentActivity(), Provider {
         lifecycleScope.launch {
             com.primex.core.runCatching(TAG) {
                 val manager = AppUpdateManagerFactory.create(this@MainActivity)
-                val channel = toastHostState
+                val channel = channel
                 manager.requestUpdateFlow().collect { result ->
                     when (result) {
                         AppUpdateResult.NotAvailable ->
@@ -559,7 +399,7 @@ class MainActivity : ComponentActivity(), Provider {
                 LocalElevationOverlay provides null,
                 //LocalWindowSizeClass provides sWindow,
                 LocalDensity provides modified,
-                LocalsProvider provides this@MainActivity,
+                LocalSystemFacade provides this@MainActivity,
                 // content
                 content = {
                     Theme(isDark = resolveAppThemeState()) {

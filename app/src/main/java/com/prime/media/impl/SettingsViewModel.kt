@@ -41,17 +41,6 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    override val font by with(preferences) {
-        preferences[Settings.FONT_FAMILY].map {
-            Preference(
-                vector = Icons.Default.TextFields,
-                title = Text("Font"),
-                summery = Text("Choose font to better reflect your desires."),
-                value = it
-            )
-        }.asComposeState()
-    }
-
     override val colorStatusBar by with(preferences) {
         preferences[Settings.COLOR_STATUS_BAR].map {
             Preference(

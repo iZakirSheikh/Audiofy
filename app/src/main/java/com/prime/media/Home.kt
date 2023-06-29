@@ -1,7 +1,10 @@
 package com.prime.media
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,21 +13,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material.Colors
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.media.console.Console
 import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
+import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.scaffold.Scaffold2
 import com.prime.media.core.compose.scaffold.ScaffoldState2
 import com.prime.media.core.compose.scaffold.SheetState
@@ -48,6 +58,13 @@ import com.prime.media.impl.store.FoldersViewModel
 import com.prime.media.impl.store.GenresViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.Settings
+import com.primex.core.MetroGreen
+import com.primex.core.OrientRed
+import com.primex.core.Rose
+import com.primex.core.SignalWhite
+import com.primex.core.TrafficBlack
+import com.primex.core.UmbraGrey
+import com.primex.core.blend
 import kotlinx.coroutines.launch
 
 private val EnterTransition =
@@ -136,7 +153,7 @@ fun Home(show: Boolean) {
     BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
     val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
-    val provider = LocalsProvider.current
+    val provider = LocalSystemFacade.current
     CompositionLocalProvider(
         //TODO: maybe use the windowInsets somehow
         LocalWindowPadding provides windowPadding,
@@ -150,7 +167,7 @@ fun Home(show: Boolean) {
             },
             state = state,
             sheetPeekHeight = peekHeight,
-            channel = provider.toastHostState,
+            channel = provider.channel,
             progress = provider.inAppUpdateProgress.value,
             content = {
                 Surface(modifier = Modifier.fillMaxSize(), color = Theme.colors.background) {
@@ -162,4 +179,69 @@ fun Home(show: Boolean) {
                 .navigationBarsPadding()
         )
     }
+}
+/**
+ * A simple/shortcut typealias of [MaterialTheme]
+ */
+typealias Theme = MaterialTheme
+
+private const val TAG = "Home"
+
+private val defaultPrimaryColor = Color.MetroGreen
+private val defaultSecondaryColor = Color.Rose
+
+@Composable
+fun Theme(isDark: Boolean, content: @Composable () -> Unit) {
+    val background by animateColorAsState(
+        targetValue = if (isDark) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
+        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
+    )
+
+    // TODO: update status_bar here.
+
+    val surface by animateColorAsState(
+        targetValue = if (isDark) Color.TrafficBlack else Color.White,
+        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
+    )
+
+    val primary = defaultPrimaryColor
+    val secondary = defaultSecondaryColor
+
+
+    val colors = Colors(
+        primary = primary,
+        secondary = secondary,
+        background = background,
+        surface = surface,
+        primaryVariant = primary.blend(Color.Black, 0.2f),
+        secondaryVariant = secondary.blend(Color.Black, 0.2f),
+        onPrimary = Color.SignalWhite,
+        onSurface = if (isDark) Color.SignalWhite else Color.UmbraGrey,
+        onBackground = if (isDark) Color.SignalWhite else Color.Black,
+        error = Color.OrientRed,
+        onSecondary = Color.SignalWhite,
+        onError = Color.SignalWhite,
+        isLight = !isDark
+    )
+
+    // TODO: update status_bar here.
+    val colorize by preference(key = Settings.COLOR_STATUS_BAR)
+    val uiController = rememberSystemUiController()
+    val isStatusBarHidden by preference(key = Settings.HIDE_STATUS_BAR)
+    Log.d(TAG, "Theme: $colorize $isStatusBarHidden")
+    SideEffect {
+        uiController.setSystemBarsColor(
+            if (colorize) colors.primaryVariant else Color.Transparent,
+            darkIcons = !colorize && !isDark,
+        )
+        uiController.isStatusBarVisible = !isStatusBarHidden
+    }
+
+
+    MaterialTheme(
+        colors = colors,
+        //typography = Typography(fontFamily),
+        //  shapes = defaultThemeShapes,
+        content = content
+    )
 }

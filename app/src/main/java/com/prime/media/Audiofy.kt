@@ -3,8 +3,6 @@ package com.prime.media
 import android.app.Application
 import androidx.compose.ui.unit.dp
 import com.google.firebase.FirebaseApp
-import com.prime.media.core.FontFamily
-import com.prime.media.core.NightMode
 import com.primex.preferences.*
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit

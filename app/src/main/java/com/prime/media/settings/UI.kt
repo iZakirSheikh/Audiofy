@@ -25,7 +25,6 @@ import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
 import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.Placement
@@ -69,16 +68,6 @@ private inline fun PrefHeader(text: String) {
     )
 }
 
-
-private val FontFamilyList =
-    listOf(
-        "Lato" to FontFamily.PROVIDED,
-        "Cursive" to FontFamily.CURSIVE,
-        "San serif" to FontFamily.SAN_SERIF,
-        "serif" to FontFamily.SARIF,
-        "System default" to FontFamily.SYSTEM_DEFAULT
-    )
-
 private fun Context.shareApp() {
     ShareCompat.IntentBuilder(this).setType("text/plain")
         .setChooserTitle(getString(R.string.app_name))
@@ -102,7 +91,7 @@ private fun Layout(
             .verticalScroll(state),
     ) {
 
-        val provider = LocalsProvider.current
+        val provider = LocalSystemFacade.current
 
         PrefHeader(text = stringResource(R.string.appearance))
 
@@ -122,19 +111,6 @@ private fun Layout(
                 provider.showAd(force = true)
             }
         )
-
-        //font
-        val font = resolver.font
-        DropDownPreference(title = stringResource(value = font.title),
-            entries = FontFamilyList,
-            defaultValue = font.value,
-            icon = font.vector,
-            onRequestChange = { family: FontFamily ->
-                resolver.set(Settings.FONT_FAMILY, family)
-                provider.showAd(force = true)
-            }
-        )
-
 
         // app font scale
         val scale = resolver.fontScale

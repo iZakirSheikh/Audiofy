@@ -33,7 +33,8 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.impl.ConsoleViewModel
+import com.prime.media.core.compose.caption2
+import com.prime.media.core.compose.outline
 import com.prime.media.impl.key
 import com.primex.material2.*
 

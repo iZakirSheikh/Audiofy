@@ -524,7 +524,7 @@ fun Vertical(
     ) {
 
         val primary = Theme.colors.onSurface
-        val provider = LocalsProvider.current
+        val provider = LocalSystemFacade.current
         val insets = WindowInsets.statusBars
         // Signature
         Text(

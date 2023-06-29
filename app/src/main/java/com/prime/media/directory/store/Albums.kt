@@ -12,16 +12,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.Theme
-import com.prime.media.caption2
+import com.prime.media.core.compose.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.*
 import com.prime.media.core.compose.directory.Directory
-
 import com.prime.media.core.db.Album
-import com.prime.media.impl.store.AlbumsViewModel
 import com.prime.media.impl.uri
-import com.prime.media.small2
+import com.prime.media.core.compose.small2
 import com.primex.material2.Label
 
 private val TILE_WIDTH = 80.dp
