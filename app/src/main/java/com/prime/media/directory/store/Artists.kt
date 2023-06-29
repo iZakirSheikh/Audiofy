@@ -25,10 +25,16 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.impl.Repository
 import com.prime.media.core.compose.*
 import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.compose.directory.Action
+import com.prime.media.core.compose.directory.Directory
+import com.prime.media.core.compose.directory.DirectoryViewModel
+import com.prime.media.core.compose.directory.GroupBy
+import com.prime.media.core.compose.directory.Mapped
+import com.prime.media.core.compose.directory.MetaData
+import com.prime.media.core.compose.directory.ViewType
 
 import com.prime.media.core.db.Artist
 import com.prime.media.core.playback.Remote
-import com.prime.media.directory.*
 import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.material2.Label
@@ -52,7 +58,7 @@ private val Artist.firstTitleChar
 class ArtistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val channel: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Artist>(handle) {
 
@@ -77,7 +83,7 @@ class ArtistsViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            channel.show("Toggle not implemented yet.", "ViewType")
         }
     }
 
@@ -106,7 +112,7 @@ class ArtistsViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
+                channel.show(
                     "Some unknown error occured!.",
                     "Error",
                     leading = Icons.Outlined.Error,

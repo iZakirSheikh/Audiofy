@@ -33,6 +33,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
+import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.key
 import com.primex.material2.*
 
@@ -112,7 +113,7 @@ fun Track(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Layout(
-    resolver: ConsoleViewModel,
+    resolver: Console,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -214,7 +215,7 @@ private fun Layout(
 
 @OptIn(ExperimentalComposeApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun ConsoleViewModel.PlayingQueue(
+fun Console.PlayingQueue(
     expanded: Boolean,
     onDismissRequest: () -> Unit
 ) {

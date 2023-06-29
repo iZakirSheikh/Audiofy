@@ -39,6 +39,13 @@ import com.prime.media.core.compose.composable
 import com.prime.media.core.*
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.compose.directory.Action
+import com.prime.media.core.compose.directory.Directory
+import com.prime.media.core.compose.directory.DirectoryViewModel
+import com.prime.media.core.compose.directory.GroupBy
+import com.prime.media.core.compose.directory.Mapped
+import com.prime.media.core.compose.directory.MetaData
+import com.prime.media.core.compose.directory.ViewType
 
 import com.prime.media.core.db.Audio
 import com.prime.media.core.playback.Remote
@@ -79,7 +86,7 @@ typealias Audios = AudiosViewModel.Companion
 class AudiosViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val channel: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Audio>(handle) {
 
@@ -117,7 +124,7 @@ class AudiosViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented/supported yet.", "ViewType")
+            channel.show("Toggle not implemented/supported yet.", "ViewType")
         }
     }
 
@@ -238,7 +245,7 @@ class AudiosViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
+                channel.show(
                     "Some unknown error occured!. $it",
                     "Error",
                     leading = Icons.Outlined.Error,
@@ -316,7 +323,7 @@ class AudiosViewModel @Inject constructor(
                 else -> 0
             }
             remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
-            toaster.show(title = "Playing", message = "Playing tracks enjoy.")
+            channel.show(title = "Playing", message = "Playing tracks enjoy.")
         }
     }
 
@@ -346,7 +353,7 @@ class AudiosViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    channel.show("No item selected.", "Message")
                     return@launch
                 }
             }
@@ -356,7 +363,7 @@ class AudiosViewModel @Inject constructor(
 
             val playlist = repository.getPlaylist(name)
             if (playlist == null) {
-                toaster.show(
+                channel.show(
                     "It seems the playlist doesn't exist.",
                     "Error",
                     leading = Icons.Outlined.Error
@@ -379,14 +386,14 @@ class AudiosViewModel @Inject constructor(
             }
 
             if (count < list.size)
-                toaster.show(
+                channel.show(
                     "Added only $count items to $name",
                     "Warning",
                     leading = Icons.Outlined.Warning,
                     accent = Color.Amber,
                 )
             else
-                toaster.show(
+                channel.show(
                     "Added $count items to $name",
                     "Success",
                     leading = Icons.Outlined.CheckCircle,
@@ -399,7 +406,7 @@ class AudiosViewModel @Inject constructor(
         viewModelScope.launch {
             val focused = focused.toLongOrNull() ?: return@launch
             val res = repository.toggleFav(focused)
-            toaster.show(
+            channel.show(
                 if (res) "Added to favourite" else "Removed from favourite",
                 "Favourite"
             )
@@ -408,7 +415,7 @@ class AudiosViewModel @Inject constructor(
 
     fun playNext() {
         viewModelScope.launch {
-            toaster.show(
+            channel.show(
                 title = "Coming soon.",
                 message = "Requires more polishing. Please wait!",
                 leading = Icons.Outlined.MoreTime
@@ -418,7 +425,7 @@ class AudiosViewModel @Inject constructor(
 
     fun addToQueue() {
         viewModelScope.launch {
-            toaster.show(
+            channel.show(
                 title = "Coming soon.",
                 message = "Requires more polishing. Please wait!",
                 leading = Icons.Outlined.MoreTime
@@ -428,7 +435,7 @@ class AudiosViewModel @Inject constructor(
 
     fun delete() {
         viewModelScope.launch {
-            toaster.show(
+            channel.show(
                 title = "Coming soon.",
                 message = "Requires more polishing. Please wait!",
                 leading = Icons.Outlined.MoreTime
@@ -469,7 +476,7 @@ class AudiosViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    channel.show("No item selected.", "Message")
                     return@launch
                 }
             }
@@ -669,7 +676,7 @@ fun Audios(viewModel: AudiosViewModel) {
         // if is focused and action is properties
         // show the dialog.
         with(audio) {
-            Properties(expanded = confirm == Action.Properties && focused) {
+            Properties(expanded = confirm == com.prime.media.core.compose.directory.Action.Properties && focused) {
                 confirm = null
             }
         }

@@ -1,12 +1,12 @@
-package com.prime.media.library
+package com.prime.media.impl
 
 import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prime.media.core.playback.Playback
-import com.prime.media.impl.Repository
 import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
+import com.prime.media.library.Library
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -23,8 +23,6 @@ private const val CAROUSAL_DELAY_MILLS = 10_000L // 10 seconds
  */
 private val TimeOutPolicy = SharingStarted.Lazily
 
-typealias Library = LibraryViewModel
-
 private const val SHOW_CASE_MAX_ITEMS = 20
 
 @HiltViewModel
@@ -32,20 +30,16 @@ class LibraryViewModel @Inject constructor(
     repository: Repository,
     remote: Remote,
     toaster: Channel
-) : ViewModel() {
-
-    companion object {
-        const val route = "library"
-    }
+) : ViewModel(), Library {
 
     /**
      * The recently played tracks.
      */
-    val recent =
+    override val recent =
         // replace with actual recent playlist
         repository.playlist(Playback.PLAYLIST_RECENT)
 
-    val carousel =
+    override val carousel =
         repository
             .recent(SHOW_CASE_MAX_ITEMS)
             .transform { list ->
@@ -64,7 +58,7 @@ class LibraryViewModel @Inject constructor(
             }
             .stateIn(viewModelScope, TimeOutPolicy, null)
 
-    val newlyAdded =
+    override val newlyAdded =
         repository.observe(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI).map {
             repository.getAudios(
                 order = MediaStore.Audio.Media.DATE_MODIFIED,

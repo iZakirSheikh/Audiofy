@@ -31,7 +31,7 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel(), Settings {
 
     override val darkUiMode by with(preferences) {
-        preferences[Audiofy.NIGHT_MODE].map {
+        preferences[Settings.NIGHT_MODE].map {
             Preference(
                 value = it,
                 title = Text("Dark Mode"),
@@ -42,7 +42,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     override val font by with(preferences) {
-        preferences[Audiofy.FONT_FAMILY].map {
+        preferences[Settings.FONT_FAMILY].map {
             Preference(
                 vector = Icons.Default.TextFields,
                 title = Text("Font"),
@@ -53,7 +53,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     override val colorStatusBar by with(preferences) {
-        preferences[Audiofy.COLOR_STATUS_BAR].map {
+        preferences[Settings.COLOR_STATUS_BAR].map {
             Preference(
                 vector = null,
                 title = Text("Color Status Bar"),
@@ -64,7 +64,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     override val hideStatusBar by with(preferences) {
-        preferences[Audiofy.HIDE_STATUS_BAR].map {
+        preferences[Settings.HIDE_STATUS_BAR].map {
             Preference(
                 value = it,
                 title = Text("Hide Status Bar"),
@@ -75,7 +75,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     override val forceAccent by with(preferences) {
-        preferences[Audiofy.FORCE_COLORIZE].map {
+        preferences[Settings.FORCE_COLORIZE].map {
             Preference(
                 value = it,
                 title = Text("Force Accent Color"),
@@ -86,7 +86,7 @@ class SettingsViewModel @Inject constructor(
 
 
     override val fontScale by with(preferences) {
-        preferences[Audiofy.FONT_SCALE].map {
+        preferences[Settings.FONT_SCALE].map {
             Preference(
                 value = it,
                 title = Text("Font Scale"),

@@ -26,10 +26,16 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.impl.Repository
 import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.compose.directory.Action
+import com.prime.media.core.compose.directory.Directory
+import com.prime.media.core.compose.directory.DirectoryViewModel
+import com.prime.media.core.compose.directory.GroupBy
+import com.prime.media.core.compose.directory.Mapped
+import com.prime.media.core.compose.directory.MetaData
+import com.prime.media.core.compose.directory.ViewType
 
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
-import com.prime.media.directory.*
 import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.rememberState
@@ -56,7 +62,7 @@ private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
 class PlaylistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val channel: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Playlist>(handle) {
 
@@ -81,14 +87,14 @@ class PlaylistsViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            channel.show("Toggle not implemented yet.", "ViewType")
         }
     }
 
     fun createPlaylist(name: String) {
         viewModelScope.launch {
             if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                toaster.show(
+                channel.show(
                     message = "The provided name is an invalid",
                     title = "Error",
                     leading = Icons.Outlined.ErrorOutline,
@@ -98,7 +104,7 @@ class PlaylistsViewModel @Inject constructor(
             }
             val exists = repository.exists(name)
             if (exists) {
-                toaster.show(
+                channel.show(
                     message = "The playlist with name $name already exists.",
                     title = "Error",
                     leading = Icons.Outlined.ErrorOutline,
@@ -118,7 +124,7 @@ class PlaylistsViewModel @Inject constructor(
             val playlist = repository.getPlaylist(item) ?: return@launch
             val success = repository.delete(playlist)
             if (!success)
-                toaster.show(
+                channel.show(
                     "An error occured while deleting ${playlist.name}",
                     "Error",
                     leading = Icons.Outlined.ErrorOutline,
@@ -130,7 +136,7 @@ class PlaylistsViewModel @Inject constructor(
     fun rename(name: String) {
         viewModelScope.launch {
             if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                toaster.show(
+                channel.show(
                     message = "The provided name is an invalid",
                     title = "Error",
                     leading = Icons.Outlined.ErrorOutline,
@@ -140,7 +146,7 @@ class PlaylistsViewModel @Inject constructor(
             }
             val exists = repository.exists(name)
             if (exists) {
-                toaster.show(
+                channel.show(
                     message = "The playlist with name $name already exists.",
                     title = "Error",
                     leading = Icons.Outlined.ErrorOutline,
@@ -155,8 +161,8 @@ class PlaylistsViewModel @Inject constructor(
                 name = name, dateModified = System.currentTimeMillis()
             )
             when (repository.update(update)) {
-                true -> toaster.show(message = "The name of the playlist has been update to $name")
-                else -> toaster.show(message = "An error occurred while update the name of the playlist to $name")
+                true -> channel.show(message = "The name of the playlist has been update to $name")
+                else -> channel.show(message = "An error occurred while update the name of the playlist to $name")
             }
         }
     }

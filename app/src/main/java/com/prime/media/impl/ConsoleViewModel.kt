@@ -1,4 +1,4 @@
-package com.prime.media.console
+package com.prime.media.impl
 
 import android.net.Uri
 import androidx.compose.material.icons.Icons
@@ -12,14 +12,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.R
+import com.prime.media.console.Console
 import com.prime.media.core.compose.channel.Channel
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.MainHandler
-import com.prime.media.impl.Member
-import com.prime.media.impl.Repository
-import com.prime.media.impl.key
 import com.primex.core.Amber
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,33 +40,33 @@ private inline val Remote.progress get() = (position / duration.toFloat())
 class ConsoleViewModel @Inject constructor(
     private val remote: Remote,
     private val repository: Repository,
-    private val toaster: Channel
-) : ViewModel() {
-    val playing = stateOf(remote.isPlaying)
-    val repeatMode = stateOf(remote.repeatMode)
-    val progress = stateOf(0f)
-    val sleepAfter = stateOf<Long?>(null)
-    val current = stateOf<MediaItem?>(null)
-    val shuffle = stateOf(false)
-    val artwork = stateOf<Uri?>(null)
-    val favourite = stateOf(false)
+    private val channel: Channel
+) : ViewModel(), Console {
+    override val playing = stateOf(remote.isPlaying)
+    override val repeatMode = stateOf(remote.repeatMode)
+    override val progress = stateOf(0f)
+    override val sleepAfter = stateOf<Long?>(null)
+    override val current = stateOf<MediaItem?>(null)
+    override val shuffle = stateOf(false)
+    override val artwork = stateOf<Uri?>(null)
+    override val favourite = stateOf(false)
 
-    val playlists = repository.playlists
-    val queue = remote.queue
+    override val playlists = repository.playlists
+    override val queue = remote.queue
 
     // getters.
-    val hasNextTrack: Boolean get() = remote.next != null
-    val hasPreviousTrack: Boolean get() = remote.hasPreviousTrack
-    val playbackSpeed get() = remote.playbackSpeed
-    val duration get() = remote.duration
-    val audioSessionId get() = remote.audioSessionId
+    override val hasNextTrack: Boolean get() = remote.next != null
+    override val hasPreviousTrack: Boolean get() = remote.hasPreviousTrack
+    override val playbackSpeed get() = remote.playbackSpeed
+    override val duration get() = remote.duration
+    override val audioSessionId get() = remote.audioSessionId
 
     // listener to progress changes.
-    private val onProgressUpdate = {
+    override val onProgressUpdate = {
         (progress as MutableState).value = remote.progress
     }
 
-    private fun onPlayerEvent(event: Int) {
+    override fun onPlayerEvent(event: Int) {
         when (event) {
             // when state of playing.
             // FixMe: This event is triggered more often e.g., when track is changed.
@@ -124,19 +122,19 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun togglePlay() = remote.togglePlay()
+    override fun togglePlay() = remote.togglePlay()
 
-    fun skipToNext() = remote.skipToNext()
+    override fun skipToNext() = remote.skipToNext()
 
-    fun skipToPrev() = remote.skipToPrev()
+    override fun skipToPrev() = remote.skipToPrev()
 
-    fun cycleRepeatMode() {
+    override fun cycleRepeatMode() {
         viewModelScope.launch {
             remote.cycleRepeatMode()
             val newMode = remote.repeatMode
             // (repeatMode as MutableState).value = newMode
 
-            toaster.show(
+            channel.show(
                 title = "Repeat Mode",
                 message = when (newMode) {
                     Player.REPEAT_MODE_OFF -> "Repeat mode none."
@@ -148,7 +146,7 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun seekTo(mills: Long) {
+    override fun seekTo(mills: Long) {
         viewModelScope.launch {
             // update the state.
             (progress as MutableState).value = mills / duration.toFloat()
@@ -159,14 +157,14 @@ class ConsoleViewModel @Inject constructor(
     /**
      * Seek pct of [Remote.duration]
      */
-    fun seekTo(pct: Float) = seekTo(
+    override fun seekTo(pct: Float) = seekTo(
         (pct * remote.duration).toLong()
     )
 
-    fun setSleepAfter(minutes: Int) {
+    override fun setSleepAfter(minutes: Int) {
         viewModelScope.launch {
             // currently not available.
-            toaster.show(
+            channel.show(
                 message = "Temporarily disabled!!",
                 title = "Working on it.",
                 accent = Color.Amber,
@@ -175,7 +173,7 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun toggleFav() {
+    override fun toggleFav() {
         viewModelScope.launch {
             val item = current.value ?: return@launch
             // the playlist is created already.
@@ -193,7 +191,7 @@ class ConsoleViewModel @Inject constructor(
                 )
             // update teh favourite
             (this@ConsoleViewModel.favourite as MutableState).value = !favourite && res
-            toaster.show(
+            channel.show(
                 message = when {
                     !res -> Text("An error occured while adding/removing the item to favourite playlist")
                     !favourite -> Text(R.string.msg_fav_added)
@@ -205,12 +203,12 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun toggleShuffle() {
+    override fun toggleShuffle() {
         viewModelScope.launch {
             val newValue = remote.shuffle
             remote.shuffle = newValue
             (shuffle as MutableState).value = newValue
-            toaster.show(
+            channel.show(
                 message = if (newValue) "Shuffle enabled." else "Shuffle disabled.",
                 title = "Shuffle",
                 leading = R.drawable.ic_shuffle,
@@ -218,34 +216,34 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    fun playTrackAt(position: Int) = remote.playTrackAt(position)
+    override fun playTrackAt(position: Int) = remote.playTrackAt(position)
 
     @Deprecated("write new one independent of id.")
-    fun playTrack(id: Long) = remote.playTrack(id)
+    override fun playTrack(id: Long) = remote.playTrack(id)
 
-    fun playTrack(uri: Uri) = remote.playTrack(uri)
+    override fun playTrack(uri: Uri) = remote.playTrack(uri)
 
     @Deprecated("find alternate.")
-    fun addToPlaylist(id: Playlist) {
+    override fun addToPlaylist(id: Playlist) {
         val item = current.value ?: return
         viewModelScope.launch {
             /*TODO: Add necessary logic*/
         }
     }
 
-    fun remove(key: Uri) {
+    override fun remove(key: Uri) {
         viewModelScope.launch {
             remote.remove(key)
         }
     }
 
-    fun replay10() =
+    override fun replay10() =
         seekTo((remote.position - (10 * 1000)).coerceAtLeast(0L))
 
-    fun forward30() =
+    override fun forward30() =
         seekTo((remote.position + (30 * 1000)).coerceAtMost(remote.duration))
 
-    fun setPlaybackSpeed(value: Float) {
+    override fun setPlaybackSpeed(value: Float) {
         remote.playbackSpeed = value
     }
 }

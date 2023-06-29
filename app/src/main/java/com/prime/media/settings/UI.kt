@@ -118,7 +118,7 @@ private fun Layout(
                 "Sync with System" to NightMode.FOLLOW_SYSTEM
             ),
             onRequestChange = {
-                resolver.set(Audiofy.NIGHT_MODE, it)
+                resolver.set(Settings.NIGHT_MODE, it)
                 provider.showAd(force = true)
             }
         )
@@ -130,7 +130,7 @@ private fun Layout(
             defaultValue = font.value,
             icon = font.vector,
             onRequestChange = { family: FontFamily ->
-                resolver.set(Audiofy.FONT_FAMILY, family)
+                resolver.set(Settings.FONT_FAMILY, family)
                 provider.showAd(force = true)
             }
         )
@@ -146,7 +146,7 @@ private fun Layout(
             icon = scale.vector,
             iconChange = Icons.Outlined.TextFormat,
             onValueChange = { value: Float ->
-                resolver.set(Audiofy.FONT_SCALE, value)
+                resolver.set(Settings.FONT_SCALE, value)
                 provider.showAd(force = true)
             }
         )
@@ -164,8 +164,8 @@ private fun Layout(
             title = stringResource(value = forceAccent.title),
             summery = stringResource(value = forceAccent.summery),
             onCheckedChange = { should: Boolean ->
-                resolver.set(Audiofy.FORCE_COLORIZE, should)
-                if (should) resolver.set(Audiofy.COLOR_STATUS_BAR, true)
+                resolver.set(Settings.FORCE_COLORIZE, should)
+                if (should) resolver.set(Settings.COLOR_STATUS_BAR, true)
                 provider.showAd(force = true)
             }
         )
@@ -178,7 +178,7 @@ private fun Layout(
             summery = stringResource(value = colorStatusBar.summery),
             enabled = !forceAccent.value,
             onCheckedChange = { should: Boolean ->
-                resolver.set(Audiofy.COLOR_STATUS_BAR, should)
+                resolver.set(Settings.COLOR_STATUS_BAR, should)
                 provider.showAd(force = true)
             }
         )
@@ -191,7 +191,7 @@ private fun Layout(
             title = stringResource(value = hideStatusBar.title),
             summery = stringResource(value = hideStatusBar.summery),
             onCheckedChange = { should: Boolean ->
-                resolver.set(Audiofy.HIDE_STATUS_BAR, should)
+                resolver.set(Settings.HIDE_STATUS_BAR, should)
                 //TODO: Add statusBar Hide/Show logic.
             }
         )

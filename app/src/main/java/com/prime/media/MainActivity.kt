@@ -52,6 +52,7 @@ import com.prime.media.core.compose.channel.Channel.Duration
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.playback.Remote
 import com.prime.media.impl.toMediaItem
+import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.Text
 import com.primex.material2.OutlinedButton
@@ -287,7 +288,7 @@ inline fun purchase(id: String): State<Purchase?> {
 @Composable
 @NonRestartableComposable
 private fun resolveAppThemeState(): Boolean {
-    val mode by preference(key = Audiofy.NIGHT_MODE)
+    val mode by preference(key = Settings.NIGHT_MODE)
     return when (mode) {
         NightMode.YES -> true
         NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
@@ -547,7 +548,7 @@ class MainActivity : ComponentActivity(), Provider {
         setContent {
             // observe the change to density
             val density = LocalDensity.current
-            val fontScale by observeAsState(Audiofy.FONT_SCALE)
+            val fontScale by observeAsState(Settings.FONT_SCALE)
             val modified = Density(density = density.density, fontScale = fontScale)
             // ask different permission as per api level.
             val permission =

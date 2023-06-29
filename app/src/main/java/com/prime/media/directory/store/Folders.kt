@@ -21,9 +21,14 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.impl.Repository
 import com.prime.media.core.compose.channel.Channel
+import com.prime.media.core.compose.directory.Action
+import com.prime.media.core.compose.directory.Directory
+import com.prime.media.core.compose.directory.DirectoryViewModel
+import com.prime.media.core.compose.directory.GroupBy
+import com.prime.media.core.compose.directory.MetaData
+import com.prime.media.core.compose.directory.ViewType
 
 import com.prime.media.core.db.*
-import com.prime.media.directory.*
 import com.primex.core.Text
 import com.primex.material2.Label
 import com.primex.core.Rose
@@ -45,7 +50,7 @@ private val Folder.firstTitleChar
 class FoldersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val channel: Channel,
 ) : DirectoryViewModel<Folder>(handle) {
 
     companion object {
@@ -69,7 +74,7 @@ class FoldersViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            channel.show("Toggle not implemented yet.", "ViewType")
         }
     }
 
@@ -90,7 +95,7 @@ class FoldersViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
+                channel.show(
                     "Some unknown error occured!. ${it.message}",
                     "Error",
                     leading = Icons.Outlined.Error,

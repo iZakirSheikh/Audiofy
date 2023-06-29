@@ -139,7 +139,7 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Preferences and other widgets
-    def toolkit_version = '1.0.0-beta08'
+    def toolkit_version = '1.0.1-beta'
     implementation("com.github.prime-zs.toolkit:preferences:$toolkit_version")
     implementation("com.github.prime-zs.toolkit:core-ktx:$toolkit_version")
     implementation("com.github.prime-zs.toolkit:material2:$toolkit_version")

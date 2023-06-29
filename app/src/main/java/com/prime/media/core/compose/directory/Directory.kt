@@ -1,4 +1,4 @@
-package com.prime.media.directory
+package com.prime.media.core.compose.directory
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility

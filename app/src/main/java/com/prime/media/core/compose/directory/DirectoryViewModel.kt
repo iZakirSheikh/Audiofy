@@ -1,4 +1,4 @@
-package com.prime.media.directory
+package com.prime.media.core.compose.directory
 
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -163,7 +163,7 @@ abstract class DirectoryViewModel<T : Any>(handle: SavedStateHandle) : ViewModel
          * @return The constructed route.
          */
         fun compose(host: String) =
-            "$host/{${PARAM_KEY}}/{${PARAM_QUERY}}/{${PARAM_GROUP_BY}}/{${PARAM_ASCENDING}}/{${PARAM_VIEW_TYPE}}"
+            "$host/{$PARAM_KEY}/{$PARAM_QUERY}/{$PARAM_GROUP_BY}/{$PARAM_ASCENDING}/{$PARAM_VIEW_TYPE}"
 
         /**
          * Constructs a route for the given host.

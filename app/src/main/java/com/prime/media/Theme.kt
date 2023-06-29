@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.prime.media.core.FontFamily
+import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
 import androidx.compose.ui.text.font.FontFamily as AndroidFontFamily
@@ -95,7 +96,7 @@ val Typography.caption2 get() = com.prime.media.caption2
 val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
 
 /**
- * Checks whether the preference with key [Audiofy.FORCE_COLORIZE] has been set, indicating
+ * Checks whether the preference with key [Settings.FORCE_COLORIZE] has been set, indicating
  * whether the app should force colorization of views.
  *
  * This property uses the `preference` composable to retrieve the preference value.
@@ -103,7 +104,7 @@ val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
  * @return `true` if the preference has been set, `false` otherwise.
  */
 val MaterialTheme.forceColorize
-    @Composable inline get() = preference(key = Audiofy.FORCE_COLORIZE)
+    @Composable inline get() = preference(key = Settings.FORCE_COLORIZE)
 
 /**
  * A variant of [MaterialTheme.shapes.small] with a corner radius of 8dp.
@@ -229,9 +230,9 @@ fun Theme(isDark: Boolean, content: @Composable () -> Unit) {
     )
 
     // TODO: update status_bar here.
-    val colorize by preference(key = Audiofy.COLOR_STATUS_BAR)
+    val colorize by preference(key = Settings.COLOR_STATUS_BAR)
     val uiController = rememberSystemUiController()
-    val isStatusBarHidden by preference(key = Audiofy.HIDE_STATUS_BAR)
+    val isStatusBarHidden by preference(key = Settings.HIDE_STATUS_BAR)
     Log.d(TAG, "Theme: $colorize $isStatusBarHidden")
     SideEffect {
         uiController.setSystemBarsColor(
@@ -241,7 +242,7 @@ fun Theme(isDark: Boolean, content: @Composable () -> Unit) {
         uiController.isStatusBarVisible = !isStatusBarHidden
     }
 
-    val fontFamily by preference(key = Audiofy.FONT_FAMILY)
+    val fontFamily by preference(key = Settings.FONT_FAMILY)
 
     MaterialTheme(
         colors = colors,
