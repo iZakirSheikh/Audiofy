@@ -1,4 +1,4 @@
-package com.prime.media.directory.dialogs
+package com.prime.media.dialogs
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -16,8 +16,6 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.overlay
 import com.prime.media.core.util.DateUtil
 import com.prime.media.core.db.Audio
-import com.prime.media.core.util.formatAsDuration
-import com.prime.media.core.util.formatAsRelativeTimeSpan
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 

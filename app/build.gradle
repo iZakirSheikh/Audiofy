@@ -72,7 +72,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.7'
+        kotlinCompilerExtensionVersion '1.4.8'
     }
     packagingOptions {
         resources {
@@ -175,7 +175,7 @@ dependencies {
     implementation "com.android.billingclient:billing-ktx:$billing_version"
 
     //Unity Ads
-    implementation 'com.unity3d.ads:unity-ads:4.7.1'
+    implementation 'com.unity3d.ads:unity-ads:4.8.0'
 
     def media3_version = '1.1.0-rc01'
     // For media playback using ExoPlayer

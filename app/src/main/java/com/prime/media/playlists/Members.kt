@@ -1,4 +1,4 @@
-package com.prime.media.directory.playlists
+package com.prime.media.playlists
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
@@ -25,7 +25,7 @@ import com.prime.media.core.compose.directory.Action
 import com.prime.media.core.compose.directory.Directory
 
 import com.prime.media.core.db.Playlist.Member
-import com.prime.media.directory.dialogs.Playlists
+import com.prime.media.dialogs.Playlists
 import com.primex.core.*
 import com.primex.material2.*
 

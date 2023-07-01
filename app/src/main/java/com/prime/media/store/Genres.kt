@@ -1,33 +1,36 @@
-package com.prime.media.directory.store
+package com.prime.media.store
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.*
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.caption2
 import com.prime.media.core.compose.directory.Directory
 
-import com.prime.media.core.db.*
+import com.prime.media.core.db.Genre
 import com.primex.material2.Label
 
 
 private val TILE_WIDTH = 80.dp
 private val GridItemPadding =
     PaddingValues(vertical = 6.dp, horizontal = 10.dp)
-private val folderIcon = Icons.Default.Folder
 
 @Composable
-fun Folder(
-    value: Folder,
+fun Genre(
+    value: Genre,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -43,15 +46,24 @@ fun Folder(
             .wrapContentHeight(),
     ) {
 
-        Icon(
-            imageVector = folderIcon,
-            contentDescription = null,
+        Surface(
+            color = Color.Transparent,
+            border = BorderStroke(3.dp, Theme.colors.onBackground),
+            shape = CircleShape,
+
             modifier = Modifier
                 .sizeIn(maxWidth = 70.dp)
-                .fillMaxWidth()
-                .aspectRatio(1.0f)
-        )
+                .aspectRatio(1.0f),
 
+            content = {
+                Label(
+                    text = "${value.name[0].uppercaseChar()}",
+                    fontWeight = FontWeight.Bold,
+                    style = Theme.typography.h4,
+                    modifier = Modifier.wrapContentSize(Alignment.Center)
+                )
+            }
+        )
 
         // title
         Label(
@@ -60,25 +72,31 @@ fun Folder(
             modifier = Modifier.padding(top = ContentPadding.medium),
             style = Theme.typography.caption,
         )
+
+        // Subtitle
+        Label(
+            text = "${value.cardinality} Tracks",
+            style = Theme.typography.caption2
+        )
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Folders(state: Folders) {
+fun Genres(state: Genres) {
     val navigator = LocalNavController.current
     Directory(
         viewModel = state,
         cells = GridCells.Adaptive(TILE_WIDTH + (4.dp * 2)),
         onAction = {},
-        key = { it.path },
+        key = { it.id },
         contentPadding = PaddingValues(horizontal = ContentPadding.normal),
     ) {
-        Folder(
+        Genre(
             value = it,
             modifier = Modifier
                 .clickable {
-                    val direction = Audios.direction(Audios.GET_FROM_FOLDER, it.path)
+                    val direction = Audios.direction(Audios.GET_FROM_GENRE, it.name)
                     navigator.navigate(direction)
                 }
                 .animateItemPlacement()

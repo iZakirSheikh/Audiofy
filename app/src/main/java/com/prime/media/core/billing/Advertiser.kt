@@ -193,6 +193,11 @@ private val iBannerListener =
             bannerView.visibility = View.VISIBLE
         }
 
+        override fun onBannerShown(bannerView: BannerView) {
+            fAnalytics.logEvent("Banner loaded: id = ${bannerView.placementId}", null)
+            TODO("Not yet implemented")
+        }
+
         override fun onBannerClick(bannerView: BannerView) {
             fAnalytics.logEvent("Banner clicked: id = ${bannerView.placementId}", null)
         }

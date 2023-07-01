@@ -1,4 +1,4 @@
-package com.prime.media.directory.dialogs
+package com.prime.media.dialogs
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -24,7 +24,6 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.util.DateUtil
 import com.prime.media.core.compose.*
 import com.prime.media.core.db.Playlist
-import com.prime.media.core.util.formatAsRelativeTimeSpan
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 import com.primex.material2.neumorphic.Neumorphic

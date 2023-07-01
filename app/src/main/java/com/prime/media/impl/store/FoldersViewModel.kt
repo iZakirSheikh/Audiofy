@@ -11,7 +11,7 @@ import com.prime.media.core.compose.directory.Action
 import com.prime.media.core.compose.directory.GroupBy
 import com.prime.media.core.db.Folder
 import com.prime.media.core.db.name
-import com.prime.media.directory.store.Folders
+import com.prime.media.store.Folders
 import com.prime.media.impl.DirectoryViewModel
 import com.prime.media.impl.MetaData
 import com.prime.media.impl.Repository

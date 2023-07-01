@@ -1,4 +1,4 @@
-package com.prime.media.directory.playlists
+package com.prime.media.playlists
 
 import android.net.Uri
 import com.prime.media.core.compose.directory.Directory

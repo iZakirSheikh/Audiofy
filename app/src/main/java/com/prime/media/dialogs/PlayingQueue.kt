@@ -1,6 +1,6 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.prime.media.console
+package com.prime.media.dialogs
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateIntAsState
@@ -32,6 +32,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
+import com.prime.media.console.Console
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.caption2
 import com.prime.media.core.compose.outline

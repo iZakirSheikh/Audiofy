@@ -18,7 +18,7 @@ import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.addDistinct
-import com.prime.media.directory.playlists.Members
+import com.prime.media.playlists.Members
 import com.prime.media.impl.DirectoryViewModel
 import com.prime.media.impl.Mapped
 import com.prime.media.impl.MetaData

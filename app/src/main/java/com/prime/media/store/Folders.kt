@@ -1,34 +1,33 @@
-package com.prime.media.directory.store
+package com.prime.media.store
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.material.Surface
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.prime.media.R
-import com.prime.media.Theme
-import com.prime.media.core.compose.caption2
-import com.prime.media.core.ContentElevation
+import com.prime.media.*
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.*
+import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.directory.Directory
-import com.prime.media.core.db.Album
-import com.prime.media.impl.uri
-import com.prime.media.core.compose.small2
+
+import com.prime.media.core.db.*
 import com.primex.material2.Label
+
 
 private val TILE_WIDTH = 80.dp
 private val GridItemPadding =
     PaddingValues(vertical = 6.dp, horizontal = 10.dp)
+private val folderIcon = Icons.Default.Folder
 
 @Composable
-fun Album(
-    value: Album,
+fun Folder(
+    value: Folder,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -44,52 +43,42 @@ fun Album(
             .wrapContentHeight(),
     ) {
 
-        Surface(
-            shape = Theme.shapes.small2,
-            elevation = ContentElevation.medium,
+        Icon(
+            imageVector = folderIcon,
+            contentDescription = null,
             modifier = Modifier
+                .sizeIn(maxWidth = 70.dp)
                 .fillMaxWidth()
-                .aspectRatio(0.65f),
-            content = {
-                Image(
-                    data = value.uri,
-                    fallback = painterResource(id = R.drawable.default_art)
-                )
-            },
+                .aspectRatio(1.0f)
         )
+
 
         // title
         Label(
-            text = value.title,
+            text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
             style = Theme.typography.caption,
-        )
-
-        // Subtitle
-        Label(
-            text = "Year: ${value.firstYear}",
-            style = Theme.typography.caption2
         )
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Albums(viewModel: Albums) {
+fun Folders(state: Folders) {
     val navigator = LocalNavController.current
     Directory(
-        viewModel = viewModel,
+        viewModel = state,
         cells = GridCells.Adaptive(TILE_WIDTH + (4.dp * 2)),
-        onAction = { /*TODO: Currently we don't support more actions.*/},
-        key = { it.id },
+        onAction = {},
+        key = { it.path },
         contentPadding = PaddingValues(horizontal = ContentPadding.normal),
     ) {
-        Album(
+        Folder(
             value = it,
             modifier = Modifier
                 .clickable {
-                    val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
+                    val direction = Audios.direction(Audios.GET_FROM_FOLDER, it.path)
                     navigator.navigate(direction)
                 }
                 .animateItemPlacement()

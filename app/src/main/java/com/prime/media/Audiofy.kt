@@ -1,11 +1,9 @@
 package com.prime.media
 
 import android.app.Application
-import androidx.compose.ui.unit.dp
 import com.google.firebase.FirebaseApp
-import com.primex.preferences.*
+import com.primex.preferences.intPreferenceKey
 import dagger.hilt.android.HiltAndroidApp
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "Audiofy"
 
@@ -13,11 +11,6 @@ private const val TAG = "Audiofy"
 class Audiofy : Application() {
 
     companion object {
-        /**
-         * peek Height of [BottomSheetScaffold], also height of [MiniPlayer]
-         */
-        val MINI_PLAYER_HEIGHT = 68.dp
-
         /**
          * The link to PlayStore Market.
          */

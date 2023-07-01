@@ -1,4 +1,4 @@
-package com.prime.media.directory.store
+package com.prime.media.store
 
 import android.content.Context
 import android.net.Uri
@@ -125,7 +125,7 @@ interface Audios : Directory<Audio> {
 
         const val PARAM_TYPE = "_param_type"
 
-        val route = DirectoryViewModel.compose("$HOST/{${PARAM_TYPE}}")
+        val route = DirectoryViewModel.compose("$HOST/{$PARAM_TYPE}")
         fun direction(
             of: String,
             key: String = DirectoryViewModel.NULL_STRING,

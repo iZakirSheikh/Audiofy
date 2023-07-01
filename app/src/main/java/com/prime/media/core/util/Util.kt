@@ -1,6 +1,5 @@
 package com.prime.media.core.util
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -15,12 +14,10 @@ import coil.request.SuccessResult
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
-import com.prime.media.Audiofy
 import com.prime.media.core.db.Audio
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.ArrayList
 import java.util.concurrent.ExecutionException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -186,18 +183,4 @@ private class ToContinuation<T>(
 inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
     return if (contains(value)) return false
     else add(value)
-}
-
-fun Context.launchPlayStore() {
-    try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
-            setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
-            addFlags(
-                Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-            )
-        }
-        startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
-    }
 }

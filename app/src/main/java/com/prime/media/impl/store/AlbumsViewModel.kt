@@ -11,7 +11,7 @@ import com.prime.media.core.compose.directory.Action
 import com.prime.media.core.compose.directory.GroupBy
 import com.prime.media.core.db.Album
 import com.prime.media.core.playback.Remote
-import com.prime.media.directory.store.Albums
+import com.prime.media.store.Albums
 import com.prime.media.impl.DirectoryViewModel
 import com.prime.media.impl.Mapped
 import com.prime.media.impl.MetaData

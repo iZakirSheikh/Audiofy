@@ -1,4 +1,4 @@
-package com.prime.media.directory.playlists
+package com.prime.media.playlists
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*

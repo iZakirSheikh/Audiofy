@@ -39,13 +39,13 @@ import com.prime.media.core.compose.scaffold.Scaffold2
 import com.prime.media.core.compose.scaffold.ScaffoldState2
 import com.prime.media.core.compose.scaffold.SheetState
 import com.prime.media.core.compose.scaffold.rememberScaffoldState2
-import com.prime.media.directory.playlists.Members
-import com.prime.media.directory.playlists.Playlists
-import com.prime.media.directory.store.Albums
-import com.prime.media.directory.store.Artists
-import com.prime.media.directory.store.Audios
-import com.prime.media.directory.store.Folders
-import com.prime.media.directory.store.Genres
+import com.prime.media.playlists.Members
+import com.prime.media.playlists.Playlists
+import com.prime.media.store.Albums
+import com.prime.media.store.Artists
+import com.prime.media.store.Audios
+import com.prime.media.store.Folders
+import com.prime.media.store.Genres
 import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
@@ -151,7 +151,7 @@ fun Home(show: Boolean) {
     // collapse if expanded and
     // back button is clicked.
     BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
-    val peekHeight = if (show) Audiofy.MINI_PLAYER_HEIGHT else 0.dp
+    val peekHeight = if (show) Settings.MINI_PLAYER_HEIGHT else 0.dp
     val windowPadding by rememberUpdatedState(PaddingValues(bottom = peekHeight))
     val provider = LocalSystemFacade.current
     CompositionLocalProvider(
