@@ -2,18 +2,21 @@
 
 package com.prime.media.core.compose
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
-import androidx.compose.animation.graphics.res.animatedVectorResource
-import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.runtime.*
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -25,10 +28,9 @@ import coil.request.ImageRequest
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.compose.*
-import com.primex.material2.*
+import com.primex.material2.Label
+import com.primex.material2.Placeholder
 
 @Composable
 inline fun Image(
@@ -103,12 +105,5 @@ fun AnimatedVisibility(
 ) {
     content()
 }
-
-@ExperimentalAnimationGraphicsApi
-@Composable
-inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) =
-    androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
-        animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
-    )
 
 

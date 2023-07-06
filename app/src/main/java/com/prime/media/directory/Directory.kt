@@ -32,9 +32,10 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.util.DateUtils
 import com.prime.media.core.compose.*
-import com.prime.media.core.formatAsRelativeTimeSpan
 import com.primex.core.*
 import com.primex.material2.*
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
@@ -77,7 +78,7 @@ private fun Action(
     enabled: Boolean = !checked,
     onAction: () -> Unit
 ) {
-    val color = if (checked) Theme.colors.primary else LocalContentColor.current
+    val color = if (checked) Material.colors.primary else LocalContentColor.current
     CompositionLocalProvider(
         LocalContentColor provides color,
         LocalContentAlpha provides ContentAlpha.high
@@ -95,7 +96,7 @@ private fun Action(
                             drawRect(
                                 brush = Brush.horizontalGradient(
                                     listOf(
-                                        color.copy(Theme.CONTAINER_COLOR_ALPHA),
+                                        color.copy(Material.CONTAINER_COLOR_ALPHA),
                                         Color.Transparent
                                     )
                                 )
@@ -152,8 +153,8 @@ private fun <T : Any> Toolbar(
         shape = TopBarShape,
         elevation = ContentElevation.low,
         modifier = modifier.padding(top = ContentPadding.medium),
-        lightShadowColor = Theme.colors.lightShadowColor,
-        darkShadowColor = Theme.colors.darkShadowColor,
+        lightShadowColor = Material.colors.lightShadowColor,
+        darkShadowColor = Material.colors.darkShadowColor,
         // The label must not fill width
         // this will surely make the look and feel of the app bad.
         title = {
@@ -215,7 +216,7 @@ private fun <T : Any> Toolbar(
                     // ascending descending logic
                     val ascending = filter.third
                     CompositionLocalProvider(
-                        LocalContentColor provides Theme.colors.primary
+                        LocalContentColor provides Material.colors.primary
                     ) {
                         DropDownMenuItem(
                             title = "Ascending",
@@ -313,10 +314,10 @@ private fun <T : Any> ActionBar(
         modifier = modifier.padding(top = ContentPadding.medium),
         elevation = ContentElevation.low,
         shape = TopBarShape,
-        contentColor = Theme.colors.primary,
+        contentColor = Material.colors.primary,
 
-        lightShadowColor = Theme.colors.lightShadowColor,
-        darkShadowColor = Theme.colors.darkShadowColor,
+        lightShadowColor = Material.colors.lightShadowColor,
+        darkShadowColor = Material.colors.darkShadowColor,
         // here the navigation icon is the clear button.
         // clear selection if selected > 0
         navigationIcon = {
@@ -423,12 +424,12 @@ private fun Header(
             // in case the length of the title string is 1
             true -> Header(
                 text = title,
-                style = Theme.typography.h3,
+                style = Material.typography.h3,
                 fontWeight = FontWeight.Normal,
                 color = color,
                 modifier = Modifier
                     .padding(top = ContentPadding.normal)
-                    .padding(horizontal = ContentPadding.large),
+                    .padding(horizontal = ContentPadding.xLarge),
             )
             // draw a multiline line header
             // in case the length of the title string is 1
@@ -437,11 +438,11 @@ private fun Header(
                 color = color,
                 maxLines = 2,
                 fontWeight = FontWeight.Normal,
-                style = Theme.typography.h4,
+                style = Material.typography.h4,
                 modifier = Modifier
                     // don't fill whole line.
                     .fillMaxWidth(0.7f)
-                    .padding(top = ContentPadding.large, bottom = ContentPadding.medium)
+                    .padding(top = ContentPadding.xLarge, bottom = ContentPadding.medium)
                     .padding(horizontal = ContentPadding.normal)
             )
         }
@@ -486,7 +487,7 @@ private fun <T : Any> Metadata(
             constrainBlock = {
                 // Divider will act as the center anchor of Play Button
                 top.linkTo(parent.top, ContentPadding.normal)
-                bottom.linkTo(parent.bottom, ContentPadding.large)
+                bottom.linkTo(parent.bottom, ContentPadding.xLarge)
             }
         )
 
@@ -508,7 +509,7 @@ private fun <T : Any> Metadata(
         // since meta is Text hence annotated string can be used to populate subtitle.
         Header(
             text = stringResource(value = meta.title),
-            style = Theme.typography.h4,
+            style = Material.typography.h4,
             maxLines = 2,
             textAlign = TextAlign.Start,
 
@@ -556,7 +557,7 @@ private fun <T : Any> Metadata(
                 }
             },
             textAlign = TextAlign.Center,
-            style = Theme.typography.h6,
+            style = Material.typography.h6,
             fontWeight = FontWeight.SemiBold,
         )
 
@@ -570,7 +571,7 @@ private fun <T : Any> Metadata(
         )
 
         val date =
-            if (meta.dateModified == -1L) "N/A" else Util.formatAsRelativeTimeSpan(meta.dateModified)
+            if (meta.dateModified == -1L) "N/A" else DateUtils.formatAsRelativeTimeSpan(meta.dateModified)
         Text(
             text = buildAnnotatedString {
                 append("$date\n")
@@ -586,7 +587,7 @@ private fun <T : Any> Metadata(
                 }
             },
             textAlign = TextAlign.Center,
-            style = Theme.typography.h6,
+            style = Material.typography.h6,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.constrainAs(Date) {
                 top.linkTo(Cardinality.top)
@@ -610,7 +611,7 @@ private fun <T : Any> Metadata(
                     width = Dimension.fillToConstraints
                 },
                 contentPadding = PaddingValues(11.dp),
-                shape = Theme.shapes.small2
+                shape = Material.shapes.small2
             )
 
         val first = actions.getOrNull(1)
@@ -620,9 +621,9 @@ private fun <T : Any> Metadata(
                 onClick = { onPerformAction(first) },
                 leading = rememberVectorPainter(image = first.icon),
                 modifier = Modifier
-                    .padding(top = ContentPadding.large)
+                    .padding(top = ContentPadding.xLarge)
                     .constrainAs(Action1) {
-                        end.linkTo(parent.end, ContentPadding.large)
+                        end.linkTo(parent.end, ContentPadding.xLarge)
                         if (second != null)
                             start.linkTo(Action2.end, ContentPadding.small)
                         else
@@ -634,7 +635,7 @@ private fun <T : Any> Metadata(
                     defaultElevation = 8.dp,
                     pressedElevation = 0.dp
                 ),
-                shape = Theme.shapes.small2
+                shape = Material.shapes.small2
             )
     }
 }
@@ -670,7 +671,7 @@ private fun <T : Any> SearchBar(
         leadingIcon = { Icon(imageVector = Icons.Outlined.Search, contentDescription = null) },
         placeholder = { Label(text = "Type here to search!!") },
         label = { Label(text = "Search") },
-        shape = Theme.shapes.small2,
+        shape = Material.shapes.small2,
         trailingIcon = {
             IconButton(onClick = { resolver.filter(if (!query.isNullOrBlank()) "" else null) }) {
                 Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
@@ -799,7 +800,7 @@ private fun <T : Any> List(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = ContentPadding.large,
+                                horizontal = ContentPadding.xLarge,
                                 vertical = ContentPadding.medium,
                             ),
                     )
@@ -896,7 +897,7 @@ fun <T : Any> Directory(
                 onAction = onAction,
                 modifier = Modifier
                     .statusBarsPadding()
-                    .drawHorizontalDivider(color = Theme.colors.onSurface)
+                    .drawHorizontalDivider(color = Material.colors.onSurface)
                     .padding(bottom = ContentPadding.medium),
             )
         },

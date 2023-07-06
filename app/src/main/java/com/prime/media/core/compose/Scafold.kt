@@ -21,9 +21,9 @@ private const val TAG = "Player"
 
 
 /**
- * Possible values of [PlayerState].
+ * Possible values of [ScaffoldState].
  */
-enum class PlayerValue {
+enum class SheetValue {
 
     /**
      * The state of the bottom drawer is collapsed.
@@ -37,29 +37,29 @@ enum class PlayerValue {
 }
 
 /**
- * State of the [Player] composable.
+ * State of the [Scaffold2] composable.
  * @param initial The initial value of the state.
  * @param open: The percentage of screen that is considered open.
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Stable
-class PlayerState(
-    initial: PlayerValue
+class ScaffoldState(
+    initial: SheetValue
 ) {
     /**
-     * Maps between [PlayerValue] and screen.
+     * Maps between [SheetValue] and screen.
      */
-    private fun map(value: PlayerValue): Float = when (value) {
-        PlayerValue.COLLAPSED -> 0f
-        PlayerValue.EXPANDED -> 1f
+    private fun map(value: SheetValue): Float = when (value) {
+        SheetValue.COLLAPSED -> 0f
+        SheetValue.EXPANDED -> 1f
     }
 
     /**
-     * Maps between [PlayerValue] and screen.
+     * Maps between [SheetValue] and screen.
      */
-    private fun map(progress: Float): PlayerValue = when (progress) {
-        0f -> PlayerValue.COLLAPSED
-        else -> PlayerValue.EXPANDED
+    private fun map(progress: Float): SheetValue = when (progress) {
+        0f -> SheetValue.COLLAPSED
+        else -> SheetValue.EXPANDED
     }
 
     private val animatable = Animatable(
@@ -76,7 +76,7 @@ class PlayerState(
     val progress = animatable.asState()
 
     /**
-     * The current state of the [PlayerValue]
+     * The current state of the [SheetValue]
      */
     val current
         get() = map(progress.value)
@@ -85,13 +85,13 @@ class PlayerState(
      * Whether the drawer is closed.
      */
     inline val isCollapsed: Boolean
-        get() = current == PlayerValue.COLLAPSED
+        get() = current == SheetValue.COLLAPSED
 
     /**
      * Whether the drawer is expanded.
      */
     inline val isExpanded: Boolean
-        get() = current == PlayerValue.EXPANDED
+        get() = current == SheetValue.EXPANDED
 
 
     /**
@@ -102,7 +102,7 @@ class PlayerState(
      */
     @ExperimentalMaterialApi
     private suspend fun animateTo(
-        targetValue: PlayerValue, anim: AnimationSpec<Float> = AnimationSpec
+        targetValue: SheetValue, anim: AnimationSpec<Float> = AnimationSpec
     ) {
         animatable.animateTo(map(targetValue), animationSpec = anim)
     }
@@ -114,7 +114,7 @@ class PlayerState(
         animatable.snapTo(targetValue)
     }
 
-    suspend fun snapTo(targetValue: PlayerValue) {
+    suspend fun snapTo(targetValue: SheetValue) {
         animatable.snapTo(map(targetValue))
     }
 
@@ -127,7 +127,7 @@ class PlayerState(
      *
      */
     suspend fun collapse() {
-        animateTo(PlayerValue.COLLAPSED)
+        animateTo(SheetValue.COLLAPSED)
     }
 
     /**
@@ -137,44 +137,44 @@ class PlayerState(
      * @throws [CancellationException] if the animation is interrupted
      *
      */
-    suspend fun expand() = animateTo(PlayerValue.EXPANDED)
+    suspend fun expand() = animateTo(SheetValue.EXPANDED)
 
     companion object {
         /**
-         * The default [Saver] implementation for [PlayerState].
+         * The default [Saver] implementation for [ScaffoldState].
          */
         fun Saver() =
-            Saver<PlayerState, PlayerValue>(save = { it.current }, restore = { PlayerState(it) })
+            Saver<ScaffoldState, SheetValue>(save = { it.current }, restore = { ScaffoldState(it) })
     }
 }
 
 /**
- * Create and [remember] a [PlayerState].
+ * Create and [remember] a [ScaffoldState].
  *
  * @param initial The initial value of the state.
  * @param open: How much percent is considered open
  */
 @Composable
-fun rememberPlayerState(
-    initial: PlayerValue
-): PlayerState {
-    return rememberSaveable(saver = PlayerState.Saver()) {
-        PlayerState(initial)
+fun rememberScaffoldState2(
+    initial: SheetValue
+): ScaffoldState {
+    return rememberSaveable(saver = ScaffoldState.Saver()) {
+        ScaffoldState(initial)
     }
 }
 
 /**
- * This houses the logic to show [Toast]s, animates [sheet] and displays update progress.
+ * This houses the logic to show [Message]s, animates [sheet] and displays update progress.
  * @param progress progress for the linear progress bar. pass [Float.NaN] to hide and -1 to show
  * indeterminate and value between 0 and 1 to show progress
  */
 @Composable
-fun Player(
+fun Scaffold2(
     sheet: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     sheetPeekHeight: Dp = 56.dp,
-    state: PlayerState = rememberPlayerState(initial = PlayerValue.COLLAPSED),
-    toast: ToastHostState = remember(::ToastHostState),
+    state: ScaffoldState = rememberScaffoldState2(initial = SheetValue.COLLAPSED),
+    toast: Channel = remember(::Channel),
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
     content: @Composable () -> Unit
 ) {
@@ -188,7 +188,7 @@ fun Player(
         content = {
             // stack each part over the player.
             content()
-            ToastHost(state = toast)
+            Channel(state = toast)
             // don't draw sheet when closed.
             sheet()
             // don't draw progressBar.
@@ -225,7 +225,7 @@ fun Player(
             if (sheetY != height)  // draw only if visible
                 sheetPlaceable.placeRelative(0, sheetY)
             //Log.d(TAG, "Player: ${height}")
-            val adjusted = if (state.current == PlayerValue.COLLAPSED) sheetPeekHeightPx else 0
+            val adjusted = if (state.current == SheetValue.COLLAPSED) sheetPeekHeightPx else 0
             // draw a bottom centre.
             toastPlaceable.placeRelative(
                 width / 2 - toastPlaceable.width / 2, height - toastPlaceable.height - adjusted
@@ -237,3 +237,11 @@ fun Player(
         }
     }
 }
+
+/**
+ * The content padding for the screen under current [NavGraph]
+ */
+val LocalWindowPadding =
+    compositionLocalOf {
+        PaddingValues(0.dp)
+    }

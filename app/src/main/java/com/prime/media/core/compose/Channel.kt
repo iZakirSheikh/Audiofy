@@ -24,36 +24,35 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.prime.media.core.compose.composable
-import com.prime.media.core.compose.ToastHostState.Data
-import com.prime.media.core.compose.ToastHostState.Duration
+import com.prime.media.core.compose.Channel.Data
+import com.prime.media.core.compose.Channel.Duration
+import com.prime.media.core.compose.Channel.Result
 import com.primex.core.Text
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import com.prime.media.core.compose.ToastHostState.Result
 import com.primex.core.get
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.primex.material2.TextButton
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
 /**
- * State of the [ToastHost], controls the queue and the current [ToastHostState] being shown inside
- * the [ToastHost].
+ * State of the [Channel], controls the queue and the current [Channel] being shown inside
+ * the [Channel].
  *
- * This state usually lives as a part of a [ScaffoldState] and provided to the [ToastHost]
+ * This state usually lives as a part of a [ScaffoldState] and provided to the [Channel]
  * automatically, but can be decoupled from it and live separately when desired.
  *
- * This class also serves as the default for [ToastHostState]
+ * This class also serves as the default for [Channel]
  */
 @Stable
-class ToastHostState {
+class Channel {
     /**
-     * Possible durations of the [ToastHostState] in [ToastHost]
+     * Possible durations of the [Channel] in [Channel]
      */
     enum class Duration {
         /**
@@ -73,13 +72,13 @@ class ToastHostState {
     }
 
     /**
-     * Interface to represent one particular [ToastHostState] as a piece of the [ToastHostState] State.
+     * Interface to represent one particular [Channel] as a piece of the [Channel] State.
      *
-     * @property message text to be shown in the [ToastHostState]
-     * @property label optional action label to show as button in the Toast
+     * @property message text to be shown in the [Channel]
+     * @property action optional action label to show as button in the Toast
      * @property duration duration of the toast
-     * @property accent The accent color of this [ToastHostState]. Default [Color.Unspecified]
-     * @property leading optional leading icon for [ToastHostState]. Default null. The leading must be a vector icon or resource drawbale.
+     * @property accent The accent color of this [Channel]. Default [Color.Unspecified]
+     * @property leading optional leading icon for [Channel]. Default null. The leading must be a vector icon or resource drawbale.
      */
     interface Data {
 
@@ -89,7 +88,7 @@ class ToastHostState {
         val title: Text?
 
         val message: Text
-        val label: Text?
+        val action: Text?
         val duration: Duration
 
         /**
@@ -108,35 +107,35 @@ class ToastHostState {
      */
     enum class Result {
         /**
-         * [ToastHostState] that is shown has been dismissed either by timeout of by user
+         * [Channel] that is shown has been dismissed either by timeout of by user
          */
         Dismissed,
 
         /**
-         * Action on the [ToastHostState] has been clicked before the time out passed
+         * Action on the [Channel] has been clicked before the time out passed
          */
         ActionPerformed,
     }
 
 
     /**
-     * Only one [ToastHostState] can be shown at a time.
+     * Only one [Channel] can be shown at a time.
      * Since a suspending Mutex is a fair queue, this manages our message queue
      * and we don't have to maintain one.
      */
     private val mutex = Mutex()
 
     /**
-     * The current [ToastHostState.Data] being shown by the [ToastHostState], of `null` if none.
+     * The current [Channel.Data] being shown by the [Channel], of `null` if none.
      */
     var current by mutableStateOf<Data?>(null)
         private set
 
     /**
-     * Shows or queues to be shown a [ToastHostState] at the bottom of the [Scaffold] at
+     * Shows or queues to be shown a [Channel] at the bottom of the [Scaffold] at
      * which this state is attached and suspends until toast is disappeared.
      *
-     * [ToastHostState] state guarantees to show at most one toast at a time. If this function is
+     * [Channel] state guarantees to show at most one toast at a time. If this function is
      * called while another toast is already visible, it will be suspended until this toast
      * is shown and subsequently addressed. If the caller is cancelled, the toast will be
      * removed from display and/or the queue to be displayed.
@@ -149,7 +148,7 @@ class ToastHostState {
      *
      * @param message text to be shown in the Toast
      * @param label optional action label to show as button in the Toast
-     * @param duration duration to control how long toast will be shown in [ToastHost], either
+     * @param duration duration to control how long toast will be shown in [Channel], either
      * [Duration.Short], [Duration.Long] or [Duration.Indefinite].
      * @param accent: option accent color, default upto implementation.
      * @param leading Optional leading icon to be displayed. Must be either [ImageVector] or [Drawble] resource.
@@ -167,12 +166,52 @@ class ToastHostState {
         try {
             return suspendCancellableCoroutine { continuation ->
                 current =
-                    ToastDataImpl(message, title, accent, leading, label, duration, continuation)
+                    Message(message, title, accent, leading, label, duration, continuation)
             }
         } finally {
             current = null
         }
     }
+
+
+    /**
+     * @see [Channel.show]
+     */
+    suspend fun show(
+        message: String,
+        title: String? = null,
+        label: String? = null,
+        leading: Any? = null,
+        accent: Color = Color.Unspecified,
+        duration: Duration = Duration.Short
+    ) = show(
+        Text(message),
+        title?.let { Text(it) },
+        label = label?.let { Text(it) },
+        leading = leading,
+        accent = accent,
+        duration = duration
+    )
+
+
+    /**
+     * @see [Channel.show]
+     */
+    suspend fun show(
+        message: AnnotatedString,
+        title: AnnotatedString? = null,
+        label: AnnotatedString? = null,
+        leading: Any? = null,
+        accent: Color = Color.Unspecified,
+        duration: Duration = Duration.Short
+    ) = show(
+        Text(message),
+        title?.let { Text(it) },
+        label = label?.let { Text(it) },
+        leading = leading,
+        accent = accent,
+        duration = duration
+    )
 
     companion object {
 
@@ -207,12 +246,12 @@ class ToastHostState {
 }
 
 @Stable
-private class ToastDataImpl(
+private class Message(
     override val message: Text,
     override val title: Text? = null,
     override val accent: Color = Color.Unspecified,
     override val leading: Any? = null,
-    override val label: Text? = null,
+    override val action: Text? = null,
     override val duration: Duration = Duration.Indefinite,
     private val continuation: CancellableContinuation<Result>,
 ) : Data {
@@ -225,45 +264,6 @@ private class ToastDataImpl(
         if (continuation.isActive) continuation.resume(Result.Dismissed)
     }
 }
-
-/**
- * @see [ToastHostState.show]
- */
-suspend fun ToastHostState.show(
-    message: String,
-    title: String? = null,
-    label: String? = null,
-    leading: Any? = null,
-    accent: Color = Color.Unspecified,
-    duration: Duration = Duration.Short
-) = show(
-    Text(message),
-    title?.let { Text(it) },
-    label = label?.let { Text(it) },
-    leading = leading,
-    accent = accent,
-    duration = duration
-)
-
-
-/**
- * @see [ToastHostState.show]
- */
-suspend fun ToastHostState.show(
-    message: AnnotatedString,
-    title: AnnotatedString? = null,
-    label: AnnotatedString? = null,
-    leading: Any? = null,
-    accent: Color = Color.Unspecified,
-    duration: Duration = Duration.Short
-) = show(
-    Text(message),
-    title?.let { Text(it) },
-    label = label?.let { Text(it) },
-    leading = leading,
-    accent = accent,
-    duration = duration
-)
 
 // TODO: magic numbers adjustment
 private fun Duration.toMillis(
@@ -394,14 +394,13 @@ private inline fun Indicatior(color: Color) = Modifier.drawBehind {
 
 
 @Composable
-fun Toast(
+private fun Message(
     data: Data,
     modifier: Modifier = Modifier,
-    //actionOnNewLine: Boolean = false,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = ToastHostState.backgroundColor,
+    backgroundColor: Color = Channel.backgroundColor,
     contentColor: Color = contentColorFor(backgroundColor = backgroundColor),
-    actionColor: Color = data.accent.takeOrElse { ToastHostState.primaryActionColor },
+    actionColor: Color = data.accent.takeOrElse { Channel.primaryActionColor },
     elevation: Dp = 6.dp,
 ) {
     Surface(
@@ -450,9 +449,9 @@ fun Toast(
             },
 
             trailing = {
-                if (data.label != null)
+                if (data.action != null)
                     TextButton(
-                        label = data.label!!.get,
+                        label = data.action!!.get,
                         onClick = { data.action() },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = actionColor
@@ -471,43 +470,43 @@ fun Toast(
 
 
 /**
- * Host for [ToastHostState]s to be used in [Scaffold] to properly show, hide and dismiss items based
+ * Host for [Channel]s to be used in [Scaffold] to properly show, hide and dismiss items based
  * on material specification and the [state].
  *
  * This component with default parameters comes build-in with [Scaffold], if you need to show a
- * default [ToastHostState], use use [ScaffoldState.snackbarHostState] and
+ * default [Channel], use use [ScaffoldState.snackbarHostState] and
  * [SnackbarHostState.showSnackbar].
  *
  * @sample androidx.compose.material.samples.ScaffoldWithSimpleSnackbar
  *
- * If you want to customize appearance of the [ToastHostState], you can pass your own version as a child
- * of the [ToastHost] to the [Scaffold]:
+ * If you want to customize appearance of the [Channel], you can pass your own version as a child
+ * of the [Channel] to the [Scaffold]:
  *
  * @sample androidx.compose.material.samples.ScaffoldWithCustomSnackbar
  *
- * @param state state of this component to read and show [ToastHostState]s accordingly
+ * @param state state of this component to read and show [Channel]s accordingly
  * @param modifier optional modifier for this component
- * @param toast the instance of the [ToastHostState] to be shown at the appropriate time with
+ * @param toast the instance of the [Channel] to be shown at the appropriate time with
  * appearance based on the [Data] provided as a param
  */
 @Composable
-fun ToastHost(
-    state: ToastHostState,
+fun Channel(
+    state: Channel,
     modifier: Modifier = Modifier,
-    snackbar: @Composable (Data) -> Unit = { Toast(it) }
+    message: @Composable (Data) -> Unit = { Message(it) }
 ) {
     val currentSnackbarData = state.current
     val accessibilityManager = LocalAccessibilityManager.current
     LaunchedEffect(currentSnackbarData) {
         if (currentSnackbarData != null) {
             val duration = currentSnackbarData.duration.toMillis(
-                currentSnackbarData.label != null, accessibilityManager
+                currentSnackbarData.action != null, accessibilityManager
             )
             delay(duration)
             currentSnackbarData.dismiss()
         }
     }
     FadeInFadeOutWithScale(
-        current = state.current, modifier = modifier, content = snackbar
+        current = state.current, modifier = modifier, content = message
     )
 }

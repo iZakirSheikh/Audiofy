@@ -16,16 +16,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.Theme
-import com.prime.media.caption2
-import com.prime.media.core.Repository
+import com.prime.media.core.compose.caption2
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.impl.Repository
 import com.prime.media.core.compose.*
 import com.prime.media.core.db.Album
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.uri
+import com.prime.media.core.util.uri
 import com.prime.media.directory.*
-import com.prime.media.small2
+import com.prime.media.core.compose.small2
 import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.material2.Label
@@ -46,7 +48,7 @@ typealias Albums = AlbumsViewModel.Companion
 class AlbumsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Album>(handle) {
 
@@ -105,7 +107,7 @@ class AlbumsViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 }
@@ -122,7 +124,7 @@ fun Album(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Theme.shapes.medium)
+            .clip(Material.shapes.medium)
             .then(modifier)
             // add padding after size.
             .padding(GridItemPadding)
@@ -133,7 +135,7 @@ fun Album(
     ) {
 
         Surface(
-            shape = Theme.shapes.small2,
+            shape = Material.shapes.small2,
             elevation = ContentElevation.medium,
             modifier = Modifier
                 .fillMaxWidth()
@@ -151,13 +153,13 @@ fun Album(
             text = value.title,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Theme.typography.caption,
+            style = Material.typography.caption,
         )
 
         // Subtitle
         Label(
             text = "Year: ${value.firstYear}",
-            style = Theme.typography.caption2
+            style = Material.typography.caption2
         )
     }
 }

@@ -32,8 +32,10 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.compose.*
-import com.prime.media.core.key
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.compose.caption2
+import com.prime.media.core.compose.outline
+import com.prime.media.core.util.key
 import com.primex.material2.*
 
 private const val TAG = "PlayingQueue"
@@ -79,7 +81,7 @@ fun Track(
         secondaryText = {
             Label(
                 text = meta.subtitle.toString(),
-                style = Theme.typography.caption2
+                style = Material.typography.caption2
             )
         },
 
@@ -116,14 +118,14 @@ private fun Layout(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val color = Theme.colors.outline
+    val color = Material.colors.outline
     Column(modifier = modifier) {
 
         // top bar mimicking youtube app.
         TopAppBar(
             title = { Label(text = "Playing Queue") },
-            backgroundColor = Theme.colors.surface,
-            contentColor = Theme.colors.onSurface,
+            backgroundColor = Material.colors.surface,
+            contentColor = Material.colors.onSurface,
             elevation = 0.dp,
             navigationIcon = {
                 Icon(
@@ -139,7 +141,7 @@ private fun Layout(
                     onClick = { resolver.toggleShuffle() },
                     painter = painterResource(id = R.drawable.ic_shuffle),
                     contentDescription = null,
-                    tint = Theme.colors.onSurface.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled),
+                    tint = Material.colors.onSurface.copy(if (shuffle) ContentAlpha.high else ContentAlpha.disabled),
                 )
 
 

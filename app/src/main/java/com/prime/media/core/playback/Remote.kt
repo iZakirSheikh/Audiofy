@@ -10,7 +10,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.*
 import androidx.media3.session.MediaBrowser.Listener
 import androidx.media3.session.MediaLibraryService.LibraryParams
-import com.prime.media.core.await
+import com.prime.media.core.util.await
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*

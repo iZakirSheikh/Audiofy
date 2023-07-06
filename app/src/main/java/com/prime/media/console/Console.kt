@@ -45,9 +45,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.Anim
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.LongDurationMills
+import com.prime.media.core.util.DateUtils
 import com.prime.media.core.compose.*
-import com.prime.media.core.formatAsDuration
 import com.primex.core.activity
 import com.primex.core.gradient
 import com.primex.core.lerp
@@ -155,8 +157,8 @@ private fun NeumorphicIconButton(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = RoundedCornerShape(30),
     enabled: Boolean = true,
-    border: BorderStroke? = if (Theme.colors.isLight) null else
-        BorderStroke(1.dp, Theme.colors.outline.copy(0.06f)),
+    border: BorderStroke? = if (Material.colors.isLight) null else
+        BorderStroke(1.dp, Material.colors.outline.copy(0.06f)),
     elevation: ButtonElevation = NeumorphicButtonDefaults.elevation(6.dp),
     iconScale: Float = 1.5f,
     painter: Painter
@@ -169,8 +171,8 @@ private fun NeumorphicIconButton(
         elevation = elevation,
         border = border,
         colors = NeumorphicButtonDefaults.neumorphicButtonColors(
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
         )
     ) {
         Icon(
@@ -202,13 +204,13 @@ private fun NeumorphicVertButton(
         Neumorphic(
             onClick = onClick,
             modifier = Modifier,
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
             elevation = depth,
             interactionSource = source,
-            border = if (Theme.colors.isLight) null else BorderStroke(
+            border = if (Material.colors.isLight) null else BorderStroke(
                 1.dp,
-                Theme.colors.outline.copy(0.06f)
+                Material.colors.outline.copy(0.06f)
             ),
             shape = RoundedCornerShape(30)
         ) {
@@ -223,7 +225,7 @@ private fun NeumorphicVertButton(
 
         Label(
             text = label,
-            style = Theme.typography.caption2,
+            style = Material.typography.caption2,
             modifier = Modifier.padding(top = 6.dp),
             color = LocalContentColor.current.copy(alpha)
         )
@@ -240,7 +242,7 @@ private fun Artwork(
     modifier: Modifier = Modifier,
     stroke: Dp = ARTWORK_STROKE_DEFAULT_EXPANDED,
 ) {
-    val color = Theme.colors.background
+    val color = Material.colors.background
     Image(
         data = data,
         contentScale = ContentScale.Crop,
@@ -251,16 +253,16 @@ private fun Artwork(
             .shadow(
                 shape = CircleShape,
                 elevation = -12.dp,
-                lightShadowColor = Theme.colors.lightShadowColor,
-                darkShadowColor = Theme.colors.darkShadowColor,
+                lightShadowColor = Material.colors.lightShadowColor,
+                darkShadowColor = Material.colors.darkShadowColor,
                 spotLight = SpotLight.BOTTOM_RIGHT,
             )
             .padding(stroke)
             .shadow(
                 shape = CircleShape,
                 elevation = 12.dp,
-                lightShadowColor = Theme.colors.lightShadowColor,
-                darkShadowColor = Theme.colors.darkShadowColor,
+                lightShadowColor = Material.colors.lightShadowColor,
+                darkShadowColor = Material.colors.darkShadowColor,
                 spotLight = SpotLight.TOP_LEFT,
             )
             .border(BorderStroke(stroke / 2, color), CircleShape)
@@ -301,8 +303,8 @@ private fun SpeedControllerLayout(
     Surface(modifier = modifier) {
         Column() {
             TopAppBar(
-                title = { Label(text = "Playback Speed", style = Theme.typography.body2) },
-                backgroundColor = Theme.colors.background,
+                title = { Label(text = "Playback Speed", style = Material.typography.body2) },
+                backgroundColor = Material.colors.background,
             )
 
             Label(
@@ -310,7 +312,7 @@ private fun SpeedControllerLayout(
                 modifier = Modifier
                     .padding(top = ContentPadding.normal)
                     .align(Alignment.CenterHorizontally),
-                style = Theme.typography.h6
+                style = Material.typography.h6
             )
 
             Slider(
@@ -319,7 +321,7 @@ private fun SpeedControllerLayout(
                 valueRange = 0.25f..2f,
                 steps = 6,
                 modifier = Modifier.padding(
-                    horizontal = ContentPadding.large,
+                    horizontal = ContentPadding.xLarge,
                 )
             )
         }
@@ -397,7 +399,7 @@ val expanded =
         }
 
         constrain(ProgressMills) {
-            end.linkTo(Artwork.end, ContentPadding.large)
+            end.linkTo(Artwork.end, ContentPadding.xLarge)
             top.linkTo(Artwork.top)
             bottom.linkTo(Artwork.bottom)
             visibility = Visibility.Visible
@@ -406,8 +408,8 @@ val expanded =
         //title
         constrain(Title) {
             bottom.linkTo(ProgressBar.top, ContentPadding.normal)
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
+            start.linkTo(parent.start, ContentPadding.xLarge)
+            end.linkTo(parent.end, ContentPadding.xLarge)
             width = Dimension.fillToConstraints
         }
 
@@ -440,7 +442,7 @@ val expanded =
         constrain(Toggle) {
             start.linkTo(parent.start)
             end.linkTo(parent.end)
-            bottom.linkTo(Queue.top, ContentPadding.large)
+            bottom.linkTo(Queue.top, ContentPadding.xLarge)
         }
 
         constrain(SkipToPrevious) {
@@ -477,12 +479,12 @@ val expanded =
                 chainStyle = ChainStyle.SpreadInside
             )
         constrain(ref) {
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
+            start.linkTo(parent.start, ContentPadding.xLarge)
+            end.linkTo(parent.end, ContentPadding.xLarge)
         }
 
         constrain(Queue) {
-            bottom.linkTo(parent.bottom, ContentPadding.large)
+            bottom.linkTo(parent.bottom, ContentPadding.xLarge)
         }
 
         constrain(Speed) {
@@ -520,8 +522,8 @@ fun Vertical(
         modifier = modifier
     ) {
 
-        val primary = Theme.colors.onSurface
-        val provider = LocalsProvider.current
+        val primary = Material.colors.onSurface
+        val provider = LocalsSystemFacade.current
         val insets = WindowInsets.statusBars
         // Signature
         Text(
@@ -563,11 +565,11 @@ fun Vertical(
         val value by resolver.progress
         val time = (value * resolver.duration).roundToLong()
         Header(
-            text = Util.formatAsDuration(time),
+            text = DateUtils.formatAsDuration(time),
             color = Color.White,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.layoutID(ProgressMills),
-            style = Theme.typography.h3
+            style = Material.typography.h3
         )
 
         // slider row
@@ -597,7 +599,7 @@ fun Vertical(
         val current by resolver.current
         Label(
             text = current?.subtitle ?: stringResource(id = R.string.unknown),
-            style = Theme.typography.caption2,
+            style = Material.typography.caption2,
             modifier = Modifier
                 .offset(y = 4.dp, x = 5.dp)
                 .layoutID(Subtitle)
@@ -607,7 +609,7 @@ fun Vertical(
             text = current?.title ?: stringResource(id = R.string.unknown),
             fontSize = lerp(18.sp, 40.sp, progress),
             fontWeight = FontWeight.Bold,
-            color = Theme.colors.onSurface,
+            color = Material.colors.onSurface,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
                 .layoutID(Title),
@@ -627,9 +629,9 @@ fun Vertical(
                 .size(60.dp)
                 .layoutID(Toggle),
             elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress)),
-            border = if (progress != 0f && !Theme.colors.isLight) BorderStroke(
+            border = if (progress != 0f && !Material.colors.isLight) BorderStroke(
                 1.dp,
-                Theme.colors.outline.copy(0.06f)
+                Material.colors.outline.copy(0.06f)
             ) else null
         )
 
@@ -739,7 +741,7 @@ fun Console(
 ) {
     val expanded = progress == 1f
     // actual content
-    CompositionLocalProvider(LocalContentColor provides Theme.colors.onSurface) {
+    CompositionLocalProvider(LocalContentColor provides Material.colors.onSurface) {
         //Maybe Use Modifier.composed {}
         Vertical(
             progress = progress,
@@ -752,13 +754,13 @@ fun Console(
                 // animate shadow including its shape.
                 .shadow(
                     shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt()),
-                    lightShadowColor = Theme.colors.darkShadowColor,
-                    darkShadowColor = Theme.colors.darkShadowColor,
+                    lightShadowColor = Material.colors.darkShadowColor,
+                    darkShadowColor = Material.colors.darkShadowColor,
                     elevation = lerp(8.dp, 0.dp, progress),
                     spotLight = SpotLight.TOP_LEFT,
-                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Theme.colors.surface)
+                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Material.colors.surface)
                 )
-                .background(Theme.colors.background)
+                .background(Material.colors.background)
                 // .background(color = lerp(Material.colors.surface, Material.colors.background, 0.0f, 1.0f,  progress))
                 // don't forget to disable it when expanded.
                 .clickable(

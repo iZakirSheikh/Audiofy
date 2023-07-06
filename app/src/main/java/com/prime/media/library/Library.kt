@@ -37,12 +37,14 @@ import androidx.compose.ui.zIndex
 import coil.load
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Repository
-import com.prime.media.core.albumUri
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.impl.Repository
+import com.prime.media.core.util.albumUri
 import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.*
-import com.prime.media.core.key
+import com.prime.media.core.util.key
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
@@ -61,12 +63,12 @@ private val TOP_BAR_HEIGHT = 160.dp
 private fun TopBar(modifier: Modifier = Modifier) {
     TopAppBar(
         modifier = Modifier
-            .background(Theme.colors.overlay)
+            .background(Material.colors.overlay)
             .requiredHeight(TOP_BAR_HEIGHT)
             .then(modifier),
         elevation = 0.dp,
         backgroundColor = Color.Transparent,
-        ///contentColor = Theme.colors.primary,
+        ///contentColor = Material.colors.primary,
 
         // navigation icon pointing to the about section of the app.
         // TODO - Add navigation to about us in future.
@@ -84,7 +86,7 @@ private fun TopBar(modifier: Modifier = Modifier) {
         title = {
             Text(
                 text = stringHtmlResource(id = R.string.title_audio_library_html),
-                style = Theme.typography.h5,
+                style = Material.typography.h5,
                 fontWeight = FontWeight.Light
             )
         },
@@ -94,7 +96,7 @@ private fun TopBar(modifier: Modifier = Modifier) {
         // 2. Action to navigate to settings section of the app.
         actions = {
             // Buy full version button.
-            val provider = LocalsProvider.current
+            val provider = LocalsSystemFacade.current
             val purchase by purchase(id = Product.DISABLE_ADS)
             if (!purchase.purchased)
                 IconButton(
@@ -174,7 +176,7 @@ private fun Header(
                     }
             },
             modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
-            style = Theme.typography.h5,
+            style = Material.typography.h5,
             fontWeight = FontWeight.Light
         )
 
@@ -303,7 +305,7 @@ private fun Carousal(
                 modifier = Modifier
                     // TODO: Remove background from the future version of the app.
                     //This is unnecessary
-                    .background(Theme.colors.surface)
+                    .background(Material.colors.surface)
                     .fillMaxWidth()
                     .height(56.dp)
                     .padding(horizontal = ContentPadding.normal),
@@ -340,7 +342,7 @@ private fun Tile(
             .fillMaxHeight()
             .aspectRatio(0.7f),
         content = {
-            val color = Theme.colors.onBackground
+            val color = Material.colors.onBackground
             val shape = CircleShape
 
             Image(
@@ -358,7 +360,7 @@ private fun Tile(
             Label(
                 text = title,
                 modifier = Modifier.padding(vertical = ContentPadding.small),
-                style = Theme.typography.caption2,
+                style = Material.typography.caption2,
                 color = color,
                 maxLines = 2
             )
@@ -426,9 +428,9 @@ private inline fun <T> List(
 
 @Composable
 private fun RateUs(modifier: Modifier = Modifier) {
-    Surface(modifier = modifier, color = Theme.colors.overlay) {
+    Surface(modifier = modifier, color = Material.colors.overlay) {
         Column(
-            Modifier.padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal),
+            Modifier.padding(horizontal = ContentPadding.xLarge, vertical = ContentPadding.normal),
         ) {
             // top row
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -449,10 +451,10 @@ private fun RateUs(modifier: Modifier = Modifier) {
                 )
             }
             // message
-            val provider = LocalsProvider.current
+            val provider = LocalsSystemFacade.current
             Text(
                 text = stringResource(R.string.review_msg),
-                style = Theme.typography.caption,
+                style = Material.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
             // button
@@ -477,7 +479,7 @@ private const val CONTENT_TYPE_SHOW_CASE = "_show_case"
 fun Library(viewModel: LibraryViewModel) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Theme.colors.background
+        color = Material.colors.background
     ) {
         val navigator = LocalNavController.current
         val fallback = painterResource(id = R.drawable.default_art)
@@ -575,7 +577,7 @@ fun Library(viewModel: LibraryViewModel) {
                     Tile(
                         image = it.artwork,
                         modifier = Modifier
-                            .clip(Theme.shapes.small)
+                            .clip(Material.shapes.small)
                             // TODO: Play on click
                             .clickable { }
                             .animateItemPlacement()
@@ -631,7 +633,7 @@ fun Library(viewModel: LibraryViewModel) {
                     Tile(
                         image = it.albumUri,
                         modifier = Modifier
-                            .clip(Theme.shapes.small)
+                            .clip(Material.shapes.small)
                             // TODO: Play on click
                             .clickable { }
                             .animateItemPlacement()

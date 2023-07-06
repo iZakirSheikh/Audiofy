@@ -1,4 +1,4 @@
-package com.prime.media.core
+package com.prime.media.core.util
 
 import android.os.Handler
 import android.os.Looper
@@ -11,6 +11,7 @@ private const val UNTIL_INFINITY = -1
 /**
  * A singleton handler linked with [Looper.getMainLooper].
  */
+@Deprecated("Dont use this;use corountines instead.")
 object MainHandler : Handler(Looper.getMainLooper()) {
 
     /**

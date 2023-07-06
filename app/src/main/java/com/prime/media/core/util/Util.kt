@@ -1,20 +1,23 @@
-package com.prime.media.core
+package com.prime.media.core.util
 
 import android.content.ActivityNotFoundException
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.StrictMode
+import android.provider.MediaStore
 import android.text.format.DateUtils.*
 import android.widget.Toast
 import androidx.annotation.WorkerThread
-import androidx.compose.material.Text
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
@@ -22,9 +25,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
 import com.prime.media.Audiofy
-import com.prime.media.R
+import com.prime.media.core.db.Album
 import com.prime.media.core.db.Audio
-import com.primex.core.Text
+import com.prime.media.core.db.Playlist
+import com.prime.media.impl.Repository
 import com.primex.core.runCatching
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,21 +36,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.jetbrains.annotations.Contract
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.time.ExperimentalTime
 
 private const val TAG = "Util"
-
-/**
- * A local scope for some util funs.
- */
-object Util
 
 context (ViewModel) @Suppress("NOTHING_TO_INLINE")
 @Deprecated("find new solution.")
@@ -56,72 +53,6 @@ inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
     return state
 }
 
-
-/**
- * A scope for [FileUtils] functions.
- */
-object FileUtils {
-    /**
-     * The Unix separator character.
-     */
-    const val PATH_SEPARATOR = '/'
-
-    /**
-     * The extension separator character.
-     * @since 1.4
-     */
-    const val EXTENSION_SEPARATOR = '.'
-
-    const val HIDDEN_PATTERN = "/."
-}
-
-
-/**
- * Gets the name minus the path from a full fileName.
- *
- * @param path  the fileName to query
- * @return the name of the file without the path
- */
-fun FileUtils.name(path: String): String = path.substring(path.lastIndexOf(PATH_SEPARATOR) + 1)
-
-/**
- * @return parent of path.
- */
-fun FileUtils.parent(path: String): String = path.replace("$PATH_SEPARATOR${name(path = path)}", "")
-
-/**
- * Returns the file extension or null string if there is no extension. This method is a
- * convenience method for obtaining the extension of a url and has undefined
- * results for other Strings.
- * It is Assumed that Url is file
- *
- * @param url  Url of the file
- *
- * @return extension
- */
-fun FileUtils.extension(url: String): String? =
-    if (url.contains(EXTENSION_SEPARATOR)) url.substring(url.lastIndexOf(EXTENSION_SEPARATOR) + 1)
-        .lowercase()
-    else null
-
-/**
- * Checks if the file or its ancestors are hidden in System.
- */
-@Contract(pure = true)
-fun FileUtils.areAncestorsHidden(path: String): Boolean = path.contains(HIDDEN_PATTERN)
-
-/**
- * Returns [bytes] as formatted data unit.
- */
-@Deprecated(message = "find new solution.")
-fun FileUtils.toFormattedDataUnit(
-    context: Context,
-    bytes: Long,
-    short: Boolean = true,
-): String = when (short) {
-    true -> android.text.format.Formatter.formatShortFileSize(context, bytes)
-    else -> android.text.format.Formatter.formatFileSize(context, bytes)
-}
 
 @Deprecated("use imageLoader on context.")
 suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
@@ -162,124 +93,6 @@ val MediaMetadataRetriever.latLong: DoubleArray?
         } else null
     }
 
-
-/**
- * Return given duration in a human-friendly format. For example, "4
- * minutes" or "1 second". Returns only largest meaningful unit of time,
- * from seconds up to hours.
- */
-@Deprecated("find new solution.")
-fun Util.formatAsDuration2(mills: Long): Text {
-    return when {
-        mills >= HOUR_IN_MILLIS -> {
-            val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
-            Text(R.plurals.duration_hours, hours, hours)
-        }
-        mills >= MINUTE_IN_MILLIS -> {
-            val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
-            Text(R.plurals.duration_minutes, minutes, minutes)
-        }
-        else -> {
-            val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
-            Text(R.plurals.duration_seconds, seconds, seconds)
-        }
-    }
-}
-
-/**
- * Return given duration in a human-friendly format. For example, "4
- * minutes" or "1 second". Returns only largest meaningful unit of time,
- * from seconds up to hours.
- *
- * @hide
- */
-@Deprecated(message = "Use toDuration(mills) with Text return ", level = DeprecationLevel.ERROR)
-fun Util.formatAsDuration(context: Context, mills: Long): String {
-    val res = context.resources
-    return when {
-        mills >= HOUR_IN_MILLIS -> {
-            val hours = ((mills + 1800000) / HOUR_IN_MILLIS).toInt()
-            res.getQuantityString(
-                R.plurals.duration_hours, hours, hours
-            )
-        }
-        mills >= MINUTE_IN_MILLIS -> {
-            val minutes = ((mills + 30000) / MINUTE_IN_MILLIS).toInt()
-            res.getQuantityString(
-                R.plurals.duration_minutes, minutes, minutes
-            )
-        }
-        else -> {
-            val seconds = ((mills + 500) / SECOND_IN_MILLIS).toInt()
-            res.getQuantityString(
-                R.plurals.duration_seconds, seconds, seconds
-            )
-        }
-    }
-}
-
-@Deprecated("find new solution.")
-fun Util.formatAsDuration(mills: Int): String = formatAsDuration(mills.toLong())
-
-
-/**
- * @return mills formated as hh:mm:ss
- */
-@Deprecated("find new solution.")
-fun Util.formatAsDuration(mills: Long): String {
-    var minutes: Long = mills / 1000 / 60
-    val seconds: Long = mills / 1000 % 60
-    return if (minutes < 60) {
-        String.format(Locale.getDefault(), "%01d:%02d", minutes, seconds)
-    } else {
-        val hours = minutes / 60
-        minutes %= 60
-        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
-    }
-}
-
-/**
- * Returns a string describing 'time' as a time relative to 'now'.
- * <p>
- * Time spans in the past are formatted like "42 minutes ago". Time spans in
- * the future are formatted like "In 42 minutes".
- * <p>
- * Can use {@link #FORMAT_ABBREV_RELATIVE} flag to use abbreviated relative
- * times, like "42 mins ago".
- *
- * @param time the time to describe, in milliseconds
- * @param now the current time in milliseconds
- * @param minResolution the minimum timespan to report. For example, a time
- *            3 seconds in the past will be reported as "0 minutes ago" if
- *            this is set to MINUTE_IN_MILLIS. Pass one of 0,
- *            MINUTE_IN_MILLIS, HOUR_IN_MILLIS, DAY_IN_MILLIS,
- *            WEEK_IN_MILLIS
- * @param flags a bit mask of formatting options, such as
- *            {@link #FORMAT_NUMERIC_DATE} or
- *            {@link #FORMAT_ABBREV_RELATIVE}
- */
-@OptIn(ExperimentalTime::class)
-@Deprecated("find new solution.")
-fun Util.formatAsRelativeTimeSpan(mills: Long) = getRelativeTimeSpanString(
-    mills, System.currentTimeMillis(), DAY_IN_MILLIS, FORMAT_ABBREV_RELATIVE
-) as String
-
-/**
- * @return: String representation of Time like 24:34 i.e., 24min and 128 secs.
- */
-@OptIn(ExperimentalTime::class)
-@Deprecated("find new solution.")
-fun Util.formatAsTime(mills: Long): String {
-    var minutes: Long = mills / 1000 / 60
-    val seconds: Long = mills / 1000 % 60
-    return if (minutes < 60) String.format(
-        Locale.getDefault(), "%01d:%02d", minutes, seconds
-    ) else {
-        val hours = minutes / 60
-        minutes %= 60
-        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
-    }
-}
 
 @WorkerThread
 @Deprecated("find better solution.")
@@ -416,3 +229,134 @@ fun Context.launchPlayStore() {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
     }
 }
+
+/**
+ * Factory function that creates a `Member` object with the given `MediaItem` object and some additional metadata.
+ *
+ * @param from The `MediaItem` object to create the `Member` from.
+ * @param playlistId The ID of the playlist to which this `Member` belongs.
+ * @param order The order of this `Member` within the playlist.
+ * @return A new `Member` object with the given parameters.
+ */
+fun Member(from: MediaItem, playlistId: Long, order: Int) =
+    Playlist.Member(
+        playlistId,
+        from.mediaId,
+        order,
+        from.requestMetadata.mediaUri!!.toString(),
+        from.mediaMetadata.title.toString(),
+        from.mediaMetadata.subtitle.toString(),
+        from.mediaMetadata.artworkUri?.toString()
+    )
+
+/**
+ * @see Member
+ */
+fun Member(from: Audio, playlistId: Long, order: Int) =
+    Playlist.Member(
+        playlistId,
+        "${from.id}",
+        order,
+        from.uri.toString(),
+        from.name,
+        from.artist,
+        from.albumUri.toString()
+    )
+
+/**
+ * @see MediaItem.key
+ */
+val Playlist.Member.key get() = uri
+
+/**
+ * This is a read-only property that returns the key of the `MediaItem`. The key is generated by converting the media URI
+ * of the `MediaItem` to a string.
+ * This key is unique wrt list etc.
+ *
+ * @return The key of the `MediaItem`.
+ *
+ * @throws NullPointerException If the media URI of the `MediaItem` is null.
+ */
+val MediaItem.key get() = requestMetadata.mediaUri!!.toString()
+
+/**
+ * Creates a new [MediaItem] instance using the provided parameters.
+ *
+ * @param uri The URI of the media item.
+ * @param title The title of the media item.
+ * @param subtitle The subtitle of the media item.
+ * @param id The unique identifier of the media item. Defaults to [MediaItem.DEFAULT_MEDIA_ID].
+ * @param artwork The URI of the artwork for the media item. Defaults to null.
+ * @return The new [MediaItem] instance.
+ */
+fun MediaItem(
+    uri: Uri,
+    title: String,
+    subtitle: String,
+    id: String = "non_empty",
+    artwork: Uri? = null,
+) =
+    MediaItem.Builder()
+        .setMediaId(id)
+        .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
+        .setMediaMetadata(
+            MediaMetadata.Builder().setArtworkUri(artwork).setTitle(title).setSubtitle(subtitle)
+                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
+                // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
+                .build()
+        ).build()
+
+/**
+ * Returns the content URI for this audio file, using the [MediaStore.Audio.Media.EXTERNAL_CONTENT_URI]
+ * and appending the file's unique ID.
+ *
+ * @return the content URI for the audio file
+ */
+val Audio.uri
+    get() = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+
+/**
+ * Returns the content URI for the album art image of this audio file's album, using the
+ * [MediaStore.Images.Media.EXTERNAL_CONTENT_URI] and appending the album ID to the end of the URI.
+ *
+ * @return the content URI for the album art image of this audio file's album
+ */
+val Audio.albumUri
+    get() = Repository.toAlbumArtUri(albumId)
+
+/**
+ * Returns the content URI for the album art image of this album, using the [MediaStore.Images.Media.EXTERNAL_CONTENT_URI]
+ * and appending the album's unique ID to the end of the URI.
+ *
+ * @return the content URI for the album art image of this album
+ */
+val Album.uri
+    get() = Repository.toAlbumArtUri(id)
+
+@Deprecated("Use the factory one.")
+inline fun Audio.toMember(playlistId: Long, order: Int) = Member(this, playlistId, order)
+
+
+
+/**
+ * Returns the content URI for this audio file as a string, using the [uri] property of the audio file.
+ *
+ * @return the content URI for this audio file as a string
+ */
+val Audio.key get() = uri.toString()
+
+/**
+ * Returns a [MediaItem] object that represents this audio file as a playable media item.
+ *
+ * @return the [MediaItem] object that represents this audio file
+ */
+inline val Audio.toMediaItem
+    get() = MediaItem(uri, name, artist, "$id", albumUri)
+
+/**
+ * Returns a [MediaItem] object that represents this [Member] file as a playable media item.
+ *
+ * @return the [MediaItem] object that represents this audio file
+ */
+inline val Playlist.Member.toMediaItem
+    get() = MediaItem(Uri.parse(uri), title, subtitle, id, artwork?.let { Uri.parse(it) })

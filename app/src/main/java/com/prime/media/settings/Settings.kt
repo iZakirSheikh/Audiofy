@@ -4,13 +4,26 @@ package com.prime.media.settings
 import android.content.Context
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.material.icons.outlined.ReplyAll
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.TextFormat
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,21 +33,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
-import com.prime.media.*
+import com.prime.media.Audiofy
 import com.prime.media.BuildConfig
+import com.prime.media.core.compose.LocalsSystemFacade
+import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.core.FontFamily
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
 import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.Placement
 import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.*
-import com.prime.media.core.launchPlayStore
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.LocalWindowPadding
+import com.prime.media.core.compose.stringResource
+import com.prime.media.core.compose.darkShadowColor
+import com.prime.media.core.compose.lightShadowColor
+import com.prime.media.core.compose.purchase
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
 import com.primex.core.stringResource
-import com.primex.material2.*
+import com.primex.material2.DropDownPreference
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.Preference
+import com.primex.material2.SliderPreference
+import com.primex.material2.SwitchPreference
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
 
 private val RESERVE_PADDING = 56.dp
@@ -58,7 +83,7 @@ private inline fun PrefHeader(text: String) {
             .padding(
                 start = RESERVE_PADDING,
                 top = ContentPadding.normal,
-                end = ContentPadding.large,
+                end = ContentPadding.xLarge,
                 bottom = ContentPadding.medium
             )
             .fillMaxWidth()
@@ -67,15 +92,6 @@ private inline fun PrefHeader(text: String) {
     )
 }
 
-
-private val FontFamilyList =
-    listOf(
-        "Lato" to FontFamily.PROVIDED,
-        "Cursive" to FontFamily.CURSIVE,
-        "San serif" to FontFamily.SAN_SERIF,
-        "serif" to FontFamily.SARIF,
-        "System default" to FontFamily.SYSTEM_DEFAULT
-    )
 
 private fun Context.shareApp() {
     ShareCompat.IntentBuilder(this).setType("text/plain")
@@ -100,7 +116,7 @@ private fun Layout(
             .verticalScroll(state),
     ) {
 
-        val provider = LocalsProvider.current
+        val provider = LocalsSystemFacade.current
 
         PrefHeader(text = stringResource(R.string.appearance))
 
@@ -120,19 +136,6 @@ private fun Layout(
                 provider.showAd(force = true)
             }
         )
-
-        //font
-        val font by resolver.font
-        DropDownPreference(title = stringResource(value = font.title),
-            entries = FontFamilyList,
-            defaultValue = font.value,
-            icon = font.vector,
-            onRequestChange = { family: FontFamily ->
-                resolver.set(Audiofy.FONT_FAMILY, family)
-                provider.showAd(force = true)
-            }
-        )
-
 
         // app font scale
         val scale by resolver.fontScale
@@ -224,7 +227,7 @@ private fun Layout(
             text = stringHtmlResource(R.string.about_us_desc),
             style = MaterialTheme.typography.body2,
             modifier = Modifier
-                .padding(start = RESERVE_PADDING, end = ContentPadding.large)
+                .padding(start = RESERVE_PADDING, end = ContentPadding.xLarge)
                 .padding(vertical = ContentPadding.small),
             color = LocalContentColor.current.copy(ContentAlpha.medium)
         )
@@ -268,12 +271,12 @@ fun Settings(
                     )
                 },
                 shape = CircleShape,
-                lightShadowColor = Theme.colors.lightShadowColor,
-                darkShadowColor = Theme.colors.darkShadowColor,
+                lightShadowColor = Material.colors.lightShadowColor,
+                darkShadowColor = Material.colors.darkShadowColor,
                 elevation = ContentElevation.low,
                 modifier = Modifier
                     .statusBarsPadding()
-                    .drawHorizontalDivider(color = Theme.colors.onSurface)
+                    .drawHorizontalDivider(color = Material.colors.onSurface)
                     .padding(vertical = ContentPadding.medium),
             )
         },

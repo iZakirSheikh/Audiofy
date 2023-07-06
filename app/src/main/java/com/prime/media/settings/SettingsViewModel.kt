@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.media.Audiofy
-import com.prime.media.core.asComposeState
+import com.prime.media.core.util.asComposeState
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
@@ -51,17 +51,6 @@ class SettingsViewModel @Inject constructor(
                 title = Text("Dark Mode"),
                 summery = Text("Click to change the app night/light mode."),
                 vector = Icons.Outlined.Lightbulb
-            )
-        }.asComposeState()
-    }
-
-    val font = with(preferences) {
-        preferences[Audiofy.FONT_FAMILY].map {
-            Preference(
-                vector = Icons.Default.TextFields,
-                title = Text("Font"),
-                summery = Text("Choose font to better reflect your desires."),
-                value = it
             )
         }.asComposeState()
     }

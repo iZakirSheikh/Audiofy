@@ -20,7 +20,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Repository
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.impl.Repository
 import com.prime.media.core.compose.*
 import com.prime.media.core.db.Artist
 import com.prime.media.core.playback.Remote
@@ -48,7 +50,7 @@ private val Artist.firstTitleChar
 class ArtistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Artist>(handle) {
 
@@ -107,7 +109,7 @@ class ArtistsViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 }
@@ -125,7 +127,7 @@ fun Artist(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Theme.shapes.medium)
+            .clip(Material.shapes.medium)
             .then(modifier)
             // add padding after size.
             .padding(GridItemPadding)
@@ -142,8 +144,8 @@ fun Artist(
                 .sizeIn(maxWidth = 66.dp)
                 .aspectRatio(1.0f),
             elevation = ContentElevation.low,
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
 
             content = {
                 Icon(
@@ -161,13 +163,13 @@ fun Artist(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Theme.typography.caption,
+            style = Material.typography.caption,
         )
 
         // Subtitle
         Label(
             text = "${value.tracks} Tracks",
-            style = Theme.typography.caption2
+            style = Material.typography.caption2
         )
     }
 }

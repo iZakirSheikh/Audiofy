@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
-import com.prime.media.core.Repository
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.impl.Repository
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.Channel
+import com.prime.media.core.compose.caption2
 import com.prime.media.core.db.Genre
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
@@ -49,7 +49,7 @@ private val Genre.firstTitleChar
 class GenresViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Genre>(handle) {
 
@@ -109,7 +109,7 @@ class GenresViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 }
@@ -127,7 +127,7 @@ fun Genre(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Theme.shapes.medium)
+            .clip(Material.shapes.medium)
             .then(modifier)
             // add padding after size.
             .padding(GridItemPadding)
@@ -139,7 +139,7 @@ fun Genre(
 
         Surface(
             color = Color.Transparent,
-            border = BorderStroke(3.dp, Theme.colors.onBackground),
+            border = BorderStroke(3.dp, Material.colors.onBackground),
             shape = CircleShape,
 
             modifier = Modifier
@@ -150,7 +150,7 @@ fun Genre(
                 Label(
                     text = "${value.name[0].uppercaseChar()}",
                     fontWeight = FontWeight.Bold,
-                    style = Theme.typography.h4,
+                    style = Material.typography.h4,
                     modifier = Modifier.wrapContentSize(Alignment.Center)
                 )
             }
@@ -161,13 +161,13 @@ fun Genre(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Theme.typography.caption,
+            style = Material.typography.caption,
         )
 
         // Subtitle
         Label(
             text = "${value.cardinality} Tracks",
-            style = Theme.typography.caption2
+            style = Material.typography.caption2
         )
     }
 }

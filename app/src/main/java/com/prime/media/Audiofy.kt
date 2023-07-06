@@ -1,26 +1,12 @@
 package com.prime.media
 
 import android.app.Application
-import android.content.ContentResolver
-import android.content.Context
 import androidx.compose.ui.unit.dp
 import com.google.firebase.FirebaseApp
-import com.prime.media.core.FontFamily
 import com.prime.media.core.NightMode
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.db.Playlists
-import com.prime.media.core.playback.Remote
 import com.primex.preferences.*
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.components.ActivityRetainedComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ActivityRetainedScoped
-import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
 private const val TAG = "Audiofy"
 
@@ -40,16 +26,6 @@ class Audiofy : Application() {
                 object : StringSaver<NightMode> {
                     override fun save(value: NightMode): String = value.name
                     override fun restore(value: String): NightMode = NightMode.valueOf(value)
-                }
-            )
-
-        val FONT_FAMILY =
-            stringPreferenceKey(
-                TAG + "_font_family",
-                FontFamily.PROVIDED,
-                object : StringSaver<FontFamily> {
-                    override fun save(value: FontFamily): String = value.name
-                    override fun restore(value: String): FontFamily = FontFamily.valueOf(value)
                 }
             )
 
@@ -103,36 +79,3 @@ class Audiofy : Application() {
     }
 }
 
-@Module
-@InstallIn(SingletonComponent::class)
-object Singleton {
-    /**
-     * Provides the Singleton Implementation of Preferences DataStore.
-     */
-    @Provides
-    @Singleton
-    fun preferences(@ApplicationContext context: Context) =
-        Preferences(context, "Shared_Preferences")
-
-    @Singleton
-    @Provides
-    fun playlists(@ApplicationContext context: Context) =
-        Playlists(context)
-
-    @Singleton
-    @Provides
-    fun resolver(@ApplicationContext context: Context): ContentResolver =
-        context.contentResolver
-}
-
-@Module
-@InstallIn(ActivityRetainedComponent::class)
-object Activity {
-    @ActivityRetainedScoped
-    @Provides
-    fun remote(@ApplicationContext context: Context) = Remote(context)
-
-    @ActivityRetainedScoped
-    @Provides
-    fun toaster() = ToastHostState()
-}

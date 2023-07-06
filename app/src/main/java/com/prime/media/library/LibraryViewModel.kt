@@ -4,8 +4,8 @@ import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.media.core.playback.Playback
-import com.prime.media.core.Repository
-import com.prime.media.core.compose.ToastHostState
+import com.prime.media.impl.Repository
+import com.prime.media.core.compose.Channel
 import com.prime.media.core.playback.Remote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,7 +31,7 @@ private const val SHOW_CASE_MAX_ITEMS = 20
 class LibraryViewModel @Inject constructor(
     repository: Repository,
     remote: Remote,
-    toaster: ToastHostState
+    toaster: Channel
 ) : ViewModel() {
 
     companion object {

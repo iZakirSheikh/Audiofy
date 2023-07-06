@@ -12,12 +12,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.R
-import com.prime.media.core.*
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.util.MainHandler
+import com.prime.media.core.util.Member
+import com.prime.media.impl.Repository
+import com.prime.media.core.util.key
 import com.primex.core.Amber
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +42,7 @@ private inline val Remote.progress get() = (position / duration.toFloat())
 class ConsoleViewModel @Inject constructor(
     private val remote: Remote,
     private val repository: Repository,
-    private val toaster: ToastHostState
+    private val toaster: Channel
 ) : ViewModel() {
     val playing = stateOf(remote.isPlaying)
     val repeatMode = stateOf(remote.repeatMode)
