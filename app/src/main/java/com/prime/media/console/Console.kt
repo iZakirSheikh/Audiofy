@@ -523,7 +523,7 @@ fun Vertical(
     ) {
 
         val primary = Material.colors.onSurface
-        val provider = LocalsSystemFacade.current
+        val provider = LocalSystemFacade.current
         val insets = WindowInsets.statusBars
         // Signature
         Text(

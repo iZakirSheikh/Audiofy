@@ -1,5 +1,6 @@
 package com.prime.media.core.compose
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -20,14 +21,15 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.res.ResourcesCompat
 import com.prime.media.core.compose.Channel.Data
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.Channel.Result
 import com.primex.core.Text
+import com.primex.core.composableOrNull
 import com.primex.core.get
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -51,6 +53,7 @@ import kotlin.coroutines.resume
  */
 @Stable
 class Channel {
+
     /**
      * Possible durations of the [Channel] in [Channel]
      */
@@ -72,7 +75,7 @@ class Channel {
     }
 
     /**
-     * Interface to represent one particular [Channel] as a piece of the [Channel] State.
+     * Interface to represent one particular [Message] as a piece of the [Channel] State.
      *
      * @property message text to be shown in the [Channel]
      * @property action optional action label to show as button in the Toast
@@ -107,7 +110,7 @@ class Channel {
      */
     enum class Result {
         /**
-         * [Channel] that is shown has been dismissed either by timeout of by user
+         * [Message] that is shown has been dismissed either by timeout of by user
          */
         Dismissed,
 
@@ -117,9 +120,8 @@ class Channel {
         ActionPerformed,
     }
 
-
     /**
-     * Only one [Channel] can be shown at a time.
+     * Only one [Message] can be shown at a time.
      * Since a suspending Mutex is a fair queue, this manages our message queue
      * and we don't have to maintain one.
      */
@@ -132,12 +134,12 @@ class Channel {
         private set
 
     /**
-     * Shows or queues to be shown a [Channel] at the bottom of the [Scaffold] at
+     * Shows or queues to be shown a [Message] at the bottom of the [Scaffold2] at
      * which this state is attached and suspends until toast is disappeared.
      *
-     * [Channel] state guarantees to show at most one toast at a time. If this function is
-     * called while another toast is already visible, it will be suspended until this toast
-     * is shown and subsequently addressed. If the caller is cancelled, the toast will be
+     * [Channel] state guarantees to show at most one [Message] at a time. If this function is
+     * called while another [Message] is already visible, it will be suspended until this [Message]
+     * is shown and subsequently addressed. If the caller is cancelled, the [Message] will be
      * removed from display and/or the queue to be displayed.
      *
      * All of this allows for granular control over the toast queue from within:
@@ -147,26 +149,25 @@ class Channel {
      * To change the toast appearance, change it in 'ToastHost' on the [Scaffold].
      *
      * @param message text to be shown in the Toast
-     * @param label optional action label to show as button in the Toast
+     * @param action optional action label to show as button in the Toast
      * @param duration duration to control how long toast will be shown in [Channel], either
-     * [Duration.Short], [Duration.Long] or [Duration.Indefinite].
+     *                 [Duration.Short], [Duration.Long] or [Duration.Indefinite].
      * @param accent: option accent color, default upto implementation.
      * @param leading Optional leading icon to be displayed. Must be either [ImageVector] or [Drawble] resource.
-     * @return [SnackbarResult.ActionPerformed] if option action has been clicked or
-     * [SnackbarResult.Dismissed] if snackbar has been dismissed via timeout or by the user
+     * @return [ActionPerformed] if option action has been clicked or [Dismissed] if [Message] has
+     *         been dismissed via timeout or by the user
      */
     suspend fun show(
         message: Text,
         title: Text? = null,
-        label: Text? = null,
+        action: Text? = null,
         leading: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Duration = Duration.Short
     ): Result = mutex.withLock {
         try {
             return suspendCancellableCoroutine { continuation ->
-                current =
-                    Message(message, title, accent, leading, label, duration, continuation)
+                current = Message(message, title, accent, leading, action, duration, continuation)
             }
         } finally {
             current = null
@@ -178,71 +179,40 @@ class Channel {
      * @see [Channel.show]
      */
     suspend fun show(
-        message: String,
-        title: String? = null,
-        label: String? = null,
+        message: CharSequence,
+        title: CharSequence? = null,
+        action: CharSequence? = null,
         leading: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Duration = Duration.Short
     ) = show(
         Text(message),
         title?.let { Text(it) },
-        label = label?.let { Text(it) },
+        action = action?.let { Text(it) },
         leading = leading,
         accent = accent,
         duration = duration
     )
-
 
     /**
-     * @see [Channel.show]
+     * Show a Toast Message with string resource.
+     * ** Note: The html version isn't supported.
      */
     suspend fun show(
-        message: AnnotatedString,
-        title: AnnotatedString? = null,
-        label: AnnotatedString? = null,
+        @StringRes message: Int,
+        @StringRes title: Int = ResourcesCompat.ID_NULL,
+        @StringRes action: Int = ResourcesCompat.ID_NULL,
         leading: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Duration = Duration.Short
     ) = show(
-        Text(message),
-        title?.let { Text(it) },
-        label = label?.let { Text(it) },
+        title = if (title == ResourcesCompat.ID_NULL) null else Text(title),
+        message = Text(message),
+        action = if (action == ResourcesCompat.ID_NULL) null else Text(action),
         leading = leading,
         accent = accent,
         duration = duration
     )
-
-    companion object {
-
-        /**
-         * Default alpha of the overlay applied to the [backgroundColor]
-         */
-        private const val SnackbarOverlayAlpha = 0.8f
-
-        /**
-         * Default background color of the [Snackbar]
-         */
-        val backgroundColor: Color
-            @Composable get() = MaterialTheme.colors.surface
-
-        /**
-         * Provides a best-effort 'primary' color to be used as the primary color inside a [Snackbar].
-         * Given that [Snackbar]s have an 'inverted' theme, i.e. in a light theme they appear dark, and
-         * in a dark theme they appear light, just using [Colors.primary] will not work, and has
-         * incorrect contrast.
-         *
-         * If your light theme has a corresponding dark theme, you should instead directly use
-         * [Colors.primary] from the dark theme when in a light theme, and use
-         * [Colors.primaryVariant] from the dark theme when in a dark theme.
-         *
-         * When in a light theme, this function applies a color overlay to [Colors.primary] from
-         * [MaterialTheme.colors] to attempt to reduce the contrast, and when in a dark theme this
-         * function uses [Colors.primaryVariant].
-         */
-        val primaryActionColor: Color
-            @Composable get() = MaterialTheme.colors.primary
-    }
 }
 
 @Stable
@@ -392,15 +362,14 @@ private inline fun Indicatior(color: Color) = Modifier.drawBehind {
     drawRect(color = color, size = size.copy(width = 4.dp.toPx()))
 }
 
-
 @Composable
 private fun Message(
     data: Data,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = Channel.backgroundColor,
+    backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor = backgroundColor),
-    actionColor: Color = data.accent.takeOrElse { Channel.primaryActionColor },
+    actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
     elevation: Dp = 6.dp,
 ) {
     Surface(
@@ -416,8 +385,7 @@ private fun Message(
         ListTile(
             // draw the indicator.
             modifier = Indicatior(actionColor), centreVertically = true,
-
-            leading = composable(data.leading != null) {
+            leading = composableOrNull(data.leading != null) {
                 // TODO: It might casue the problems.
                 val icon = data.leading
                 Icon(
@@ -428,7 +396,6 @@ private fun Message(
                     }, contentDescription = null, tint = actionColor
                 )
             },
-
             // the title
             text = {
                 Label(
@@ -438,8 +405,7 @@ private fun Message(
                     maxLines = 2,
                 )
             },
-
-            overlineText = composable(data.title != null) {
+            overlineText = composableOrNull(data.title != null) {
                 Label(
                     text = data.title!!.get,
                     color = LocalContentColor.current.copy(ContentAlpha.high),
@@ -447,7 +413,6 @@ private fun Message(
                     fontWeight = FontWeight.SemiBold
                 )
             },
-
             trailing = {
                 if (data.action != null)
                     TextButton(
@@ -467,7 +432,6 @@ private fun Message(
         )
     }
 }
-
 
 /**
  * Host for [Channel]s to be used in [Scaffold] to properly show, hide and dismiss items based

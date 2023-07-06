@@ -1,8 +1,8 @@
 package com.prime.media
 
 import android.app.Application
+import android.os.Build
 import androidx.compose.ui.unit.dp
-import com.google.firebase.FirebaseApp
 import com.prime.media.core.NightMode
 import com.primex.preferences.*
 import dagger.hilt.android.HiltAndroidApp
@@ -70,12 +70,12 @@ class Audiofy : Application() {
          * https://developers.google.com/android/reference/com/google/android/gms/common/GooglePlayServicesUtil.html#GOOGLE_PLAY_STORE_PACKAGE
          */
         const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
-    }
 
-    override fun onCreate() {
-        super.onCreate()
-        // initialize firebase
-        FirebaseApp.initializeApp(this)
+        val STORAGE_PERMISSION =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                android.Manifest.permission.READ_MEDIA_AUDIO
+            else
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     }
 }
 

@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import com.prime.media.Audiofy
 import com.prime.media.BuildConfig
-import com.prime.media.core.compose.LocalsSystemFacade
+import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
@@ -116,7 +116,7 @@ private fun Layout(
             .verticalScroll(state),
     ) {
 
-        val provider = LocalsSystemFacade.current
+        val provider = LocalSystemFacade.current
 
         PrefHeader(text = stringResource(R.string.appearance))
 

@@ -86,5 +86,6 @@
     <string name="list_title_less_than_5_mins">Less than 5 Min</string>
     <string name="list_title_less_than_10_mins">Less than 10 Min</string>
     <string name="list_title_greater_than_10_mins">Greater than 10 Min</string>
+    <string name="error">Error</string>
 
 </resources>

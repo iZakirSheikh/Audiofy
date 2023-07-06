@@ -187,6 +187,10 @@ private val iBannerListener =
 
         val fAnalytics = Firebase.analytics
 
+        override fun onBannerShown(bannerAdView: BannerView?) {
+            // Do Nothing!!
+        }
+
         override fun onBannerLoaded(bannerView: BannerView) {
             fAnalytics.logEvent("Banner loaded: id = ${bannerView.placementId}", null)
             bannerView.layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)

@@ -96,7 +96,7 @@ private fun TopBar(modifier: Modifier = Modifier) {
         // 2. Action to navigate to settings section of the app.
         actions = {
             // Buy full version button.
-            val provider = LocalsSystemFacade.current
+            val provider = LocalSystemFacade.current
             val purchase by purchase(id = Product.DISABLE_ADS)
             if (!purchase.purchased)
                 IconButton(
@@ -451,7 +451,7 @@ private fun RateUs(modifier: Modifier = Modifier) {
                 )
             }
             // message
-            val provider = LocalsSystemFacade.current
+            val provider = LocalSystemFacade.current
             Text(
                 text = stringResource(R.string.review_msg),
                 style = Material.typography.caption,

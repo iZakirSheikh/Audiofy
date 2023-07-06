@@ -12,6 +12,8 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,12 +37,41 @@ val ProvidableCompositionLocal<Context>.resources: Resources
     @ReadOnlyComposable @Composable inline get() = current.resources
 
 /**
- * Used to access the [NavHostController] without passing it down the tree.
+ * Used to provide access to the [NavHostController] through composition without needing to pass it down the tree.
+ *
+ * To use this composition local, you can call [LocalNavController.current] to get the [NavHostController].
+ * If no [NavHostController] has been set, an error will be thrown.
+ *
+ * Example usage:
+ *
+ * ```
+ * val navController = LocalNavController.current
+ * navController.navigate("destination")
+ * ```
  */
-val LocalNavController =
-    staticCompositionLocalOf<NavHostController> {
-        error("no local nav host controller found")
+val LocalNavController = staticCompositionLocalOf<NavHostController> {
+    error("no local nav host controller found")
+}
+
+/**
+ * [CompositionLocal] containing the [WindowSizeClass].
+ *
+ * This [CompositionLocal] is used to access the current [WindowSizeClass] within a composition.
+ * If no [WindowSizeClass] is found in the composition hierarchy, a error will be thorn.
+ *
+ * Usage:
+ * ```
+ * val windowSizeClass = LocalWindowSizeClass.current
+ * // Use the windowSizeClass value within the composition
+ * ```
+ * @optIn ExperimentalMaterial3WindowSizeClassApi
+ */
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+val LocalWindowSizeClass =
+    staticCompositionLocalOf<WindowSizeClass> {
+        error("no local WindowSizeClass defined.")
     }
+
 
 /**
  * Returns the current route of the [NavHostController]

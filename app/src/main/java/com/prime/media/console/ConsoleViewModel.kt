@@ -56,6 +56,8 @@ class ConsoleViewModel @Inject constructor(
     val playlists = repository.playlists
     val queue = remote.queue
 
+    val isLoaded get() = current.value != null
+
     // getters.
     val hasNextTrack: Boolean get() = remote.next != null
     val hasPreviousTrack: Boolean get() = remote.hasPreviousTrack

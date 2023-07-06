@@ -1,11 +1,13 @@
 package com.prime.media.core.compose
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.res.ResourcesCompat
 import com.android.billingclient.api.Purchase
 import com.primex.core.Text
 import com.primex.preferences.Key
@@ -25,16 +27,11 @@ interface SystemFacade {
     /**
      * A simple property that represents the progress of the in-app update.
      *
-     * The progress is represented as a [State] object, which allows you to observe changes to the
-     * progress value.
-     *
      * The progress value is a float between 0.0 and 1.0, indicating the percentage of the update
      * that has been completed. The Float.NaN represents a default value when no update is going on.
      *
      */
-    val inAppUpdateProgress: State<Float>
-
-    val channel: Channel
+    val inAppUpdateProgress: Float
 
     /**
      * A utility extension function for showing interstitial ads.
@@ -51,8 +48,8 @@ interface SystemFacade {
      * @see Channel.show
      */
     fun show(
-        title: Text,
-        text: Text = Text(""),
+        message: Text,
+        title: Text? = null,
         action: Text? = null,
         icon: Any? = null,
         accent: Color = Color.Unspecified,
@@ -64,12 +61,38 @@ interface SystemFacade {
      * @see show
      */
     fun show(
-        title: String,
-        text: String = "",
-        action: String? = null,
+        message: CharSequence,
+        title: CharSequence? = null,
+        action: CharSequence? = null,
         icon: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Channel.Duration = Channel.Duration.Short
+    ) = show(
+        message = Text(message),
+        title = if (title == null) null else Text(title),
+        action = if (action == null) null else Text(action),
+        icon = icon,
+        accent = accent,
+        duration
+    )
+
+    /**
+     * @see show
+     */
+    fun show(
+        @StringRes message: Int,
+        @StringRes title: Int = ResourcesCompat.ID_NULL,
+        @StringRes action: Int = ResourcesCompat.ID_NULL,
+        icon: Any = ResourcesCompat.ID_NULL,
+        accent: Color = Color.Unspecified,
+        duration: Channel.Duration = Channel.Duration.Short
+    ) = show(
+        Text(message),
+        title = if (title == ResourcesCompat.ID_NULL) null else Text(title),
+        action = if (action == ResourcesCompat.ID_NULL) null else Text(action),
+        icon = icon,
+        accent = accent,
+        duration = duration
     )
 
 
@@ -110,6 +133,9 @@ interface SystemFacade {
      */
     fun launchAppStore()
 
+    /**
+     * @see com.primex.preferences.Preferences.observeAsState
+     */
     @Composable
     @NonRestartableComposable
     fun <S, O> observeAsState(key: Key.Key1<S, O>): State<O?>
@@ -118,11 +144,25 @@ interface SystemFacade {
     @NonRestartableComposable
     fun <S, O> observeAsState(key: Key.Key2<S, O>): State<O>
 
+    /**
+     * A composable function that uses the [LocalSystemFacade] to fetch the purchase state of a product.
+     * @param id The product ID to identify the purchase state.
+     * @return A [State] object that represents the current purchase state of the provided product ID.
+     * The value can be null if there is no purchase associated with the given product ID.
+     */
     @Composable
     @NonRestartableComposable
     fun observeAsState(product: String): State<Purchase?>
 
+    /**
+     * Launches billing flow for the provided product [id].
+     */
     fun launchBillingFlow(id: String)
+
+    /**
+     * Creates a share intent for the app.
+     */
+    fun shareApp()
 }
 
 /**
@@ -135,20 +175,20 @@ interface SystemFacade {
  *
  * If the [SystemFacade] interface is not defined, an error message will be thrown.
  */
-val LocalsSystemFacade =
+val LocalSystemFacade =
     staticCompositionLocalOf<SystemFacade> {
         error("Provider not defined.")
     }
 
 /**
- * A composable function that uses the [LocalsSystemFacade] to fetch [Preference] as state.
+ * A composable function that uses the [LocalSystemFacade] to fetch [Preference] as state.
  * @param key A key to identify the preference value.
  * @return A [State] object that represents the current value of the preference identified by the provided key.
  * The value can be null if no preference value has been set for the given key.
  */
 @Composable
 inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
-    val provider = LocalsSystemFacade.current
+    val provider = LocalSystemFacade.current
     return provider.observeAsState(key = key)
 }
 
@@ -157,18 +197,18 @@ inline fun <S, O> preference(key: Key.Key1<S, O>): State<O?> {
  */
 @Composable
 inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
-    val provider = LocalsSystemFacade.current
+    val provider = LocalSystemFacade.current
     return provider.observeAsState(key = key)
 }
 
 /**
- * A composable function that uses the [LocalsSystemFacade] to fetch the purchase state of a product.
+ * A composable function that uses the [LocalSystemFacade] to fetch the purchase state of a product.
  * @param id The product ID to identify the purchase state.
  * @return A [State] object that represents the current purchase state of the provided product ID.
  * The value can be null if there is no purchase associated with the given product ID.
  */
 @Composable
 inline fun purchase(id: String): State<Purchase?> {
-    val provider = LocalsSystemFacade.current
+    val provider = LocalSystemFacade.current
     return provider.observeAsState(product = id)
 }

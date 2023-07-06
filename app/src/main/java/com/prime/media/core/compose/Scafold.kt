@@ -2,13 +2,16 @@ package com.prime.media.core.compose
 
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.*
 import com.airbnb.lottie.utils.MiscUtils.lerp
 import kotlin.math.roundToInt
@@ -131,6 +134,13 @@ class ScaffoldState(
     }
 
     /**
+     * @see collapse
+     * @see expand
+     */
+    suspend fun toggle() =
+        if (current == SheetValue.EXPANDED) collapse() else expand()
+
+    /**
      * Expand the drawer with animation and suspend until it if fully expanded or animation has
      * been cancelled.
      *
@@ -162,9 +172,8 @@ fun rememberScaffoldState2(
         ScaffoldState(initial)
     }
 }
-
 /**
- * This houses the logic to show [Message]s, animates [sheet] and displays update progress.
+ * This houses the logic to show [Toast]s, animates [sheet] and displays update progress.
  * @param progress progress for the linear progress bar. pass [Float.NaN] to hide and -1 to show
  * indeterminate and value between 0 and 1 to show progress
  */
@@ -173,22 +182,20 @@ fun Scaffold2(
     sheet: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     sheetPeekHeight: Dp = 56.dp,
+    color: Color = MaterialTheme.colors.background,
     state: ScaffoldState = rememberScaffoldState2(initial = SheetValue.COLLAPSED),
-    toast: Channel = remember(::Channel),
+    channel: Channel = remember(::Channel),
+    vertical: Boolean = true,
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
     content: @Composable () -> Unit
 ) {
-    // How am I going to build it.
-    // * Firstly the content occupies the whole of the screen.
-    // * The toast shows below sheet if not expanded other wise over it. Keep in mind the animation.
-    // * Third The progress bar can be null shows at the extreme bottom of the screen.
-    // * Lastly if sheet is closed don't measure it.
-    Layout(
-        modifier = modifier.fillMaxSize(),
-        content = {
+    val realContent =
+        @Composable {
             // stack each part over the player.
-            content()
-            Channel(state = toast)
+            CompositionLocalProvider(LocalWindowPadding provides PaddingValues(bottom = sheetPeekHeight)) {
+                Surface(content = content)
+            }
+            Channel(state = channel)
             // don't draw sheet when closed.
             sheet()
             // don't draw progressBar.
@@ -196,44 +203,74 @@ fun Scaffold2(
                 progress == -1f -> LinearProgressIndicator()
                 !progress.isNaN() -> LinearProgressIndicator(progress = progress)
             }
-        },
+        }
+    // The scaffold will fill whole screen.
+    // Set the background to color.
+    val modifier = modifier
+        .background(color = color)
+        .fillMaxSize()
+    val progress by state.progress
+    val expanded = state.isExpanded
+    when (vertical) {
+        true -> Vertical(sheetPeekHeight, expanded, progress, modifier, realContent)
+        false -> TODO("Not Implemented yet.")
+    }
+}
+
+@Composable
+private inline fun Vertical(
+    sheetPeekHeight: Dp,
+    expanded: Boolean,
+    progress: Float,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val density = LocalDensity.current
+    val imePaddingPx = WindowInsets.ime.getBottom(density)
+    val navBarPaddingPx = WindowInsets.navigationBars.getBottom(density)
+    // TODO: Maybe hide on scroll.
+    Layout(
+        content,
+        modifier = modifier.fillMaxSize(),
     ) { measurables, constraints ->
-        val width = constraints.maxWidth
-        val height = constraints.maxHeight
-
-        // create duplicate constants to measure the contents as per their wishes.
-        val duplicate = constraints.copy(minWidth = 0, minHeight = 0)
-
-        // measure original content with original constrains
-        val contentPlaceable = measurables[0].measure(constraints)
-        val toastPlaceable = measurables[1].measure(duplicate)
-        val progressPlaceable = measurables.getOrNull(3)?.measure(duplicate)
-
-        val progress by state.progress
-        val sheetPeekHeightPx = sheetPeekHeight.toPx().roundToInt()
-        // animate sheet with only upto open.
-        val sheetH = lerp(sheetPeekHeightPx, height, progress)
-        val sheetW = lerp(0, width, progress)
-        val sheetPlaceable = measurables[2].measure(
-            constraints.copy(0, width, 0, sheetH)
+        // The height of the layout.
+        val lHeight = constraints.maxHeight
+        val lWidth = constraints.maxWidth
+        // Measure content
+        val unrestrected = constraints.copy(minWidth = 0, minHeight = 0)
+        val placeableContent = measurables[0].measure(unrestrected)
+        val placeableChannel = measurables[1].measure(unrestrected)
+        val placeableProgressBar = measurables.getOrNull(3)?.measure(unrestrected)
+        // measure sheet
+        // measure min height agains orgSheetPeekHeightPx
+        val sheetPeekHeightPx = sheetPeekHeight.toPx()
+        var width = lWidth
+        var height = lerp(sheetPeekHeightPx, lHeight.toFloat(), progress).roundToInt()
+        val placeableSheet = measurables[2].measure(
+            constraints.copy(0, width, 0, height)
         )
-
-        layout(width, height) {
-            contentPlaceable.placeRelative(0, 0)
-            // place at the bottom centre
-            val sheetY = height - sheetH
-            if (sheetY != height)  // draw only if visible
-                sheetPlaceable.placeRelative(0, sheetY)
-            //Log.d(TAG, "Player: ${height}")
-            val adjusted = if (state.current == SheetValue.COLLAPSED) sheetPeekHeightPx else 0
-            // draw a bottom centre.
-            toastPlaceable.placeRelative(
-                width / 2 - toastPlaceable.width / 2, height - toastPlaceable.height - adjusted
-            )
-
-            progressPlaceable?.placeRelative(
-                width / 2 - progressPlaceable.width / 2, height - progressPlaceable.height
-            )
+        layout(lWidth, lHeight) {
+            var x = 0
+            var y = 0
+            placeableContent.placeRelative(x, y)
+            // Place sheet at top if sheetHeight == height
+            // else place at the bottom.
+            y = lHeight - placeableSheet.height - lerp(
+                navBarPaddingPx.toFloat(),
+                0f,
+                progress
+            ).roundToInt() //
+            placeableSheet.placeRelative(x, y)
+            // the diff to accomondate
+            val diff = lerp(sheetPeekHeightPx, 0f, progress)
+            x = lWidth / 2 - placeableChannel.width / 2
+            y = lHeight - (placeableChannel.height + diff.roundToInt() + navBarPaddingPx + imePaddingPx)
+            placeableChannel.placeRelative(x, y)
+            if (placeableProgressBar == null)
+                return@layout
+            x = lWidth / 2 - placeableProgressBar.width / 2
+            y = lHeight - placeableProgressBar.height - navBarPaddingPx
+            placeableProgressBar.placeRelative(x, y)
         }
     }
 }
