@@ -66,10 +66,10 @@ import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
+import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
 import com.prime.media.library.LibraryViewModel
 import com.prime.media.settings.Settings
-import com.prime.media.settings.SettingsViewModel
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.Rose
@@ -93,7 +93,7 @@ typealias Material = MaterialTheme
 @Composable
 @NonRestartableComposable
 private fun isPrefDarkTheme(): Boolean {
-    val mode by preference(key = Audiofy.NIGHT_MODE)
+    val mode by preference(key = Settings.NIGHT_MODE)
     return when (mode) {
         NightMode.YES -> true
         NightMode.FOLLOW_SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
@@ -215,7 +215,7 @@ private fun NavGraph(
         }
         composable(Settings.route) {
             val viewModel = hiltViewModel<SettingsViewModel>()
-            Settings(viewModel = viewModel)
+            Settings(state = viewModel)
         }
 
         composable(Albums.route) {
@@ -262,10 +262,10 @@ fun Home(channel: Channel) {
         // handle the color of navBars.
         val view = LocalView.current
         // Observe if the user wants to color the SystemBars
-        val colorSystemBars by preference(key = Audiofy.COLOR_STATUS_BAR)
+        val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
         val systemBarsColor =
             if (colorSystemBars) Material.colors.primary else Color.Transparent
-        val hideStatusBar by preference(key = Audiofy.HIDE_STATUS_BAR)
+        val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
         val darkTheme = !MaterialTheme.colors.isLight
         if (!view.isInEditMode)
             SideEffect {
@@ -297,7 +297,7 @@ fun Home(channel: Channel) {
                 vertical = vertical,
                 channel = channel,
                 state = state,
-                sheetPeekHeight = if (viewModel.isLoaded) Audiofy.MINI_PLAYER_HEIGHT else 0.dp,
+                sheetPeekHeight = if (viewModel.isLoaded) Settings.MINI_PLAYER_HEIGHT else 0.dp,
                 color = MaterialTheme.colors.background,
                 progress = facade.inAppUpdateProgress,
                 content = { NavGraph() },

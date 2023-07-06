@@ -131,17 +131,6 @@ val Typography.caption2 get() = com.prime.media.core.compose.caption2
 val MaterialTheme.CONTAINER_COLOR_ALPHA get() = 0.15f
 
 /**
- * Checks whether the preference with key [Audiofy.FORCE_COLORIZE] has been set, indicating
- * whether the app should force colorization of views.
- *
- * This property uses the `preference` composable to retrieve the preference value.
- *
- * @return `true` if the preference has been set, `false` otherwise.
- */
-val MaterialTheme.forceColorize
-    @Composable inline get() = preference(key = Audiofy.FORCE_COLORIZE)
-
-/**
  * A variant of [MaterialTheme.shapes.small] with a corner radius of 8dp.
  */
 private val small2 = RoundedCornerShape(8.dp)
