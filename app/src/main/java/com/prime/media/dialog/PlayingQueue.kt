@@ -1,20 +1,37 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.prime.media.console
+package com.prime.media.dialog
 
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Surface
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -30,13 +47,17 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.prime.media.*
+import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.caption2
 import com.prime.media.core.compose.outline
 import com.prime.media.core.util.key
-import com.primex.material2.*
+import com.primex.material2.BottomSheetDialog
+import com.primex.material2.Header
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.ListTile
 
 private const val TAG = "PlayingQueue"
 
@@ -73,7 +94,7 @@ fun Track(
         text = {
             Label(
                 text = meta.title.toString(),
-               // style = Material.typography.body1,
+                // style = Material.typography.body1,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2
             )
@@ -114,7 +135,7 @@ fun Track(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Layout(
-    resolver: ConsoleViewModel,
+    resolver: PlayingQueue,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,7 +157,7 @@ private fun Layout(
             },
             actions = {
 
-                val shuffle by resolver.shuffle
+                val shuffle = resolver.shuffle
                 IconButton(
                     onClick = { resolver.toggleShuffle() },
                     painter = painterResource(id = R.drawable.ic_shuffle),
@@ -176,7 +197,9 @@ private fun Layout(
                     item(key = item.key) {
                         Track(
                             value = item,
-                            modifier = Modifier.animateItemPlacement().padding(horizontal = ContentPadding.normal),
+                            modifier = Modifier
+                                .animateItemPlacement()
+                                .padding(horizontal = ContentPadding.normal),
                             isPlaying = true
                         )
                     }
@@ -216,14 +239,15 @@ private fun Layout(
 
 @OptIn(ExperimentalComposeApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun ConsoleViewModel.PlayingQueue(
+fun PlayingQueue(
+    state: PlayingQueue,
     expanded: Boolean,
     onDismissRequest: () -> Unit
 ) {
     BottomSheetDialog(expanded = expanded, onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(topStartPercent = 5, topEndPercent = 5)) {
             Layout(
-                resolver = this, onDismissRequest
+                resolver = state, onDismissRequest
             )
         }
     }

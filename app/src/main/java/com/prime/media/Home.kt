@@ -41,7 +41,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.prime.media.console.Console
-import com.prime.media.console.ConsoleViewModel
 import com.prime.media.core.NightMode
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalNavController
@@ -66,6 +65,7 @@ import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
+import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library

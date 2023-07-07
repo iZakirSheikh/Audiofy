@@ -5,19 +5,52 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.widget.Toast
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ButtonElevation
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Slider
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.Forward30
+import androidx.compose.material.icons.outlined.Queue
+import androidx.compose.material.icons.outlined.Replay10
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -25,8 +58,12 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -40,23 +77,40 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.*
+import androidx.constraintlayout.compose.ChainStyle
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.ConstraintSetScope
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.ExperimentalMotionApi
+import androidx.constraintlayout.compose.MotionLayout
+import androidx.constraintlayout.compose.Visibility
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.prime.media.*
+import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.LongDurationMills
+import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.caption2
+import com.prime.media.core.compose.darkShadowColor
+import com.prime.media.core.compose.lightShadowColor
+import com.prime.media.core.compose.outline
+import com.prime.media.core.compose.rememberAnimatedVectorResource
 import com.prime.media.core.util.DateUtils
-import com.prime.media.core.compose.*
+import com.prime.media.dialog.PlayingQueue
 import com.primex.core.activity
 import com.primex.core.gradient
 import com.primex.core.lerp
 import com.primex.core.rememberState
 import com.primex.core.shadow.SpotLight
 import com.primex.core.shadow.shadow
-import com.primex.material2.*
+import com.primex.material2.BottomSheetDialog
+import com.primex.material2.Header
+import com.primex.material2.IconButton
+import com.primex.material2.Label
 import com.primex.material2.neumorphic.Neumorphic
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
@@ -511,7 +565,7 @@ val expanded =
 @Composable
 fun Vertical(
     modifier: Modifier = Modifier,
-    resolver: ConsoleViewModel,
+    resolver: Console,
     progress: Float,
     onRequestToggle: () -> Unit
 ) {
@@ -549,9 +603,8 @@ fun Vertical(
 
 
         // artwork
-        val artwork by resolver.artwork
         Artwork(
-            data = artwork,
+            data = resolver.artwork,
             modifier = Modifier.layoutID(Artwork),
             // maybe make this a lambda call
             stroke = lerp(
@@ -562,7 +615,7 @@ fun Vertical(
         )
 
         //slider
-        val value by resolver.progress
+        val value = resolver.progress
         val time = (value * resolver.duration).roundToLong()
         Header(
             text = DateUtils.formatAsDuration(time),
@@ -579,7 +632,7 @@ fun Vertical(
             modifier = Modifier.layoutID(ProgressBar),
         )
 
-        val favourite by resolver.favourite
+        val favourite = resolver.favourite
         IconButton(
             onClick = { resolver.toggleFav(); provider.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
@@ -596,7 +649,7 @@ fun Vertical(
         )
 
         //title
-        val current by resolver.current
+        val current = resolver.current
         Label(
             text = current?.subtitle ?: stringResource(id = R.string.unknown),
             style = Material.typography.caption2,
@@ -616,7 +669,7 @@ fun Vertical(
         )
 
         // controls
-        val playing by resolver.playing
+        val playing = resolver.playing
         NeumorphicIconButton(
             onClick = { resolver.togglePlay(); provider.launchReviewFlow() },
 
@@ -643,7 +696,7 @@ fun Vertical(
             // iconScale = 0.8f,
             contentDescription = null,
             modifier = Modifier.layoutID(SkipToPrevious),
-            enabled = if (current != null) resolver.hasPreviousTrack else false
+            enabled = if (current != null) resolver.isFirst else false
         )
 
 
@@ -654,7 +707,7 @@ fun Vertical(
             contentDescription = null,
             //iconScale = 0.8f,
             modifier = Modifier.layoutID(SkipToNext),
-            enabled = if (current != null) resolver.hasNextTrack else false,
+            enabled = if (current != null) resolver.isLast else false,
         )
 
         IconButton(
@@ -672,7 +725,8 @@ fun Vertical(
         )
 
         var showPlayingQueue by rememberState(initial = false)
-        resolver.PlayingQueue(
+        PlayingQueue(
+            state = resolver,
             expanded = showPlayingQueue,
             onDismissRequest = {
                 showPlayingQueue = false
@@ -693,7 +747,7 @@ fun Vertical(
             var speed by rememberState(initial = resolver.playbackSpeed)
             SpeedControllerLayout(
                 value = speed,
-                onRequestChange = { speed = it; resolver.setPlaybackSpeed(it) })
+                onRequestChange = { speed = it; resolver.playbackSpeed = it })
         }
 
         NeumorphicVertButton(
@@ -712,7 +766,7 @@ fun Vertical(
             alpha = ContentAlpha.high
         )
 
-        val shuffle by resolver.shuffle
+        val shuffle = resolver.shuffle
         NeumorphicVertButton(
             onClick = { resolver.toggleShuffle(); provider.launchReviewFlow(); },
             icon = painterResource(id = R.drawable.ic_shuffle),
@@ -721,7 +775,7 @@ fun Vertical(
             alpha = if (shuffle) ContentAlpha.high else ContentAlpha.disabled
         )
 
-        val mode by resolver.repeatMode
+        val mode = resolver.repeatMode
         NeumorphicVertButton(
             onClick = { resolver.cycleRepeatMode();provider.launchReviewFlow(); },
             icon = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
@@ -735,7 +789,7 @@ fun Vertical(
 
 @Composable
 fun Console(
-    viewModel: ConsoleViewModel,
+    viewModel: Console,
     progress: Float,
     onRequestToggle: () -> Unit
 ) {
