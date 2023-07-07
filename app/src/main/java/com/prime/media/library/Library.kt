@@ -2,21 +2,45 @@ package com.prime.media.library
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.NavigateNext
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.twotone.Settings
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,25 +59,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.load
-import com.prime.media.*
+import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.impl.Repository
-import com.prime.media.core.util.albumUri
 import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.*
-import com.prime.media.core.util.key
+import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.KenBurns
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.LocalWindowPadding
+import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.caption2
+import com.prime.media.core.compose.overlay
+import com.prime.media.core.compose.purchase
 import com.prime.media.core.playback.Playback
+import com.prime.media.core.util.albumUri
+import com.prime.media.core.util.key
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.Playlists
-import com.prime.media.directory.store.*
+import com.prime.media.directory.store.Albums
+import com.prime.media.directory.store.Artists
+import com.prime.media.directory.store.Audios
+import com.prime.media.directory.store.Folders
+import com.prime.media.directory.store.Genres
+import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
-import com.primex.core.*
+import com.primex.core.Amber
+import com.primex.core.gradient
 import com.primex.core.padding
-import com.primex.material2.*
+import com.primex.core.rememberState
+import com.primex.core.stringHtmlResource
+import com.primex.material2.Header
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.OutlinedButton
+import com.primex.material2.OutlinedButton2
+import com.primex.material2.Search
 
 private const val TAG = "Library"
 private val TOP_BAR_HEIGHT = 160.dp
@@ -476,7 +520,7 @@ private const val CONTENT_TYPE_SHOW_CASE = "_show_case"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Library(viewModel: LibraryViewModel) {
+fun Library(viewModel: Library) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Material.colors.background

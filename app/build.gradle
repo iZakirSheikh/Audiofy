@@ -14,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 38
-        versionName "2.2.5"
+        versionCode 40
+        versionName "2.2.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

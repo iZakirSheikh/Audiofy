@@ -66,9 +66,9 @@ import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
+import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
-import com.prime.media.library.LibraryViewModel
 import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
