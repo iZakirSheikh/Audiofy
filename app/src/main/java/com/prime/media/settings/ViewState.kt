@@ -29,7 +29,7 @@ data class Preference<out P>(
 @Stable
 interface Settings {
 
-    companion object: Route {
+    companion object : Route {
 
         override val route = "settings"
         override val title: Text get() = Text("Settings")
@@ -60,7 +60,8 @@ interface Settings {
         val FORCE_COLORIZE = booleanPreferenceKey(PREFIX + "_force_colorize", false)
         val COLOR_STATUS_BAR = booleanPreferenceKey(PREFIX + "_color_status_bar", false)
         val HIDE_STATUS_BAR = booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
-         /**
+
+        /**
          * The length/duration of the track in mills considered above which to include
          */
         val EXCLUDE_TRACK_DURATION =
