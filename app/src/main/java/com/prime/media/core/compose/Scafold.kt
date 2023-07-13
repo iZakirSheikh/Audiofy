@@ -22,7 +22,6 @@ private val AnimationSpec = TweenSpec<Float>(durationMillis = 500)
 
 private const val TAG = "Player"
 
-
 /**
  * Possible values of [ScaffoldState].
  */
@@ -37,6 +36,14 @@ enum class SheetValue {
      * The state of the bottom drawer when it is expanded (i.e. at 100% height).
      */
     EXPANDED
+}
+
+
+/**
+ * The content padding for the screen under current [NavGraph]
+ */
+val LocalWindowPadding = compositionLocalOf {
+    PaddingValues(0.dp)
 }
 
 /**
@@ -172,6 +179,7 @@ fun rememberScaffoldState2(
         ScaffoldState(initial)
     }
 }
+
 /**
  * This houses the logic to show [Toast]s, animates [sheet] and displays update progress.
  * @param progress progress for the linear progress bar. pass [Float.NaN] to hide and -1 to show
@@ -264,7 +272,8 @@ private inline fun Vertical(
             // the diff to accomondate
             val diff = lerp(sheetPeekHeightPx, 0f, progress)
             x = lWidth / 2 - placeableChannel.width / 2
-            y = lHeight - (placeableChannel.height + diff.roundToInt() + navBarPaddingPx + imePaddingPx)
+            y =
+                lHeight - (placeableChannel.height + diff.roundToInt() + navBarPaddingPx + imePaddingPx)
             placeableChannel.placeRelative(x, y)
             if (placeableProgressBar == null)
                 return@layout
@@ -274,11 +283,3 @@ private inline fun Vertical(
         }
     }
 }
-
-/**
- * The content padding for the screen under current [NavGraph]
- */
-val LocalWindowPadding =
-    compositionLocalOf {
-        PaddingValues(0.dp)
-    }

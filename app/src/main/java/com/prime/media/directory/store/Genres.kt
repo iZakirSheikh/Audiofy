@@ -24,7 +24,7 @@ import com.prime.media.impl.Repository
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.caption2
+import com.prime.media.caption2
 import com.prime.media.core.db.Genre
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*

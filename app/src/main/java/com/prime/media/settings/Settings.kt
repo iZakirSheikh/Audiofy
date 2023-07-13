@@ -1,6 +1,5 @@
 package com.prime.media.settings
 
-import android.health.connect.datatypes.BodyFatRecord
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -46,8 +45,8 @@ import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.LocalWindowSizeClass
-import com.prime.media.core.compose.darkShadowColor
-import com.prime.media.core.compose.lightShadowColor
+import com.prime.media.darkShadowColor
+import com.prime.media.lightShadowColor
 import com.prime.media.core.compose.purchase
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource

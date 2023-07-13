@@ -56,7 +56,6 @@ interface SystemFacade {
         duration: Channel.Duration = Channel.Duration.Short
     )
 
-
     /**
      * @see show
      */
@@ -94,7 +93,6 @@ interface SystemFacade {
         accent = accent,
         duration = duration
     )
-
 
     /**
      * A utility method to launch the in-app update flow, with an option to report low-priority
@@ -163,6 +161,12 @@ interface SystemFacade {
      * Creates a share intent for the app.
      */
     fun shareApp()
+
+    /**
+     * Returns whether the player, i.e., Playback Service, is ready. This indicates whether the queue is loaded or not.
+     * @return `true` if the player is ready and the queue is loaded, `false` otherwise.
+     */
+    val isPlayerReady: Boolean
 }
 
 /**

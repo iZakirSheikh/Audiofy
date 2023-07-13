@@ -1,5 +1,4 @@
 @file:Suppress("NOTHING_TO_INLINE")
-
 package com.prime.media.core.compose
 
 import androidx.annotation.RawRes
@@ -36,7 +35,7 @@ import com.primex.material2.Placeholder
 inline fun Image(
     data: Any?,
     modifier: Modifier = Modifier,
-    fallback: Painter = painterResource(id = R.drawable.default_art),
+    fallback: Painter? = painterResource(id = R.drawable.default_art),
     contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
     fadeMills: Int = AnimationConstants.DefaultDurationMillis,

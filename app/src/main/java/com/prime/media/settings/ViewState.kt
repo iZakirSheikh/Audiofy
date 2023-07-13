@@ -4,7 +4,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
+import com.prime.media.R
 import com.prime.media.core.NightMode
 import com.prime.media.core.Route
 import com.primex.core.Text
@@ -24,6 +29,13 @@ data class Preference<out P>(
     @JvmField val title: Text,
     @JvmField val vector: ImageVector? = null,
     @JvmField val summery: Text? = null,
+)
+
+@OptIn(ExperimentalTextApi::class)
+private val provider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs
 )
 
 @Stable
@@ -68,6 +80,10 @@ interface Settings {
             longPreferenceKey(PREFIX + "_min_duration_limit_of_track", defaultMinTrackLimit)
         val MAX_RECENT_PLAYLIST_SIZE =
             intPreferenceKey(PREFIX + "_max_recent_size", defaultValue = 20)
+
+        val LatoFontFamily = FontFamily(
+            Font(fontProvider = provider, googleFont = GoogleFont("Lato"))
+        )
     }
 
     val darkUiMode: Preference<NightMode>

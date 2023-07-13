@@ -94,10 +94,10 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.LongDurationMills
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.caption2
-import com.prime.media.core.compose.darkShadowColor
-import com.prime.media.core.compose.lightShadowColor
-import com.prime.media.core.compose.outline
+import com.prime.media.caption2
+import com.prime.media.darkShadowColor
+import com.prime.media.lightShadowColor
+import com.prime.media.outline
 import com.prime.media.core.compose.rememberAnimatedVectorResource
 import com.prime.media.core.util.DateUtils
 import com.prime.media.dialog.PlayingQueue

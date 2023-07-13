@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface Library {
 
-    companion object: Route {
+    companion object : Route {
         override val title: Text get() = Text("Library")
         override val icon: ImageVector get() = Icons.Outlined.LibraryMusic
         override val route: String get() = "route_library"

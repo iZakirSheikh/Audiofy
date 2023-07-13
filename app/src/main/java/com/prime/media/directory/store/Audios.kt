@@ -41,7 +41,7 @@ import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.Audio
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.util.FileUtils
+import com.prime.media.core.util.PathUtils
 import com.prime.media.core.util.DateUtils
 import com.prime.media.core.util.addDistinct
 import com.prime.media.core.util.share
@@ -49,9 +49,9 @@ import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.directory.dialogs.Properties
 import com.prime.media.impl.Repository
-import com.prime.media.core.util.albumUri
-import com.prime.media.core.util.key
-import com.prime.media.core.util.toMediaItem
+import com.prime.media.core.db.albumUri
+import com.prime.media.core.db.key
+import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMember
 import com.primex.core.*
 import com.primex.material2.*
@@ -150,7 +150,7 @@ class AudiosViewModel @Inject constructor(
                         append(
                             when (type) {
                                 GET_EVERY -> "All Local Audio Files"
-                                GET_FROM_FOLDER -> FileUtils.name(key)
+                                GET_FROM_FOLDER -> PathUtils.name(key)
                                 else -> key
                             }
                         )

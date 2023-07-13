@@ -4,9 +4,9 @@ import android.content.Context
 import org.jetbrains.annotations.Contract
 
 /**
- * A scope for [FileUtils] functions.
+ * A scope for [PathUtils] functions.
  */
-object FileUtils {
+object PathUtils {
     /**
      * The Unix separator character.
      */
@@ -26,12 +26,14 @@ object FileUtils {
      * @param path  the fileName to query
      * @return the name of the file without the path
      */
-    fun name(path: String): String = path.substring(path.lastIndexOf(PATH_SEPARATOR) + 1)
+    fun name(path: String): String =
+        path.substring(path.lastIndexOf(PATH_SEPARATOR) + 1)
 
     /**
      * @return parent of path.
      */
-    fun parent(path: String): String = path.replace("$PATH_SEPARATOR${name(path = path)}", "")
+    fun parent(path: String): String =
+        path.replace("$PATH_SEPARATOR${name(path = path)}", "")
 
     /**
      * Returns the file extension or null string if there is no extension. This method is a
@@ -44,15 +46,17 @@ object FileUtils {
      * @return extension
      */
     fun extension(url: String): String? =
-        if (url.contains(EXTENSION_SEPARATOR)) url.substring(url.lastIndexOf(EXTENSION_SEPARATOR) + 1)
-            .lowercase()
-        else null
+        if (url.contains(EXTENSION_SEPARATOR))
+            url.substring(url.lastIndexOf(EXTENSION_SEPARATOR) + 1).lowercase()
+        else
+            null
 
     /**
      * Checks if the file or its ancestors are hidden in System.
      */
     @Contract(pure = true)
-    fun areAncestorsHidden(path: String): Boolean = path.contains(HIDDEN_PATTERN)
+    fun areAncestorsHidden(path: String): Boolean =
+        path.contains(HIDDEN_PATTERN)
 
     /**
      * Returns [bytes] as formatted data unit.

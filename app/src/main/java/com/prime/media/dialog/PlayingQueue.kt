@@ -50,8 +50,8 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.caption2
-import com.prime.media.core.compose.outline
+import com.prime.media.caption2
+import com.prime.media.outline
 import com.prime.media.core.util.key
 import com.primex.material2.BottomSheetDialog
 import com.primex.material2.Header

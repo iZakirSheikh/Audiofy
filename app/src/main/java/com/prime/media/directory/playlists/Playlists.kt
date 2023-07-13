@@ -26,10 +26,10 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.impl.Repository
 import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.darkShadowColor
-import com.prime.media.core.compose.lightShadowColor
-import com.prime.media.core.compose.overlay
-import com.prime.media.core.compose.small2
+import com.prime.media.darkShadowColor
+import com.prime.media.lightShadowColor
+import com.prime.media.overlay
+import com.prime.media.small2
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*

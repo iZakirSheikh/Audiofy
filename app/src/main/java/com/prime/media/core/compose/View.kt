@@ -37,11 +37,11 @@ fun KenBurns(
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                clipToOutline = true
             }
         }, update = view
     )
 }
-
 
 @Deprecated(message = "Don't use it!!", level = DeprecationLevel.HIDDEN)
 @Composable

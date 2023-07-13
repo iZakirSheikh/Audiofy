@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.prime.media.*
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.overlay
+import com.prime.media.overlay
 import com.prime.media.core.util.DateUtils
 import com.prime.media.core.db.Audio
 import com.primex.material2.*

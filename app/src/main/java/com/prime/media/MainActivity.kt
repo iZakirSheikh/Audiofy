@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.core.animation.doOnEnd
@@ -45,8 +46,8 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.db.findAudio
+import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.util.toMediaItem
 import com.primex.core.MetroGreen
 import com.primex.core.Text
 import com.primex.preferences.Key
@@ -79,31 +80,37 @@ private fun initSplashScreen(isColdStart: Boolean) {
     // Install Splash Screen and Play animation when cold start.
     installSplashScreen().let { screen ->
         // Animate entry of content
-        if (isColdStart)
-            screen.setOnExitAnimationListener { provider ->
-                val splashScreenView = provider.view
-                // Create your custom animation.
-                val alpha = ObjectAnimator.ofFloat(
-                    splashScreenView, View.ALPHA, 1f, 0f
-                )
-                alpha.interpolator = AnticipateInterpolator()
-                alpha.duration = 700L
-                // Call SplashScreenView.remove at the end of your custom animation.
-                alpha.doOnEnd { provider.remove() }
-                // Run your animation.
-                alpha.start()
-            }
+        if (!isColdStart)
+            return@let
+        screen.setOnExitAnimationListener { provider ->
+            val splashScreenView = provider.view
+            // Create your custom animation.
+            val alpha = ObjectAnimator.ofFloat(
+                splashScreenView, View.ALPHA, 1f, 0f
+            )
+            alpha.interpolator = AnticipateInterpolator()
+            alpha.duration = 700L
+            // Call SplashScreenView.remove at the end of your custom animation.
+            alpha.doOnEnd { provider.remove() }
+            // Run your animation.
+            alpha.start()
+        }
     }
 }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), SystemFacade {
+
     private val advertiser by lazy { Advertiser(this) }
     private val billingManager by lazy { BillingManager(this, arrayOf(Product.DISABLE_ADS)) }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
     override val inAppUpdateProgress: Float
         get() = _inAppUpdateProgress.value
+
+    private lateinit var _isPLayerReady: State<Boolean>
+    override val isPlayerReady: Boolean
+        get() = _isPLayerReady.value
 
     // injectable code.
     @Inject
@@ -345,12 +352,16 @@ class MainActivity : ComponentActivity(), SystemFacade {
             // TODO: Try to reconcile if it is any good to ask for reviews here.
             // launchReviewFlow()
         }
-        //Manually handle decor.
+        // Manually handle decor.
+        // I think I am handling this in AppTheme Already.
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // pass intetn to onNewIntent
+        // pass intent to onNewIntent
         onNewIntent(intent)
+        // Set the content.
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
+            // Maybe this needs to be moved somewhere else.
+            _isPLayerReady = remote.loaded.collectAsState(initial = false)
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
                 LocalWindowSizeClass provides windowSizeClass,

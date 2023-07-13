@@ -4,7 +4,6 @@ import android.app.Application
 import android.os.Build
 import com.primex.preferences.intPreferenceKey
 import dagger.hilt.android.HiltAndroidApp
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "Audiofy"
 
@@ -12,8 +11,6 @@ private const val TAG = "Audiofy"
 class Audiofy : Application() {
 
     companion object {
-        private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
-
         /**
          * The counter counts the number of times this app was launched.
          */

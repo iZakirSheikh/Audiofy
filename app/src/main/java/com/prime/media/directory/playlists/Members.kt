@@ -32,6 +32,7 @@ import com.prime.media.core.util.addDistinct
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.impl.Repository
+import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMediaItem
 import com.primex.core.*
 import com.primex.material2.*

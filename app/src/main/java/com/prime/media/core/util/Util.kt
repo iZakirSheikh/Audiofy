@@ -1,14 +1,12 @@
 package com.prime.media.core.util
 
 import android.content.ActivityNotFoundException
-import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.StrictMode
-import android.provider.MediaStore
 import android.text.format.DateUtils.*
 import android.widget.Toast
 import androidx.annotation.WorkerThread
@@ -25,10 +23,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
 import com.prime.media.Audiofy
-import com.prime.media.core.db.Album
 import com.prime.media.core.db.Audio
 import com.prime.media.core.db.Playlist
-import com.prime.media.impl.Repository
+import com.prime.media.core.db.albumUri
+import com.prime.media.core.db.uri
 import com.primex.core.runCatching
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,7 +50,6 @@ inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
     onEach { state.value = it }.launchIn(viewModelScope)
     return state
 }
-
 
 @Deprecated("use imageLoader on context.")
 suspend fun Context.getAlbumArt(uri: Uri, size: Int = 512): Drawable? {
@@ -92,7 +89,6 @@ val MediaMetadataRetriever.latLong: DoubleArray?
             doubleArrayOf(lat, lon)
         } else null
     }
-
 
 @WorkerThread
 @Deprecated("find better solution.")
@@ -215,7 +211,7 @@ inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
     else add(value)
 }
 
-
+@Deprecated("Use the method from SystemFacade.")
 fun Context.launchPlayStore() {
     try {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
@@ -266,6 +262,7 @@ fun Member(from: Audio, playlistId: Long, order: Int) =
 /**
  * @see MediaItem.key
  */
+@Deprecated("use the proved uri")
 val Playlist.Member.key get() = uri
 
 /**
@@ -277,6 +274,7 @@ val Playlist.Member.key get() = uri
  *
  * @throws NullPointerException If the media URI of the `MediaItem` is null.
  */
+@Deprecated("find new way to represent this.")
 val MediaItem.key get() = requestMetadata.mediaUri!!.toString()
 
 /**
@@ -295,63 +293,19 @@ fun MediaItem(
     subtitle: String,
     id: String = "non_empty",
     artwork: Uri? = null,
-) =
-    MediaItem.Builder()
-        .setMediaId(id)
-        .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
-        .setMediaMetadata(
-            MediaMetadata.Builder().setArtworkUri(artwork).setTitle(title).setSubtitle(subtitle)
-                .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
-                // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
-                .build()
-        ).build()
-
-/**
- * Returns the content URI for this audio file, using the [MediaStore.Audio.Media.EXTERNAL_CONTENT_URI]
- * and appending the file's unique ID.
- *
- * @return the content URI for the audio file
- */
-val Audio.uri
-    get() = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
-
-/**
- * Returns the content URI for the album art image of this audio file's album, using the
- * [MediaStore.Images.Media.EXTERNAL_CONTENT_URI] and appending the album ID to the end of the URI.
- *
- * @return the content URI for the album art image of this audio file's album
- */
-val Audio.albumUri
-    get() = Repository.toAlbumArtUri(albumId)
-
-/**
- * Returns the content URI for the album art image of this album, using the [MediaStore.Images.Media.EXTERNAL_CONTENT_URI]
- * and appending the album's unique ID to the end of the URI.
- *
- * @return the content URI for the album art image of this album
- */
-val Album.uri
-    get() = Repository.toAlbumArtUri(id)
+) = MediaItem.Builder()
+    .setMediaId(id)
+    .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
+    .setMediaMetadata(
+        MediaMetadata.Builder().setArtworkUri(artwork).setTitle(title).setSubtitle(subtitle)
+            .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
+            // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
+            .build()
+    ).build()
 
 @Deprecated("Use the factory one.")
 inline fun Audio.toMember(playlistId: Long, order: Int) = Member(this, playlistId, order)
 
-
-
-/**
- * Returns the content URI for this audio file as a string, using the [uri] property of the audio file.
- *
- * @return the content URI for this audio file as a string
- */
-val Audio.key get() = uri.toString()
-
-/**
- * Returns a [MediaItem] object that represents this audio file as a playable media item.
- *
- * @return the [MediaItem] object that represents this audio file
- */
-inline val Audio.toMediaItem
-    get() = MediaItem(uri, name, artist, "$id", albumUri)
 
 /**
  * Returns a [MediaItem] object that represents this [Member] file as a playable media item.

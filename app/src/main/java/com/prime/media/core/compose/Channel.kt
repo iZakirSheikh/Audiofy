@@ -174,7 +174,6 @@ class Channel {
         }
     }
 
-
     /**
      * @see [Channel.show]
      */
@@ -237,7 +236,8 @@ private class Message(
 
 // TODO: magic numbers adjustment
 private fun Duration.toMillis(
-    hasAction: Boolean, accessibilityManager: AccessibilityManager?
+    hasAction: Boolean,
+    accessibilityManager: AccessibilityManager?
 ): Long {
     val original = when (this) {
         Duration.Short -> 4000L
@@ -256,7 +256,9 @@ private fun Duration.toMillis(
 // it's basically tweaked nullable version of Crossfade
 @Composable
 private fun FadeInFadeOutWithScale(
-    current: Data?, modifier: Modifier = Modifier, content: @Composable (Data) -> Unit
+    current: Data?,
+    modifier: Modifier = Modifier,
+    content: @Composable (Data) -> Unit
 ) {
     val state = remember { FadeInFadeOutState<Data?>() }
     if (current != state.current) {
@@ -324,14 +326,17 @@ private class FadeInFadeOutState<T> {
 }
 
 private data class FadeInFadeOutAnimationItem<T>(
-    val key: T, val transition: FadeInFadeOutTransition
+    val key: T,
+    val transition: FadeInFadeOutTransition
 )
 
 private typealias FadeInFadeOutTransition = @Composable (content: @Composable () -> Unit) -> Unit
 
 @Composable
 private fun animatedOpacity(
-    animation: AnimationSpec<Float>, visible: Boolean, onAnimationFinish: () -> Unit = {}
+    animation: AnimationSpec<Float>,
+    visible: Boolean,
+    onAnimationFinish: () -> Unit = {}
 ): State<Float> {
     val alpha = remember { Animatable(if (!visible) 1f else 0f) }
     LaunchedEffect(visible) {
@@ -344,7 +349,10 @@ private fun animatedOpacity(
 }
 
 @Composable
-private fun animatedScale(animation: AnimationSpec<Float>, visible: Boolean): State<Float> {
+private fun animatedScale(
+    animation: AnimationSpec<Float>,
+    visible: Boolean
+): State<Float> {
     val scale = remember { Animatable(if (!visible) 1f else 0.8f) }
     LaunchedEffect(visible) {
         scale.animateTo(

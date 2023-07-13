@@ -80,8 +80,8 @@
 
     <!--Title to the audio library screen-->
     <string name="title_audio_library_html">
-        Media <b>Library</b>\n<font size="10">Let\'s make the magic happen.
-    </font></string>
+        Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
+    </string>
     <string name="list_title_less_then_2_mins">Less 2 Min</string>
     <string name="list_title_less_than_5_mins">Less than 5 Min</string>
     <string name="list_title_less_than_10_mins">Less than 10 Min</string>
