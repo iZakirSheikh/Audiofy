@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -45,9 +46,9 @@ import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.LocalWindowSizeClass
+import com.prime.media.core.compose.purchase
 import com.prime.media.darkShadowColor
 import com.prime.media.lightShadowColor
-import com.prime.media.core.compose.purchase
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.stringHtmlResource
 import com.primex.core.value
@@ -58,12 +59,16 @@ import com.primex.material2.Preference
 import com.primex.material2.SwitchPreference
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
 
+private const val TAG = "Settings"
 
 private val <T> Preference<T>.name inline @Composable get() = title.value
 private val <T> Preference<T>.desc inline @Composable get() = summery?.value
 
 @Composable
-fun TopAppBar(modifier: Modifier = Modifier) {
+@NonRestartableComposable
+private fun TopAppBar(
+    modifier: Modifier = Modifier
+) {
     val navigator = LocalNavController.current
     NeumorphicTopAppBar(
         title = { Label(text = stringResource(R.string.settings)) },
@@ -184,23 +189,21 @@ private inline fun ColumnScope.FeedBack() {
         title = stringResource(R.string.feedback),
         summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
         icon = Icons.Outlined.Feedback,
-        modifier = Modifier.clickable(onClick = { facade.launchAppStore() })
+        modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
         title = stringResource(R.string.rate_us),
         summery = stringResource(id = R.string.review_msg),
         icon = Icons.Outlined.Star,
-        modifier = Modifier.clickable(onClick = { facade.launchAppStore() })
+        modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
         title = stringResource(R.string.spread_the_word),
         summery = stringResource(R.string.spread_the_word_summery),
         icon = Icons.Outlined.Share,
-        modifier = Modifier.clickable(onClick = {
-            facade.shareApp()
-        })
+        modifier = Modifier.clickable { facade.shareApp() }
     )
 }
 
@@ -222,14 +225,12 @@ private inline fun ColumnScope.AboutUs() {
         title = stringResource(R.string.app_version),
         summery = "$version \nClick to check for updates.",
         icon = Icons.Outlined.TouchApp,
-        modifier = Modifier.clickable(
-            onClick = { provider.launchUpdateFlow(true) }
-        )
+        modifier = Modifier.clickable { provider.launchUpdateFlow(true) }
     )
 }
 
 @Composable
-private fun Compact(state: Settings, modifier: Modifier = Modifier) {
+private fun Compact(state: Settings) {
     Scaffold(topBar = { TopAppBar(Modifier.statusBarsPadding()) }) {
         Column(
             modifier = Modifier
@@ -246,12 +247,12 @@ private fun Compact(state: Settings, modifier: Modifier = Modifier) {
             Spacer(
                 modifier = Modifier
                     .animateContentSize()
+                    .navigationBarsPadding()
                     .padding(padding),
             )
         }
     }
 }
-
 
 @Composable
 @NonRestartableComposable
@@ -262,3 +263,4 @@ fun Settings(state: Settings) {
         else -> Compact(state = state) // for every one currently
     }
 }
+

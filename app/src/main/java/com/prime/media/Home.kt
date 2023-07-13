@@ -260,7 +260,7 @@ private val DarkSecondaryVariantColor = Color(0xFF7B0084)
 @Composable
 @NonRestartableComposable
 fun Material(
-    darkTheme: Boolean = isPrefDarkTheme(),
+    darkTheme: Boolean,
     content: @Composable () -> Unit,
 ) {
     val background by animateColorAsState(
@@ -372,43 +372,24 @@ private fun NavGraph(
     }
 }
 
+private val LightSystemBarsColor = Color(0x20000000)
+private val DarkSystemBarsColor = Color(0x11FFFFFF)
+
 @Composable
-fun Home(channel: Channel) {
-    val navController = rememberNavController()
-    Material {
-        // handle the color of navBars.
-        val view = LocalView.current
-        // Observe if the user wants to color the SystemBars
-        val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
-        val systemBarsColor =
-            if (colorSystemBars) Material.colors.primary else Color.Transparent
-        val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
-        val darkTheme = !MaterialTheme.colors.isLight
-        if (!view.isInEditMode)
-            SideEffect {
-                val window = (view.context as Activity).window
-                window.navigationBarColor = systemBarsColor.toArgb()
-                window.statusBarColor = systemBarsColor.toArgb()
-                WindowCompat
-                    .getInsetsController(window, view)
-                    .isAppearanceLightStatusBars = !darkTheme && !colorSystemBars
-                //
-                if (hideStatusBar)
-                    WindowCompat.getInsetsController(window, view)
-                        .hide(WindowInsetsCompat.Type.statusBars())
-                else
-                    WindowCompat.getInsetsController(window, view)
-                        .show(WindowInsetsCompat.Type.statusBars())
-            }
-        //Place the content.
-        val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
-        val facade = LocalSystemFacade.current
-        val state = rememberScaffoldState2(initial = SheetValue.COLLAPSED)
-        val scope = rememberCoroutineScope()
+fun Home(
+    channel: Channel
+) {
+    val isDark = isPrefDarkTheme()
+    Material(isDark) {
+        val navController = rememberNavController()
         // Collapse if expanded and back button is clicked.
+        // FixMe: Currently it doesn't work if navGraph ihas not start Dest.
+        val scope = rememberCoroutineScope()
+        val state = rememberScaffoldState2(initial = SheetValue.COLLAPSED)
         BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
-        // Create the viewModel
         CompositionLocalProvider(LocalNavController provides navController) {
+            val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
+            val facade = LocalSystemFacade.current
             Scaffold2(
                 vertical = vertical,
                 channel = channel,
@@ -424,6 +405,34 @@ fun Home(channel: Channel) {
                     }
                 }
             )
+        }
+        // Handle SystemBars logic.
+        val view = LocalView.current
+        // Early return
+        if (view.isInEditMode)
+            return@Material
+        // FixMe: It seems sideEffect is not working for hideSystemBars.
+        val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
+        val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
+        val color = when {
+            colorSystemBars -> Material.colors.primary
+            isDark -> DarkSystemBarsColor
+            else -> LightSystemBarsColor
+        }
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.navigationBarColor = color.toArgb()
+            window.statusBarColor = color.toArgb()
+            WindowCompat
+                .getInsetsController(window, view)
+                .isAppearanceLightStatusBars = !isDark && !colorSystemBars
+            //
+            if (hideStatusBar)
+                WindowCompat.getInsetsController(window, view)
+                    .hide(WindowInsetsCompat.Type.statusBars())
+            else
+                WindowCompat.getInsetsController(window, view)
+                    .show(WindowInsetsCompat.Type.statusBars())
         }
     }
 }

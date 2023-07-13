@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
@@ -39,10 +40,32 @@ private val provider = GoogleFont.Provider(
 )
 
 @Stable
+private fun FontFamily(name: String) = FontFamily(
+    Font(
+        fontProvider = provider,
+        googleFont = GoogleFont(name),
+        weight = FontWeight.Light
+    ),
+    Font(
+        fontProvider = provider,
+        googleFont = GoogleFont(name),
+        weight = FontWeight.Medium
+    ),
+    Font(
+        fontProvider = provider,
+        googleFont = GoogleFont(name),
+        weight = FontWeight.Normal
+    ),
+    Font(
+        fontProvider = provider,
+        googleFont = GoogleFont(name),
+        weight = FontWeight.Bold
+    ),
+)
+
+@Stable
 interface Settings {
-
     companion object : Route {
-
         override val route = "settings"
         override val title: Text get() = Text("Settings")
         override val icon: ImageVector get() = Icons.Outlined.Settings
@@ -81,9 +104,7 @@ interface Settings {
         val MAX_RECENT_PLAYLIST_SIZE =
             intPreferenceKey(PREFIX + "_max_recent_size", defaultValue = 20)
 
-        val LatoFontFamily = FontFamily(
-            Font(fontProvider = provider, googleFont = GoogleFont("Lato"))
-        )
+        val LatoFontFamily = com.prime.media.settings.FontFamily("Lato")
     }
 
     val darkUiMode: Preference<NightMode>
@@ -93,4 +114,3 @@ interface Settings {
 
     fun <S, O> set(key: Key<S, O>, value: O)
 }
-

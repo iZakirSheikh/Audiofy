@@ -2,6 +2,8 @@
 <resources>
 
     <string name="app_name">Audiofy</string>
+    <!--The name of the app icon in launcher.-->
+    <string name="app_name2">@string/app_name</string>
 
     <string name="storage_permission_message">
         In order to work properly the app requires permission to your devices storage (Photos, Media and Files).
