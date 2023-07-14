@@ -289,7 +289,8 @@ private fun Vertical(
             modifier = Modifier
                 .windowInsetsPadding(insets)
                 .layoutID(Console.SIGNATURE),
-            color = onColor
+            color = onColor,
+            maxLines = 1
         )
         // Close Button
         OutlinedButton2(
@@ -363,11 +364,8 @@ private fun Vertical(
         )
 
         Label(
-            text = buildAnnotatedString {
-                withSpanStyle(fontSize = lerp(18.sp, 44.sp, progress)) {
-                    append(current?.title ?: stringResource(id = R.string.unknown))
-                }
-            },
+            text = current?.title ?: stringResource(id = R.string.unknown),
+            fontSize = lerp(18.sp, 44.sp, progress),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
@@ -479,6 +477,5 @@ private fun Vertical(
             modifier = Modifier.layoutID(Console.REPEAT),
             tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
         )
-
     }
 }
