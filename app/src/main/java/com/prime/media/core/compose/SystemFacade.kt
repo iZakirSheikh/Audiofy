@@ -158,6 +158,11 @@ interface SystemFacade {
     fun launchBillingFlow(id: String)
 
     /**
+     * Launch the app intent for equalizer.
+     */
+    fun launchEqualizer(id: Int)
+
+    /**
      * Creates a share intent for the app.
      */
     fun shareApp()

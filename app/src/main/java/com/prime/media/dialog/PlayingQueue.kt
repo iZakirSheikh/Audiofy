@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -86,7 +88,7 @@ fun Track(
                     .padding(end = ContentPadding.medium)
                     .shadow(5.dp, clip = true, shape = RoundedCornerShape(radius))
                     .border(2.dp, color = Color.White, RoundedCornerShape(radius))
-                    .then(if (isPlaying) Modifier.aspectRatio(1.5f) else Modifier.size(53.dp))
+                    .then(if (isPlaying) Modifier.height(60.dp).aspectRatio(1.5f) else Modifier.size(53.dp))
                     .animateContentSize(tween(750, delayMillis = 100))
 
             )
@@ -125,7 +127,7 @@ fun Track(
                     iterations = Int.MAX_VALUE,
                     modifier = Modifier
                         .requiredSize(24.dp)
-                        .offset(x = -ContentPadding.normal)
+                        .offset(x = -ContentPadding.medium)
                 )
             }
         }
@@ -239,6 +241,7 @@ private fun Layout(
 
 @OptIn(ExperimentalComposeApi::class, ExperimentalComposeUiApi::class)
 @Composable
+@NonRestartableComposable
 fun PlayingQueue(
     state: PlayingQueue,
     expanded: Boolean,

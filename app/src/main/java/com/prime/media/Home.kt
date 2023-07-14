@@ -416,8 +416,7 @@ fun Home(
         val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
         val color = when {
             colorSystemBars -> Material.colors.primary
-            isDark -> DarkSystemBarsColor
-            else -> LightSystemBarsColor
+            else -> Color.Transparent
         }
         SideEffect {
             val window = (view.context as Activity).window

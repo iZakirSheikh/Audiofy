@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,12 +15,10 @@ import androidx.media3.common.Player
 import com.prime.media.R
 import com.prime.media.console.Console
 import com.prime.media.core.compose.Channel
+import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.MainHandler
-import com.prime.media.core.util.Member
-import com.prime.media.core.db.key
-import com.prime.media.core.util.key
 import com.primex.core.Amber
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +33,24 @@ private const val TAG = "ConsoleViewModel"
  */
 private val PROGRESS_TOKEN = MainHandler.token
 
-private inline val Remote.progress get() = (position / duration.toFloat())
+/**
+ * Factory function that creates a `Member` object with the given `MediaItem` object and some additional metadata.
+ *
+ * @param from The `MediaItem` object to create the `Member` from.
+ * @param playlistId The ID of the playlist to which this `Member` belongs.
+ * @param order The order of this `Member` within the playlist.
+ * @return A new `Member` object with the given parameters.
+ */
+fun Member(from: MediaItem, playlistId: Long, order: Int) =
+    Playlist.Member(
+        playlistId,
+        from.mediaId,
+        order,
+        from.requestMetadata.mediaUri!!.toString(),
+        from.mediaMetadata.title.toString(),
+        from.mediaMetadata.subtitle.toString(),
+        from.mediaMetadata.artworkUri?.toString()
+    )
 
 @HiltViewModel
 class ConsoleViewModel @Inject constructor(
@@ -47,25 +61,32 @@ class ConsoleViewModel @Inject constructor(
 
     override var playing: Boolean by mutableStateOf(false)
     override var repeatMode: Int by mutableIntStateOf(Player.REPEAT_MODE_OFF)
-    override var progress: Float by mutableFloatStateOf(0.0f)
     override var current: MediaItem? by mutableStateOf(null)
     override var favourite: Boolean by mutableStateOf(false)
+    override var playbackSpeed: Float = remote.playbackSpeed
+    override var position: Long by mutableStateOf(0)
+
     override val isLast: Boolean get() = remote.next == null
     override var shuffle: Boolean by mutableStateOf(false)
     override val isFirst: Boolean get() = !remote.hasPreviousTrack
     override val duration: Long get() = remote.duration
     override val audioSessionId: Int get() = remote.audioSessionId
-    override var playbackSpeed: Float = remote.playbackSpeed
+
 
     override val queue: Flow<List<MediaItem>> = remote.queue
 
     override fun togglePlay() = remote.togglePlay()
-
     override fun skipToNext() = remote.skipToNext()
-
     override fun skipToPrev() = remote.skipToPrev()
+    override fun playTrackAt(position: Int) = remote.playTrackAt(position)
+    override fun playTrack(uri: Uri) = remote.playTrack(uri)
+    override fun remove(key: Uri) {
+        viewModelScope.launch {
+            remote.remove(key)
+        }
+    }
 
-    override fun cycleRepeatMode(){
+    override fun cycleRepeatMode() {
         viewModelScope.launch {
             remote.cycleRepeatMode()
             val newMode = remote.repeatMode
@@ -86,8 +107,9 @@ class ConsoleViewModel @Inject constructor(
     override fun seekTo(mills: Long) {
         viewModelScope.launch {
             // update the state.
-            progress = mills / duration.toFloat()
-            remote.seekTo(mills)
+            val upto = mills.coerceIn(0, duration)
+            position = upto
+            remote.seekTo(upto)
         }
     }
 
@@ -107,20 +129,17 @@ class ConsoleViewModel @Inject constructor(
         viewModelScope.launch {
             val item = current ?: return@launch
             // the playlist is created already.
+            val uri = item.requestMetadata.mediaUri.toString()
             val playlist = repository.getPlaylist(Playback.PLAYLIST_FAVOURITE) ?: return@launch
-            var favourite = repository.isFavourite(item.key)
+            var favourite = repository.isFavourite(uri)
             val res = if (favourite)
-                repository.removeFromPlaylist(playlist.id, item.key)
+                repository.removeFromPlaylist(playlist.id, uri)
             else
                 repository.insert(
-                    Member(
-                        item,
-                        playlist.id,
-                        (repository.getLastPlayOrder(playlist.id) ?: 0) + 1
-                    )
+                    Member(item, playlist.id, (repository.getLastPlayOrder(playlist.id) ?: 0) + 1)
                 )
-            // update teh favourite
-            favourite = !favourite && res
+            // update the favourite
+            this@ConsoleViewModel.favourite = !favourite && res
             toaster.show(
                 message = when {
                     !res -> Text("An error occured while adding/removing the item to favourite playlist")
@@ -133,27 +152,9 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    override fun replay10() {
-        seekTo((remote.position - (10 * 1000)).coerceAtLeast(0L))
-    }
-
-    override fun forward30() {
-        seekTo((remote.position - (10 * 1000)).coerceAtLeast(0L))
-    }
-
-    override fun playTrackAt(position: Int) = remote.playTrackAt(position)
-
-    override fun playTrack(uri: Uri)  = remote.playTrack(uri)
-
-    override fun remove(key: Uri) {
-        viewModelScope.launch {
-            remote.remove(key)
-        }
-    }
-
     override fun toggleShuffle() {
         viewModelScope.launch {
-            val newValue = remote.shuffle
+            val newValue = !remote.shuffle
             remote.shuffle = newValue
             shuffle = newValue
             toaster.show(
@@ -166,7 +167,7 @@ class ConsoleViewModel @Inject constructor(
 
     // listener to progress changes.
     private val onProgressUpdate = {
-        progress = remote.progress
+        position = remote.position
     }
 
     private fun onPlayerEvent(event: Int) {
@@ -183,7 +184,7 @@ class ConsoleViewModel @Inject constructor(
             }
             // update the shuffle mode.
             Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED ->
-               shuffle = remote.shuffle
+                shuffle = remote.shuffle
 
             // and repeat mode.
             Player.EVENT_REPEAT_MODE_CHANGED ->

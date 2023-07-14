@@ -1,13 +1,16 @@
 package com.prime.media
 
 import android.animation.ObjectAnimator
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
@@ -330,6 +333,24 @@ class MainActivity : ComponentActivity(), SystemFacade {
             remote.set(listOf(audio.toMediaItem))
             remote.play()
         }
+    }
+
+    override fun launchEqualizer(id: Int) {
+        if (id == AudioEffect.ERROR_BAD_VALUE) {
+            Toast.makeText(this, "No Session Id", Toast.LENGTH_LONG).show();
+            return
+        }
+        val res = kotlin.runCatching {
+            startActivity(
+                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
+                }
+            )
+        }
+        if (res.exceptionOrNull() is ActivityNotFoundException)
+            Toast.makeText(this, "There is no equalizer", Toast.LENGTH_SHORT).show();
     }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)

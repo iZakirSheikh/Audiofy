@@ -6,9 +6,22 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.primex.core.Text
@@ -91,3 +104,36 @@ inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) 
     androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
         animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
+
+val edgeWidth = 10.dp
+private fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
+    val edgeWidthPx = edgeWidth.toPx()
+    drawRect(
+        topLeft = Offset(if (leftEdge) 0f else size.width - edgeWidthPx, 0f),
+        size = Size(edgeWidthPx, size.height),
+        brush = Brush.horizontalGradient(
+            colors = listOf(Color.Transparent, Color.Black),
+            startX = if (leftEdge) 0f else size.width,
+            endX = if (leftEdge) edgeWidthPx else size.width - edgeWidthPx
+        ),
+        blendMode = BlendMode.DstIn
+    )
+}
+
+/**
+ * An extension of marque that draw marqueue with faded edge.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.marque(iterations: Int) =
+    Modifier
+        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            drawFadedEdge(leftEdge = true)
+            drawFadedEdge(leftEdge = false)
+        }
+        .basicMarquee(
+            // Animate forever.
+            iterations = iterations,
+        )
+        .then(this)
