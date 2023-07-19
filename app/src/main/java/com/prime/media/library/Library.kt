@@ -81,6 +81,8 @@ import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
+import com.prime.media.onOverlay
+import com.prime.media.overlay
 import com.prime.media.settings.Settings
 import com.prime.media.small2
 import com.primex.core.gradient
@@ -186,12 +188,12 @@ private fun TopBar(modifier: Modifier = Modifier) {
         val provider = LocalSystemFacade.current
         TopAppBar(
             modifier = Modifier
-                .background(Material.colors.primary)
+                .background(Material.colors.overlay)
                 .requiredHeight(TOP_BAR_HEIGHT)
                 .then(modifier),
             elevation = 0.dp,
             backgroundColor = Color.Transparent,
-            contentColor = Material.colors.onPrimary,
+            contentColor = Material.colors.onOverlay,
             // navigation icon pointing to the about section of the app.
             // TODO - Add navigation to about us in future.
             navigationIcon = {

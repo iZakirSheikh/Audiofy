@@ -14,8 +14,8 @@ android {
         applicationId "com.prime.player"
         minSdk 21
         targetSdk 33
-        versionCode 40
-        versionName "2.2.7"
+        versionCode 41
+        versionName "2.2.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -107,7 +107,7 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
     //Lottie
-    def lottie_version = '6.0.1'
+    def lottie_version = '6.1.0'
     implementation "com.airbnb.android:lottie-compose:$lottie_version"
     //Ken Burns
     // FixMe: Build Compose alternative; check compose marque modifier.
@@ -121,7 +121,7 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.1'
     // Import the Firebase BoM
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:32.1.1')
+    implementation platform('com.google.firebase:firebase-bom:32.2.0')
     // Add the dependency for the Firebase SDK for Google Analytics
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
