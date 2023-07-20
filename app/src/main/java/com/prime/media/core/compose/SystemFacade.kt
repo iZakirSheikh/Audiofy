@@ -43,9 +43,9 @@ interface SystemFacade {
     fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
 
     /**
-     * This uses the provider to submit message to [Channel]
+     * This uses the provider to submit message to [SnackbarProvider]
      *
-     * @see Channel.show
+     * @see SnackbarProvider.show
      */
     fun show(
         message: Text,

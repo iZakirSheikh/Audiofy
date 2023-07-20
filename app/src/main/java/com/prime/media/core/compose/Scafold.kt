@@ -211,7 +211,7 @@ fun Scaffold2(
             CompositionLocalProvider(LocalWindowPadding provides PaddingValues(bottom = 0.dp)) {
                 Surface(content = content)
             }
-            Channel(state = channel)
+            SnackbarProvider(state = channel)
             // don't draw sheet when closed.
             sheet()
             // don't draw progressBar.

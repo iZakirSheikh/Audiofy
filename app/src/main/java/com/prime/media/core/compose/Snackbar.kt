@@ -28,9 +28,12 @@ import androidx.core.content.res.ResourcesCompat
 import com.prime.media.core.compose.Channel.Data
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.Channel.Result
+import com.primex.core.SignalWhite
 import com.primex.core.Text
+import com.primex.core.TrafficBlack
 import com.primex.core.composableOrNull
 import com.primex.core.get
+import com.primex.core.value
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
@@ -43,19 +46,19 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
 /**
- * State of the [Channel], controls the queue and the current [Channel] being shown inside
- * the [Channel].
+ * State of the [SnackbarProvider], controls the queue and the current [SnackbarProvider] being shown inside
+ * the [SnackbarProvider].
  *
- * This state usually lives as a part of a [ScaffoldState] and provided to the [Channel]
+ * This state usually lives as a part of a [ScaffoldState] and provided to the [SnackbarProvider]
  * automatically, but can be decoupled from it and live separately when desired.
  *
- * This class also serves as the default for [Channel]
+ * This class also serves as the default for [SnackbarProvider]
  */
 @Stable
 class Channel {
 
     /**
-     * Possible durations of the [Channel] in [Channel]
+     * Possible durations of the [SnackbarProvider] in [SnackbarProvider]
      */
     enum class Duration {
         /**
@@ -75,13 +78,13 @@ class Channel {
     }
 
     /**
-     * Interface to represent one particular [Message] as a piece of the [Channel] State.
+     * Interface to represent one particular [Snackbar2] as a piece of the [SnackbarProvider] State.
      *
-     * @property message text to be shown in the [Channel]
+     * @property message text to be shown in the [SnackbarProvider]
      * @property action optional action label to show as button in the Toast
      * @property duration duration of the toast
-     * @property accent The accent color of this [Channel]. Default [Color.Unspecified]
-     * @property leading optional leading icon for [Channel]. Default null. The leading must be a vector icon or resource drawbale.
+     * @property accent The accent color of this [SnackbarProvider]. Default [Color.Unspecified]
+     * @property leading optional leading icon for [SnackbarProvider]. Default null. The leading must be a vector icon or resource drawbale.
      */
     interface Data {
 
@@ -110,36 +113,36 @@ class Channel {
      */
     enum class Result {
         /**
-         * [Message] that is shown has been dismissed either by timeout of by user
+         * [Snackbar2] that is shown has been dismissed either by timeout of by user
          */
         Dismissed,
 
         /**
-         * Action on the [Channel] has been clicked before the time out passed
+         * Action on the [SnackbarProvider] has been clicked before the time out passed
          */
         ActionPerformed,
     }
 
     /**
-     * Only one [Message] can be shown at a time.
+     * Only one [Snackbar2] can be shown at a time.
      * Since a suspending Mutex is a fair queue, this manages our message queue
      * and we don't have to maintain one.
      */
     private val mutex = Mutex()
 
     /**
-     * The current [Channel.Data] being shown by the [Channel], of `null` if none.
+     * The current [SnackbarProvider.Data] being shown by the [SnackbarProvider], of `null` if none.
      */
     var current by mutableStateOf<Data?>(null)
         private set
 
     /**
-     * Shows or queues to be shown a [Message] at the bottom of the [Scaffold2] at
+     * Shows or queues to be shown a [Snackbar2] at the bottom of the [Scaffold2] at
      * which this state is attached and suspends until toast is disappeared.
      *
-     * [Channel] state guarantees to show at most one [Message] at a time. If this function is
-     * called while another [Message] is already visible, it will be suspended until this [Message]
-     * is shown and subsequently addressed. If the caller is cancelled, the [Message] will be
+     * [SnackbarProvider] state guarantees to show at most one [Snackbar2] at a time. If this function is
+     * called while another [Snackbar2] is already visible, it will be suspended until this [Snackbar2]
+     * is shown and subsequently addressed. If the caller is cancelled, the [Snackbar2] will be
      * removed from display and/or the queue to be displayed.
      *
      * All of this allows for granular control over the toast queue from within:
@@ -150,11 +153,11 @@ class Channel {
      *
      * @param message text to be shown in the Toast
      * @param action optional action label to show as button in the Toast
-     * @param duration duration to control how long toast will be shown in [Channel], either
+     * @param duration duration to control how long toast will be shown in [SnackbarProvider], either
      *                 [Duration.Short], [Duration.Long] or [Duration.Indefinite].
      * @param accent: option accent color, default upto implementation.
      * @param leading Optional leading icon to be displayed. Must be either [ImageVector] or [Drawble] resource.
-     * @return [ActionPerformed] if option action has been clicked or [Dismissed] if [Message] has
+     * @return [ActionPerformed] if option action has been clicked or [Dismissed] if [Snackbar2] has
      *         been dismissed via timeout or by the user
      */
     suspend fun show(
@@ -175,7 +178,7 @@ class Channel {
     }
 
     /**
-     * @see [Channel.show]
+     * @see [SnackbarProvider.show]
      */
     suspend fun show(
         message: CharSequence,
@@ -371,12 +374,12 @@ private inline fun Indicatior(color: Color) = Modifier.drawBehind {
 }
 
 @Composable
-private fun Message(
+private fun Snackbar2(
     data: Data,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = contentColorFor(backgroundColor = backgroundColor),
+    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else Color.TrafficBlack,
+    contentColor: Color = Color.SignalWhite,
     actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
     elevation: Dp = 6.dp,
 ) {
@@ -407,10 +410,10 @@ private fun Message(
             // the title
             text = {
                 Label(
-                    text = data.message.get,
+                    text = data.message.value,
                     color = LocalContentColor.current.copy(ContentAlpha.medium),
-                    style = MaterialTheme.typography.caption,
-                    maxLines = 2,
+                    style = MaterialTheme.typography.body2,
+                    maxLines = 4,
                 )
             },
             overlineText = composableOrNull(data.title != null) {
@@ -442,30 +445,30 @@ private fun Message(
 }
 
 /**
- * Host for [Channel]s to be used in [Scaffold] to properly show, hide and dismiss items based
+ * Host for [SnackbarProvider]s to be used in [Scaffold] to properly show, hide and dismiss items based
  * on material specification and the [state].
  *
  * This component with default parameters comes build-in with [Scaffold], if you need to show a
- * default [Channel], use use [ScaffoldState.snackbarHostState] and
+ * default [SnackbarProvider], use use [ScaffoldState.snackbarHostState] and
  * [SnackbarHostState.showSnackbar].
  *
  * @sample androidx.compose.material.samples.ScaffoldWithSimpleSnackbar
  *
- * If you want to customize appearance of the [Channel], you can pass your own version as a child
- * of the [Channel] to the [Scaffold]:
+ * If you want to customize appearance of the [SnackbarProvider], you can pass your own version as a child
+ * of the [SnackbarProvider] to the [Scaffold]:
  *
  * @sample androidx.compose.material.samples.ScaffoldWithCustomSnackbar
  *
- * @param state state of this component to read and show [Channel]s accordingly
+ * @param state state of this component to read and show [SnackbarProvider]s accordingly
  * @param modifier optional modifier for this component
- * @param toast the instance of the [Channel] to be shown at the appropriate time with
+ * @param toast the instance of the [SnackbarProvider] to be shown at the appropriate time with
  * appearance based on the [Data] provided as a param
  */
 @Composable
-fun Channel(
+fun SnackbarProvider(
     state: Channel,
     modifier: Modifier = Modifier,
-    message: @Composable (Data) -> Unit = { Message(it) }
+    message: @Composable (Data) -> Unit = { Snackbar2(it) }
 ) {
     val currentSnackbarData = state.current
     val accessibilityManager = LocalAccessibilityManager.current
