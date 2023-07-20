@@ -1,14 +1,23 @@
-@file:Suppress("InfiniteTransitionLabel", "InfinitePropertiesLabel")
+@file:Suppress("InfiniteTransitionLabel", "InfinitePropertiesLabel", "AnimatedContentLabel")
 
 package com.prime.media.console
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,17 +27,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Slider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -42,7 +52,7 @@ import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,7 +70,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -86,17 +95,17 @@ import com.prime.media.darkShadowColor
 import com.prime.media.dialog.PlayingQueue
 import com.prime.media.lightShadowColor
 import com.prime.media.outline
+import com.prime.media.settings.Settings
 import com.primex.core.lerp
 import com.primex.core.rememberState
-import com.primex.core.withSpanStyle
 import com.primex.material2.BottomSheetDialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton2
+import com.primex.material2.neumorphic.Neumorphic
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 private inline val MediaItem.title
     get() = mediaMetadata.title?.toString()
@@ -478,4 +487,54 @@ private fun Vertical(
             tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
         )
     }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+@NonRestartableComposable
+private fun Mini(state: Console, onRequestToggle: () -> Unit) {
+    Neumorphic(
+        onClick = onRequestToggle,
+        modifier = Modifier
+            .heightIn(max = Settings.MINI_PLAYER_HEIGHT)
+            .padding(top = 8.dp, start = 10.dp, end = 10.dp)
+            .scale(0.85f),
+        lightShadowColor = Material.colors.lightShadowColor,
+        darkShadowColor = Material.colors.darkShadowColor,
+        elevation = ContentElevation.low,
+        shape = CircleShape,
+    ) {
+        Vertical(
+            state = state,
+            progress = 0f,
+            modifier = Modifier.fillMaxSize(),
+            onRequestToggle = onRequestToggle
+        )
+    }
+}
+
+val DefaultExpandedTransition =
+    (scaleIn(tween(220, 90), 0.98f) +
+            fadeIn(tween(700))).togetherWith(ExitTransition.None)
+val DefaultMiniTransition =
+    slideInVertically(spring(Spring.DampingRatioHighBouncy), { fullHeight -> fullHeight })
+        .togetherWith(fadeOut())
+
+@Composable
+fun Console(
+    state: Console,
+    expanded: Boolean,
+    onRequestToggle: () -> Unit
+) {
+    AnimatedContent(
+        targetState = expanded,
+        transitionSpec = { if (targetState) DefaultExpandedTransition else DefaultMiniTransition },
+        content = { value ->
+            when (value) {
+                false -> Mini(state = state, onRequestToggle)
+                else -> Console(state = state, progress = 1f, onRequestToggle)
+            }
+        }
+    )
 }

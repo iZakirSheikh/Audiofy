@@ -81,6 +81,7 @@ import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
+import com.primex.core.drawHorizontalDivider
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.launch
 
@@ -386,7 +387,7 @@ fun Home(
         // FixMe: Currently it doesn't work if navGraph ihas not start Dest.
         val scope = rememberCoroutineScope()
         val state = rememberScaffoldState2(initial = SheetValue.COLLAPSED)
-        BackHandler(state.isExpanded) { scope.launch { state.collapse() } }
+        BackHandler(state.isExpanded) { scope.launch { state.collapse(false) } }
         CompositionLocalProvider(LocalNavController provides navController) {
             val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
             val facade = LocalSystemFacade.current
@@ -397,11 +398,11 @@ fun Home(
                 sheetPeekHeight = if (facade.isPlayerReady) Settings.MINI_PLAYER_HEIGHT else 0.dp,
                 color = MaterialTheme.colors.background,
                 progress = facade.inAppUpdateProgress,
-                content = { NavGraph() },
+                content = { NavGraph(Modifier.drawHorizontalDivider(color = Material.colors.onSurface)) },
                 sheet = {
                     val viewModel = hiltViewModel<ConsoleViewModel>()
-                    Console(viewModel, state.progress.value) {
-                        scope.launch { state.toggle() }
+                    Console(state = viewModel, expanded = state.isExpanded) {
+                        scope.launch { state.toggle(false) }
                     }
                 }
             )

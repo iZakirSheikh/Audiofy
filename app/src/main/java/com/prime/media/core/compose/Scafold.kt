@@ -136,16 +136,19 @@ class ScaffoldState(
      * @throws [CancellationException] if the animation is interrupted
      *
      */
-    suspend fun collapse() {
-        animateTo(SheetValue.COLLAPSED)
+    suspend fun collapse(animate: Boolean = true) {
+        if (animate)
+            animateTo(SheetValue.COLLAPSED)
+        else
+            snapTo(SheetValue.COLLAPSED)
     }
 
     /**
      * @see collapse
      * @see expand
      */
-    suspend fun toggle() =
-        if (current == SheetValue.EXPANDED) collapse() else expand()
+    suspend fun toggle(animate: Boolean = true) =
+        if (current == SheetValue.EXPANDED) collapse(animate) else expand(animate)
 
     /**
      * Expand the drawer with animation and suspend until it if fully expanded or animation has
@@ -154,7 +157,12 @@ class ScaffoldState(
      * @throws [CancellationException] if the animation is interrupted
      *
      */
-    suspend fun expand() = animateTo(SheetValue.EXPANDED)
+    suspend fun expand(animate: Boolean = true) {
+        if (animate)
+            animateTo(SheetValue.EXPANDED)
+        else
+            snapTo(SheetValue.EXPANDED)
+    }
 
     companion object {
         /**
@@ -200,7 +208,7 @@ fun Scaffold2(
     val realContent =
         @Composable {
             // stack each part over the player.
-            CompositionLocalProvider(LocalWindowPadding provides PaddingValues(bottom = sheetPeekHeight)) {
+            CompositionLocalProvider(LocalWindowPadding provides PaddingValues(bottom = 0.dp)) {
                 Surface(content = content)
             }
             Channel(state = channel)
@@ -246,14 +254,18 @@ private inline fun Vertical(
         val lWidth = constraints.maxWidth
         // Measure content
         val unrestrected = constraints.copy(minWidth = 0, minHeight = 0)
-        val placeableContent = measurables[0].measure(unrestrected)
         val placeableChannel = measurables[1].measure(unrestrected)
         val placeableProgressBar = measurables.getOrNull(3)?.measure(unrestrected)
-        // measure sheet
-        // measure min height agains orgSheetPeekHeightPx
-        val sheetPeekHeightPx = sheetPeekHeight.toPx()
         var width = lWidth
-        var height = lerp(sheetPeekHeightPx, lHeight.toFloat(), progress).roundToInt()
+        var height = lHeight - sheetPeekHeight.roundToPx() - navBarPaddingPx
+        val placeableContent = measurables[0].measure(
+            constraints.copy(0, width, 0, height)
+        )
+        // measure sheet
+        // measure min height against orgSheetPeekHeightPx
+        val sheetPeekHeightPx = sheetPeekHeight.toPx()
+        width = lWidth
+        height = lerp(sheetPeekHeightPx, lHeight.toFloat(), progress).roundToInt()
         val placeableSheet = measurables[2].measure(
             constraints.copy(0, width, 0, height)
         )
