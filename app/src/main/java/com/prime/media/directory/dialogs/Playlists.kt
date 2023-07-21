@@ -19,10 +19,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.Util
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.util.DateUtils
 import com.prime.media.core.compose.*
 import com.prime.media.core.db.Playlist
-import com.prime.media.core.formatAsRelativeTimeSpan
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 import com.primex.material2.neumorphic.Neumorphic
@@ -37,7 +38,7 @@ private fun Playlist(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Theme.shapes.medium)
+            .clip(Material.shapes.medium)
             .clickable(onClick = onPlaylistClick)
             // add padding after size.
             .padding(
@@ -55,8 +56,8 @@ private fun Playlist(
                 .sizeIn(maxWidth = 70.dp)
                 .aspectRatio(1.0f),
             elevation = ContentElevation.low,
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
 
             content = {
                 Icon(
@@ -73,13 +74,13 @@ private fun Playlist(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Theme.typography.caption,
+            style = Material.typography.caption,
         )
 
         // Subtitle
         Label(
-            text = "Modified - ${Util.formatAsRelativeTimeSpan(value.dateModified)}",
-            style = Theme.typography.caption2
+            text = "Modified - ${DateUtils.formatAsRelativeTimeSpan(value.dateModified)}",
+            style = Material.typography.caption2
         )
     }
 }
@@ -102,8 +103,8 @@ fun Playlists(
             onDismissRequest = onDismissRequest,
             vectorIcon = Icons.Outlined.Info,
             button2 = stringResource(id = R.string.dismiss) to onDismissRequest,
-            topBarBackgroundColor = Theme.colors.overlay,
-            topBarContentColor = Theme.colors.onSurface,
+            topBarBackgroundColor = Material.colors.overlay,
+            topBarContentColor = Material.colors.onSurface,
         ) {
             Crossfade(
                 targetState = value.isEmpty(),

@@ -21,12 +21,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
-import com.prime.media.core.compose.ContentElevation
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.Repository
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.impl.Repository
+import com.prime.media.core.compose.Channel
+import com.prime.media.darkShadowColor
+import com.prime.media.lightShadowColor
+import com.prime.media.overlay
+import com.prime.media.small2
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
@@ -56,7 +59,7 @@ private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
 class PlaylistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Playlist>(handle) {
 
@@ -194,13 +197,13 @@ fun Playlist(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Theme.shapes.small2)
+            .clip(Material.shapes.small2)
             .then(modifier)
             .then(
                 if (checked)
                     Modifier.border(
                         BorderStroke(2.dp, LocalContentColor.current),
-                        Theme.shapes.small2
+                        Material.shapes.small2
                     )
                 else
                     Modifier
@@ -224,8 +227,8 @@ fun Playlist(
                 .sizeIn(maxWidth = 70.dp)
                 .aspectRatio(1.0f),
             elevation = ContentElevation.low,
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor,
 
             content = {
                 Icon(
@@ -243,7 +246,7 @@ fun Playlist(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Theme.typography.caption,
+            style = Material.typography.caption,
         )
     }
 }
@@ -262,8 +265,8 @@ private inline fun EditDialog(
             label = placeholder,
             vectorIcon = Icons.TwoTone.Edit,
             textFieldShape = RoundedCornerShape(20),
-            topBarContentColor = Theme.colors.onBackground,
-            topBarBackgroundColor = Theme.colors.overlay
+            topBarContentColor = Material.colors.onBackground,
+            topBarBackgroundColor = Material.colors.overlay
         )
 }
 

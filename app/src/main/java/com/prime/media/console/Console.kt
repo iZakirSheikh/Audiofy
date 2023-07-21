@@ -1,296 +1,162 @@
+@file:Suppress("InfiniteTransitionLabel", "InfinitePropertiesLabel", "AnimatedContentLabel")
+
 package com.prime.media.console
 
-import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.media.audiofx.AudioEffect
-import android.widget.Toast
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
-import androidx.compose.foundation.*
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.Slider
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Forward30
+import androidx.compose.material.icons.outlined.Queue
+import androidx.compose.material.icons.outlined.Replay10
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.*
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ExperimentalMotionApi
+import androidx.constraintlayout.compose.MotionLayout
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.prime.media.*
+import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.core.Util
-import com.prime.media.core.compose.*
-import com.prime.media.core.formatAsDuration
-import com.primex.core.activity
-import com.primex.core.gradient
+import com.prime.media.caption2
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.marque
+import com.prime.media.core.compose.rememberAnimatedVectorResource
+import com.prime.media.core.compose.shape.CompactDisk
+import com.prime.media.core.util.DateUtils
+import com.prime.media.darkShadowColor
+import com.prime.media.dialog.PlayingQueue
+import com.prime.media.lightShadowColor
+import com.prime.media.outline
+import com.prime.media.settings.Settings
 import com.primex.core.lerp
 import com.primex.core.rememberState
-import com.primex.core.shadow.SpotLight
-import com.primex.core.shadow.shadow
-import com.primex.material2.*
+import com.primex.material2.BottomSheetDialog
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.OutlinedButton2
 import com.primex.material2.neumorphic.Neumorphic
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
-private const val TAG = "Console"
-
-//Constraint reference of components.
-private val Signature = ConstrainedLayoutReference("_signature")
-private val Close = ConstrainedLayoutReference("_close")
-private val Heart = ConstrainedLayoutReference("_heart")
-
-
-private val Artwork = ConstrainedLayoutReference("_artwork")
-private val ProgressMills = ConstrainedLayoutReference("_progress_mills")
-
-private val Subtitle = ConstrainedLayoutReference("_subtitle")
-private val Title = ConstrainedLayoutReference("_title")
-
-private val ProgressBar = ConstrainedLayoutReference("_progress_bar")
-private val TuneUp = ConstrainedLayoutReference("_tune_up")
-
-
-private val SkipToPrevious = ConstrainedLayoutReference("_previous")
-private val SkipBack10 = ConstrainedLayoutReference("_skip_back_10")
-private val Toggle = ConstrainedLayoutReference("_toggle")
-private val SkipForward30 = ConstrainedLayoutReference("_skip_forward_30")
-private val SkipToNext = ConstrainedLayoutReference("_next")
-
-private val BottomRowLabel = ConstrainedLayoutReference("_bottom_row_label")
-private val Shuffle = ConstrainedLayoutReference("_shuffle")
-private val Repeat = ConstrainedLayoutReference("_repeat")
-private val Queue = ConstrainedLayoutReference("_queue")
-private val Speed = ConstrainedLayoutReference("_speed")
-private val Sleep = ConstrainedLayoutReference("_sleep")
-
-val edgeWidth = 10.dp
-fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
-    val edgeWidthPx = edgeWidth.toPx()
-    drawRect(
-        topLeft = Offset(if (leftEdge) 0f else size.width - edgeWidthPx, 0f),
-        size = Size(edgeWidthPx, size.height),
-        brush = Brush.horizontalGradient(
-            colors = listOf(Color.Transparent, Color.Black),
-            startX = if (leftEdge) 0f else size.width,
-            endX = if (leftEdge) edgeWidthPx else size.width - edgeWidthPx
-        ),
-        blendMode = BlendMode.DstIn
-    )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-fun Modifier.marque(iterations: Int) =
-    Modifier
-        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-        .drawWithContent {
-            drawContent()
-            drawFadedEdge(leftEdge = true)
-            drawFadedEdge(leftEdge = false)
-        }
-        .basicMarquee(
-            // Animate forever.
-            iterations = iterations,
-        )
-        .then(this)
+private inline val MediaItem.title
+    get() = mediaMetadata.title?.toString()
+private inline val MediaItem.subtitle
+    get() = mediaMetadata.subtitle?.toString()
 
 /**
  * A simple extension fun to add to modifier.
  */
-private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) =
-    layoutId(id.id)
+private inline fun Modifier.layoutID(id: ConstrainedLayoutReference) = layoutId(id.id)
 
+private val Rounded = RoundedCornerShape(24)
 
-private inline fun ConstraintSetScope.hide(vararg ref: ConstrainedLayoutReference) {
-    ref.forEach {
-        constrain(it) {
-            //start.linkTo(parent.start)
-            end.linkTo(parent.start)
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-            visibility = Visibility.Gone
-        }
-    }
-}
-
-private inline val MediaItem.title
-    get() =
-        mediaMetadata.title?.toString()
-private inline val MediaItem.subtitle
-    get() =
-        mediaMetadata.subtitle?.toString()
-
+@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
-@NonRestartableComposable
-private fun NeumorphicIconButton(
+private fun PlayButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: CornerBasedShape = RoundedCornerShape(30),
-    enabled: Boolean = true,
-    border: BorderStroke? = if (Theme.colors.isLight) null else
-        BorderStroke(1.dp, Theme.colors.outline.copy(0.06f)),
-    elevation: ButtonElevation = NeumorphicButtonDefaults.elevation(6.dp),
-    iconScale: Float = 1.5f,
-    painter: Painter
+    progress: Float,
+    isPlaying: Boolean
 ) {
+    val elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress))
+    val border =
+        if (progress != 0f && !Material.colors.isLight)
+            BorderStroke(1.dp, Material.colors.outline.copy(0.06f))
+        else
+            null
     NeumorphicButton(
         onClick = onClick,
         modifier = modifier,
-        shape = shape,
-        enabled = enabled,
+        shape = Rounded,
         elevation = elevation,
         border = border,
         colors = NeumorphicButtonDefaults.neumorphicButtonColors(
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
+            lightShadowColor = Material.colors.lightShadowColor,
+            darkShadowColor = Material.colors.darkShadowColor
         )
     ) {
         Icon(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier.scale(iconScale)
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun NeumorphicVertButton(
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    alpha: Float = LocalContentAlpha.current,
-    onClick: () -> Unit,
-    icon: Painter,
-    label: String,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val elevation = NeumorphicButtonDefaults.elevation(5.dp)
-        val source = remember(::MutableInteractionSource)
-        val depth by elevation.elevation(enabled = enabled, interactionSource = source)
-        Neumorphic(
-            onClick = onClick,
-            modifier = Modifier,
-            lightShadowColor = Theme.colors.lightShadowColor,
-            darkShadowColor = Theme.colors.darkShadowColor,
-            elevation = depth,
-            interactionSource = source,
-            border = if (Theme.colors.isLight) null else BorderStroke(
-                1.dp,
-                Theme.colors.outline.copy(0.06f)
+            painter = rememberAnimatedVectorResource(
+                id = R.drawable.avd_pause_to_play,
+                atEnd = !isPlaying
             ),
-            shape = RoundedCornerShape(30)
-        ) {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                modifier = Modifier.padding(12.dp),
-                tint = LocalContentColor.current.copy(alpha)
-            )
-        }
-
-
-        Label(
-            text = label,
-            style = Theme.typography.caption2,
-            modifier = Modifier.padding(top = 6.dp),
-            color = LocalContentColor.current.copy(alpha)
+            modifier = Modifier.scale(1.5f),
+            contentDescription = null
         )
     }
 }
 
-private val ARTWORK_STROKE_DEFAULT_EXPANDED = 20.dp
+private val ARTWORK_STROKE_DEFAULT_EXPANDED = 8.dp
 private val ARTWORK_STROKE_DEFAULT_COLLAPSED = 3.dp
-
-@Composable
-@NonRestartableComposable
-private fun Artwork(
-    data: Any?,
-    modifier: Modifier = Modifier,
-    stroke: Dp = ARTWORK_STROKE_DEFAULT_EXPANDED,
-) {
-    val color = Theme.colors.background
-    Image(
-        data = data,
-        contentScale = ContentScale.Crop,
-        fadeMills = Anim.LongDurationMills,
-
-        // now apply the modifier.
-        modifier = Modifier
-            .shadow(
-                shape = CircleShape,
-                elevation = -12.dp,
-                lightShadowColor = Theme.colors.lightShadowColor,
-                darkShadowColor = Theme.colors.darkShadowColor,
-                spotLight = SpotLight.BOTTOM_RIGHT,
-            )
-            .padding(stroke)
-            .shadow(
-                shape = CircleShape,
-                elevation = 12.dp,
-                lightShadowColor = Theme.colors.lightShadowColor,
-                darkShadowColor = Theme.colors.darkShadowColor,
-                spotLight = SpotLight.TOP_LEFT,
-            )
-            .border(BorderStroke(stroke / 2, color), CircleShape)
-            .gradient(colors = listOf(Color.Transparent, Color.Black.copy(0.5f)), vertical = false)
-            .background(color)
-            .then(modifier)
-    )
-}
-
-
-@Deprecated("Move this launching to Playback; because of easily availability of custom audioSessionId.")
-private fun Activity.launchEqualizer(id: Int) {
-    if (id == AudioEffect.ERROR_BAD_VALUE) {
-        Toast.makeText(this, "No Session Id", Toast.LENGTH_LONG).show();
-        return
-    }
-    val res = kotlin.runCatching {
-        startActivityForResult(
-            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, "your app package name");
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id);
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
-            },
-            0
-        )
-    }
-
-    if (res.exceptionOrNull() is ActivityNotFoundException)
-        Toast.makeText(this, "There is no equalizer", Toast.LENGTH_SHORT).show();
-}
 
 @Composable
 private fun SpeedControllerLayout(
@@ -301,8 +167,8 @@ private fun SpeedControllerLayout(
     Surface(modifier = modifier) {
         Column() {
             TopAppBar(
-                title = { Label(text = "Playback Speed", style = Theme.typography.body2) },
-                backgroundColor = Theme.colors.background,
+                title = { Label(text = "Playback Speed", style = Material.typography.body2) },
+                backgroundColor = Material.colors.background,
             )
 
             Label(
@@ -310,7 +176,7 @@ private fun SpeedControllerLayout(
                 modifier = Modifier
                     .padding(top = ContentPadding.normal)
                     .align(Alignment.CenterHorizontally),
-                style = Theme.typography.h6
+                style = Material.typography.h6
             )
 
             Slider(
@@ -319,455 +185,356 @@ private fun SpeedControllerLayout(
                 valueRange = 0.25f..2f,
                 steps = 6,
                 modifier = Modifier.padding(
-                    horizontal = ContentPadding.large,
+                    horizontal = ContentPadding.xLarge,
                 )
             )
         }
     }
 }
 
-private val collapsed =
-    ConstraintSet {
-        hide(Signature, Close)
-        hide(ProgressBar, TuneUp, ProgressMills)
-        hide(SkipForward30, SkipToNext, SkipBack10, SkipToPrevious)
-        hide(BottomRowLabel)
-        hide(Queue, Speed, Sleep, Shuffle, Repeat)
-
-        constrain(Artwork) {
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-            start.linkTo(parent.start, ContentPadding.medium)
-            height = Dimension.value(56.dp)
-            width = Dimension.ratio("1:1")
-        }
-
-        createVerticalChain(Title, Subtitle, chainStyle = ChainStyle.Packed)
-        constrain(Title) {
-            start.linkTo(Artwork.end, ContentPadding.medium)
-            end.linkTo(Heart.start, ContentPadding.medium)
-            width = Dimension.fillToConstraints
-        }
-
-
-        constrain(Subtitle) {
-            start.linkTo(Title.start)
-            end.linkTo(Title.end)
-            width = Dimension.fillToConstraints
-            visibility = Visibility.Visible
-        }
-
-        constrain(Heart) {
-            start.linkTo(Title.end)
-            top.linkTo(Artwork.top)
-            bottom.linkTo(Artwork.bottom)
-        }
-
-        // toggles
-        constrain(Toggle) {
-            start.linkTo(Heart.end)
-            end.linkTo(parent.end)
-            top.linkTo(Artwork.top)
-            bottom.linkTo(Artwork.bottom)
-        }
-    }
-
-val expanded =
-    ConstraintSet {
-        // signature
-        constrain(Signature) {
-            start.linkTo(parent.start, ContentPadding.normal)
-            top.linkTo(parent.top)
-        }
-
-        constrain(Close) {
-            end.linkTo(parent.end, ContentPadding.normal)
-            top.linkTo(Signature.top)
-            bottom.linkTo(Signature.bottom)
-        }
-
-        // artwork
-        constrain(Artwork) {
-            top.linkTo(Signature.bottom, ContentPadding.normal)
-            bottom.linkTo(Subtitle.top, ContentPadding.normal)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-            height = Dimension.fillToConstraints
-            width = Dimension.ratio("1:1")
-        }
-
-        constrain(ProgressMills) {
-            end.linkTo(Artwork.end, ContentPadding.large)
-            top.linkTo(Artwork.top)
-            bottom.linkTo(Artwork.bottom)
-            visibility = Visibility.Visible
-        }
-
-        //title
-        constrain(Title) {
-            bottom.linkTo(ProgressBar.top, ContentPadding.normal)
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
-            width = Dimension.fillToConstraints
-        }
-
-        constrain(Subtitle) {
-            start.linkTo(Title.start)
-            bottom.linkTo(Title.top)
-        }
-
-        //progressbar
-        constrain(ProgressBar) {
-            bottom.linkTo(Toggle.top, ContentPadding.normal)
-            start.linkTo(Heart.end, ContentPadding.medium)
-            end.linkTo(TuneUp.start, ContentPadding.medium)
-            width = Dimension.fillToConstraints
-        }
-
-        constrain(Heart) {
-            top.linkTo(ProgressBar.top)
-            bottom.linkTo(ProgressBar.bottom)
-            start.linkTo(Title.start)
-        }
-
-        constrain(TuneUp) {
-            top.linkTo(ProgressBar.top)
-            bottom.linkTo(ProgressBar.bottom)
-            end.linkTo(Title.end)
-        }
-
-        // play controls row
-        constrain(Toggle) {
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-            bottom.linkTo(Queue.top, ContentPadding.large)
-        }
-
-        constrain(SkipToPrevious) {
-            end.linkTo(Toggle.start, ContentPadding.normal)
-            top.linkTo(Toggle.top)
-            bottom.linkTo(Toggle.bottom)
-        }
-
-        constrain(SkipBack10) {
-            end.linkTo(SkipToPrevious.start, ContentPadding.medium)
-            top.linkTo(Toggle.top)
-            bottom.linkTo(Toggle.bottom)
-        }
-
-        constrain(SkipToNext) {
-            start.linkTo(Toggle.end, ContentPadding.normal)
-            top.linkTo(Toggle.top)
-            bottom.linkTo(Toggle.bottom)
-        }
-
-        constrain(SkipForward30) {
-            start.linkTo(SkipToNext.end, ContentPadding.medium)
-            top.linkTo(Toggle.top)
-            bottom.linkTo(Toggle.bottom)
-        }
-
-        val ref =
-            createHorizontalChain(
-                Queue,
-                Speed,
-                Sleep,
-                Shuffle,
-                Repeat,
-                chainStyle = ChainStyle.SpreadInside
-            )
-        constrain(ref) {
-            start.linkTo(parent.start, ContentPadding.large)
-            end.linkTo(parent.end, ContentPadding.large)
-        }
-
-        constrain(Queue) {
-            bottom.linkTo(parent.bottom, ContentPadding.large)
-        }
-
-        constrain(Speed) {
-            bottom.linkTo(Queue.bottom)
-        }
-
-        constrain(Sleep) {
-            bottom.linkTo(Queue.bottom)
-        }
-
-        constrain(Shuffle) {
-            bottom.linkTo(Queue.bottom)
-        }
-
-        constrain(Repeat) {
-            bottom.linkTo(Queue.bottom)
-        }
-    }
-
-@OptIn(
-    ExperimentalMotionApi::class, ExperimentalAnimationGraphicsApi::class,
-    ExperimentalAnimationApi::class, ExperimentalComposeApi::class, ExperimentalComposeUiApi::class
-)
 @Composable
-fun Vertical(
+private fun Artwork(
+    data: Any?,
     modifier: Modifier = Modifier,
-    resolver: ConsoleViewModel,
+    progress: Float,
+    isPlaying: Boolean = false
+) {
+    // Create an InfiniteTransition object
+    val infiniteTransition = rememberInfiniteTransition()
+    // Create an Animatable value for the rotation angle
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 5000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+    )
+    val borderWidth =
+        lerp(ARTWORK_STROKE_DEFAULT_COLLAPSED, ARTWORK_STROKE_DEFAULT_EXPANDED, progress)
+    val imageShape = CompactDisk
+    val style = Material.typography.h3
+    Image(
+        data = data,
+        modifier = Modifier
+            .graphicsLayer {
+                val scale = lerp(1f, 0.8f, progress)
+                scaleX = scale
+                scaleY = scale
+                shadowElevation = ContentElevation.high.toPx()
+                shape = imageShape
+                clip = true
+                rotationZ = if (isPlaying) angle else 0f
+            }
+            .background(Material.colors.surface)
+            .border(borderWidth, Color.White, imageShape)
+            .then(modifier),
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun Console(
+    state: Console,
+    progress: Float,
+    onRequestToggle: () -> Unit
+) {
+    val updated by rememberUpdatedState(newValue = progress)
+    val expanded by remember {
+        derivedStateOf { updated == 1f }
+    }
+    val color =
+        lerp(Material.colors.surface, Material.colors.background, progress)
+    Vertical(
+        state = state,
+        progress = updated,
+        onRequestToggle = onRequestToggle,
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                val scale = lerp(0.8f, 1f, (progress * 2.5f).coerceIn(0.0f..1.0f))
+                scaleX = scale
+                scaleY = scale
+                this.shadowElevation = lerp(12.dp, 0.dp, progress).toPx()
+                shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt())
+                clip = true
+            }
+            .drawWithCache {
+                onDrawBehind {
+                    drawRect(color, size = size)
+                }
+            }
+            .clickable(
+                onClick = onRequestToggle,
+                indication = null,
+                interactionSource = remember(::MutableInteractionSource),
+                enabled = !expanded // only enabled when collapsed.
+            )
+    )
+}
+
+@OptIn(ExperimentalMotionApi::class, ExperimentalComposeUiApi::class)
+@Composable
+private fun Vertical(
+    modifier: Modifier = Modifier,
+    state: Console,
     progress: Float,
     onRequestToggle: () -> Unit
 ) {
     MotionLayout(
-        start = collapsed,
-        end = expanded,
+        start = Console.Collapsed,
+        end = Console.Expanded,
         progress = progress,
         modifier = modifier
     ) {
-
-        val primary = Theme.colors.onSurface
-        val provider = LocalsProvider.current
+        var onColor = Material.colors.onSurface
         val insets = WindowInsets.statusBars
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
             fontFamily = FontFamily.Cursive,
-            color = primary,
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
             modifier = Modifier
                 .windowInsetsPadding(insets)
-                .layoutID(Signature)
+                .layoutID(Console.SIGNATURE),
+            color = onColor,
+            maxLines = 1
         )
-
         // Close Button
-        NeumorphicIconButton(
-            painter = rememberVectorPainter(image = Icons.Default.Close),
+        OutlinedButton2(
             onClick = onRequestToggle,
-            shape = RoundedCornerShape(10.dp),
             modifier = Modifier
-                .size(46.dp)
-                .layoutID(Close)
+                .windowInsetsPadding(insets)
+                .scale(0.8f)
+                .layoutID(Console.CLOSE),
+            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            shape = Rounded,
+            content = {
+                Icon(imageVector = Icons.Outlined.Close, contentDescription = "Collpase")
+            },
         )
-
 
         // artwork
-        val artwork by resolver.artwork
         Artwork(
-            data = artwork,
-            modifier = Modifier.layoutID(Artwork),
-            // maybe make this a lambda call
-            stroke = lerp(
-                ARTWORK_STROKE_DEFAULT_COLLAPSED,
-                ARTWORK_STROKE_DEFAULT_EXPANDED,
-                progress
-            )
+            data = state.artwork,
+            modifier = Modifier.layoutID(Console.ARTWORK),
+            progress = progress,
+            isPlaying = state.playing
         )
+
 
         //slider
-        val value by resolver.progress
-        val time = (value * resolver.duration).roundToLong()
-        Header(
-            text = Util.formatAsDuration(time),
+        val value = state.progress
+        val time = state.position
+        Label(
+            text = DateUtils.formatAsDuration(time),
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.layoutID(ProgressMills),
-            style = Theme.typography.h3
+            modifier = Modifier.layoutID(Console.PROGRESS_MILLS),
+            fontSize = 34.sp
         )
 
-        // slider row
+        // Slider row
         Slider(
             value = value,
-            onValueChange = { resolver.seekTo(it) },
-            modifier = Modifier.layoutID(ProgressBar),
+            onValueChange = { state.seekTo(it) },
+            modifier = Modifier.layoutID(Console.SLIDER),
         )
 
-        val favourite by resolver.favourite
+        val favourite = state.favourite
+        val facade = LocalSystemFacade.current
         IconButton(
-            onClick = { resolver.toggleFav(); provider.launchReviewFlow() },
+            onClick = { state.toggleFav(); facade.launchReviewFlow() },
             painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
             contentDescription = null,
-            modifier = Modifier.layoutID(Heart)
+            modifier = Modifier.layoutID(Console.HEART),
+            tint = onColor
         )
 
-        val context = LocalContext.current
         IconButton(
-            onClick = { context.activity.launchEqualizer(resolver.audioSessionId) },
+            onClick = { facade.launchEqualizer(state.audioSessionId) },
             imageVector = Icons.Outlined.Tune,
             contentDescription = null,
-            modifier = Modifier.layoutID(TuneUp)
+            modifier = Modifier.layoutID(Console.EQUALIZER),
+            tint = onColor
         )
 
         //title
-        val current by resolver.current
+        val current = state.current
         Label(
             text = current?.subtitle ?: stringResource(id = R.string.unknown),
-            style = Theme.typography.caption2,
+            style = Material.typography.caption2,
             modifier = Modifier
                 .offset(y = 4.dp, x = 5.dp)
-                .layoutID(Subtitle)
+                .layoutID(Console.SUBTITLE),
+            color = onColor
         )
 
         Label(
             text = current?.title ?: stringResource(id = R.string.unknown),
-            fontSize = lerp(18.sp, 40.sp, progress),
+            fontSize = lerp(18.sp, 44.sp, progress),
             fontWeight = FontWeight.Bold,
-            color = Theme.colors.onSurface,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
-                .layoutID(Title),
+                .layoutID(Console.TITLE),
+            color = onColor
         )
 
-        // controls
-        val playing by resolver.playing
-        NeumorphicIconButton(
-            onClick = { resolver.togglePlay(); provider.launchReviewFlow() },
-
-            painter = rememberAnimatedVectorResource(
-                id = R.drawable.avd_pause_to_play,
-                atEnd = !playing
-            ),
-            shape = RoundedCornerShape(30),
+        // playButton
+        val playing = state.playing
+        PlayButton(
+            onClick = { state.togglePlay(); facade.launchReviewFlow() },
+            progress = progress,
+            isPlaying = playing,
             modifier = Modifier
                 .size(60.dp)
-                .layoutID(Toggle),
-            elevation = NeumorphicButtonDefaults.elevation(lerp(0.dp, 6.dp, progress)),
-            border = if (progress != 0f && !Theme.colors.isLight) BorderStroke(
-                1.dp,
-                Theme.colors.outline.copy(0.06f)
-            ) else null
+                .layoutID(Console.TOGGLE),
         )
 
-
+        var enabled = if (current != null) !state.isFirst else false
         IconButton(
-            onClick = { resolver.skipToPrev(); provider.launchReviewFlow() },
-            //   shape = RoundedCornerShape(10.dp),
+            onClick = { state.skipToPrev(); facade.launchReviewFlow() },
             painter = painterResource(id = R.drawable.ic_skip_to_prev),
-            // iconScale = 0.8f,
             contentDescription = null,
-            modifier = Modifier.layoutID(SkipToPrevious),
-            enabled = if (current != null) resolver.hasPreviousTrack else false
+            modifier = Modifier.layoutID(Console.SKIP_TO_PREVIOUS),
+            enabled = enabled,
+            tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)
         )
 
-
+        enabled = if (current != null) !state.isLast else false
         IconButton(
-            onClick = { resolver.skipToNext(); provider.launchReviewFlow() },
-            //shape = RoundedCornerShape(10.dp),
+            onClick = { state.skipToNext(); facade.launchReviewFlow() },
             painter = painterResource(id = R.drawable.ic_skip_to_next),
             contentDescription = null,
-            //iconScale = 0.8f,
-            modifier = Modifier.layoutID(SkipToNext),
-            enabled = if (current != null) resolver.hasNextTrack else false,
+            modifier = Modifier.layoutID(Console.SKIP_TO_NEXT),
+            enabled = enabled,
+            tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)
         )
 
+        enabled = playing
         IconButton(
-            onClick = { resolver.replay10() },
+            onClick = { state.replay() },
             imageVector = Icons.Outlined.Replay10,
             contentDescription = null,
-            modifier = Modifier.layoutID(SkipBack10)
+            modifier = Modifier.layoutID(Console.SKIP_BACK_10),
+            enabled = enabled,
+            tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)
         )
 
         IconButton(
-            onClick = { resolver.forward30() },
+            onClick = { state.forward() },
             imageVector = Icons.Outlined.Forward30,
             contentDescription = null,
-            modifier = Modifier.layoutID(SkipForward30)
+            modifier = Modifier.layoutID(Console.SKIP_FORWARD_30),
+            enabled = enabled,
+            tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)
         )
 
         var showPlayingQueue by rememberState(initial = false)
-        resolver.PlayingQueue(
+        PlayingQueue(
+            state = state,
             expanded = showPlayingQueue,
             onDismissRequest = {
                 showPlayingQueue = false
             }
         )
 
-        NeumorphicVertButton(
+        IconButton(
             onClick = { showPlayingQueue = true },
-            icon = rememberVectorPainter(image = Icons.Outlined.Queue),
-            label = "Queue",
-            modifier = Modifier.layoutID(Queue)
+            painter = rememberVectorPainter(image = Icons.Outlined.Queue),
+            modifier = Modifier.layoutID(Console.QUEUE),
+            tint = onColor
         )
 
         var showSpeedController by rememberState(initial = false)
         BottomSheetDialog(
             expanded = showSpeedController,
             onDismissRequest = { showSpeedController = false }) {
-            var speed by rememberState(initial = resolver.playbackSpeed)
+            var speed by rememberState(initial = state.playbackSpeed)
             SpeedControllerLayout(
                 value = speed,
-                onRequestChange = { speed = it; resolver.setPlaybackSpeed(it) })
+                onRequestChange = { speed = it; state.playbackSpeed = it })
         }
 
-        NeumorphicVertButton(
+        IconButton(
             onClick = { showSpeedController = true },
-            icon = rememberVectorPainter(image = Icons.Outlined.Speed),
-            label = "Speed",
-            modifier = Modifier.layoutID(Speed),
-            alpha = ContentAlpha.high
+            painter = rememberVectorPainter(image = Icons.Outlined.Speed),
+            modifier = Modifier.layoutID(Console.SPEED),
+            tint = onColor
         )
 
-        NeumorphicVertButton(
-            onClick = { /*TODO: Implement this.*/ resolver.setSleepAfter(1) },
-            icon = rememberVectorPainter(image = Icons.Outlined.Timer),
-            label = "Sleep",
-            modifier = Modifier.layoutID(Sleep),
-            alpha = ContentAlpha.high
+        IconButton(
+            onClick = { /*TODO: Implement this.*/ state.setSleepAfter(1) },
+            painter = rememberVectorPainter(image = Icons.Outlined.Timer),
+            modifier = Modifier.layoutID(Console.SLEEP),
+            tint = onColor
+        )
+        val shuffle = state.shuffle
+        IconButton(
+            onClick = { state.toggleShuffle(); facade.launchReviewFlow(); },
+            painter = painterResource(id = R.drawable.ic_shuffle),
+            modifier = Modifier.layoutID(Console.SHUFFLE),
+            tint = onColor.copy(if (shuffle) ContentAlpha.high else ContentAlpha.medium)
         )
 
-        val shuffle by resolver.shuffle
-        NeumorphicVertButton(
-            onClick = { resolver.toggleShuffle(); provider.launchReviewFlow(); },
-            icon = painterResource(id = R.drawable.ic_shuffle),
-            label = "Shuffle",
-            modifier = Modifier.layoutID(Shuffle),
-            alpha = if (shuffle) ContentAlpha.high else ContentAlpha.disabled
-        )
-
-        val mode by resolver.repeatMode
-        NeumorphicVertButton(
-            onClick = { resolver.cycleRepeatMode();provider.launchReviewFlow(); },
-            icon = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
-            label = "Repeat",
-            modifier = Modifier.layoutID(Repeat),
-            alpha = if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high
+        val mode = state.repeatMode
+        IconButton(
+            onClick = { state.cycleRepeatMode();facade.launchReviewFlow(); },
+            painter = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
+            modifier = Modifier.layoutID(Console.REPEAT),
+            tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
         )
     }
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Console(
-    viewModel: ConsoleViewModel,
-    progress: Float,
-    onRequestToggle: () -> Unit
-) {
-    val expanded = progress == 1f
-    // actual content
-    CompositionLocalProvider(LocalContentColor provides Theme.colors.onSurface) {
-        //Maybe Use Modifier.composed {}
+@NonRestartableComposable
+private fun Mini(state: Console, onRequestToggle: () -> Unit) {
+    Neumorphic(
+        onClick = onRequestToggle,
+        modifier = Modifier
+            .heightIn(max = Settings.MINI_PLAYER_HEIGHT)
+            .padding(top = 8.dp, start = 10.dp, end = 10.dp)
+            .scale(0.85f),
+        lightShadowColor = Material.colors.lightShadowColor,
+        darkShadowColor = Material.colors.darkShadowColor,
+        elevation = ContentElevation.low,
+        shape = CircleShape,
+    ) {
         Vertical(
-            progress = progress,
-            resolver = viewModel,
-            onRequestToggle = onRequestToggle,
-            modifier = Modifier
-                .fillMaxSize()
-                // animate 2.5x scale between collapsed and expanded.
-                .scale(lerp(0.8f, 1f, (progress * 2.5f).coerceIn(0.0f..1.0f)))
-                // animate shadow including its shape.
-                .shadow(
-                    shape = RoundedCornerShape(lerp(100f, 0f, progress).roundToInt()),
-                    lightShadowColor = Theme.colors.darkShadowColor,
-                    darkShadowColor = Theme.colors.darkShadowColor,
-                    elevation = lerp(8.dp, 0.dp, progress),
-                    spotLight = SpotLight.TOP_LEFT,
-                    border = BorderStroke(lerp(2.dp, 0.dp, progress), Theme.colors.surface)
-                )
-                .background(Theme.colors.background)
-                // .background(color = lerp(Material.colors.surface, Material.colors.background, 0.0f, 1.0f,  progress))
-                // don't forget to disable it when expanded.
-                .clickable(
-                    onClick = onRequestToggle,
-                    indication = null,
-                    interactionSource = remember(::MutableInteractionSource),
-                    // only enabled when collapsed.
-                    enabled = !expanded
-                )
+            state = state,
+            progress = 0f,
+            modifier = Modifier.fillMaxSize(),
+            onRequestToggle = onRequestToggle
         )
     }
+}
+
+val DefaultExpandedTransition =
+    (scaleIn(tween(220, 90), 0.98f) +
+            fadeIn(tween(700))).togetherWith(ExitTransition.None)
+val DefaultMiniTransition =
+    slideInVertically(spring(Spring.DampingRatioHighBouncy), { fullHeight -> fullHeight })
+        .togetherWith(fadeOut())
+
+@Composable
+fun Console(
+    state: Console,
+    expanded: Boolean,
+    onRequestToggle: () -> Unit
+) {
+    AnimatedContent(
+        targetState = expanded,
+        transitionSpec = { if (targetState) DefaultExpandedTransition else DefaultMiniTransition },
+        content = { value ->
+            when (value) {
+                false -> Mini(state = state, onRequestToggle)
+                else -> Console(state = state, progress = 1f, onRequestToggle)
+            }
+        }
+    )
 }

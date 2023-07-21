@@ -30,21 +30,29 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.Theme
-import com.prime.media.core.compose.ContentElevation
-import com.prime.media.core.compose.ContentPadding
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.composable
 import com.prime.media.core.*
 import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.ToastHostState
-import com.prime.media.core.compose.show
+import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.Audio
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.util.PathUtils
+import com.prime.media.core.util.DateUtils
+import com.prime.media.core.util.addDistinct
+import com.prime.media.core.util.share
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.directory.dialogs.Properties
+import com.prime.media.impl.Repository
+import com.prime.media.core.db.albumUri
+import com.prime.media.core.db.key
+import com.prime.media.core.db.toMediaItem
+import com.prime.media.core.util.toMember
 import com.primex.core.*
 import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,7 +76,7 @@ typealias Audios = AudiosViewModel.Companion
 class AudiosViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: ToastHostState,
+    private val toaster: Channel,
     private val remote: Remote,
 ) : DirectoryViewModel<Audio>(handle) {
 
@@ -142,7 +150,7 @@ class AudiosViewModel @Inject constructor(
                         append(
                             when (type) {
                                 GET_EVERY -> "All Local Audio Files"
-                                GET_FROM_FOLDER -> FileUtils.name(key)
+                                GET_FROM_FOLDER -> PathUtils.name(key)
                                 else -> key
                             }
                         )
@@ -210,7 +218,7 @@ class AudiosViewModel @Inject constructor(
                     GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
                     GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
                     GroupBy.DateAdded -> TODO()
-                    GroupBy.DateModified -> list.groupBy { Text(value = Util.formatAsRelativeTimeSpan(it.dateModified)) }
+                    GroupBy.DateModified -> list.groupBy { Text(value = DateUtils.formatAsRelativeTimeSpan(it.dateModified)) }
                     GroupBy.Folder -> TODO()
                     GroupBy.Name -> list.groupBy { audio -> Text(audio.firstTitleChar) }
                     GroupBy.None -> mapOf(Text("") to list)
@@ -232,7 +240,7 @@ class AudiosViewModel @Inject constructor(
                     "Error",
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = ToastHostState.Duration.Indefinite
+                    duration = Channel.Duration.Indefinite
                 )
             }
 
@@ -512,14 +520,14 @@ private fun Audio(
         overlineText = {
             Label(
                 text = value.name,
-                style = Theme.typography.body1,
+                style = Material.typography.body1,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
             )
         },
         text = {
             Label(
-                style = Theme.typography.caption,
+                style = Material.typography.caption,
                 text = value.album,
                 modifier = Modifier.padding(top = ContentPadding.small),
                 color = LocalContentColor.current.copy(ContentAlpha.disabled),
@@ -530,7 +538,7 @@ private fun Audio(
             Label(
                 text = value.artist,
                 fontWeight = FontWeight.SemiBold,
-                style = Theme.typography.caption
+                style = Material.typography.caption
             )
         },
         leading = {
@@ -572,14 +580,14 @@ private fun Audio(
                         colors = color,
                         border =
                         BorderStroke(
-                            1.dp, Theme.colors.primary.copy(ChipDefaults.OutlinedBorderOpacity)
+                            1.dp, Material.colors.primary.copy(ChipDefaults.OutlinedBorderOpacity)
                         ),
                         modifier = Modifier.padding(ContentPadding.small)
                     ) {
                         Label(
                             text = it.title.get,
                             modifier = Modifier.padding(end = ContentPadding.small),
-                            style = Theme.typography.caption
+                            style = Material.typography.caption
                         )
                         Icon(
                             imageVector = it.icon,

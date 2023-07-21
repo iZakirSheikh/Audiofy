@@ -12,9 +12,9 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.compose.runtime.Stable
-import com.prime.media.core.FileUtils
-import com.prime.media.core.name
-import com.prime.media.core.parent
+import com.prime.media.core.util.MediaItem
+import com.prime.media.core.util.PathUtils
+import com.prime.media.impl.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -344,7 +344,7 @@ value class Folder(
 )
 
 val Folder.name: String
-    get() = FileUtils.name(path)
+    get() = PathUtils.name(path)
 
 
 suspend fun ContentResolver.getFolders(
@@ -360,7 +360,7 @@ suspend fun ContentResolver.getFolders(
         ascending = ascending
     ) { c ->
         val result = List(c.count) {
-            c.moveToPosition(it); Folder(FileUtils.parent(c.getString(0)))
+            c.moveToPosition(it); Folder(PathUtils.parent(c.getString(0)))
         }.distinct()
         // Fix. TODO: return limit to make consistent with others.
         // val fromIndex = if (offset > l.size - 1) l.size -1 else offset
@@ -569,7 +569,7 @@ suspend fun ContentResolver.findFolder(path: String): Folder? {
         "${MediaStore.Audio.Media.DATA} LIKE ?",
         arrayOf("$path%"),
     ) {
-        if (!it.moveToFirst()) return@query2 null else Folder(FileUtils.parent(it.getString(0)))
+        if (!it.moveToFirst()) return@query2 null else Folder(PathUtils.parent(it.getString(0)))
     }
 }
 
@@ -724,3 +724,44 @@ suspend fun Context.findAudio(uri: Uri): Audio? {
     }
 }
 
+/**
+ * Returns the content URI for this audio file, using the [MediaStore.Audio.Media.EXTERNAL_CONTENT_URI]
+ * and appending the file's unique ID.
+ *
+ * @return the content URI for the audio file
+ */
+val Audio.uri
+    get() = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+
+/**
+ * Returns the content URI for the album art image of this audio file's album, using the
+ * [MediaStore.Images.Media.EXTERNAL_CONTENT_URI] and appending the album ID to the end of the URI.
+ *
+ * @return the content URI for the album art image of this audio file's album
+ */
+val Audio.albumUri
+    get() = Repository.toAlbumArtUri(albumId)
+
+/**
+ * Returns the content URI for the album art image of this album, using the [MediaStore.Images.Media.EXTERNAL_CONTENT_URI]
+ * and appending the album's unique ID to the end of the URI.
+ *
+ * @return the content URI for the album art image of this album
+ */
+val Album.uri
+    get() = Repository.toAlbumArtUri(id)
+
+/**
+ * Returns the content URI for this audio file as a string, using the [uri] property of the audio file.
+ *
+ * @return the content URI for this audio file as a string
+ */
+val Audio.key get() = uri.toString()
+
+/**
+ * Returns a [MediaItem] object that represents this audio file as a playable media item.
+ *
+ * @return the [MediaItem] object that represents this audio file
+ */
+inline val Audio.toMediaItem
+    get() = MediaItem(uri, name, artist, "$id", albumUri)

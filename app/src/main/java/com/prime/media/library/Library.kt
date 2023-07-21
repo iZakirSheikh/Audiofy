@@ -1,381 +1,139 @@
+@file:Suppress("CrossfadeLabel", "FunctionName")
+
 package com.prime.media.library
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.NavigateNext
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.twotone.Settings
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.load
-import com.prime.media.*
+import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.core.Repository
-import com.prime.media.core.albumUri
+import com.prime.media.caption2
+import com.prime.media.core.ContentElevation
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.*
-import com.prime.media.core.key
+import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.KenBurns
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.LocalWindowPadding
+import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.purchase
+import com.prime.media.core.compose.shape.CompactDisk
+import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.Playlists
-import com.prime.media.directory.store.*
+import com.prime.media.directory.store.Albums
+import com.prime.media.directory.store.Artists
+import com.prime.media.directory.store.Audios
+import com.prime.media.directory.store.Folders
+import com.prime.media.directory.store.Genres
+import com.prime.media.impl.Repository
+import com.prime.media.onOverlay
+import com.prime.media.overlay
 import com.prime.media.settings.Settings
-import com.primex.core.*
+import com.prime.media.small2
+import com.primex.core.gradient
 import com.primex.core.padding
-import com.primex.material2.*
+import com.primex.core.rememberState
+import com.primex.core.stringHtmlResource
+import com.primex.core.withSpanStyle
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.OutlinedButton2
+import com.primex.material2.Search
 
 private const val TAG = "Library"
-private val TOP_BAR_HEIGHT = 160.dp
 
 @Composable
-@NonRestartableComposable
-private fun TopBar(modifier: Modifier = Modifier) {
-    TopAppBar(
-        modifier = Modifier
-            .background(Theme.colors.overlay)
-            .requiredHeight(TOP_BAR_HEIGHT)
-            .then(modifier),
-        elevation = 0.dp,
-        backgroundColor = Color.Transparent,
-        ///contentColor = Theme.colors.primary,
-
-        // navigation icon pointing to the about section of the app.
-        // TODO - Add navigation to about us in future.
-        navigationIcon = {
-            IconButton(
-                onClick = { /*TODO*/ },
-                painter = painterResource(id = R.drawable.ic_app),
-                contentDescription = "about us",
-                tint = Color.Unspecified
-            )
-        },
-
-        // The library title.
-        // formatted as html resource.
-        title = {
-            Text(
-                text = stringHtmlResource(id = R.string.title_audio_library_html),
-                style = Theme.typography.h5,
-                fontWeight = FontWeight.Light
-            )
-        },
-
-        // Constitutes two actions.
-        // 1. Action to buy the app full version.
-        // 2. Action to navigate to settings section of the app.
-        actions = {
-            // Buy full version button.
-            val provider = LocalsProvider.current
-            val purchase by purchase(id = Product.DISABLE_ADS)
-            if (!purchase.purchased)
-                IconButton(
-                    painter = painterResource(id = R.drawable.ic_remove_ads),
-                    contentDescription = null,
-                    onClick = {
-                        provider.launchBillingFlow(Product.DISABLE_ADS)
-                    }
-                )
-
-
-            // settings navigation button.
-            val navigator = LocalNavController.current
-            IconButton(
-                imageVector = Icons.TwoTone.Settings,
-                contentDescription = null,
-                onClick = {
-                    val direction = Settings.route
-                    navigator.navigate(direction)
-                }
-            )
-        }
-    )
-}
-
-@Composable
-@NonRestartableComposable
-private fun Search(
+private fun GridItem(
+    title: CharSequence,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-) {
-    //FIXMe: Consider changing this to remember savable.
-    var query by rememberState(initial = "")
-    val navigator = LocalNavController.current
-    Search(
-        query = query,
-        onQueryChanged = { query = it },
-        modifier = modifier,
-        elevation = 12.dp,
-        placeholder = "Type here to search",
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                if (query.isNotBlank()) {
-                    val direction = Audios.direction(Audios.GET_EVERY, query = query)
-                    navigator.navigate(direction)
-                }
-            },
-        )
-    )
-}
-
-@Composable
-@NonRestartableComposable
-private fun Header(
-    title: String,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    onMoreClick: (() -> Unit)? = null
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val color = LocalContentColor.current
-        Text(
-            text = buildAnnotatedString {
-                append(title)
-                if (subtitle != null)
-                    withStyle(
-                        SpanStyle(
-                            color = color.copy(ContentAlpha.disabled),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Normal
-                        )
-                    ) {
-                        append("\n$subtitle")
-                    }
-            },
-            modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
-            style = Theme.typography.h5,
-            fontWeight = FontWeight.Light
-        )
-
-        if (onMoreClick != null)
-            IconButton(
-                onClick = onMoreClick,
-                imageVector = Icons.Outlined.NavigateNext,
-                contentDescription = null,
-            )
-    }
-}
-
-@Composable
-private inline fun Shortcut(
-    icon: ImageVector,
-    label: String,
-    modifier: Modifier = Modifier,
-    noinline onAction: () -> Unit
-) {
-    OutlinedButton2(
-        label = label,
-        onClick = onAction,
-        crown = rememberVectorPainter(image = icon),
-        shape = RoundedCornerShape(15),
-
-        modifier = modifier
-            .width(105.dp)
-            .padding(horizontal = 3.dp, vertical = 3.dp),
-
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = Color.Transparent,
-            contentColor = LocalContentColor.current
-        ),
-    )
-}
-
-@Composable
-@NonRestartableComposable
-private fun MediaStore(modifier: Modifier = Modifier) {
-    Row(modifier) {
-        val navigator = LocalNavController.current
-        Shortcut(
-            onAction = { navigator.navigate(Folders.direction()) },
-            icon = Icons.Outlined.Folder,
-            label = "Folders"
-        )
-
-        Shortcut(
-            onAction = { navigator.navigate(Genres.direction()) },
-            icon = Icons.Outlined.Grain,
-            label = "Genres"
-        )
-        Shortcut(
-            onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
-            icon = Icons.Outlined.Audiotrack,
-            label = "Audios"
-        )
-        Shortcut(
-            onAction = { navigator.navigate(Artists.direction()) },
-            icon = Icons.Outlined.Person,
-            label = "Artists"
-        )
-    }
-}
-
-@Composable
-@NonRestartableComposable
-private fun Playlists(modifier: Modifier = Modifier) {
-    // shortcut row.
-    Row(modifier = modifier) {
-        val navigator = LocalNavController.current
-        Shortcut(
-            onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
-            icon = Icons.Outlined.FavoriteBorder,
-            label = "Liked"
-        )
-
-        Shortcut(
-            onAction = { navigator.navigate(Playlists.direction()) },
-            icon = Icons.Outlined.PlaylistAdd,
-            label = "Playlists"
-        )
-    }
-}
-
-private val CAROUSAL_SHAPE = RoundedCornerShape(4)
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun Carousal(
-    image: Any?,
-    title: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier.padding(4.dp),
-        elevation = ContentElevation.xHigh,
-        shape = CAROUSAL_SHAPE,
-        onClick = onClick,
-    ) {
-        Column {
-            // The representation image of this card or default.
-            // Make it fade on change
-            // FixMe - Currently it suffers from glitches; don't know the reason.
-            Crossfade(
-                targetState = image,
-                animationSpec = tween(4_000),
-                modifier = Modifier.weight(1f),
-                content = { value ->
-                    value?.let {
-                        KenBurns(
-                            modifier = Modifier.gradient(vertical = false),
-                            view = {
-                                load(value)
-                            }
-                        )
-                    }
-                }
-            )
-
-            // title and representation vector icon.
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    // TODO: Remove background from the future version of the app.
-                    //This is unnecessary
-                    .background(Theme.colors.surface)
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(horizontal = ContentPadding.normal),
-
-                content = {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                    )
-
-                    Text(
-                        text = title.uppercase(),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = ContentPadding.normal),
-                        letterSpacing = 6.sp,
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun Tile(
-    title: String,
-    image: Any?,
-    error: Painter,
-    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .fillMaxHeight()
-            .aspectRatio(0.7f),
+        modifier = Modifier
+            .clip(Material.shapes.small)
+            .clickable(onClick = onClick)
+            .then(modifier),
         content = {
-            val color = Theme.colors.onBackground
-            val shape = CircleShape
-
-            Image(
-                data = image,
-                fallback = error,
-
-                modifier = Modifier
-                    .border(width = 2.dp, color = color, shape = shape)
-                    //.padding(5.dp)
-                    .shadow(ContentElevation.low, shape, clip = true)
-                    // .clip(shape)
-                    .size(60.dp)
-            )
-
+            // Place the icon.
+            icon()
+            // Place the label
             Label(
                 text = title,
                 modifier = Modifier.padding(vertical = ContentPadding.small),
-                style = Theme.typography.caption2,
-                color = color,
+                style = Material.typography.caption2,
                 maxLines = 2
             )
-        },
+        }
     )
 }
 
 private val SHOW_CASE_MAX_HEIGHT = 110.dp
 
 @Composable
-private inline fun <T> List(
+private inline fun <T> LazyList(
     items: List<T>?,
     modifier: Modifier = Modifier,
     noinline key: ((item: T) -> Any)? = null,
     crossinline itemContent: @Composable LazyItemScope.(item: T) -> Unit
 ) {
-
     // state of the list.
     val state = when {
         items == null -> 0 // loading
@@ -403,11 +161,10 @@ private inline fun <T> List(
             // show list.
             else -> {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = ContentPadding.normal),
+                    contentPadding = PaddingValues(horizontal = ContentPadding.large),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-
-                    // this will make sure the
-                    // scroll
+                    // this will make sure the item placed at front is visible,
                     item(contentType = "library_list_spacer") {
                         Spacer(modifier = Modifier.width(2.dp))
                     }
@@ -424,86 +181,379 @@ private inline fun <T> List(
     }
 }
 
-@Composable
-private fun RateUs(modifier: Modifier = Modifier) {
-    Surface(modifier = modifier, color = Theme.colors.overlay) {
-        Column(
-            Modifier.padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal),
-        ) {
-            // top row
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Color.Amber
-                )
-                Header(
-                    text = stringResource(id = R.string.rate_us),
-                    modifier = Modifier.padding(start = ContentPadding.normal)
-                )
-                Spacer(modifier = Modifier.weight(1f))
+private val TOP_BAR_HEIGHT = 140.dp
+context(LazyListScope)
+private fun TopBar(modifier: Modifier = Modifier) {
+    item(contentType = "content_type_header") {
+        val provider = LocalSystemFacade.current
+        TopAppBar(
+            modifier = Modifier
+                .background(Material.colors.overlay)
+                .requiredHeight(TOP_BAR_HEIGHT)
+                .then(modifier),
+            elevation = 0.dp,
+            backgroundColor = Color.Transparent,
+            contentColor = Material.colors.onOverlay,
+            // navigation icon pointing to the about section of the app.
+            // TODO - Add navigation to about us in future.
+            navigationIcon = {
                 IconButton(
-                    onClick = { /*TODO*/ },
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = null
+                    onClick = { provider.launchAppStore() },
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "about us"
+                )
+            },
+            // The library title.
+            // Formatted as html resource.
+            title = {
+                Text(
+                    text = stringHtmlResource(id = R.string.title_audio_library_html),
+                    style = Material.typography.h5,
+                    fontWeight = FontWeight.Light
+                )
+            },
+            // Constitutes two actions.
+            // 1. Action to buy the app full version.
+            // 2. Action to navigate to settings section of the app.
+            actions = {
+                // Buy full version button.
+
+                val purchase by purchase(id = Product.DISABLE_ADS)
+                if (!purchase.purchased)
+                    IconButton(
+                        painter = painterResource(id = R.drawable.ic_remove_ads),
+                        contentDescription = null,
+                        onClick = {
+                            provider.launchBillingFlow(Product.DISABLE_ADS)
+                        }
+                    )
+                // settings navigation button.
+                val navigator = LocalNavController.current
+                IconButton(
+                    imageVector = Icons.TwoTone.Settings,
+                    contentDescription = null,
+                    onClick = {
+                        val direction = Settings.route
+                        navigator.navigate(direction)
+                    }
                 )
             }
-            // message
-            val provider = LocalsProvider.current
-            Text(
-                text = stringResource(R.string.review_msg),
-                style = Theme.typography.caption,
-                color = LocalContentColor.current.copy(ContentAlpha.medium)
+        )
+    }
+}
+
+context(LazyListScope)
+private fun SideBar(modifier: Modifier = Modifier) {
+    // TODO: Add in future release.
+}
+
+context(LazyListScope)
+private fun Search(modifier: Modifier = Modifier) {
+    item(contentType = "content_type_search") {
+        //FIXMe: Consider changing this to remember savable.
+        var query by rememberState(initial = "")
+        val navigator = LocalNavController.current
+        Search(
+            query = query,
+            onQueryChanged = { query = it },
+            modifier = modifier,
+            elevation = ContentElevation.xHigh,
+            placeholder = stringResource(id = R.string.search_placeholder),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    if (query.isNotBlank()) {
+                        val direction = Audios.direction(Audios.GET_EVERY, query = query)
+                        navigator.navigate(direction)
+                    }
+                },
             )
-            // button
-            OutlinedButton(
-                label = stringResource(id = R.string.rate_us),
-                onClick = { provider.launchAppStore() },
-                border = ButtonDefaults.outlinedBorder,
-                modifier = Modifier.padding(top = ContentPadding.normal),
-                shape = CircleShape,
-                colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
+        )
+    }
+}
+
+@Composable
+private inline fun Shortcut(
+    icon: ImageVector,
+    label: CharSequence,
+    modifier: Modifier = Modifier,
+    noinline onAction: () -> Unit
+) {
+    OutlinedButton2(
+        onClick = onAction,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = Color.Transparent,
+            contentColor = LocalContentColor.current.copy(ContentAlpha.medium)
+        ),
+    ) {
+        // val color = Material.colors.onSurface.copy(ContentAlpha.medium)
+        Icon(imageVector = icon, contentDescription = null)
+        Label(
+            text = label,
+            style = Material.typography.caption,
+            modifier = Modifier.padding(top = ButtonDefaults.IconSpacing)
+        )
+    }
+}
+
+context(LazyListScope)
+@OptIn(ExperimentalLayoutApi::class)
+private fun Shortcuts(
+    modifier: Modifier = Modifier
+) {
+    item(contentType = "content_type_shortcuts") {
+        FlowRow(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            content = {
+                val navigator = LocalNavController.current
+                Shortcut(
+                    onAction = { navigator.navigate(Folders.direction()) },
+                    icon = Icons.Outlined.Folder,
+                    label = "Folders"
+                )
+
+                Shortcut(
+                    onAction = { navigator.navigate(Genres.direction()) },
+                    icon = Icons.Outlined.Grain,
+                    label = "Genres"
+                )
+                Shortcut(
+                    onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
+                    icon = Icons.Outlined.Audiotrack,
+                    label = "Audios"
+                )
+                Shortcut(
+                    onAction = { navigator.navigate(Artists.direction()) },
+                    icon = Icons.Outlined.Person,
+                    label = "Artists"
+                )
+                Shortcut(
+                    onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
+                    icon = Icons.Outlined.FavoriteBorder,
+                    label = "Favourite"
+                )
+
+                Shortcut(
+                    onAction = { navigator.navigate(Playlists.direction()) },
+                    icon = Icons.Outlined.PlaylistAdd,
+                    label = "Playlists"
+                )
+            }
+        )
+    }
+}
+
+context(LazyListScope)
+@OptIn(ExperimentalFoundationApi::class)
+private fun History(
+    state: Library,
+    modifier: Modifier = Modifier
+) {
+    item(contentType = "content_type_recents") {
+        val recents by state.recent.collectAsState(initial = null)
+        LazyList(
+            items = recents,
+            key = { it.uri },
+            modifier = modifier,
+            itemContent = {
+                GridItem(
+                    it.title,
+                    onClick = {},
+                    modifier = Modifier
+                        .width(75.dp)
+                        .animateItemPlacement(),
+                    icon = {
+                        Image(
+                            data = it.artwork,
+                            modifier = Modifier
+                                .border(2.dp, Color.White, CompactDisk)
+                                .shadow(ContentElevation.low, CompactDisk)
+                                .size(60.dp)
+                        )
+                    }
+                )
+            },
+        )
+    }
+}
+
+context(LazyListScope)
+@OptIn(ExperimentalMaterialApi::class)
+private fun Tile(
+    state: Library,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    item(contentType = "content_type_tile") {
+        val id by state.carousel.collectAsState()
+        // The Title row at the bottom of Tile.
+        val bottomRow: @Composable RowScope.() -> Unit = {
+            Icon(
+                imageVector = Icons.Outlined.Album,
+                contentDescription = null,
+            )
+
+            Text(
+                text = "Albums".uppercase(),
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = ContentPadding.normal),
+                letterSpacing = 6.sp,
+            )
+        }
+        Surface(
+            modifier = modifier,
+            elevation = ContentElevation.xHigh,
+            shape = Material.shapes.small2,
+            onClick = onClick,
+            content = {
+                Column {
+                    // The representation image of this card or default.
+                    // Make it fade on change
+                    // FixMe - Currently it suffers from glitches; don't know the reason.
+                    Crossfade(
+                        targetState = Repository.toAlbumArtUri(
+                            id ?: 0
+                        ), // remove this dependency on repo.
+                        animationSpec = tween(4_000),
+                        modifier = Modifier.weight(1f),
+                        content = { value ->
+                            KenBurns(
+                                modifier = Modifier.gradient(vertical = false),
+                                view = {
+                                    load(value)
+                                }
+                            )
+                        }
+                    )
+
+                    // Bottom Row (Representational icon + Title )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // .height(56.dp)
+                            .padding(all = ContentPadding.normal),
+                        content = bottomRow
+                    )
+                }
+            }
+        )
+    }
+}
+
+context(LazyListScope)
+private fun Header(
+    title: String,
+    subtitle: String? = null,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    item(contentType = "content_type_header") {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Title
+            val color = LocalContentColor.current
+            Text(
+                modifier = Modifier.padding(horizontal = ContentPadding.normal, vertical = 8.dp),
+                style = Material.typography.h5,
+                fontSize = 28.sp,
+                text = buildAnnotatedString {
+                    append(title)
+                    if (subtitle == null)
+                        return@buildAnnotatedString
+                    // Subtitle
+                    withSpanStyle(
+                        color = color.copy(ContentAlpha.disabled),
+                        fontSize = 11.sp,
+                        baselineShift = BaselineShift(0.3f),
+                    ) {
+                        append("\n$subtitle")
+                    }
+                }
+            )
+            // early return
+            if (onClick == null)
+                return@Row
+
+            IconButton(
+                onClick = onClick,
+                imageVector = Icons.Outlined.NavigateNext,
+                contentDescription = null,
             )
         }
     }
 }
 
-private val OFFSET_Y_SEARCH = (-23).dp
-private const val CONTENT_TYPE_HEADER = "Header"
-private const val CONTENT_TYPE_SHOW_CASE = "_show_case"
+context(LazyListScope)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+fun NewlyAdded(
+    state: Library,
+    modifier: Modifier = Modifier
+) {
+    item(
+        contentType = "content_type_newly_added",
+        content = {
+            val recents by state.newlyAdded.collectAsState(initial = null)
+            LazyList(
+                items = recents,
+                key = { it.id },
+                modifier = modifier,
+            ) {
+                GridItem(
+                    it.name,
+                    onClick = {},
+                    modifier = Modifier
+                        .width(75.dp)
+                        .animateItemPlacement(),
+                    icon = {
+                        Image(
+                            data = it.albumUri,
+                            modifier = Modifier
+                                .border(2.dp, Material.colors.onSurface, CircleShape)
+                                // scale it down so that it appears distant from border.
+                                .scale(0.8f)
+                                .shadow(ContentElevation.low, CircleShape)
+                                .size(60.dp)
+                        )
+                    }
+                )
+            }
+        }
+    )
+}
+
+private val OFFSET_Y_SEARCH = (-32).dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Library(viewModel: LibraryViewModel) {
+fun Library(
+    viewModel: Library
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Theme.colors.background
-    ) {
-        val navigator = LocalNavController.current
-        val fallback = painterResource(id = R.drawable.default_art)
-        LazyColumn() {
-
-            // The TopBar.
-            // TODO: Maybe make it collapsable.
-            item(contentType = "TopBar") {
-                TopBar(
-                    modifier = Modifier.statusBarsPadding()
-                )
-            }
-
-            // Search
-            // Consider adding more features.
-            item(contentType = "Search_view") {
+        color = Material.colors.background,
+        content = {
+            val navigator = LocalNavController.current
+            LazyColumn() {
+                // The TopBar.
+                // TODO: Maybe make it collapsable.
+                TopBar(Modifier.statusBarsPadding())
+                // Search
+                // Consider adding more features.
                 Search(
                     modifier = Modifier
                         .offset(y = OFFSET_Y_SEARCH)
                         .padding(horizontal = 22.dp)
                         .zIndex(1f),
                 )
-            }
-
-            // The shortcuts.
-            item(contentType = CONTENT_TYPE_HEADER) {
+                // Shortcuts.
                 Header(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -512,141 +562,76 @@ fun Library(viewModel: LibraryViewModel) {
                     title = "Shortcuts",
                     subtitle = "The faster way to get things done.",
                 )
-            }
 
-            //MediaStore shortcuts
-            item(contentType = "MediaStore") {
-                MediaStore(
+                Shortcuts(
                     Modifier
                         .offset(y = OFFSET_Y_SEARCH)
                         .fillMaxWidth()
-                        // maybe use lazy row
-                        .horizontalScroll(rememberScrollState())
                         .padding(
-                            horizontal = ContentPadding.normal,
+                            horizontal = ContentPadding.xLarge,
                             vertical = ContentPadding.small
                         )
                 )
-            }
-
-            // Playlist shortcuts:
-            // Maybe allow user to shortcut to playlist here.
-            item(contentType = "Playlists") {
-                Playlists(
-                    Modifier
-                        .offset(y = OFFSET_Y_SEARCH)
-                        .fillMaxWidth()
-                        // maybe use lazy row
-                        .horizontalScroll(rememberScrollState())
-                        .padding(
-                            horizontal = ContentPadding.normal,
-                            vertical = ContentPadding.small
-                        )
-                )
-            }
-
-            //RateUs Banner
-            // Maybe allow the use to close the rate_us dialog
-            item(contentType = "RateUs_Banner") {
-                RateUs(
-                    modifier = Modifier
-                        .padding(vertical = ContentPadding.medium)
-                        .fillMaxWidth()
-                )
-            }
-
-            // Resents
-            //FixMe - Allow play on click or something.
-            item(contentType = CONTENT_TYPE_HEADER) {
+                // Recents.
                 Header(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = ContentPadding.normal, vertical = 8.dp),
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .padding(horizontal = ContentPadding.medium),
                     title = "Recent",
                     subtitle = "The recently played tracks.",
-                ) {
-                    navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT))
-                }
-            }
+                    onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) }
+                )
 
-            item(contentType = CONTENT_TYPE_SHOW_CASE) {
-                val recents by viewModel.recent.collectAsState(initial = null)
-                List(items = recents, key = { it.key }) {
-                    Tile(
-                        image = it.artwork,
-                        modifier = Modifier
-                            .clip(Theme.shapes.small)
-                            // TODO: Play on click
-                            .clickable { }
-                            .animateItemPlacement()
-                            .padding(4.dp),
-                        error = fallback,
-                        title = it.title
-                    )
-                }
-            }
-
-            //Carousel
-            // FixMe - Add proper carousal support with other destinations as well.
-            item(contentType = "carousal") {
-                val photo by viewModel.carousel.collectAsState()
-                Carousal(
-                    image = Repository.toAlbumArtUri(photo ?: 0),
-                    title = "Albums",
-                    icon = Icons.Outlined.Album,
+                History(
+                    viewModel,
                     modifier = Modifier
-                        // .padding(start = ContentPadding.normal)
-                        .padding(
-                            horizontal = ContentPadding.normal,
-                            vertical = 10.dp
-                        )
-                        .aspectRatio(1.2f)
-                        .fillMaxWidth()
-                ) {
-                    val direction = Albums.direction()
-                    navigator.navigate(direction)
-                }
-            }
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .fillMaxWidth(),
+                )
 
-            //Newly Added
-            // Resents
-            //FixMe - Allow play on click or something.
-            item(contentType = CONTENT_TYPE_HEADER) {
+                // Album Tile
+                Tile(
+                    viewModel,
+                    onClick = { navigator.navigate(Albums.direction()) },
+                    modifier = Modifier
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .padding(horizontal = ContentPadding.xLarge)
+                        .aspectRatio(1.3f)
+                        .fillMaxWidth()
+                )
                 Header(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = ContentPadding.normal, vertical = 8.dp),
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .padding(horizontal = ContentPadding.medium),
                     title = "Recently Added",
                     subtitle = "The tracks that have been recently added",
-                ) {
-                    navigator.navigate(
-                        Audios.direction(Audios.GET_EVERY, order = GroupBy.DateModified, ascending = false)
-                    )
-                }
-            }
+                    onClick = {
+                        navigator.navigate(
+                            Audios.direction(
+                                Audios.GET_EVERY,
+                                order = GroupBy.DateModified,
+                                ascending = false
+                            )
+                        )
+                    }
+                )
 
-            item(contentType = CONTENT_TYPE_SHOW_CASE) {
-                val recents by viewModel.newlyAdded.collectAsState(initial = null)
-                List(items = recents, key = { it.key }) {
-                    Tile(
-                        image = it.albumUri,
-                        modifier = Modifier
-                            .clip(Theme.shapes.small)
-                            // TODO: Play on click
-                            .clickable { }
-                            .animateItemPlacement()
-                            .padding(4.dp),
-                        error = fallback,
-                        title = it.name
-                    )
-                }
-            }
+                NewlyAdded(
+                    viewModel,
+                    modifier = Modifier
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .fillMaxWidth(),
+                )
 
-            item(contentType = "Bottom_padding") {
-                //The placer space.
-                val inset = LocalWindowPadding.current
-                Spacer(modifier = Modifier.padding(inset))
+                // Add the bottom window padding.
+                item(contentType = "Bottom_padding") {
+                    val inset = LocalWindowPadding.current
+                    Spacer(modifier = Modifier.padding(inset))
+                }
             }
         }
-    }
+    )
 }
+
