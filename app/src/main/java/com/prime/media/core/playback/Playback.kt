@@ -293,7 +293,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // save current index in preference
         preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex
         if (mediaItem != null) {
-            GlobalScope.launch(Dispatchers.Main) { playlists.addToRecent(mediaItem) }
+            GlobalScope.launch { playlists.addToRecent(mediaItem) }
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
         }
     }
@@ -310,7 +310,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         // construct list and update.
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            GlobalScope.launch { playlists.save(player.mediaItems) }
+            GlobalScope.launch(Dispatchers.Main) { playlists.save(player.mediaItems) }
             preferences[PREF_KEY_ORDERS] = player.orders
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
         }

@@ -13,6 +13,13 @@ interface PlayingQueue {
      */
     val queue: Flow<List<MediaItem>>
     val shuffle: Boolean
+    val current: MediaItem?
+    val playing: Boolean
+
+    /**
+     * Returns if current is last.
+     */
+    val isLast: Boolean
     /**
      * Play the track of the queue at [position]
      */

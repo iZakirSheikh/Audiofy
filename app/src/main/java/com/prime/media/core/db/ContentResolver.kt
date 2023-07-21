@@ -12,7 +12,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import androidx.compose.runtime.Stable
-import com.prime.media.core.util.MediaItem
+import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.util.PathUtils
 import com.prime.media.impl.Repository
 import kotlinx.coroutines.Dispatchers

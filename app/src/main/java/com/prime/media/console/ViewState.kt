@@ -7,20 +7,17 @@ import java.util.concurrent.TimeUnit
 
 @Stable
 interface Console : PlayingQueue {
-    val playing: Boolean
     val repeatMode: Int
 
     /**
      * returns position in mills.
      */
     val position: Long
-    val current: MediaItem?
     val favourite: Boolean
 
     // getters.
     val artwork get() = current?.mediaMetadata?.artworkUri
     val progress: Float get() = (position / duration.toFloat())
-    val isLast: Boolean
     val isFirst: Boolean
 
     /**

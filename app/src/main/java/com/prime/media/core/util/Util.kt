@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
@@ -27,6 +26,7 @@ import com.prime.media.core.db.Audio
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.db.uri
+import com.prime.media.core.playback.MediaItem
 import com.primex.core.runCatching
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -276,32 +276,6 @@ val Playlist.Member.key get() = uri
  */
 @Deprecated("find new way to represent this.")
 val MediaItem.key get() = requestMetadata.mediaUri!!.toString()
-
-/**
- * Creates a new [MediaItem] instance using the provided parameters.
- *
- * @param uri The URI of the media item.
- * @param title The title of the media item.
- * @param subtitle The subtitle of the media item.
- * @param id The unique identifier of the media item. Defaults to [MediaItem.DEFAULT_MEDIA_ID].
- * @param artwork The URI of the artwork for the media item. Defaults to null.
- * @return The new [MediaItem] instance.
- */
-fun MediaItem(
-    uri: Uri,
-    title: String,
-    subtitle: String,
-    id: String = "non_empty",
-    artwork: Uri? = null,
-) = MediaItem.Builder()
-    .setMediaId(id)
-    .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
-    .setMediaMetadata(
-        MediaMetadata.Builder().setArtworkUri(artwork).setTitle(title).setSubtitle(subtitle)
-            .setFolderType(MediaMetadata.FOLDER_TYPE_NONE).setIsPlayable(true)
-            // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
-            .build()
-    ).build()
 
 @Deprecated("Use the factory one.")
 inline fun Audio.toMember(playlistId: Long, order: Int) = Member(this, playlistId, order)

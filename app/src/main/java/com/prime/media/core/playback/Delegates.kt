@@ -59,7 +59,7 @@ private fun Bold(value: CharSequence): CharSequence =
  * @see MediaSource
  */
 val Playlist.Member.toMediaSource
-    get() = MediaSource(Uri.parse(uri), subtitle, Bold(title), artwork?.let { Uri.parse(it) })
+    get() = MediaSource(Uri.parse(uri), Bold(title), subtitle, artwork?.let { Uri.parse(it) })
 
 /**
  * Composes and returns a [MediaSource] from this [MediaItem].
@@ -113,5 +113,41 @@ inline val Player.mediaItems
  *
  * @return The list of media items in the player's queue.
  */
-val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map { getMediaItemAt(it) }
+val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::getMediaItemAt)
 
+/**
+ * Creates a new [MediaItem] instance using the provided parameters.
+ *
+ * @param uri The URI of the media item.
+ * @param title The title of the media item.
+ * @param subtitle The subtitle of the media item.
+ * @param id The unique identifier of the media item. Defaults to [MediaItem.DEFAULT_MEDIA_ID].
+ * @param artwork The URI of the artwork for the media item. Defaults to null.
+ * @return The new [MediaItem] instance.
+ *
+ * @see MediaSource
+ */
+fun MediaItem(
+    uri: Uri,
+    title: String,
+    subtitle: String,
+    id: String = "non_empty",
+    artwork: Uri? = null,
+) = MediaItem.Builder()
+    .setMediaId(id)
+    .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
+    .setMediaMetadata(
+        Builder()
+            .setArtworkUri(artwork)
+            .setTitle(title)
+            .setSubtitle(subtitle)
+            .setIsBrowsable(false)
+            .setIsPlayable(true)
+            // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
+            .build()
+    ).build()
+
+val MediaItem.artworkUri get() = mediaMetadata.artworkUri
+val MediaItem.title get() = mediaMetadata.title
+val MediaItem.subtitle get() = mediaMetadata.subtitle
+val MediaItem.mediaUri get() = requestMetadata.mediaUri
