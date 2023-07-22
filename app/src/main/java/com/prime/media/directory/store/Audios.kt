@@ -8,6 +8,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -16,6 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -166,7 +169,14 @@ class AudiosViewModel @Inject constructor(
     }
 
     override val orders: List<GroupBy> =
-        listOf(GroupBy.None, GroupBy.Name, GroupBy.DateModified, GroupBy.Album, GroupBy.Artist, GroupBy.Length)
+        listOf(
+            GroupBy.None,
+            GroupBy.Name,
+            GroupBy.DateModified,
+            GroupBy.Album,
+            GroupBy.Artist,
+            GroupBy.Length
+        )
     override val mActions: List<Action?> = listOf(null, Action.Play, Action.Shuffle)
     inline val GroupBy.toMediaOrder
         get() = when (this) {
@@ -218,7 +228,14 @@ class AudiosViewModel @Inject constructor(
                     GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
                     GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
                     GroupBy.DateAdded -> TODO()
-                    GroupBy.DateModified -> list.groupBy { Text(value = DateUtils.formatAsRelativeTimeSpan(it.dateModified)) }
+                    GroupBy.DateModified -> list.groupBy {
+                        Text(
+                            value = DateUtils.formatAsRelativeTimeSpan(
+                                it.dateModified
+                            )
+                        )
+                    }
+
                     GroupBy.Folder -> TODO()
                     GroupBy.Name -> list.groupBy { audio -> Text(audio.firstTitleChar) }
                     GroupBy.None -> mapOf(Text("") to list)
@@ -230,6 +247,7 @@ class AudiosViewModel @Inject constructor(
                             else -> Text(R.string.list_title_greater_than_10_mins)
                         }
                     }
+
                     else -> error("$order invalid")
                 }
             }
@@ -262,6 +280,7 @@ class AudiosViewModel @Inject constructor(
                 mutable.remove(Action.SelectAll)
                 mutable.addDistinct(Action.Properties)
             }
+
             selected.size == 1 -> mutable.addDistinct(Action.SelectAll)
             selected.size == 2 -> {
                 mutable.remove(Action.Properties)
@@ -310,6 +329,7 @@ class AudiosViewModel @Inject constructor(
                 // find focused
                 focused != -1L -> list.indexOfFirst { it.id == focused }
                     .let { if (it == -1) 0 else it }
+
                 else -> 0
             }
             remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
@@ -498,7 +518,57 @@ class AudiosViewModel @Inject constructor(
     }
 }
 
-private val ARTWORK_SIZE = 48.dp
+@Composable
+private inline fun Actions(
+    favourite: Boolean,
+    actions: List<Action>,
+    crossinline onAction: (action: Action) -> Unit
+) {
+    Box(modifier = Modifier.offset(x = -16.dp)) {
+        // Favourite Action.
+        IconButton(
+            contentDescription = null,
+            imageVector = if (favourite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+            onClick = { onAction(Action.Make) },
+        )
+
+        // MoreVert
+        var showMore by rememberState(initial = false)
+        IconButton(onClick = { showMore = true }, modifier = Modifier.offset(x = 33.dp)) {
+            Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+            DropdownMenu(
+                expanded = showMore,
+                onDismissRequest = { showMore = false },
+                modifier = Modifier.clip(RoundedCornerShape(30))
+            ) {
+                // first 5 as list item
+                repeat(4) {
+                    val it = actions[it]
+                    DropDownMenuItem(
+                        title = it.title.value,
+                        onClick = { onAction(it); showMore = false },
+                        leading = rememberVectorPainter(
+                            image = it.icon
+                        )
+                    )
+                }
+
+                Divider()
+                // Last ones as simple icons.
+                Row(horizontalArrangement = Arrangement.SpaceEvenly) {
+                    for (i in 4 until actions.size) {
+                        val action = actions[i]
+                        IconButton(
+                            imageVector = action.icon,
+                            onClick = { onAction(action); showMore = false })
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val ARTWORK_SIZE = 50.dp
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -507,38 +577,22 @@ private fun Audio(
     value: Audio,
     actions: List<Action>,
     modifier: Modifier = Modifier,
-    focused: Boolean = false,
     checked: Boolean = false,
     favourite: Boolean = false,
     onAction: (Action) -> Unit
 ) {
     ListTile(
-        selected = checked,
-        centreVertically = false,
+        color = if (checked) LocalContentColor.current.copy(0.16f) else Color.Transparent,
+        trailing = { Actions(favourite = favourite, actions = actions, onAction = onAction) },
+        subtitle = { Label(text = value.artist) },
+        overline = { Label(text = value.album) },
         modifier = modifier,
-
-        overlineText = {
+        headline = {
             Label(
                 text = value.name,
-                style = Material.typography.body1,
-                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
-            )
-        },
-        text = {
-            Label(
-                style = Material.typography.caption,
-                text = value.album,
-                modifier = Modifier.padding(top = ContentPadding.small),
-                color = LocalContentColor.current.copy(ContentAlpha.disabled),
-                fontWeight = FontWeight.SemiBold,
-            )
-        },
-        secondaryText = {
-            Label(
-                text = value.artist,
-                fontWeight = FontWeight.SemiBold,
-                style = Material.typography.caption
+                style = Material.typography.body2,
+                fontWeight = FontWeight.Bold
             )
         },
         leading = {
@@ -547,57 +601,12 @@ private fun Audio(
                 fallback = painterResource(id = R.drawable.default_art),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .border(2.dp, Color.White, shape = CircleShape)
-                    .shadow(ContentElevation.high, shape = CircleShape)
-                    .size(ARTWORK_SIZE)
-                    .wrapContentSize(Alignment.TopCenter)
-                    .requiredSize(70.dp),
+                    .border(2.dp, LocalContentColor.current, shape = CircleShape)
+                    .scale(0.8f)
+                    .shadow(ContentElevation.low, shape = CircleShape)
+                    .size(ARTWORK_SIZE),
             )
         },
-        trailing = {
-            IconButton(
-                contentDescription = null,
-                imageVector = if (favourite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-                onClick = { onAction(Action.Make) },
-                // TODO: Currently we don't know how to grant this focus
-                // Hence we have disabled it. if not in focus.
-                enabled = focused
-            )
-        },
-        bottom = composable(focused) {
-            Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(
-                        start = ARTWORK_SIZE,
-                        end = ContentPadding.normal
-                    )
-            ) {
-                actions.forEach {
-                    val color = ChipDefaults.outlinedChipColors(backgroundColor = Color.Transparent)
-                    Chip(
-                        onClick = { onAction(it) },
-                        colors = color,
-                        border =
-                        BorderStroke(
-                            1.dp, Material.colors.primary.copy(ChipDefaults.OutlinedBorderOpacity)
-                        ),
-                        modifier = Modifier.padding(ContentPadding.small)
-                    ) {
-                        Label(
-                            text = it.title.get,
-                            modifier = Modifier.padding(end = ContentPadding.small),
-                            style = Material.typography.caption
-                        )
-                        Icon(
-                            imageVector = it.icon,
-                            contentDescription = "",
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-        }
     )
 }
 
@@ -677,9 +686,8 @@ fun Audios(viewModel: AudiosViewModel) {
             actions = viewModel.actions,
             favourite = favourite,
             checked = checked,
-            focused = focused,
             // TODO: need to update focus state on interaction.
-            onAction = onPerformAction,
+            onAction = { viewModel.focused = "${audio.id}"; onPerformAction(it) },
             modifier = Modifier
                 .animateContentSize()
                 .animateItemPlacement()
@@ -688,9 +696,12 @@ fun Audios(viewModel: AudiosViewModel) {
                         when {
                             selected.isNotEmpty() -> viewModel.select("${audio.id}")
                             // change focused to current.
-                            !focused -> viewModel.focused = "${audio.id}"
+                            // !focused -> viewModel.focused = "${audio.id}"
                             // cause the playlist to start playing from current track.
-                            else -> viewModel.play(false)
+                            else -> {
+                                viewModel.focused = "${audio.id}"
+                                viewModel.play(false)
+                            }
                         }
                     },
                     onLongClick = {
