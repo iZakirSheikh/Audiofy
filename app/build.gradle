@@ -152,4 +152,6 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:$nav_version"
     // Downloadable fonts
     implementation 'androidx.compose.ui:ui-text-google-fonts:1.4.3'
+    //Wavy Slider
+    implementation("ir.mahozad.multiplatform:wavy-slider:0.0.1")
 }

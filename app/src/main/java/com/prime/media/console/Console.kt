@@ -105,6 +105,7 @@ import com.primex.material2.OutlinedButton2
 import com.primex.material2.neumorphic.Neumorphic
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
+import ir.mahozad.multiplatform.WavySlider
 import kotlin.math.roundToInt
 
 private inline val MediaItem.title
@@ -336,8 +337,10 @@ private fun Vertical(
             fontSize = 34.sp
         )
 
-        // Slider row
-        Slider(
+        // Slider
+        // The Wavy has minSDK of 24; currently don't know if it might trigger some error below API 24.
+        // So be carefully until I found some new solution.
+        WavySlider(
             value = value,
             onValueChange = { state.seekTo(it) },
             modifier = Modifier.layoutID(Console.SLIDER),
