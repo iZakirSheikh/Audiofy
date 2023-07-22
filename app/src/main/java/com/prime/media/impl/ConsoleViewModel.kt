@@ -5,11 +5,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.R
@@ -64,7 +66,7 @@ class ConsoleViewModel @Inject constructor(
     override var current: MediaItem? by mutableStateOf(null)
     override var favourite: Boolean by mutableStateOf(false)
     override var playbackSpeed: Float = remote.playbackSpeed
-    override var position: Long by mutableStateOf(0)
+    override var position: Long by mutableLongStateOf(0)
 
     override val isLast: Boolean get() = remote.next == null
     override var shuffle: Boolean by mutableStateOf(false)
@@ -107,6 +109,8 @@ class ConsoleViewModel @Inject constructor(
     override fun seekTo(mills: Long) {
         viewModelScope.launch {
             // update the state.
+            if (duration == C.TIME_UNSET)
+                return@launch
             val upto = mills.coerceIn(0, duration)
             position = upto
             remote.seekTo(upto)

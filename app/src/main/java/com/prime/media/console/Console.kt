@@ -344,6 +344,8 @@ private fun Vertical(
             value = value,
             onValueChange = { state.seekTo(it) },
             modifier = Modifier.layoutID(Console.SLIDER),
+            waveLength = 40.dp,
+            waveHeight = 40.dp
         )
 
         val favourite = state.favourite
