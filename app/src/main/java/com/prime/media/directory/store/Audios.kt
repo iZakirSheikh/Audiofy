@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.navigation.NavHostController
 import com.prime.media.Material
 import com.prime.media.R
@@ -424,24 +425,44 @@ class AudiosViewModel @Inject constructor(
     }
 
     fun playNext() {
+        // just consume it; don't report
+        val index = remote.nextIndex
+        if (index == C.INDEX_UNSET)
+            return
+        // add at next index.
+        addToQueue()
+    }
+
+    /**
+     * Asks the remote to add these tracks to the playing queue.
+     * @see Remote.add
+     */
+    fun addToQueue(index: Int = -1) {
         viewModelScope.launch {
+            // The algo goes like this.
+            // This fun is called on selected item or focused one.
+            // so obtain the keys/ids
+            val list = when {
+                focused.isNotBlank() -> listOf(focused)
+                selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
+                else -> {
+                    toaster.show("No item selected.", "Message")
+                    return@launch
+                }
+            }
+            // consume selected
+            clear()
+            val audios = list.mapNotNull { repository.findAudio(it.toLongOrNull() ?: 0) }
+            // call the api to add the items
+            val count = remote.add(*audios.map { it.toMediaItem }.toTypedArray(), index = index)
             toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
-                leading = Icons.Outlined.MoreTime
+                Text(R.plurals.queue_update_desc, count), Text(R.string.queue_update),
+                accent = Color.MetroGreen,
+                leading = Icons.Outlined.Add
             )
         }
     }
 
-    fun addToQueue() {
-        viewModelScope.launch {
-            toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
-                leading = Icons.Outlined.MoreTime
-            )
-        }
-    }
 
     fun delete() {
         viewModelScope.launch {
@@ -522,6 +543,7 @@ class AudiosViewModel @Inject constructor(
 private inline fun Actions(
     favourite: Boolean,
     actions: List<Action>,
+    enabled: Boolean = true,
     crossinline onAction: (action: Action) -> Unit
 ) {
     Box(modifier = Modifier.offset(x = -16.dp)) {
@@ -530,11 +552,12 @@ private inline fun Actions(
             contentDescription = null,
             imageVector = if (favourite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
             onClick = { onAction(Action.Make) },
+            enabled = enabled
         )
 
         // MoreVert
         var showMore by rememberState(initial = false)
-        IconButton(onClick = { showMore = true }, modifier = Modifier.offset(x = 33.dp)) {
+        IconButton(onClick = { showMore = true }, modifier = Modifier.offset(x = 33.dp), enabled = enabled) {
             Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
             DropdownMenu(
                 expanded = showMore,
@@ -579,11 +602,12 @@ private fun Audio(
     modifier: Modifier = Modifier,
     checked: Boolean = false,
     favourite: Boolean = false,
-    onAction: (Action) -> Unit
+    onAction: (Action) -> Unit,
+    enabled: Boolean = true,
 ) {
     ListTile(
         color = if (checked) LocalContentColor.current.copy(0.16f) else Color.Transparent,
-        trailing = { Actions(favourite = favourite, actions = actions, onAction = onAction) },
+        trailing = { Actions(favourite = favourite, actions = actions, onAction = onAction, enabled = enabled) },
         subtitle = { Label(text = value.artist) },
         overline = { Label(text = value.album) },
         modifier = modifier,
@@ -686,6 +710,7 @@ fun Audios(viewModel: AudiosViewModel) {
             actions = viewModel.actions,
             favourite = favourite,
             checked = checked,
+            enabled = selected.isEmpty(),
             // TODO: need to update focus state on interaction.
             onAction = { viewModel.focused = "${audio.id}"; onPerformAction(it) },
             modifier = Modifier

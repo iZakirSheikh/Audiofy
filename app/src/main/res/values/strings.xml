@@ -95,5 +95,11 @@
     <string name="playing_queue">Playing Queue</string>
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
+    <string name="queue_update">Queue Update</string>
+    <plurals name="queue_update_desc">
+        <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
+        <item quantity="one">%d item has been successfully added to the playlist. Enjoy your music!</item>
+        <item quantity="other">%d items have been successfully added to the playlist. Enjoy your music!</item>
+    </plurals>
 
 </resources>
