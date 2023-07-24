@@ -82,14 +82,14 @@ interface SystemFacade {
         @StringRes message: Int,
         @StringRes title: Int = ResourcesCompat.ID_NULL,
         @StringRes action: Int = ResourcesCompat.ID_NULL,
-        icon: Any? = ResourcesCompat.ID_NULL,
+        icon: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Channel.Duration = Channel.Duration.Short
     ) = show(
         Text(message),
         title = if (title == ResourcesCompat.ID_NULL) null else Text(title),
         action = if (action == ResourcesCompat.ID_NULL) null else Text(action),
-        icon = if (icon == ResourcesCompat.ID_NULL) null else icon,
+        icon = icon,
         accent = accent,
         duration = duration
     )

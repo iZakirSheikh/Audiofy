@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
-    <option name="selectedTabId" value="Firebase Crashlytics" />
+    <option name="selectedTabId" value="Android Vitals" />
     <option name="tabSettings">
       <map>
         <entry key="Android Vitals">
@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.prime.calculator" />
+                  <option name="appId" value="com.prime.player" />
                 </ConnectionSetting>
               </option>
               <option name="failureTypes">
@@ -36,6 +36,22 @@
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="THIRTY_DAYS" />
+              <option name="versions">
+                <list>
+                  <VersionSetting>
+                    <option name="buildVersion" value="41" />
+                    <option name="displayName" value="2.2.8 (41)" />
+                    <option name="displayVersion" value="2.2.8" />
+                    <option name="tracks">
+                      <list>
+                        <option value="PRODUCTION" />
+                        <option value="OPEN_TESTING" />
+                        <option value="INTERNAL" />
+                      </list>
+                    </option>
+                  </VersionSetting>
+                </list>
+              </option>
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>

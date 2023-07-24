@@ -392,7 +392,7 @@ fun Home(
             val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
             val facade = LocalSystemFacade.current
             Scaffold2(
-                vertical = vertical,
+                vertical = true, // currently don't pass value of vertical unless layout is ready.
                 channel = channel,
                 state = state,
                 sheetPeekHeight = if (facade.isPlayerReady) Settings.MINI_PLAYER_HEIGHT else 0.dp,

@@ -19,7 +19,21 @@ private val MediaBrowser.nextMediaItem
     get() = if (hasNextMediaItem()) getMediaItemAt(nextMediaItemIndex) else null
 
 /**
- * [Remote] is a wrapper around [MediaBrowser]
+ * [`Remote`] is a wrapper around [MediaBrowser].
+ *
+ * The purpose of [Remote] is to streamline the usage of the [MediaBrowser] API, providing a
+ * simplified interface for handling media-related operations. Its recommended scope is tied to the
+ * Activity lifecycle to ensure proper initialization and cleanup.
+ *
+ * Note that the indices it accepts correspond to indexes in the playlist API and are not related to
+ *      shuffled playlists unless explicitly stated.
+ *
+ * Usage of the [Remote] API does not require the use of suspend functions unless specific
+ * requirements necessitate operations on non-UI threads. However, when such circumstances arise,
+ * appropriate suspend functions may be provided to cater to those scenarios.
+ *
+ * Additionally, [Remote] provides convenient access through flows, offering an elegant solution
+ * for asynchronous handling and data retrieval.
  */
 interface Remote {
     /**
@@ -31,8 +45,6 @@ interface Remote {
      * @return The current shuffle mode. It returns false if shuffle mode is disabled or not set.
      */
     var shuffle: Boolean
-        @Deprecated("Please use the function for better support.")
-        set
 
     /**
      * Returns the current playback position in milliseconds.
@@ -132,8 +144,6 @@ interface Remote {
      * The default value is 1.0, representing normal playback speed.
      */
     var playbackSpeed: Float
-        @Deprecated("Use the corresponding method.")
-        set
 
     /**
      * A Flow that emits the media queue.
@@ -170,6 +180,16 @@ interface Remote {
      * @return A Flow of Boolean values representing the loading status of the media player.
      */
     val loaded: Flow<Boolean>
+
+    /**
+     * @see MediaBrowser.getCurrentMediaItemIndex
+     */
+    val index: Int
+
+    /**
+     * @see MediaBrowser.getNextMediaItemIndex
+     */
+    val nextIndex: Int
 
     /**
      * Starts playing the underlying service.
@@ -221,6 +241,7 @@ interface Remote {
      * @see Player.seekTo
      * @param mills The position in milliseconds to seek to in the media playback.
      */
+    @Deprecated("use the seekTo with suspend")
     fun seekTo(mills: Long)
 
     /**
@@ -262,7 +283,7 @@ interface Remote {
      *
      * @param uri The URI of the track for which the seek operation should be performed.
      */
-    suspend fun seekTo(uri: Uri)
+    suspend fun seekTo(uri: Uri, mills: Long = C.TIME_UNSET): Boolean
 
     /**
      * @see seekTo
@@ -307,11 +328,12 @@ interface Remote {
      * Adds the specified [values] to the queue. If [index] is -1, the items will be added to the
      * end of the queue; otherwise, they will be inserted at the provided index.
      * Note: The queue must only contain unique [MediaItem.mediaUri] values. If an item already
-     *       exists in the queue, it will be removed from its old position and reinserted in the new
-     *       position.
+     *       exists in the queue, it will discarded.
      *
      * @param values The list of [MediaItem]s to be added to the queue.
-     * @param index The optional index where the items should be inserted. If -1 (default), the items will be added to the end of the queue.
+     * @param index The optional index where the items should be inserted. If -1 (default), the
+     *              items will be added to the end of the queue. Note: takes any index value
+     * 				and maps it to `playlistIndex` if `shuffleModeEnabled` otherwise uses the same index.
      * @return The number of items successfully added to the queue.
      */
     suspend fun add(vararg values: MediaItem, index: Int = -1): Int
@@ -341,6 +363,15 @@ interface Remote {
      * @see Player.moveMediaItems
      */
     suspend fun move(from: Int, to: Int): Boolean
+
+    /**
+     * Gets the corresponding index of the specified [uri] from the playing queue.
+     *
+     * @param uri The URI for which the index is to be retrieved from the playing queue.
+     * @return The index of the [uri] in the playing queue, or [C.INDEX_UNSET] if the [uri] is not
+     * found in the queue.
+     */
+    suspend fun indexOf(uri: Uri): Int
 }
 
 /**
@@ -385,12 +416,16 @@ private class RemoteImpl(context: Context) : Remote, Listener {
         get() = browser?.currentMediaItem
     override val next: MediaItem?
         get() = browser?.nextMediaItem
-
+    override val index: Int
+        get() = browser?.currentMediaItemIndex ?: C.INDEX_UNSET
+    override val nextIndex: Int
+        get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET
     override var shuffle: Boolean
         get() = browser?.shuffleModeEnabled ?: false
         set(value) {
             browser?.shuffleModeEnabled = value
         }
+
     override val isPlaying: Boolean get() = browser?.isPlaying ?: false
     override var audioSessionId: Int = 0 // FixMe: return actual session ID.
     override val hasPreviousTrack: Boolean get() = browser?.hasPreviousMediaItem() ?: false
@@ -562,13 +597,53 @@ private class RemoteImpl(context: Context) : Remote, Listener {
 
     override suspend fun set(vararg values: MediaItem): Int {
         val browser = fBrowser.await()
+        // make sure the items are distinct.
         val list = values.distinctBy { it.mediaUri }
+        // set the media items; this will automatically clear the old ones.
         browser.setMediaItems(list)
+        // return how many have been added to the list.
         return list.size
     }
 
+    /**
+     * Maps the given [index] to the real index based on the current configuration.
+     *
+     * If shuffle mode is enabled, this function returns the corresponding real index for the
+     * shuffled playlist. If shuffle mode is disabled, it simply returns the same index.
+     *
+     * @param index The index to be mapped to the real index.
+     * @return The real index if shuffle mode is enabled, or the same index if shuffle mode is disabled.
+     * FixMe: currently there is no way to map index with real index.
+     */
+    private suspend fun map(index: Int): Int {
+        val browser = fBrowser.await()
+        if (!browser.shuffleModeEnabled)
+            return index
+        return index
+    }
+
     override suspend fun add(vararg values: MediaItem, index: Int): Int {
-        TODO("Not yet implemented")
+        // if the list is empty return
+        if (values.isEmpty())
+            return 0
+        val browser = fBrowser.await()
+        // add directly if mediaitemCount is 0. the uniqueness will be checked by set.
+        if (browser.mediaItemCount == 0)
+            return set(*values)
+        val unique = values.distinctBy { it.mediaUri }.toMutableList()
+        // remove any duplicates from the unique that are already in browser
+        repeat(browser.mediaItemCount) {
+            val item = browser.getMediaItemAt(it)
+            unique.removeAll { it.mediaUri == item.mediaUri }
+        }
+        if (unique.isEmpty())
+            return 0
+        // map index with corresponding playlist index.
+        // FixMe: currently it doesn't work with shuffleModeOn
+        val newIndex = if (index == C.INDEX_UNSET) browser.mediaItemCount else map(index)
+        // add media items.
+        browser.addMediaItems(newIndex.coerceIn(0, browser.mediaItemCount), unique)
+        return unique.size
     }
 
     override suspend fun seekTo(position: Int, mills: Long) {
@@ -576,13 +651,13 @@ private class RemoteImpl(context: Context) : Remote, Listener {
         browser.seekTo(position, mills)
     }
 
-    override suspend fun seekTo(uri: Uri) {
+    override suspend fun seekTo(uri: Uri, mills: Long): Boolean {
         // plays track if found otherwise does nothing.
-        val browser = fBrowser.await()
-        repeat(browser.mediaItemCount) { pos ->
-            val item = browser.getMediaItemAt(pos)
-            if (item.requestMetadata.mediaUri == uri) playTrackAt(pos)
-        }
+        val index = indexOf(uri)
+        if (index == C.INDEX_UNSET)
+            return false
+        seekTo(index, mills)
+        return true
     }
 
     override suspend fun toggleShuffle(): Boolean {
@@ -593,5 +668,15 @@ private class RemoteImpl(context: Context) : Remote, Listener {
 
     override suspend fun move(from: Int, to: Int): Boolean {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun indexOf(uri: Uri): Int {
+        // plays track if found otherwise does nothing.
+        val browser = fBrowser.await()
+        repeat(browser.mediaItemCount) { pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.requestMetadata.mediaUri == uri) return pos
+        }
+        return C.INDEX_UNSET
     }
 }
