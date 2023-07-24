@@ -112,6 +112,7 @@ class ArtistsViewModel @Inject constructor(
                     duration = Channel.Duration.Indefinite
                 )
             }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 }
 
 

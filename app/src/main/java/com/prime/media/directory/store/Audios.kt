@@ -262,6 +262,7 @@ class AudiosViewModel @Inject constructor(
                     duration = Channel.Duration.Indefinite
                 )
             }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     /**
      * Updates the list of available actions based on the currently selected key(s).

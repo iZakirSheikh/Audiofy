@@ -110,6 +110,7 @@ class AlbumsViewModel @Inject constructor(
                     duration = Channel.Duration.Indefinite
                 )
             }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 }
 
 private val TILE_WIDTH = 80.dp

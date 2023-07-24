@@ -119,7 +119,8 @@ class MembersViewModel @Inject constructor(
                         else -> error("$order invalid")
                     }
                 }
-        }.catch {
+        }
+            .catch {
             // any exception.
             toaster.show(
                 "Some unknown error occured!.",
@@ -128,7 +129,7 @@ class MembersViewModel @Inject constructor(
                 accent = Color.Rose,
                 duration = Channel.Duration.Indefinite
             )
-        }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
