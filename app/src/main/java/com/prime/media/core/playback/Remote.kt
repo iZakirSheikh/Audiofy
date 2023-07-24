@@ -438,7 +438,7 @@ private class RemoteImpl(context: Context) : Remote, Listener {
 
     @OptIn(DelicateCoroutinesApi::class)
     override val events: Flow<Player.Events?> =
-        callbackFlow<Player.Events?> {
+        callbackFlow {
             val observer = object : Player.Listener {
                 override fun onEvents(player: Player, events: Player.Events) {
                     trySend(events)
@@ -488,15 +488,16 @@ private class RemoteImpl(context: Context) : Remote, Listener {
     }
 
     override suspend fun remove(key: Uri): Boolean {
+        // obtain the corresponding index from the key
+        val index = indexOf(key)
+        // return false since we don't have the index.
+        // this might be because the item is already removed.
+        if (index == C.INDEX_UNSET)
+            return false
+        // remove the item
         val browser = fBrowser.await()
-        repeat(browser.mediaItemCount) { pos ->
-            val item = browser.getMediaItemAt(pos)
-            if (item.requestMetadata.mediaUri == key) {
-                browser.removeMediaItem(pos)
-                return true
-            }
-        }
-        return false
+        browser.removeMediaItem(index)
+        return true
     }
 
     override fun skipToNext() {
@@ -588,7 +589,6 @@ private class RemoteImpl(context: Context) : Remote, Listener {
         browser.playWhenReady = playWhenReady
         browser.play()
     }
-
 
     override fun pause() {
         val browser = browser ?: return

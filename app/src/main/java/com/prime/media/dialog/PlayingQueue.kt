@@ -25,7 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +51,6 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Image
-import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -70,6 +71,7 @@ private fun Track(
     value: MediaItem,
     modifier: Modifier = Modifier,
     isPlaying: Boolean = false,
+    onRemoveRequest: () -> Unit
 ) {
     ListTile(
         centerAlign = true,
@@ -101,18 +103,11 @@ private fun Track(
             Crossfade(
                 targetState = isPlaying,
                 content = { isPlaying ->
-                    val facade = LocalSystemFacade.current
                     when (isPlaying) {
                         // show drag indicator
                         false -> IconButton(
-                            onClick = {
-                                facade.show(
-                                    R.string.coming_soon_msg,
-                                    R.string.coming_soon,
-                                    icon = Icons.Outlined.Timer
-                                )
-                            },
-                            imageVector = Icons.Outlined.DragIndicator,
+                            onClick = onRemoveRequest,
+                            imageVector = Icons.Outlined.RemoveCircleOutline,
                             contentDescription = null
                         )
                         // show playingBars animation.
@@ -220,6 +215,7 @@ fun Content(
     // construct the lazyList
     val lazyListState = rememberLazyListState()
     val current = resolver.current
+    val context = LocalContext.current
     val list: LazyListScope.() -> Unit = list@{
         val list = data ?: return@list
         list.forEach { item ->
@@ -239,7 +235,8 @@ fun Content(
                         .clickable { resolver.playTrack(item.mediaUri!!) }
                         .animateItemPlacement()
                         .padding(horizontal = ContentPadding.small),
-                    isPlaying = isLoaded
+                    isPlaying = isLoaded,
+                    onRemoveRequest = { resolver.remove(context, item.mediaUri!!) }
                 )
             }
             // 2nd header.

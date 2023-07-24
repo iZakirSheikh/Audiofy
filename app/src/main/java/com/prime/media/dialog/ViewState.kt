@@ -1,5 +1,6 @@
 package com.prime.media.dialog
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.media3.common.MediaItem
@@ -33,7 +34,7 @@ interface PlayingQueue {
     /**
      * Remove the track from the queue identified by [key].
      */
-    fun remove(key: Uri)
+    fun remove(context: Context, key: Uri)
 
     /**
      * Toggles the shuffle

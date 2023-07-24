@@ -96,6 +96,12 @@
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
     <string name="queue_update">Queue Update</string>
+
+    <!--The messages to be shown when on removing a track from queue.-->
+    <string name="track_remove_msg">The track will be removed shortly.</string>
+    <string name="track_remove_error_msg">Oops! It seems there was an error while trying to remove the track.</string>
+
+    <!--The messages to be shown on up-dation of queue.-->
     <plurals name="queue_update_desc">
         <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
         <item quantity="one">%d item has been successfully added to the playlist. Enjoy your music!</item>

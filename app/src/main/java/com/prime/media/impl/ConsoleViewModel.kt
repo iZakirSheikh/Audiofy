@@ -1,6 +1,8 @@
 package com.prime.media.impl
 
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import com.prime.media.core.util.MainHandler
 import com.primex.core.Amber
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -82,9 +85,12 @@ class ConsoleViewModel @Inject constructor(
     override fun skipToPrev() = remote.skipToPrev()
     override fun playTrackAt(position: Int) = remote.playTrackAt(position)
     override fun playTrack(uri: Uri) = remote.playTrack(uri)
-    override fun remove(key: Uri) {
+
+    override fun remove(context: Context, key: Uri) {
         viewModelScope.launch {
-            remote.remove(key)
+            val removed = remote.remove(key)
+            val msg = if (removed) R.string.track_remove_msg else R.string.track_remove_error_msg
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
