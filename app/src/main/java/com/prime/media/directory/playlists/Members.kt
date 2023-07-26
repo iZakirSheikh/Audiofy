@@ -212,8 +212,8 @@ class MembersViewModel @Inject constructor(
     fun playNext() {
         viewModelScope.launch {
             toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
                 leading = Icons.Outlined.MoreTime
             )
         }
@@ -223,8 +223,8 @@ class MembersViewModel @Inject constructor(
     fun addToQueue() {
         viewModelScope.launch {
             toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
                 leading = Icons.Outlined.MoreTime
             )
         }

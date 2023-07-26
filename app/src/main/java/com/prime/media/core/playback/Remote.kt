@@ -548,7 +548,8 @@ private class RemoteImpl(context: Context) : Remote, Listener {
     override fun onRequestPlay(shuffle: Boolean, index: Int, values: List<MediaItem>) {
         val browser = browser ?: return
         // convert list to mutable list
-        val l = ArrayList(values)
+        // the list should contain the unique items only.
+        val l = ArrayList(values.distinctBy { it.mediaUri })
         // remove index
         val item = l.removeAt(index)
         // re-add index at 0

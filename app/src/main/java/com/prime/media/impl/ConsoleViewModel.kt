@@ -127,9 +127,8 @@ class ConsoleViewModel @Inject constructor(
         viewModelScope.launch {
             // currently not available.
             toaster.show(
-                message = "Temporarily disabled!!",
-                title = "Working on it.",
-                accent = Color.Amber,
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
                 leading = Icons.Outlined.MoreTime
             )
         }

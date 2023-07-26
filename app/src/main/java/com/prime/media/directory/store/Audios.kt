@@ -426,12 +426,13 @@ class AudiosViewModel @Inject constructor(
     }
 
     fun playNext() {
-        // just consume it; don't report
-        val index = remote.nextIndex
-        if (index == C.INDEX_UNSET)
-            return
-        // add at next index.
-        addToQueue()
+        viewModelScope.launch {
+            toaster.show(
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
+                leading = Icons.Outlined.MoreTime
+            )
+        }
     }
 
     /**
@@ -440,26 +441,10 @@ class AudiosViewModel @Inject constructor(
      */
     fun addToQueue(index: Int = -1) {
         viewModelScope.launch {
-            // The algo goes like this.
-            // This fun is called on selected item or focused one.
-            // so obtain the keys/ids
-            val list = when {
-                focused.isNotBlank() -> listOf(focused)
-                selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
-                else -> {
-                    toaster.show("No item selected.", "Message")
-                    return@launch
-                }
-            }
-            // consume selected
-            clear()
-            val audios = list.mapNotNull { repository.findAudio(it.toLongOrNull() ?: 0) }
-            // call the api to add the items
-            val count = remote.add(*audios.map { it.toMediaItem }.toTypedArray(), index = index)
             toaster.show(
-                Text(R.plurals.queue_update_desc, count), Text(R.string.queue_update),
-                accent = Color.MetroGreen,
-                leading = Icons.Outlined.Add
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
+                leading = Icons.Outlined.MoreTime
             )
         }
     }
@@ -468,8 +453,8 @@ class AudiosViewModel @Inject constructor(
     fun delete() {
         viewModelScope.launch {
             toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
                 leading = Icons.Outlined.MoreTime
             )
         }

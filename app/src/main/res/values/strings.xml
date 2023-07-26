@@ -90,8 +90,9 @@
     <string name="list_title_greater_than_10_mins">Greater than 10 Min</string>
     <string name="error">Error</string>
     <!--In_ case the feature requires time.-->
-    <string name="coming_soon">Coming soon</string>
-    <string name="coming_soon_msg">This feature will be released soon. We kindly ask for your patience and understanding as we prepare for its launch.</string>
+    <string name="coming_soon">Coming soon!</string>
+    <string name="coming_soon_msg">"We're working hard to bring this feature to you. Please check back soon for updates."</string>
+
     <string name="playing_queue">Playing Queue</string>
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
