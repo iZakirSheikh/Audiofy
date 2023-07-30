@@ -2,22 +2,28 @@
 
 package com.prime.media.impl
 
+import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import com.prime.media.core.db.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.util.toMember
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
 
 private const val TAG = "Repository"
 
@@ -792,7 +798,7 @@ class Repository @Inject constructor(
      * @author Zakir Sheikh
      */
     @Deprecated("Use simple insert")
-    suspend fun upsert(value: Member): Boolean{
+    suspend fun upsert(value: Member): Boolean {
         // if the item is already in playlist return false;
         // because we don't support same uri's in single playlist
         if (exists(value.playlistID, value.uri))
@@ -820,11 +826,11 @@ class Repository @Inject constructor(
         // ensure that order is coerced in limit.
         val member =
             if (value.order < 0 || value.order > order + 1)
-                value.copy(order = value.order.coerceIn(0, order + 1), )
-        else
-            value
+                value.copy(order = value.order.coerceIn(0, order + 1))
+            else
+                value
         val success = playlistsDb.insert(member = member) != -1L
-        if (success){
+        if (success) {
             // update the modified time of the playlist.
             // here this should not be null
             // but we should play safe
@@ -854,11 +860,11 @@ class Repository @Inject constructor(
         // ensure that order is coerced in limit.
         val member =
             if (value.order < 0 || value.order > order + 1)
-                value.copy(order = value.order.coerceIn(0, order + 1), )
+                value.copy(order = value.order.coerceIn(0, order + 1))
             else
                 value
         val success = playlistsDb.update(member = member) != -1L
-        if (success){
+        if (success) {
             // update the modified time of the playlist.
             // here this should not be null
             // but we should play safe
@@ -866,5 +872,23 @@ class Repository @Inject constructor(
             update(old.copy(dateModified = System.currentTimeMillis()))
         }
         return success
+    }
+
+    /**
+     * @see com.prime.media.core.db.delete
+     */
+    suspend fun delete(activity: Activity, vararg uri: Uri): Int {
+        return withContext(Dispatchers.IO) {
+            val result = runCatching {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (activity is ComponentActivity)
+                        resolver.delete(activity, *uri)
+                    else
+                        resolver.delete(activity, *uri)
+                } else resolver.delete(*uri)
+            }
+            // return -1 if failure.
+            result.getOrElse { -1 }
+        }
     }
 }

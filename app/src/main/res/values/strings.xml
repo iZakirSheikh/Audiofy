@@ -109,4 +109,33 @@
         <item quantity="other">%d items have been successfully added to the playlist. Enjoy your music!</item>
     </plurals>
 
+    <!--Delete files-->
+    <string name="delete_files_warning_msg">
+       Warning: You are about to delete %d files permanently. This cannot be undone. Click ‘Delete’
+        or the message will cancel itself.
+    </string>
+    <string name="alert">Alert</string>
+
+    <!--Delete error-->
+    <string name="delete">Delete</string>
+    <string name="delete_audio_error">Oops! An error occurred while deleting audio files</string>
+
+    <!--Delete confirm dialog-->
+    <string name="confirm">Confirm</string>
+    <string name="delete_dialog_show_msg">
+        A dialog is about to be shown. please confirm to delete the files
+    </string>
+
+    <!--Delete process cancelled-->
+    <string name="cancelled">Cancelled</string>
+    <string name="deleting_process_cancelled">
+        The deleting of files was cancelled by the user.
+    </string>
+
+    <!--Delete message success-->
+    <string name="delete_success_msg">
+        The %1$s/%2$s files from the storage have been successfully deleted.
+    </string>
+
+    <string name="success">Success</string>
 </resources>

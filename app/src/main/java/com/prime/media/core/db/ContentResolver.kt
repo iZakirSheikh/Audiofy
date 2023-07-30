@@ -1,5 +1,6 @@
 package com.prime.media.core.db
 
+import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
@@ -11,14 +12,24 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Stable
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.util.PathUtils
+import com.prime.media.core.util.registerActivityResultLauncher
+import com.prime.media.core.util.removeId
 import com.prime.media.impl.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
+import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.withContext as using
 
 
@@ -765,3 +776,104 @@ val Audio.key get() = uri.toString()
  */
 inline val Audio.toMediaItem
     get() = MediaItem(uri, name, artist, "$id", albumUri)
+
+/**
+ * Deletes list uri from the device persistently.
+ * @return -1 if error occurred otherwise -2 indicating an dialog is about to be shown to user
+ * and he needs to confirm before deleting.
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+fun ContentResolver.delete(activity: Activity, vararg uri: Uri): Int {
+    val deleteRequest = MediaStore.createDeleteRequest(this, uri.toList()).intentSender
+    activity.startIntentSenderForResult(deleteRequest, 100, null, 0, 0, 0)
+    return -2 // dialog is about to be shown.
+}
+
+/**
+ * Deletes the specified URIs from the device's persistent storage permanently.
+ *
+ *  Note hat this fun works only unto android 10.
+ * @param uri The URIs to delete.
+ * @return The number of items that were deleted, or -1 if an error occurred.
+ */
+suspend fun ContentResolver.delete(vararg uri: Uri): Int {
+    if (uri.isEmpty())
+        return 0
+    // construct which ids have been removed.
+    val ids = uri.joinToString(", ") {
+        "${ContentUris.parseId(it)}"
+    }
+    val parent = uri[0].removeId
+    val projection = arrayOf(MediaStore.MediaColumns.DATA)
+    val res =
+        query2(parent, projection, "${MediaStore.MediaColumns._ID} IN ($ids)") { c ->
+            List(c.count) { c.moveToPosition(it);c.getString(0) }
+        }
+    // check if res in null
+    if (res == null) return -1 // error
+    var count = delete(parent, "${MediaStore.MediaColumns._ID} IN ($ids)", null)
+    if (count == 0) return -1 // error
+    res.forEach {
+        // decrease count in case files cant be deleted
+        if (!File(it).delete())
+            count--
+    }
+    // error
+    return if (count == 0) -1 else count
+}
+
+/**
+ * Deletes the specified URIs from the device's content permanently.
+ *
+ * @param activity The [ComponentActivity] that is making the call.
+ * @param uri The URIs of the content to be deleted.
+ * @return The number of items that were deleted, or -1 if an error occurred. -3 if cancelled by user.
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+suspend fun ContentResolver.delete(activity: ComponentActivity, vararg uri: Uri): Int {
+    if (uri.isEmpty()) return -1 // error
+    return suspendCoroutine { continuation ->
+        // Create a lazy ActivityResultLauncher object
+        var launcher: ActivityResultLauncher<IntentSenderRequest>? = null
+        // Assign result to launcher in such a way tha it allows us to
+        // unregister later.
+        val contract = ActivityResultContracts.StartIntentSenderForResult()
+        launcher = activity.registerActivityResultLauncher(contract) {
+            // unregister launcher
+            launcher?.unregister()
+            // user cancelled
+            if (it.resultCode == Activity.RESULT_CANCELED) {
+                continuation.resume(-3 /*cancelled*/)
+                return@registerActivityResultLauncher
+            }
+            // some unknown error occurred
+            if (it.resultCode != Activity.RESULT_OK) {
+                continuation.resume(-1 /*Error*/)
+                return@registerActivityResultLauncher
+            }
+            // construct which ids have been removed.
+            val ids = uri.joinToString(", ") {
+                "${ContentUris.parseId(it)}"
+            }
+            // assuming that all uri's are content uris.
+            val parent = ContentUris.removeId(uri[0])
+            // check how many are still there; maybe some error occurred while deleting some files.
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            val count =
+                query(
+                    parent,
+                    projection,
+                    "${MediaStore.MediaColumns._ID} IN ($ids)",
+                    null,
+                    null
+                ).use { it?.count ?: -1 }
+            // resume with how many files have been deleted or error code.
+            continuation.resume(if (count > 0) uri.size - count else if (count == 0) uri.size else count)
+        }
+        val request = MediaStore.createDeleteRequest(this, uri.toList()).intentSender
+        // Create an IntentSenderRequest object from the IntentSender object
+        val intentSenderRequest = IntentSenderRequest.Builder(request).build()
+        // Launch the activity for result using the IntentSenderRequest object
+        launcher.launch(intentSenderRequest)
+    }
+}

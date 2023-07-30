@@ -113,7 +113,7 @@ dependencies {
     // FixMe: Build Compose alternative; check compose marque modifier.
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
     // Preferences and other widgets
-    def toolkit_version = '1.0.2-beta'
+    def toolkit_version = '1.0.9-beta'
     implementation("com.github.prime-zs.toolkit:preferences:$toolkit_version")
     implementation("com.github.prime-zs.toolkit:core-ktx:$toolkit_version")
     implementation("com.github.prime-zs.toolkit:material2:$toolkit_version")

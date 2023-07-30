@@ -1,6 +1,7 @@
 package com.prime.media.core.util
 
 import android.content.ActivityNotFoundException
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -9,6 +10,10 @@ import android.net.Uri
 import android.os.StrictMode
 import android.text.format.DateUtils.*
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -288,3 +293,50 @@ inline fun Audio.toMember(playlistId: Long, order: Int) = Member(this, playlistI
  */
 inline val Playlist.Member.toMediaItem
     get() = MediaItem(Uri.parse(uri), title, subtitle, id, artwork?.let { Uri.parse(it) })
+
+/**
+ * An alternative to [ComponentActivity.registerForActivityResult] which allows to register from any class.
+ *
+ * This method registers a new callback with the activity result registry. When
+ * calling this method, you must call `ActivityResultLauncher.unregister()` on the returned
+ * `ActivityResultLauncher` when the launcher is no longer needed to release any values that might
+ * be captured in the registered callback.
+ *
+ * @param contract The [ActivityResultContract] to use for the activity result.
+ * @param callback The [ActivityResultCallback] to receive the result of the activity.
+ * @return An [ActivityResultLauncher] that can be used to launch the activity and receive the result.
+ *
+ * @see androidx.activity.result.ActivityResultRegistry.register
+ */
+fun <I, O> ComponentActivity.registerActivityResultLauncher(
+    contract: ActivityResultContract<I, O>,
+    callback: ActivityResultCallback<O>
+): ActivityResultLauncher<I> {
+    val key = UUID.randomUUID().toString()
+    return activityResultRegistry.register(key, contract, callback)
+}
+
+
+/**
+ * A compat property that removes any ID from the end of the this content [Uri].
+ *
+ * @return a new URI with the ID removed from the end of the path
+ * @throws IllegalArgumentException when the given URI has no ID to remove
+ * from the end of the path
+ * Note: The [Uri] must be content uri.
+ * @see [ContentUris.removeId]
+ */
+val Uri.removeId: Uri
+    get() {
+        val contentUri = this
+        // Verify that we have a valid ID to actually remove
+        val last = contentUri.lastPathSegment
+        last?.toLong() ?: throw IllegalArgumentException("No path segments to remove")
+        val segments = contentUri.pathSegments
+        val builder = contentUri.buildUpon()
+        builder.path(null)
+        for (i in 0 until segments.size - 1) {
+            builder.appendPath(segments[i])
+        }
+        return builder.build()
+    }

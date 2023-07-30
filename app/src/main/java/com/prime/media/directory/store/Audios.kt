@@ -1,5 +1,7 @@
 package com.prime.media.directory.store
 
+import android.app.Activity
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
@@ -450,13 +452,75 @@ class AudiosViewModel @Inject constructor(
     }
 
 
-    fun delete() {
+    fun delete(activity: Activity) {
         viewModelScope.launch {
-            toaster.show(
-                title = R.string.coming_soon,
-                message = R.string.coming_soon_msg,
-                leading = Icons.Outlined.MoreTime
-            )
+            with(toaster) {
+                // The algo goes like this.
+                // This fun is called on selected item or focused one.
+                // so obtain the keys/ids
+                val list = when {
+                    focused.isNotBlank() -> listOf(focused)
+                    selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
+                    else -> {
+                        toaster.show("No item selected.", "Message")
+                        return@launch
+                    }
+                }
+                // consume selected
+                clear()
+                val res = show(
+                    buildTextResource(R.string.delete_files_warning_msg, list.size),
+                    buildTextResource(R.string.alert),
+                    buildTextResource(R.string.delete),
+                    Icons.Outlined.WarningAmber,
+                    accent = Color.Rose,
+                    Channel.Duration.Long
+                )
+                // check if user is interested in deleting the files or not.
+                if (res == Channel.Result.Dismissed)
+                    return@launch
+                // else proceed with the deletion
+                // obtain the uri associated with the ids
+                val uris =
+                    list.map {
+                        ContentUris.withAppendedId(
+                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                            it.toLongOrNull() ?: 0
+                        )
+                    }
+                val result = repository.delete(activity, *uris.toTypedArray())
+                // handle error code
+                // show appropriate message
+                when (result) {
+                    -2 -> show(
+                        R.string.delete_dialog_show_msg,
+                        R.string.confirm,
+                        leading = Icons.Outlined.DeleteForever,
+                        accent = Color.Rose,
+                    )
+
+                    -3 -> show(
+                        R.string.deleting_process_cancelled,
+                        R.string.cancelled,
+                        leading = Icons.Outlined.Cancel,
+                    )
+                    // handle general case
+                    -1 -> show(
+                        R.string.delete_audio_error,
+                        R.string.error,
+                        leading = Icons.Outlined.Error,
+                        accent = Color.Rose
+                    )
+
+                    else -> show(
+                        buildTextResource(id = R.string.delete_success_msg, result, uris.size),
+                        buildTextResource(R.string.success),
+                        null,
+                        Icons.Outlined.Delete,
+                        Color.MetroGreen
+                    )
+                }
+            }
         }
     }
 
@@ -543,7 +607,11 @@ private inline fun Actions(
 
         // MoreVert
         var showMore by rememberState(initial = false)
-        IconButton(onClick = { showMore = true }, modifier = Modifier.offset(x = 33.dp), enabled = enabled) {
+        IconButton(
+            onClick = { showMore = true },
+            modifier = Modifier.offset(x = 33.dp),
+            enabled = enabled
+        ) {
             Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
             DropdownMenu(
                 expanded = showMore,
@@ -593,7 +661,14 @@ private fun Audio(
 ) {
     ListTile(
         color = if (checked) LocalContentColor.current.copy(0.16f) else Color.Transparent,
-        trailing = { Actions(favourite = favourite, actions = actions, onAction = onAction, enabled = enabled) },
+        trailing = {
+            Actions(
+                favourite = favourite,
+                actions = actions,
+                onAction = onAction,
+                enabled = enabled
+            )
+        },
         subtitle = { Label(text = value.artist) },
         overline = { Label(text = value.album) },
         modifier = modifier,
@@ -652,7 +727,7 @@ fun Audios(viewModel: AudiosViewModel) {
             Action.Share -> viewModel.share(context)
             Action.AddToQueue -> viewModel.addToQueue()
             Action.PlayNext -> viewModel.playNext()
-            Action.Delete -> viewModel.delete()
+            Action.Delete -> viewModel.delete(context.activity)
             Action.SelectAll -> viewModel.selectAll()
             Action.GoToAlbum -> viewModel.toAlbum(navigator)
             Action.GoToArtist -> viewModel.toArtist(navigator)
