@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
@@ -429,11 +430,10 @@ class AudiosViewModel @Inject constructor(
 
     fun playNext() {
         viewModelScope.launch {
-            toaster.show(
-                title = R.string.coming_soon,
-                message = R.string.coming_soon_msg,
-                leading = Icons.Outlined.MoreTime
-            )
+            val index = remote.nextIndex
+            // might return -1 if nextIndex is unset. in this case the item will be added to end of
+            // queue.
+            addToQueue(index)
         }
     }
 
@@ -443,11 +443,46 @@ class AudiosViewModel @Inject constructor(
      */
     fun addToQueue(index: Int = -1) {
         viewModelScope.launch {
-            toaster.show(
-                title = R.string.coming_soon,
-                message = R.string.coming_soon_msg,
-                leading = Icons.Outlined.MoreTime
-            )
+            with(toaster) {
+                // The algo goes like this.
+                // This fun is called on selected item or focused one.
+                // so obtain the keys/ids
+                val list = when {
+                    focused.isNotBlank() -> listOf(focused)
+                    selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
+                    else -> {
+                        toaster.show("No item selected.", "Message")
+                        return@launch
+                    }
+                }
+                // consume selected
+                clear()
+                // show warning
+                show(
+                    R.string.warning_queue_add_experimental,
+                    R.string.warning,
+                    ResourcesCompat.ID_NULL,
+                    Icons.Outlined.Warning,
+                    Color.DahliaYellow,
+                    Channel.Duration.Short
+                )
+                // map keys to media item
+                val audios = list.mapNotNull {
+                    repository.findAudio(it.toLongOrNull() ?: 0)?.toMediaItem
+                }
+                // This case is just a guard case here.
+                // As this will never be called under normal circumstances.
+                if (audios.isEmpty())
+                    return@launch
+                val count = remote.add(*audios.toTypedArray(), index = index)
+                show(
+                    buildPluralResource(id = R.plurals.queue_update_msg, count, count, audios.size),
+                    buildTextResource(if (count == 0) R.string.error_status_uncertain else R.string.success),
+                    null,
+                    Icons.Outlined.Queue,
+                    if (count == 0) Color.RedViolet else Color.MetroGreen
+                )
+            }
         }
     }
 

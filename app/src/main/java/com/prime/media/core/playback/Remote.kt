@@ -620,6 +620,7 @@ private class RemoteImpl(context: Context) : Remote, Listener {
         val browser = fBrowser.await()
         if (!browser.shuffleModeEnabled)
             return index
+        // FixMe: Return the shuffled index.
         return index
     }
 

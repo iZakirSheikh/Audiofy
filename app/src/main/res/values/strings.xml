@@ -6,7 +6,8 @@
     <string name="app_name2">@string/app_name</string>
 
     <string name="storage_permission_message">
-        In order to work properly the app requires permission to your devices storage (Photos, Media and Files).
+       This app lets you enjoy audio files from your device’s storage. To do that, it needs your
+        permission to access your storage
     </string>
     <string name="storage_permission">Storage\nPermission</string>
     <string name="dismiss">Dismiss</string>
@@ -56,24 +57,31 @@
 
 
     <string name="review_msg">
-        If you enjoy using Audiofy, please take a moment and rate it 5 stars on app store. Thanks for your support \nTap to rate.
+        If you enjoy using Audiofy, please take a moment and rate it 5 stars on app store.
+        Thanks for your support \nTap to rate.
     </string>
     <string name="feedback_mail_subject">Feedback of %1$s</string>
     <string name="new_update_msg">
-        Audiofy recommends that you update to the latest version. By downloading the latest version you will get latest features bug fixes, performance improvements etc.
+        You can enjoy the best of Audiofy by updating to the latest version. The new version has
+        improved features, fixed bugs, and increased performance that will make your audio more enjoyable.
     </string>
 
     <string name="feedback_dialog_placeholder">
         Have feedback? We\'d love to hear it, but please don\'t share sensitive information.
     </string>
     <string name="about_us_desc">
-        Hello, I am  <b><i>Zakir Sheikh</i></b> . I Love to develop apps. I like my apps to be useful plus <b>aesthetically beautiful</b> . Send me your precious <b>feedback</b> to keep me informed about you requirements. Please don\'t forget to rate the app <b>5 Star</b> , because this keeps me motivated.
+       Thank you for using this app. I am an <b>individual developer</b> who loves to create useful and
+        beautiful apps. I need your support to keep developing this app and make it better. You can
+        support me by buying the app or rating it <b>5 stars</b> on the store. Your <b>feedback</b>
+        is also very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
+        and encouragement.
     </string>
     <string name="feedback">Feedback</string>
     <string name="rate_us">Rate Us</string>
     <string name="spread_the_word">Spread the word</string>
     <string name="spread_the_word_summery">
-        \" As the saying goes \'Sharing is caring\'. Please help the app grow by sharing it with friends, family and WhatsApp groups etc.\"
+        We appreciate your support for the app. If you love it, please share it with your friends,
+        family and WhatsApp groups. Remember, sharing is caring!
     </string>
     <string name="about_us">About Us</string>
     <string name="app_version">App Version</string>
@@ -91,7 +99,9 @@
     <string name="error">Error</string>
     <!--In_ case the feature requires time.-->
     <string name="coming_soon">Coming soon!</string>
-    <string name="coming_soon_msg">"We're working hard to bring this feature to you. Please check back soon for updates."</string>
+    <string name="coming_soon_msg">
+        We\'re working hard to bring this feature to you. Please check back soon for updates.
+    </string>
 
     <string name="playing_queue">Playing Queue</string>
     <string name="now_playing">Now Playing</string>
@@ -100,14 +110,9 @@
 
     <!--The messages to be shown when on removing a track from queue.-->
     <string name="track_remove_msg">The track will be removed shortly.</string>
-    <string name="track_remove_error_msg">Oops! It seems there was an error while trying to remove the track.</string>
-
-    <!--The messages to be shown on up-dation of queue.-->
-    <plurals name="queue_update_desc">
-        <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
-        <item quantity="one">%d item has been successfully added to the playlist. Enjoy your music!</item>
-        <item quantity="other">%d items have been successfully added to the playlist. Enjoy your music!</item>
-    </plurals>
+    <string name="track_remove_error_msg">
+        Oops! It seems there was an error while trying to remove the track.
+    </string>
 
     <!--Delete files-->
     <string name="delete_files_warning_msg">
@@ -118,6 +123,7 @@
 
     <!--Delete error-->
     <string name="delete">Delete</string>
+    <string name="error_status_uncertain">Error Status Uncertain</string>
     <string name="delete_audio_error">Oops! An error occurred while deleting audio files</string>
 
     <!--Delete confirm dialog-->
@@ -138,4 +144,16 @@
     </string>
 
     <string name="success">Success</string>
+    <!--Warning-->
+    <string name="warning">Warning</string>
+    <!--Queue Update-->
+    <string name="warning_queue_add_experimental">
+        Please note that adding to queue is an experimental feature and it may not work properly
+        when shuffle mode is on.
+    </string>
+    <plurals name="queue_update_msg">
+        <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
+        <item quantity="one">%d/%d item has been successfully added to the playlist. Enjoy your music!</item>
+        <item quantity="other">%d/%d items have been successfully added to the playlist. Enjoy your music!</item>
+    </plurals>
 </resources>
