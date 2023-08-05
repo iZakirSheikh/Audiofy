@@ -97,18 +97,14 @@ class ConsoleViewModel @Inject constructor(
     override fun cycleRepeatMode() {
         viewModelScope.launch {
             remote.cycleRepeatMode()
-            val newMode = remote.repeatMode
-            // (repeatMode as MutableState).value = newMode
+        }
+    }
 
-            toaster.show(
-                title = "Repeat Mode",
-                message = when (newMode) {
-                    Player.REPEAT_MODE_OFF -> "Repeat mode none."
-                    Player.REPEAT_MODE_ALL -> "Repeat mode all."
-                    else -> "Repeat mode one."
-                },
-                leading = R.drawable.ic_repeat
-            )
+    override fun clear(context: Context) {
+        viewModelScope.launch {
+            val msg = "The playing queue will be cleared shortly."
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            remote.clear()
         }
     }
 
@@ -149,15 +145,12 @@ class ConsoleViewModel @Inject constructor(
                 )
             // update the favourite
             this@ConsoleViewModel.favourite = !favourite && res
-            toaster.show(
-                message = when {
-                    !res -> Text("An error occured while adding/removing the item to favourite playlist")
-                    !favourite -> Text(R.string.msg_fav_added)
-                    else -> Text(R.string.msg_fav_removed)
-                },
-                title = Text("Favourites"),
-                leading = R.drawable.ic_heart
-            )
+            if (!res)
+                toaster.show(
+                    message = Text("An error occurred while adding/removing the item to favourite playlist"),
+                    title = Text("Favourites"),
+                    leading = R.drawable.ic_heart
+                )
         }
     }
 
@@ -166,11 +159,6 @@ class ConsoleViewModel @Inject constructor(
             val newValue = !remote.shuffle
             remote.shuffle = newValue
             shuffle = newValue
-            toaster.show(
-                message = if (newValue) "Shuffle enabled." else "Shuffle disabled.",
-                title = "Shuffle",
-                leading = R.drawable.ic_shuffle,
-            )
         }
     }
 

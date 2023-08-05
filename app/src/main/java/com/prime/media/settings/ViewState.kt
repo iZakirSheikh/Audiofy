@@ -18,9 +18,8 @@ import com.primex.preferences.Key
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
 import com.primex.preferences.intPreferenceKey
-import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.stringPreferenceKey
-import java.util.concurrent.TimeUnit
+import com.primex.preferences.stringSetPreferenceKey
 
 private const val TAG = "Settings"
 
@@ -77,7 +76,7 @@ interface Settings {
          */
         val MINI_PLAYER_HEIGHT = 68.dp
 
-        private val defaultMinTrackLimit = TimeUnit.MINUTES.toMillis(1)
+        val LatoFontFamily = FontFamily("Roboto")
 
         /**
          * Retrieves/Sets The [NightMode] Strategy
@@ -91,7 +90,6 @@ interface Settings {
                     override fun restore(value: String): NightMode = NightMode.valueOf(value)
                 }
             )
-
         val FORCE_COLORIZE = booleanPreferenceKey(PREFIX + "_force_colorize", false)
         val COLOR_STATUS_BAR = booleanPreferenceKey(PREFIX + "_color_status_bar", false)
         val HIDE_STATUS_BAR = booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
@@ -99,18 +97,37 @@ interface Settings {
         /**
          * The length/duration of the track in mills considered above which to include
          */
-        val EXCLUDE_TRACK_DURATION =
-            longPreferenceKey(PREFIX + "_min_duration_limit_of_track", defaultMinTrackLimit)
-        val MAX_RECENT_PLAYLIST_SIZE =
+        val MIN_TRACK_LENGTH_SECS =
+            intPreferenceKey(PREFIX + "_track_duration_", 20)
+        val RECENT_PLAYLIST_LIMIT =
             intPreferenceKey(PREFIX + "_max_recent_size", defaultValue = 20)
 
-        val LatoFontFamily = com.prime.media.settings.FontFamily("Lato")
+        /**
+         * The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
+         */
+        val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", true)
+        val TRASH_CAN_ENABLED =
+            booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
+
+        /**
+         * The set of files/ folders that have been excluded from media scanning.
+         */
+        val BLACKLISTED_FILES = stringSetPreferenceKey(PREFIX + "_blacklisted_files")
+        val GAPLESS_PLAYBACK = booleanPreferenceKey(PREFIX + "_gap_less_playback")
+        val CROSS_FADE_DURATION_SECS = intPreferenceKey(PREFIX + "_cross_fade_tracks_durations")
     }
 
     val darkUiMode: Preference<NightMode>
     val colorStatusBar: Preference<Boolean>
     val hideStatusBar: Preference<Boolean>
     val forceAccent: Preference<Boolean>
+    val minTrackLength: Preference<Int>
+    val recentPlaylistLimit: Preference<Int>
+    val fetchArtworkFromMS: Preference<Boolean>
+    val enableTrashCan: Preference<Boolean>
+    val excludedFiles: Preference<Set<String>?>
+    val gaplessPlayback: Preference<Boolean>
+    val crossfadeTime: Preference<Int>
 
     fun <S, O> set(key: Key<S, O>, value: O)
 }

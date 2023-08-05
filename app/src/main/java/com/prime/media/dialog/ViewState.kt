@@ -40,4 +40,6 @@ interface PlayingQueue {
      * Toggles the shuffle
      */
     fun toggleShuffle()
+
+    fun clear(context: Context)
 }

@@ -375,7 +375,7 @@ private fun NavGraph(
     }
 }
 
-private val LightSystemBarsColor = Color(0x20000000)
+private val LightSystemBarsColor = Color(0x10000000)
 private val DarkSystemBarsColor = Color(0x11FFFFFF)
 
 @Composable
@@ -419,7 +419,8 @@ fun Home(
         val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
         val color = when {
             colorSystemBars -> Material.colors.primary
-            else -> Color.Transparent
+            isDark -> DarkSystemBarsColor
+            else -> LightSystemBarsColor
         }
         SideEffect {
             val window = (view.context as Activity).window

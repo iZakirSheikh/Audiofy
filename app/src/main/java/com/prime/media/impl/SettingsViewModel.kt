@@ -33,8 +33,8 @@ class SettingsViewModel @Inject constructor(
         preferences[Settings.NIGHT_MODE].map {
             Preference(
                 value = it,
-                title = Text("Dark Mode"),
-                summery = Text("Click to change the app night/light mode."),
+                title = Text("App Theme"),
+                summery = Text("Select the app theme: dark, light, or follow the system settings."),
                 vector = Icons.Outlined.Lightbulb
             )
         }.asComposeState()
@@ -46,7 +46,7 @@ class SettingsViewModel @Inject constructor(
             Preference(
                 vector = null,
                 title = Text("Color Status Bar"),
-                summery = Text("Force color status bar."),
+                summery = Text("Make the status bar colorful."),
                 value = it
             )
         }.asComposeState()
@@ -57,7 +57,7 @@ class SettingsViewModel @Inject constructor(
             Preference(
                 value = it,
                 title = Text("Hide Status Bar"),
-                summery = Text("hide status bar for immersive view"),
+                summery = Text("Enjoy a more immersive view without the status bar."),
                 vector = Icons.Outlined.HideImage
             )
         }.asComposeState()
@@ -68,7 +68,74 @@ class SettingsViewModel @Inject constructor(
             Preference(
                 value = it,
                 title = Text("Force Accent Color"),
-                summery = Text("Normally the app follows the rule of using 10% accent color. But if this setting is toggled it can make it use  more than 30%")
+                summery = Text("Increase or decrease the accent color usage in the app.")
+            )
+        }.asComposeState()
+    }
+
+    override val minTrackLength: Preference<Int> by with(preferences){
+        preferences[Settings.MIN_TRACK_LENGTH_SECS].map {
+            Preference(
+                title = Text("Minimum track length"),
+                summery = Text("Only tracks longer than this duration (in seconds) will be added to the library."),
+                value = it
+            )
+        }.asComposeState()
+    }
+
+    override val recentPlaylistLimit: Preference<Int> by with(preferences){
+        preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
+            Preference(
+                title = Text("Recent playlist size"),
+                summery = Text("Set the maximum number of tracks that should be stored in the playlist history. "),
+                value = it
+            )
+        }.asComposeState()
+    }
+
+    override val fetchArtworkFromMS: Preference<Boolean> by with(preferences){
+        preferences[Settings.USE_LEGACY_ARTWORK_METHOD].map {
+            Preference(
+                title = Text("Fetch artwork from MediaStore"),
+                summery = Text("Faster artwork loading time, but can show incorrect artwork"),
+                value = it
+            )
+        }.asComposeState()
+    }
+
+    override val enableTrashCan: Preference<Boolean> by with(preferences){
+        preferences[Settings.TRASH_CAN_ENABLED].map {
+            Preference(
+                title = Text("Enable trash can"),
+                summery = Text("When enabled, deleted tracks will be moved to a trash can folder instead of being permanently deleted. "),
+                value = it
+            )
+        }.asComposeState()
+    }
+    override val excludedFiles: Preference<Set<String>?> by with(preferences){
+        preferences[Settings.BLACKLISTED_FILES].map {
+            Preference(
+                title = Text("Blacklist"),
+                summery = Text("Tracks from the blacklist folders will be hidden from your library."),
+                value = it
+            )
+        }.asComposeState()
+    }
+    override val gaplessPlayback: Preference<Boolean> by with(preferences){
+        preferences[Settings.TRASH_CAN_ENABLED].map {
+            Preference(
+                title = Text("Enable gapless playback"),
+                summery = Text("When enabled, there will be no gaps or pauses between tracks during playback."),
+                value = it
+            )
+        }.asComposeState()
+    }
+    override val crossfadeTime: Preference<Int> by with(preferences){
+        preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
+            Preference(
+                title = Text("Crossfade time"),
+                summery = Text("The duration (in seconds) of cross fading effect between tracks during playback."),
+                value = it
             )
         }.asComposeState()
     }

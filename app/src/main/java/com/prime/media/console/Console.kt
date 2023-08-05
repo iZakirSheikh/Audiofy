@@ -85,8 +85,11 @@ import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
+import com.prime.media.core.compose.AVDIconButton
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.LottieAnimButton
+import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.rememberAnimatedVectorResource
 import com.prime.media.core.compose.shape.CompactDisk
@@ -145,13 +148,12 @@ private fun PlayButton(
             darkShadowColor = Material.colors.darkShadowColor
         )
     ) {
-        Icon(
-            painter = rememberAnimatedVectorResource(
-                id = R.drawable.avd_pause_to_play,
-                atEnd = !isPlaying
-            ),
-            modifier = Modifier.scale(1.5f),
-            contentDescription = null
+        LottieAnimation(
+            id = R.raw.lt_play_pause,
+            atEnd = !isPlaying,
+            scale = 1.5f,
+            progressRange = 0.0f..0.5f,
+            duration = 1200
         )
     }
 }
@@ -350,12 +352,14 @@ private fun Vertical(
 
         val favourite = state.favourite
         val facade = LocalSystemFacade.current
-        IconButton(
+        LottieAnimButton(
+            id = R.raw.lt_twitter_heart_filled_unfilled,
             onClick = { state.toggleFav(); facade.launchReviewFlow() },
-            painter = painterResource(id = if (favourite) R.drawable.ic_heart_filled else R.drawable.ic_heart),
-            contentDescription = null,
             modifier = Modifier.layoutID(Console.HEART),
-            tint = onColor
+            scale = 3.5f,
+            progressRange = 0.13f..0.95f,
+            duration = 800,
+            atEnd = !favourite
         )
 
         IconButton(
@@ -477,17 +481,20 @@ private fun Vertical(
             tint = onColor
         )
         val shuffle = state.shuffle
-        IconButton(
+        LottieAnimButton(
+            id = R.raw.lt_shuffle_on_off,
             onClick = { state.toggleShuffle(); facade.launchReviewFlow(); },
-            painter = painterResource(id = R.drawable.ic_shuffle),
             modifier = Modifier.layoutID(Console.SHUFFLE),
-            tint = onColor.copy(if (shuffle) ContentAlpha.high else ContentAlpha.medium)
+            atEnd = !shuffle,
+            progressRange = 0f..0.8f,
+            scale = 1.5f
         )
 
         val mode = state.repeatMode
-        IconButton(
+        AVDIconButton(
+            id  = R.drawable.avd_repeat_more_one_all,
             onClick = { state.cycleRepeatMode();facade.launchReviewFlow(); },
-            painter = painterResource(id = if (mode == Player.REPEAT_MODE_ONE) R.drawable.ic_repeat_one else R.drawable.ic_repeat),
+            atEnd = mode == Player.REPEAT_MODE_ALL,
             modifier = Modifier.layoutID(Console.REPEAT),
             tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
         )

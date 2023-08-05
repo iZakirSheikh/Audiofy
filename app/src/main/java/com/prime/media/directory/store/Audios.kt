@@ -35,17 +35,16 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.C
 import androidx.navigation.NavHostController
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.composable
 import com.prime.media.core.*
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.Channel
+import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.db.Audio
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.PathUtils
@@ -633,13 +632,14 @@ private inline fun Actions(
 ) {
     Box(modifier = Modifier.offset(x = -16.dp)) {
         // Favourite Action.
-        IconButton(
-            contentDescription = null,
-            imageVector = if (favourite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-            onClick = { onAction(Action.Make) },
-            enabled = enabled
+        LottieAnimButton(
+            id = R.raw.lt_twitter_heart_filled_unfilled,
+            onClick = { onAction(Action.Make)},
+            scale = 3.5f,
+            progressRange = 0.13f..0.95f,
+            duration = 800,
+            atEnd = !favourite
         )
-
         // MoreVert
         var showMore by rememberState(initial = false)
         IconButton(

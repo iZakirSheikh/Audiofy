@@ -22,6 +22,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
@@ -51,6 +52,7 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -139,7 +141,7 @@ private fun TopAppBar(
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
-        title = { Label(text = stringResource(R.string.playing_queue)) },
+        title = { Label(text = stringResource(R.string.playing_queue), style =  Material.typography.body2, fontWeight = FontWeight.Bold) },
         backgroundColor = Material.colors.surface,
         contentColor = Material.colors.onSurface,
         elevation = 0.dp,
@@ -154,11 +156,21 @@ private fun TopAppBar(
         },
         // Actions like close, shuffle.
         actions = {
+
+            val ctx = LocalContext.current
             IconButton(
-                onClick = { state.toggleShuffle() },
-                painter = painterResource(id = R.drawable.ic_shuffle),
+                onClick = { state.clear(ctx)},
+                imageVector = Icons.Outlined.ClearAll,
                 contentDescription = null,
-                tint = Material.colors.onSurface.copy(if (state.shuffle) ContentAlpha.high else ContentAlpha.disabled),
+            )
+
+            val shuffle = state.shuffle
+            LottieAnimButton(
+                id = R.raw.lt_shuffle_on_off,
+                onClick = { state.toggleShuffle()},
+                atEnd = !shuffle,
+                progressRange = 0f..0.8f,
+                scale = 1.5f
             )
 
             IconButton(
