@@ -18,15 +18,20 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AudioFile
+import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.material.icons.outlined.Recycling
 import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -46,11 +51,14 @@ import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.LocalWindowSizeClass
+import com.prime.media.core.compose.SliderPreference2
 import com.prime.media.core.compose.purchase
 import com.prime.media.darkShadowColor
 import com.prime.media.lightShadowColor
 import com.primex.core.drawHorizontalDivider
+import com.primex.core.rememberState
 import com.primex.core.stringHtmlResource
+import com.primex.core.stringResource
 import com.primex.core.value
 import com.primex.material2.DropDownPreference
 import com.primex.material2.IconButton
@@ -229,6 +237,80 @@ private inline fun ColumnScope.AboutUs() {
     )
 }
 
+context(ColumnScope)
+@Composable
+private inline fun General(
+    state: Settings
+) {
+    val trashcan = state.enableTrashCan
+    SwitchPreference(
+        title = stringResource(value = trashcan.title),
+        checked = trashcan.value,
+        summery = stringResource(value = trashcan.summery),
+        onCheckedChange = {
+            state.set(Settings.TRASH_CAN_ENABLED, it)
+        },
+        icon = Icons.Outlined.Recycling
+    )
+
+    val legacyArtwork = state.fetchArtworkFromMS
+    SwitchPreference(
+        title = stringResource(value = legacyArtwork.title),
+        checked = legacyArtwork.value,
+        summery = stringResource(value = legacyArtwork.summery),
+        onCheckedChange = {
+            state.set(Settings.USE_LEGACY_ARTWORK_METHOD, it)
+        },
+        icon = Icons.Outlined.Camera
+    )
+
+    val excludeTrackDuration = state.minTrackLength
+    SliderPreference2(
+        title = stringResource(value = excludeTrackDuration.title),
+        defaultValue = excludeTrackDuration.value.toFloat(),
+        summery = stringResource(value = excludeTrackDuration.summery),
+        onValueChange = {
+            state.set(Settings.MIN_TRACK_LENGTH_SECS, it.toInt())
+        },
+        valueRange = 0f..100f,
+        steps = 5,
+        preview = "${excludeTrackDuration.value}s",
+        icon = Icons.Outlined.Straighten,
+    )
+
+    val list = state.excludedFiles
+    var showBlackListDialog by rememberState(initial = false)
+    // The Blacklist Dialog.
+    BlacklistDialog(
+        showBlackListDialog,
+        state = state,
+        onDismissRequest = { showBlackListDialog = false }
+    )
+
+    Preference(
+        title = stringResource(value = list.title),
+        summery = stringResource(value = list.summery),
+        icon = Icons.Outlined.AudioFile,
+        modifier = Modifier.clickable {
+            showBlackListDialog = true
+        }
+    )
+
+    val maxRecentSize = state.recentPlaylistLimit
+    SliderPreference2(
+        title = stringResource(value = maxRecentSize.title),
+        defaultValue = maxRecentSize.value.toFloat(),
+        summery = stringResource(value = maxRecentSize.summery),
+        onValueChange = {
+            state.set(Settings.RECENT_PLAYLIST_LIMIT, it.toInt())
+        },
+        icon = Icons.Outlined.Straighten,
+        valueRange = 50f..200f,
+        preview = "${maxRecentSize.value} files",
+        steps = 5
+    )
+}
+
 @Composable
 private fun Compact(state: Settings) {
     Scaffold(topBar = { TopAppBar(Modifier.statusBarsPadding()) }) {
@@ -238,6 +320,8 @@ private fun Compact(state: Settings) {
                 .verticalScroll(rememberScrollState())
         ) {
             Body(state)
+            PrefHeader(text = "General")
+            General(state = state)
             PrefHeader(text = "Feedback")
             FeedBack()
             PrefHeader(text = stringResource(R.string.about_us))

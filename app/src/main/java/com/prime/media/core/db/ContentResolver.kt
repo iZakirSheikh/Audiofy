@@ -877,3 +877,67 @@ suspend fun ContentResolver.delete(activity: ComponentActivity, vararg uri: Uri)
         launcher.launch(intentSenderRequest)
     }
 }
+
+/**
+ * A simple extension method that trashes files insetead of deleting them.
+ * @see delete
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+suspend fun ContentResolver.trash(activity: ComponentActivity, vararg uri: Uri): Int {
+    if (uri.isEmpty()) return -1 // error
+    return suspendCoroutine { continuation ->
+        // Create a lazy ActivityResultLauncher object
+        var launcher: ActivityResultLauncher<IntentSenderRequest>? = null
+        // Assign result to launcher in such a way tha it allows us to
+        // unregister later.
+        val contract = ActivityResultContracts.StartIntentSenderForResult()
+        launcher = activity.registerActivityResultLauncher(contract) {
+            // unregister launcher
+            launcher?.unregister()
+            // user cancelled
+            if (it.resultCode == Activity.RESULT_CANCELED) {
+                continuation.resume(-3 /*cancelled*/)
+                return@registerActivityResultLauncher
+            }
+            // some unknown error occurred
+            if (it.resultCode != Activity.RESULT_OK) {
+                continuation.resume(-1 /*Error*/)
+                return@registerActivityResultLauncher
+            }
+            // construct which ids have been removed.
+            val ids = uri.joinToString(", ") {
+                "${ContentUris.parseId(it)}"
+            }
+            // assuming that all uri's are content uris.
+            val parent = ContentUris.removeId(uri[0])
+            // check how many are still there; maybe some error occurred while deleting some files.
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            val count =
+                query(
+                    parent,
+                    projection,
+                    "${MediaStore.MediaColumns._ID} IN ($ids)",
+                    null,
+                    null
+                ).use { it?.count ?: -1 }
+            // resume with how many files have been trashed or error code.
+            continuation.resume(if (count > 0) uri.size - count else if (count == 0) uri.size else count)
+        }
+        val request = MediaStore.createTrashRequest(this, uri.toList(), true).intentSender
+        // Create an IntentSenderRequest object from the IntentSender object
+        val intentSenderRequest = IntentSenderRequest.Builder(request).build()
+        // Launch the activity for result using the IntentSenderRequest object
+        launcher.launch(intentSenderRequest)
+    }
+}
+
+/**
+ * A simple extension method that trashes files instead of deleting them.
+ * @see delete
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+fun ContentResolver.trash(activity: Activity, vararg uri: Uri): Int {
+    val deleteRequest = MediaStore.createTrashRequest(this, uri.toList(), true).intentSender
+    activity.startIntentSenderForResult(deleteRequest, 100, null, 0, 0, 0)
+    return -2 // dialog is about to be shown.
+}

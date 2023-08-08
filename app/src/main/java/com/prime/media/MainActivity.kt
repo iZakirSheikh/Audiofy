@@ -52,6 +52,7 @@ import com.prime.media.core.db.findAudio
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.playback.Remote
 import com.primex.core.MetroGreen
+import com.primex.core.OrientRed
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
@@ -336,21 +337,34 @@ class MainActivity : ComponentActivity(), SystemFacade {
     }
 
     override fun launchEqualizer(id: Int) {
-        if (id == AudioEffect.ERROR_BAD_VALUE) {
-            Toast.makeText(this, "No Session Id", Toast.LENGTH_LONG).show();
-            return
+        lifecycleScope.launch {
+            if (id == AudioEffect.ERROR_BAD_VALUE)
+                return@launch show(R.string.error_msg, R.string.error)
+            val result = kotlin.runCatching {
+                startActivity(
+                    Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
+                    }
+                )
+            }
+            if (!result.isFailure)
+                return@launch
+           val res = channel.show(
+               message = R.string.equalizer_3rd_party_not_found_msg,
+               action = R.string.launch,
+               accent = Color.OrientRed,
+               duration = Duration.Short
+           )
+            if (res != Channel.Result.ActionPerformed)
+                return@launch
+            runCatching {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse("market://search?q=equalizer")
+                startActivity(intent)
+            }
         }
-        val res = kotlin.runCatching {
-            startActivity(
-                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
-                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
-                }
-            )
-        }
-        if (res.exceptionOrNull() is ActivityNotFoundException)
-            Toast.makeText(this, "There is no equalizer", Toast.LENGTH_SHORT).show();
     }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)

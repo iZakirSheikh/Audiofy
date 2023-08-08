@@ -1,5 +1,6 @@
 package com.prime.media.settings
 
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Stable
@@ -13,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.core.NightMode
 import com.prime.media.core.Route
+import com.prime.media.core.playback.Playback
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.StringSaver
@@ -63,7 +65,7 @@ private fun FontFamily(name: String) = FontFamily(
 )
 
 @Stable
-interface Settings {
+interface Settings : Blacklist {
     companion object : Route {
         override val route = "settings"
         override val title: Text get() = Text("Settings")
@@ -98,9 +100,8 @@ interface Settings {
          * The length/duration of the track in mills considered above which to include
          */
         val MIN_TRACK_LENGTH_SECS =
-            intPreferenceKey(PREFIX + "_track_duration_", 20)
-        val RECENT_PLAYLIST_LIMIT =
-            intPreferenceKey(PREFIX + "_max_recent_size", defaultValue = 20)
+            intPreferenceKey(PREFIX + "_track_duration_", 30)
+        val RECENT_PLAYLIST_LIMIT = Playback.PREF_KEY_RECENT_PLAYLIST_LIMIT
 
         /**
          * The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
@@ -130,4 +131,10 @@ interface Settings {
     val crossfadeTime: Preference<Int>
 
     fun <S, O> set(key: Key<S, O>, value: O)
+}
+
+@Stable
+interface Blacklist {
+    val values: Set<String>?
+    fun unblock(path: String, context: Context)
 }

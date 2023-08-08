@@ -3,11 +3,13 @@ package com.prime.media.directory.store
 import android.provider.MediaStore
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,15 +19,22 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.*
+import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.impl.Repository
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.*
+import com.prime.media.core.util.PathUtils
 import com.prime.media.directory.*
+import com.prime.media.impl.block
+import com.prime.media.settings.Settings
+import com.primex.core.DahliaYellow
 import com.primex.core.Text
 import com.primex.material2.Label
 import com.primex.core.Rose
+import com.primex.preferences.Preferences
+import com.primex.preferences.value
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -45,6 +54,7 @@ class FoldersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: Channel,
+    private val preferences: Preferences
 ) : DirectoryViewModel<Folder>(handle) {
 
     companion object {
@@ -98,6 +108,36 @@ class FoldersViewModel @Inject constructor(
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
+    fun exclude(path: String) {
+        viewModelScope.launch {
+            with(toaster) {
+                val list = preferences.value(Settings.BLACKLISTED_FILES)
+                val name = PathUtils.name(path)
+                val response = show(
+                    Text(R.string.block_folder_warning_msg, name),
+                    Text(id = R.string.warning),
+                    Text(id = R.string.add),
+                    Icons.Outlined.Block,
+                    Color.DahliaYellow,
+                    duration = Channel.Duration.Short,
+                )
+                if (response == Channel.Result.Dismissed)
+                    return@launch
+                val result = preferences.block(path)
+                if (result > 0)
+                    show(
+                        Text(R.string.block_success_msg, name),
+                        Text(R.string.blacklist),
+                        leading = Icons.Outlined.Block,
+                        accent = Color.Rose,
+                        duration = Channel.Duration.Short,
+                    )
+                else
+                    show(R.string.error_msg, R.string.error)
+            }
+        }
+    }
 }
 
 private val TILE_WIDTH = 80.dp
@@ -157,10 +197,13 @@ fun Folders(viewModel: FoldersViewModel) {
         Folder(
             value = it,
             modifier = Modifier
-                .clickable {
-                    val direction = Audios.direction(Audios.GET_FROM_FOLDER, it.path)
-                    navigator.navigate(direction)
-                }
+                .combinedClickable(
+                    onClick = {
+                        val direction = Audios.direction(Audios.GET_FROM_FOLDER, it.path)
+                        navigator.navigate(direction)
+                    },
+                    onLongClick = { viewModel.exclude(it.path) }
+                )
                 .animateItemPlacement()
         )
     }

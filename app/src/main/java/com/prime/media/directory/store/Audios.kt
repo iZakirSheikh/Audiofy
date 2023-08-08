@@ -59,6 +59,7 @@ import com.prime.media.core.db.albumUri
 import com.prime.media.core.db.key
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMember
+import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,6 +71,8 @@ import javax.inject.Inject
 import kotlin.collections.ArrayList
 import kotlin.random.Random.Default.nextInt
 import com.primex.core.Text
+import com.primex.preferences.Preferences
+import com.primex.preferences.value
 
 private const val TAG = "AudiosViewModel"
 
@@ -84,6 +87,7 @@ class AudiosViewModel @Inject constructor(
     private val repository: Repository,
     private val toaster: Channel,
     private val remote: Remote,
+    private val preferences: Preferences
 ) : DirectoryViewModel<Audio>(handle) {
 
     companion object {
@@ -420,10 +424,6 @@ class AudiosViewModel @Inject constructor(
         viewModelScope.launch {
             val focused = focused.toLongOrNull() ?: return@launch
             val res = repository.toggleFav(focused)
-            toaster.show(
-                if (res) "Added to favourite" else "Removed from favourite",
-                "Favourite"
-            )
         }
     }
 
@@ -502,10 +502,11 @@ class AudiosViewModel @Inject constructor(
                 }
                 // consume selected
                 clear()
+                val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
                 val res = show(
-                    buildTextResource(R.string.delete_files_warning_msg, list.size),
+                    buildTextResource(if (isTrashEnabled) R.string.trash_files_warning_msg else R.string.delete_files_warning_msg, list.size),
                     buildTextResource(R.string.alert),
-                    buildTextResource(R.string.delete),
+                    buildTextResource(if (isTrashEnabled) R.string.trash else R.string.delete),
                     Icons.Outlined.WarningAmber,
                     accent = Color.Rose,
                     Channel.Duration.Long
@@ -522,7 +523,7 @@ class AudiosViewModel @Inject constructor(
                             it.toLongOrNull() ?: 0
                         )
                     }
-                val result = repository.delete(activity, *uris.toTypedArray())
+                val result = repository.delete(activity, *uris.toTypedArray(), trash = isTrashEnabled)
                 // handle error code
                 // show appropriate message
                 when (result) {

@@ -86,11 +86,13 @@ private val PREF_KEY_ORDERS = stringPreferenceKey(
         }
     }
 )
+private val PREF_KEY_RECENT_PLAYLIST_LIMIT =
+    intPreferenceKey( "_max_recent_size", defaultValue = 50)
 
 /**
  * A simple extension fun that adds items to recent.
  */
-private suspend fun Playlists.addToRecent(item: MediaItem) {
+private suspend fun Playlists.addToRecent(item: MediaItem, limit: Long) {
 
     val playlistId =
         get(PLAYLIST_RECENT)?.id ?: insert(Playlist(name = PLAYLIST_RECENT))
@@ -114,8 +116,6 @@ private suspend fun Playlists.addToRecent(item: MediaItem) {
         }
 
         else -> {
-            // check the limit in this case
-            val limit = 200L
             // delete above member
             delete(playlistId, limit)
             insert(Member(item, playlistId, 0))
@@ -167,6 +167,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
          * The root of the playing queue
          */
         const val ROOT_QUEUE = com.prime.media.core.playback.ROOT_QUEUE
+
+        @JvmField
+        val PREF_KEY_RECENT_PLAYLIST_LIMIT = com.prime.media.core.playback.PREF_KEY_RECENT_PLAYLIST_LIMIT
     }
 
     /**
@@ -293,7 +296,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // save current index in preference
         preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex
         if (mediaItem != null) {
-            GlobalScope.launch { playlists.addToRecent(mediaItem) }
+            val limit = preferences.value(PREF_KEY_RECENT_PLAYLIST_LIMIT)
+            GlobalScope.launch { playlists.addToRecent(mediaItem, limit.toLong()) }
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
         }
     }
