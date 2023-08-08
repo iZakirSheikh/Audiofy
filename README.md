@@ -23,17 +23,20 @@
 |<a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a>
 
 # Description
-<table >
-    <tr>
-       <td style="width: 50%;">
-           Audiofy2 is a media player app that lets you enjoy your favorite tracks and playlists with a simple and intuitive interface. You can switch between light and dark themes, search for tracks, albums, artists and playlists, add songs to your favorites, create, edit, delete and play your own playlists, and more.
-
+<table>
+<tr>
+<td width="50%" >
+Audiofy2 is a media player app that lets you enjoy your favorite tracks and playlists with a simple and intuitive interface. You can switch between light and dark themes, search for tracks, albums, artists and playlists, add songs to your favorites, create, edit, delete and play your own playlists, and more.
 Audiofy2 is built using Jetpack Compose, a modern toolkit for building native Android UIs. It uses Kotlin as the programming language, coroutines and flow for asynchronous and concurrent programming, Jetpack DataStore for data storage, Android Architecture Components for robust, testable, and maintainable design.
 
 Audiofy2 is a beta version of the app and is still under development. Some features may not work as expected or may be unavailable. Please report any bugs or using the issue tracker. Thank you for trying Audiofy2. 😊
-           </td>
-        <td><img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/d0a81f48-8a93-4e74-85fa-43ed13ada793" alt="Gif"></td>
-    </tr>
+</td>
+<td width="30%">
+
+<img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/d0a81f48-8a93-4e74-85fa-43ed13ada793" alt="Gif" width="100%">
+
+</td>
+</tr>
 </table>
 
 ## 🌞 Preview 
