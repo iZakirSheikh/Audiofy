@@ -23,21 +23,9 @@
 |<a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a>
 
 # Description
-<table>
-<tr>
-<td width="50%" >
-Audiofy2 is a media player app that lets you enjoy your favorite tracks and playlists with a simple and intuitive interface. You can switch between light and dark themes, search for tracks, albums, artists and playlists, add songs to your favorites, create, edit, delete and play your own playlists, and more.
-Audiofy2 is built using Jetpack Compose, a modern toolkit for building native Android UIs. It uses Kotlin as the programming language, coroutines and flow for asynchronous and concurrent programming, Jetpack DataStore for data storage, Android Architecture Components for robust, testable, and maintainable design.
-
-Audiofy2 is a beta version of the app and is still under development. Some features may not work as expected or may be unavailable. Please report any bugs or using the issue tracker. Thank you for trying Audiofy2. 😊
-</td>
-<td width="30%">
-
-<img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/d0a81f48-8a93-4e74-85fa-43ed13ada793" alt="Gif" width="100%">
-
-</td>
-</tr>
-</table>
+| Description | Light/Dark Mode Preview |
+| --- | --- |
+|**Audiofy** is a media player app that lets you **enjoy** your **favorite tracks and playlists** with a simple and intuitive interface. You can **switch** between** light and dark** themes, **search** for **tracks, albums, artists and playlists**, add tracks to your** favorites, create, edit, delete and play your own playlists**, and more. <br><br> **Audiofy** is built using **Jetpack Compose,** a modern toolkit for building native Android UIs. It uses **Kotlin** as the programming language, coroutines and flow for asynchronous and concurrent programming, **Jetpack DataStore** for data storage, **Android Architecture Components** for robust, testable, and maintainable design. <br><br> **Audiofy** is a **beta** version of the app and is still **under development**. Some features may not work as expected or may be unavailable. Please **report** any bugs or using the **issue tracker**. Thank you for trying **Audiofy**. 😊 |<img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/d0a81f48-8a93-4e74-85fa-43ed13ada793" alt="Gif" width="300"> 
 
 ## 🌞 Preview 
 
@@ -60,7 +48,7 @@ Audiofy2 is a beta version of the app and is still under development. Some featu
 | Supports Portrait as well as Landscape mode | Rotate your device and enjoy the app in any orientation | :soon: |
 | Play Offline Media | Play any local audio track on your device | :white_check_mark: |
 | Tag Editing Support | Edit the metadata of your songs, such as title, artist, album, etc. | :soon: |
-| Play videos as audio | Play any video file on your device as audio only | :white_check_mark: |
+| Play videos as audio | Play any video file on your device as audio only | :hourglass: |
 | Auto Song Recommendations | Get personalized song recommendations based on your listening habits | :white_check_mark: |
 | Inbuilt Equalizer | Adjust the sound quality and effects of the songs using an inbuilt equalizer | :x: |
 | Backup & Restore | Backup and restore your app data, such as playlists, favorites, history, etc. | :white_check_mark: |
@@ -75,7 +63,7 @@ Audiofy2 is a beta version of the app and is still under development. Some featu
 | Radio support coming soon.  | Listen to online radio stations from various genres and countries (coming soon).  | :soon: |
 
 ## 🧰 Build and run the project
-If you are a developer and want to build and run the Toolz app from the source code, you need to follow these additional steps:
+If you are a developer and want to build and run the Audiofy app from the source code, you need to follow these additional steps:
 
 ### Prerequisites
 - Install Android Studio Alpha (Hedgehog) or above on your machine. You can download it from here: https://developer.android.com/studio/preview
