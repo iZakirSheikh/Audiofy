@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.widget.Toast
@@ -19,6 +21,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.prime.media.MainActivity
 import com.prime.media.R
+import com.prime.media.console.Widget
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.db.Playlists
 import com.prime.media.core.util.Member
@@ -318,6 +321,17 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             preferences[PREF_KEY_ORDERS] = player.orders
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
         }
+    }
+
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        super.onUpdateNotification(session, startInForegroundRequired)
+        // send intent for updating the widget also,
+        val intent = Intent(this, Widget::class.java)
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+        val ids = AppWidgetManager.getInstance(application)
+            .getAppWidgetIds(ComponentName(application, Widget::class.java))
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        sendBroadcast(intent)
     }
 
     override fun onPlayerError(error: PlaybackException) {

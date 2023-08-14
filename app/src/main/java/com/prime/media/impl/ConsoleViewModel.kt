@@ -28,6 +28,7 @@ import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -204,6 +205,7 @@ class ConsoleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             remote.events
+                .onStart { emit(null) }
                 .collect {
                     if (it == null) {
                         // init with events.
