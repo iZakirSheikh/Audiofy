@@ -1,0 +1,68 @@
+name: Build, Sign, Upload, and Release Workflow
+on:
+  push:
+    branches: # Change this to master once everything is setup.
+      - 'develop'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setting environment variables for date, ads, unity, and version
+        run: |
+          echo "DATE_TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "IAP_NO_ADS=$(echo ${{ secrets.IAP_NO_ADS }})" >> $GITHUB_ENV
+          echo "PLACEMENT_BANNER_1=$(echo ${{ secrets.PLACEMENT_BANNER_1 }})" >> $GITHUB_ENV
+          echo "PLACEMENT_BANNER_2=$(echo ${{ secrets.PLACEMENT_BANNER_2 }})" >> $GITHUB_ENV
+          echo "PLACEMENT_INTERSTITIAL=$(echo ${{ secrets.PLACEMENT_INTERSTITIAL }})" >> $GITHUB_ENV
+          echo "PLAY_CONSOLE_APP_RSA_KEY=$(echo ${{ secrets.PLAY_CONSOLE_APP_RSA_KEY }})" >> $GITHUB_ENV
+          echo "UNITY_APP_ID=$(echo ${{ secrets.UNITY_APP_ID }})" >> $GITHUB_ENV
+          echo "GIT_TAG=$(grep -E "versionName\s*=?\s*['\"]" "app/build.gradle.kts" | awk -F"['\"]" '{print $2}')" >> $GITHUB_ENV
+      - name: Configuring Java environment with Zulu JDK 17 and Gradle cache,
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: "17"
+          cache: gradle
+      - name: Granting executable permission to gradlewGenerating Unsigned Apk & Bundle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+          ./gradlew bundleRelease
+      - name: Signing APK
+        uses: r0adkll/sign-android-release@v1
+        id: signed_apk
+        with:
+          releaseDirectory: app/build/outputs/apk/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      - name: Sign AAB
+        uses: r0adkll/sign-android-release@v1
+        id: signed_aab
+        with:
+          releaseDirectory: app/build/outputs/bundle/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      # Uploading Signed AAB to internal track of PlayConsole
+      - name: Publish Signed AAB to Play Store Internal Track
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.prime.player
+          releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
+          track: internal
+      - name: Create Github Release using tag name v${{ env.GIT_TAG }} and uploading signed APK and AAB files
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.GIT_TAG }}
+          generate_release_notes: true
+          prerelease: false
+          files: |
+            ${{steps.signed_aab.outputs.signedReleaseFile}}
+            ${{steps.signed_apk.outputs.signedReleaseFile}}

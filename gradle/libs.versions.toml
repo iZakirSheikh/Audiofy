@@ -1,7 +1,7 @@
 [plugins]
-androidApplication = { id = "com.android.application", version = "8.2.0-alpha15" }
+androidApplication = { id = "com.android.application", version = "8.2.0-alpha16" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version = "1.9.0" }
 firebase = { id = "com.google.gms.google-services", version = "4.3.15" }
 hilt = { id = "com.google.dagger.hilt.android", version = "2.47"}
-crashanlytics = { id = "com.google.firebase.crashlytics", version = "2.9.7"}
+crashanlytics = { id = "com.google.firebase.crashlytics", version = "2.9.8"}
 

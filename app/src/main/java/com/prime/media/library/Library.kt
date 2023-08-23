@@ -55,12 +55,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.load
+import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.KenBurns
@@ -218,13 +218,13 @@ private fun TopBar(modifier: Modifier = Modifier) {
             actions = {
                 // Buy full version button.
 
-                val purchase by purchase(id = Product.DISABLE_ADS)
+                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
                 if (!purchase.purchased)
                     IconButton(
                         painter = painterResource(id = R.drawable.ic_remove_ads),
                         contentDescription = null,
                         onClick = {
-                            provider.launchBillingFlow(Product.DISABLE_ADS)
+                            provider.launchBillingFlow(BuildConfig.IAP_NO_ADS)
                         }
                     )
                 // settings navigation button.

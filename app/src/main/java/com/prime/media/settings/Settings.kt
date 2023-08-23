@@ -44,8 +44,6 @@ import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
 import com.prime.media.core.billing.Banner
-import com.prime.media.core.billing.Placement
-import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
@@ -145,10 +143,10 @@ private inline fun ColumnScope.Body(
         }
     )
 
-    val purchase by purchase(id = Product.DISABLE_ADS)
+    val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
     if (!purchase.purchased)
         Banner(
-            placementID = Placement.BANNER_SETTINGS,
+            placementID = BuildConfig.PLACEMENT_BANNER_1,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 

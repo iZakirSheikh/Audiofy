@@ -375,8 +375,8 @@ private fun NavGraph(
     }
 }
 
-private val LightSystemBarsColor = Color(0x10000000)
-private val DarkSystemBarsColor = Color(0x11FFFFFF)
+private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
+private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
 
 @Composable
 fun Home(
