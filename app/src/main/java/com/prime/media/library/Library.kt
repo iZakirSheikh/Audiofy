@@ -365,7 +365,7 @@ private fun History(
             itemContent = {
                 GridItem(
                     it.title,
-                    onClick = {},
+                    onClick = { state.onClickRecentFile(it.uri) },
                     modifier = Modifier
                         .width(75.dp)
                         .animateItemPlacement(),
@@ -511,7 +511,7 @@ fun NewlyAdded(
             ) {
                 GridItem(
                     it.name,
-                    onClick = {},
+                    onClick = { state.onClickRecentAddedFile(it.id)},
                     modifier = Modifier
                         .width(75.dp)
                         .animateItemPlacement(),

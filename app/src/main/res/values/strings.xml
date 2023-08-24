@@ -236,5 +236,8 @@
         market to enhance your audio experience.
     </string>
     <string name="launch">Launch</string>
+    <string name="library_recent_click_msg">Reset queue and play this? Default: add to queue. Auto-cancel.</string>
+    <string name="reset">reset</string>
+    <string name="library_msg_recently_added_click">Clear queue and play from newly added?</string>
 
 </resources>

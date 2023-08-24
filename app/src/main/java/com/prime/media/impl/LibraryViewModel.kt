@@ -1,17 +1,33 @@
 package com.prime.media.impl
 
+import android.net.Uri
 import android.provider.MediaStore
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ClearAll
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.Message
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
+import com.prime.media.R
 import com.prime.media.core.compose.Channel
+import com.prime.media.core.db.toMediaItem
+import com.prime.media.core.db.uri
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
+import com.prime.media.core.util.toMediaItem
 import com.prime.media.library.Library
+import com.primex.core.DahliaYellow
+import com.primex.core.MetroGreen
+import com.primex.core.Rose
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "LibraryViewModel"
@@ -28,8 +44,8 @@ private const val SHOW_CASE_MAX_ITEMS = 20
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     repository: Repository,
-    remote: Remote,
-    channel: Channel
+    private val remote: Remote,
+    private val channel: Channel
 ) : ViewModel(), Library {
 
     override val recent = repository.playlist(Playback.PLAYLIST_RECENT)
@@ -61,4 +77,80 @@ class LibraryViewModel @Inject constructor(
                 limit = SHOW_CASE_MAX_ITEMS
             )
         }
+
+    override fun onClickRecentFile(uri: String) {
+        viewModelScope.launch {
+            val isAlreadyInPlaylist = remote.seekTo(Uri.parse(uri))
+            // since it is already in the playlist seek to it and return; it will start playing
+            // maybe call play
+            if (isAlreadyInPlaylist)
+                return@launch
+            // Since the item is definitely not in the queue, present a message to the user to inquire
+            // about their preference. If the user agrees, the playlist will be reset, and the recent
+            // item will be added to the playlist, initiating playback from this item's index.
+            // If the user decides otherwise, the item will be added to the queue following the current queue order.
+            val res = channel.show(
+                R.string.library_recent_click_msg,
+                action = R.string.reset,
+                leading = Icons.Outlined.Message,
+                accent = Color.MetroGreen
+            )
+            val files = recent.firstOrNull()
+            val file = files?.find { it.uri == uri }
+            if (files == null || file == null) {
+                channel.show(
+                    R.string.error_msg,
+                    R.string.error,
+                    leading = Icons.Outlined.Error,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
+            if (res != Channel.Result.ActionPerformed) {
+                remote.add(file.toMediaItem, index = remote.nextIndex)
+                remote.seekTo(Uri.parse(uri))
+                return@launch
+            }
+            remote.clear()
+            val index = files.indexOf(file)
+            remote.set(files.map { it.toMediaItem })
+            remote.seekTo(index.coerceAtLeast(0), C.TIME_UNSET)
+            remote.play(true)
+        }
+    }
+
+    override fun onClickRecentAddedFile(id: Long) {
+        viewModelScope.launch {
+            // null case should not happen; bacese that measns some weired error.
+            val files = newlyAdded.firstOrNull()
+            val item = files?.find { it.id == id }
+            if (files == null || item == null) {
+                channel.show(
+                    R.string.error_msg,
+                    R.string.error,
+                    leading = Icons.Outlined.Error,
+                    accent = Color.Rose
+                )
+                return@launch
+            }
+            val isAlreadyInPlaylist = remote.seekTo(item.uri)
+            // since it is already in the playlist seek to it and return; it will start playing
+            // maybe call play
+            if (isAlreadyInPlaylist)
+                return@launch
+            val res = channel.show(
+                R.string.library_msg_recently_added_click,
+                action = R.string.reset,
+                leading = Icons.Outlined.ClearAll,
+                accent = Color.DahliaYellow
+            )
+            // just return
+            if (res != Channel.Result.ActionPerformed)
+                return@launch
+            val index = files.indexOf(item)
+            remote.set(files.map { it.toMediaItem })
+            remote.seekTo(index.coerceAtLeast(0), C.TIME_UNSET)
+            remote.play(true)
+        }
+    }
 }
