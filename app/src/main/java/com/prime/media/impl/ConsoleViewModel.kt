@@ -69,7 +69,8 @@ class ConsoleViewModel @Inject constructor(
     override var repeatMode: Int by mutableIntStateOf(Player.REPEAT_MODE_OFF)
     override var current: MediaItem? by mutableStateOf(null)
     override var favourite: Boolean by mutableStateOf(false)
-    override var playbackSpeed: Float = remote.playbackSpeed
+    override var playbackSpeed: Float get() =  remote.playbackSpeed
+        set(value) { remote.playbackSpeed = value }
     override var position: Long by mutableLongStateOf(0)
 
     override val isLast: Boolean get() = remote.next == null
