@@ -137,16 +137,22 @@ dependencies {
 fun ApplicationDefaultConfig.secrets() {
     var value = "\"" + (System.getenv("IAP_BUY_ME_COFFEE") ?: "empty") + "\""
     buildConfigField("String", "IAP_BUY_ME_COFFEE", value)
+
     value = "\"" + (System.getenv("IAP_NO_ADS") ?: "empty") + "\""
     buildConfigField("String", "IAP_NO_ADS", value)
+
     value = "\"" + (System.getenv("PLACEMENT_BANNER_1") ?: "empty") + "\""
     buildConfigField("String", "PLACEMENT_BANNER_1", value)
+
     value = "\"" + (System.getenv("PLACEMENT_BANNER_2") ?: "empty") + "\""
     buildConfigField("String", "PLACEMENT_BANNER_2", value)
-    value = "\"" + (System.getenv("PLACEMENT_BANNER_2") ?: "empty") + "\""
+
+    value = "\"" + (System.getenv("PLACEMENT_INTERSTITIAL") ?: "empty") + "\""
     buildConfigField("String", "PLACEMENT_INTERSTITIAL", value)
+
     value = "\"" + (System.getenv("UNITY_APP_ID") ?: "empty") + "\""
     buildConfigField("String", "UNITY_APP_ID", value)
+
     value = "\"" + (System.getenv("PLAY_CONSOLE_APP_RSA_KEY") ?: "empty") + "\""
     buildConfigField("String", "PLAY_CONSOLE_APP_RSA_KEY", value)
 }

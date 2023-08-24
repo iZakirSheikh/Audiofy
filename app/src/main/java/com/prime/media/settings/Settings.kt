@@ -1,31 +1,43 @@
 package com.prime.media.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.AudioFile
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Camera
+import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Recycling
 import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Straighten
+import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -34,6 +46,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,6 +77,7 @@ import com.primex.core.value
 import com.primex.material2.DropDownPreference
 import com.primex.material2.IconButton
 import com.primex.material2.Label
+import com.primex.material2.ListTile
 import com.primex.material2.Preference
 import com.primex.material2.SwitchPreference
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
@@ -309,6 +326,94 @@ private inline fun General(
     )
 }
 
+private val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
+    data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
+    putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
+}
+
+private val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
+    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
+}
+
+private val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
+    data = Uri.parse("https://t.me/audiofy_support")
+}
+
+private val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
+    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
+}
+
+
+@Composable
+private fun GetToKnowUs(modifier: Modifier = Modifier) {
+    ListTile(
+        modifier = modifier.offset(x = ContentPadding.normal),
+        color = Color.Transparent,
+        overline = {
+            com.primex.material2.Text(
+                text = "Audiofy",
+                style = Material.typography.h4,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        headline = {
+            Text(
+                text = "v" + BuildConfig.VERSION_NAME + " by Zakir Sheikh",
+                style = Material.typography.caption
+            )
+        },
+        leading = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = null,
+                tint = Material.colors.primary,
+                modifier = Modifier
+                    .scale(2f)
+                    .size(56.dp)
+                    .offset(x = -ContentPadding.medium)
+            )
+        },
+        subtitle = {
+            Row(
+                modifier = Modifier
+                    .padding(top = ContentPadding.medium)
+                    .offset(x = -ContentPadding.medium)
+            ) {
+                val ctx = LocalContext.current
+                IconButton(
+                    imageVector = Icons.Outlined.AlternateEmail,
+                    onClick = { ctx.startActivity(FeedbackIntent) },
+                    modifier = Modifier
+                        .scale(0.7f)
+                        .border(ButtonDefaults.outlinedBorder, CircleShape)
+                )
+                IconButton(
+                    imageVector = Icons.Outlined.DataObject,
+                    onClick = { ctx.startActivity(GithubIntent) },
+                    modifier = Modifier
+                        .scale(0.7f)
+                        .border(ButtonDefaults.outlinedBorder, CircleShape)
+                )
+                IconButton(
+                    imageVector = Icons.Outlined.BugReport,
+                    onClick = { ctx.startActivity(GitHubIssuesPage) },
+                    modifier = Modifier
+                        .scale(0.7f)
+                        .border(ButtonDefaults.outlinedBorder, CircleShape)
+                )
+                IconButton(
+                    imageVector = Icons.Outlined.SupportAgent,
+                    onClick = { ctx.startActivity(TelegramIntent) },
+                    modifier = Modifier
+                        .scale(0.7f)
+                        .border(ButtonDefaults.outlinedBorder, CircleShape)
+                )
+            }
+        }
+    )
+}
+
+
 @Composable
 private fun Compact(state: Settings) {
     Scaffold(topBar = { TopAppBar(Modifier.statusBarsPadding()) }) {
@@ -317,6 +422,8 @@ private fun Compact(state: Settings) {
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
+            PrefHeader(text = "Get to Know Us")
+            GetToKnowUs(modifier = Modifier.padding(start = ContentPadding.normal))
             Body(state)
             PrefHeader(text = "General")
             General(state = state)
