@@ -2,7 +2,7 @@ name: Build, Sign, Upload, and Release Workflow
 on:
   push:
     branches: # Change this to master once everything is setup.
-      - 'develop'
+      - 'master'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:

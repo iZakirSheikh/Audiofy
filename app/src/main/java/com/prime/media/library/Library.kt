@@ -26,14 +26,17 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -285,7 +288,7 @@ private inline fun Shortcut(
         contentPadding = PaddingValues(16.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             backgroundColor = Color.Transparent,
-            contentColor = LocalContentColor.current.copy(ContentAlpha.medium)
+            contentColor = LocalContentColor.current.copy(ContentAlpha.high)
         ),
     ) {
         // val color = Material.colors.onSurface.copy(ContentAlpha.medium)
@@ -312,7 +315,7 @@ private fun Shortcuts(
                 val navigator = LocalNavController.current
                 Shortcut(
                     onAction = { navigator.navigate(Folders.direction()) },
-                    icon = Icons.Outlined.Folder,
+                    icon = Icons.Default.Folder,
                     label = "Folders"
                 )
 
@@ -323,7 +326,7 @@ private fun Shortcuts(
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
-                    icon = Icons.Outlined.Audiotrack,
+                    icon = Icons.Outlined.GraphicEq,
                     label = "Audios"
                 )
                 Shortcut(
@@ -339,7 +342,7 @@ private fun Shortcuts(
 
                 Shortcut(
                     onAction = { navigator.navigate(Playlists.direction()) },
-                    icon = Icons.Outlined.PlaylistAdd,
+                    icon = Icons.Outlined.PlaylistPlay,
                     label = "Playlists"
                 )
             }
@@ -370,7 +373,7 @@ private fun History(
                         Image(
                             data = it.artwork,
                             modifier = Modifier
-                                .border(2.dp, Color.White, CompactDisk)
+                                .border(2.5.dp, Color.White, CompactDisk)
                                 .shadow(ContentElevation.low, CompactDisk)
                                 .size(60.dp)
                         )
