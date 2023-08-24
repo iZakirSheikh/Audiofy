@@ -26,14 +26,17 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -55,12 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.load
+import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.Product
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.KenBurns
@@ -218,13 +221,13 @@ private fun TopBar(modifier: Modifier = Modifier) {
             actions = {
                 // Buy full version button.
 
-                val purchase by purchase(id = Product.DISABLE_ADS)
+                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
                 if (!purchase.purchased)
                     IconButton(
                         painter = painterResource(id = R.drawable.ic_remove_ads),
                         contentDescription = null,
                         onClick = {
-                            provider.launchBillingFlow(Product.DISABLE_ADS)
+                            provider.launchBillingFlow(BuildConfig.IAP_NO_ADS)
                         }
                     )
                 // settings navigation button.
@@ -285,7 +288,7 @@ private inline fun Shortcut(
         contentPadding = PaddingValues(16.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             backgroundColor = Color.Transparent,
-            contentColor = LocalContentColor.current.copy(ContentAlpha.medium)
+            contentColor = LocalContentColor.current.copy(ContentAlpha.high)
         ),
     ) {
         // val color = Material.colors.onSurface.copy(ContentAlpha.medium)
@@ -312,7 +315,7 @@ private fun Shortcuts(
                 val navigator = LocalNavController.current
                 Shortcut(
                     onAction = { navigator.navigate(Folders.direction()) },
-                    icon = Icons.Outlined.Folder,
+                    icon = Icons.Default.Folder,
                     label = "Folders"
                 )
 
@@ -323,7 +326,7 @@ private fun Shortcuts(
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
-                    icon = Icons.Outlined.Audiotrack,
+                    icon = Icons.Outlined.GraphicEq,
                     label = "Audios"
                 )
                 Shortcut(
@@ -339,7 +342,7 @@ private fun Shortcuts(
 
                 Shortcut(
                     onAction = { navigator.navigate(Playlists.direction()) },
-                    icon = Icons.Outlined.PlaylistAdd,
+                    icon = Icons.Outlined.PlaylistPlay,
                     label = "Playlists"
                 )
             }
@@ -362,7 +365,7 @@ private fun History(
             itemContent = {
                 GridItem(
                     it.title,
-                    onClick = {},
+                    onClick = { state.onClickRecentFile(it.uri) },
                     modifier = Modifier
                         .width(75.dp)
                         .animateItemPlacement(),
@@ -370,7 +373,7 @@ private fun History(
                         Image(
                             data = it.artwork,
                             modifier = Modifier
-                                .border(2.dp, Color.White, CompactDisk)
+                                .border(2.5.dp, Color.White, CompactDisk)
                                 .shadow(ContentElevation.low, CompactDisk)
                                 .size(60.dp)
                         )
@@ -508,7 +511,7 @@ fun NewlyAdded(
             ) {
                 GridItem(
                     it.name,
-                    onClick = {},
+                    onClick = { state.onClickRecentAddedFile(it.id)},
                     modifier = Modifier
                         .width(75.dp)
                         .animateItemPlacement(),

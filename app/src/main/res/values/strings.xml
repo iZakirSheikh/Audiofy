@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Audiofy</string>
     <!--The name of the app icon in launcher.-->
     <string name="app_name2">@string/app_name</string>
 
     <string name="storage_permission_message">
-        In order to work properly the app requires permission to your devices storage (Photos, Media and Files).
+       This app lets you enjoy audio files from your device’s storage. To do that, it needs your
+        permission to access your storage
     </string>
     <string name="storage_permission">Storage\nPermission</string>
     <string name="dismiss">Dismiss</string>
@@ -56,24 +56,31 @@
 
 
     <string name="review_msg">
-        If you enjoy using Audiofy, please take a moment and rate it 5 stars on app store. Thanks for your support \nTap to rate.
+        If you enjoy using Audiofy, please take a moment and rate it 5 stars on app store.
+        Thanks for your support \nTap to rate.
     </string>
     <string name="feedback_mail_subject">Feedback of %1$s</string>
     <string name="new_update_msg">
-        Audiofy recommends that you update to the latest version. By downloading the latest version you will get latest features bug fixes, performance improvements etc.
+        You can enjoy the best of Audiofy by updating to the latest version. The new version has
+        improved features, fixed bugs, and increased performance that will make your audio more enjoyable.
     </string>
 
     <string name="feedback_dialog_placeholder">
         Have feedback? We\'d love to hear it, but please don\'t share sensitive information.
     </string>
     <string name="about_us_desc">
-        Hello, I am  <b><i>Zakir Sheikh</i></b> . I Love to develop apps. I like my apps to be useful plus <b>aesthetically beautiful</b> . Send me your precious <b>feedback</b> to keep me informed about you requirements. Please don\'t forget to rate the app <b>5 Star</b> , because this keeps me motivated.
+        Thank you for using this app. I am an <b>individual developer</b> who loves to create useful and
+        beautiful apps. I need your support to keep developing this app and make it better. You can
+        support me by buying the app or rating it <b>5 stars</b> on the store. Your <b>feedback</b>
+        is also very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
+        and encouragement.
     </string>
     <string name="feedback">Feedback</string>
     <string name="rate_us">Rate Us</string>
     <string name="spread_the_word">Spread the word</string>
     <string name="spread_the_word_summery">
-        \" As the saying goes \'Sharing is caring\'. Please help the app grow by sharing it with friends, family and WhatsApp groups etc.\"
+        We appreciate your support for the app. If you love it, please share it with your friends,
+        family and WhatsApp groups. Remember, sharing is caring!
     </string>
     <string name="about_us">About Us</string>
     <string name="app_version">App Version</string>
@@ -89,5 +96,148 @@
     <string name="list_title_less_than_10_mins">Less than 10 Min</string>
     <string name="list_title_greater_than_10_mins">Greater than 10 Min</string>
     <string name="error">Error</string>
+    <!--In_ case the feature requires time.-->
+    <string name="coming_soon">Coming soon!</string>
+    <string name="coming_soon_msg">
+        We\'re working hard to bring this feature to you. Please check back soon for updates.
+    </string>
+
+    <string name="playing_queue">Playing Queue</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="up_next">Up Next</string>
+    <string name="queue_update">Queue Update</string>
+
+    <!--The messages to be shown when on removing a track from queue.-->
+    <string name="track_remove_msg">The track will be removed shortly.</string>
+    <string name="track_remove_error_msg">
+        Oops! It seems there was an error while trying to remove the track.
+    </string>
+
+    <!--Delete files-->
+    <string name="delete_files_warning_msg">
+       Warning: You are about to delete %d files permanently. This cannot be undone. Click ‘Delete’
+        or the message will cancel itself.
+    </string>
+    <string name="trash_files_warning_msg">
+       Warning: You are about to trash %d files. Deleted files will be moved to the trashcan and
+        can be restored within 30 days. After 30 days, files in the trashcan will be permanently
+        deleted. Click ‘Trash’ or the message will cancel itself.
+    </string>
+    <string name="alert">Alert</string>
+
+    <!--Delete error-->
+    <string name="delete">Delete</string>
+    <string name="trash">Trash</string>
+    <string name="error_status_uncertain">Error Status Uncertain</string>
+    <string name="delete_audio_error">Oops! An error occurred while deleting audio files</string>
+
+    <!--Delete confirm dialog-->
+    <string name="confirm">Confirm</string>
+    <string name="delete_dialog_show_msg">
+        A dialog is about to be shown. please confirm to delete the files
+    </string>
+
+    <!--Delete process cancelled-->
+    <string name="cancelled">Cancelled</string>
+    <string name="deleting_process_cancelled">
+        The deleting of files was cancelled by the user.
+    </string>
+
+    <!--Delete message success-->
+    <string name="delete_success_msg">
+        The %1$s/%2$s files from the storage have been successfully deleted.
+    </string>
+
+    <string name="success">Success</string>
+    <!--Warning-->
+    <string name="warning">Warning</string>
+    <!--Queue Update-->
+    <string name="warning_queue_add_experimental">
+        Please note that adding to queue is an experimental feature and it may not work properly
+        when shuffle mode is on.
+    </string>
+
+    <plurals name="queue_update_msg">
+        <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
+        <item quantity="one">%d/%d item has been successfully added to the playlist. Enjoy your music!</item>
+        <item quantity="other">%d/%d items have been successfully added to the playlist. Enjoy your music!</item>
+    </plurals>
+
+    <!--Settings screen-->
+    <!--App Theme-->
+    <string name="app_theme">App Theme</string>
+    <string name="app_theme_summery">
+        Select the app theme: dark, light, or follow the system settings.
+    </string>
+    <!--Color StatusBar-->
+    <string name="color_status_bar">Color Status Bar</string>
+    <string name="color_stutus_bar_summery">
+        Make the status bar colorful.
+    </string>
+    <!--Immersive View-->
+    <string name="immersive_view">Hide Status Bar</string>
+    <string name="immersive_view_summery">
+        Enjoy a more immersive view without the status bar.
+    </string>
+    <!--Force Accent-->
+    <string name="force_accent_color">Force Accent Color</string>
+    <string name="force_aacent_color_summery">
+        Increase or decrease the accent color usage in the app.
+    </string>
+    <!--Min Track Length-->
+    <string name="minimum_track_length">Minimum track length</string>
+    <string name="minimum_track_length_summery">
+        Only tracks longer than this duration (in seconds) will be added to the library.
+    </string>
+    <!--Recent Playlist Size-->
+    <string name="recent_playlist_size">Recent playlist size</string>
+    <string name="recent_playlist_size_summery">
+        "Set the maximum number of tracks that should be stored in the playlist history."
+    </string>
+    <!--Fetch_artwork_from_MediaStore-->
+    <string name="fetch_artwork_from_mediastore">Fetch artwork from MediaStore</string>
+    <string name="fetch_artwork_from_mediastore_summery">
+        Faster artwork loading time, but can show incorrect artwork
+    </string>
+    <!--Enable Trash can-->
+    <string name="enable_trash_can">Enable trash can</string>
+    <string name="enable_trash_can_summery">
+        <b><i>Only available on Android 11 and above</i></b>, when enabled, deleted tracks are moved
+        to a <b>Trash Can</b> folder instead of being permanently deleted.
+    </string>
+    <!--Blacklist-->
+    <string name="blacklist">Blacklist</string>
+    <string name="blacklist_summery">
+        Tracks from the blacklist folders will be hidden from your library.
+    </string>
+    <!--Gapless Playback-->
+    <string name="enable_gapless_playback">Enable gapless playback</string>
+    <string name="enable_gapless_playback_summery">
+        When enabled, there will be no gaps or pauses between tracks during playback.
+    </string>
+    <!--Crossfade Time-->
+    <string name="crossfade_time">Crossfade time</string>
+    <string name="crossfade_time_summery">
+        The duration (in seconds) of cross fading effect between tracks during playback.
+    </string>
+
+    <!--Block path-->
+    <string name="block_folder_warning_msg">
+        You are about to add %1$s to the blacklist. You can unblock it later from the settings.
+        This message will be automatically cancelled if you do not wish to proceed.
+    </string>
+    <string name="add">Add</string>
+    <string name="block_success_msg">%1$s has been added to the blacklist. To unblock, go to the settings and remove it from there.</string>
+    <string name="blacklist_empty_msg">No items have been added to the blacklist yet.  Add folders or files to it by long-pressing them in FolderView.</string>
+
+    <!--Equalizer-->
+    <string name="equalizer_3rd_party_not_found_msg">
+        No third-party or built-in equalizer found. Please download a third-party equalizer from the
+        market to enhance your audio experience.
+    </string>
+    <string name="launch">Launch</string>
+    <string name="library_recent_click_msg">Reset queue and play this? Default: add to queue. Auto-cancel.</string>
+    <string name="reset">reset</string>
+    <string name="library_msg_recently_added_click">Clear queue and play from newly added?</string>
 
 </resources>

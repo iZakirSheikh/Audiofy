@@ -1,5 +1,6 @@
 package com.prime.media.dialog
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.media3.common.MediaItem
@@ -13,6 +14,13 @@ interface PlayingQueue {
      */
     val queue: Flow<List<MediaItem>>
     val shuffle: Boolean
+    val current: MediaItem?
+    val playing: Boolean
+
+    /**
+     * Returns if current is last.
+     */
+    val isLast: Boolean
     /**
      * Play the track of the queue at [position]
      */
@@ -26,10 +34,12 @@ interface PlayingQueue {
     /**
      * Remove the track from the queue identified by [key].
      */
-    fun remove(key: Uri)
+    fun remove(context: Context, key: Uri)
 
     /**
      * Toggles the shuffle
      */
     fun toggleShuffle()
+
+    fun clear(context: Context)
 }

@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.prime.calculator" />
+                  <option name="appId" value="com.prime.player" />
                 </ConnectionSetting>
               </option>
               <option name="failureTypes">

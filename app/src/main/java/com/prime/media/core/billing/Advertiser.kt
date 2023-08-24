@@ -69,7 +69,7 @@ fun Advertiser(
         // init ads sdk
         UnityAds.initialize(
             context,
-            Private.UNITY_APP_ID,
+            BuildConfig.UNITY_APP_ID,
             BuildConfig.DEBUG,
             object : IUnityAdsInitializationListener {
                 override fun onInitializationComplete() {
@@ -106,7 +106,7 @@ fun Advertiser(
      * The placement id of the interstitial ad.
      */
     private val placementID =
-        Placement.INTERSTITIAL
+        BuildConfig.PLACEMENT_INTERSTITIAL
 
     /**
      * This represents the loading state of the interstitial

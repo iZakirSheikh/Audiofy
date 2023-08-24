@@ -1,15 +1,19 @@
 package com.prime.media.impl
 
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.R
@@ -22,7 +26,9 @@ import com.prime.media.core.util.MainHandler
 import com.primex.core.Amber
 import com.primex.core.Text
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -63,8 +69,9 @@ class ConsoleViewModel @Inject constructor(
     override var repeatMode: Int by mutableIntStateOf(Player.REPEAT_MODE_OFF)
     override var current: MediaItem? by mutableStateOf(null)
     override var favourite: Boolean by mutableStateOf(false)
-    override var playbackSpeed: Float = remote.playbackSpeed
-    override var position: Long by mutableStateOf(0)
+    override var playbackSpeed: Float get() =  remote.playbackSpeed
+        set(value) { remote.playbackSpeed = value }
+    override var position: Long by mutableLongStateOf(0)
 
     override val isLast: Boolean get() = remote.next == null
     override var shuffle: Boolean by mutableStateOf(false)
@@ -80,33 +87,34 @@ class ConsoleViewModel @Inject constructor(
     override fun skipToPrev() = remote.skipToPrev()
     override fun playTrackAt(position: Int) = remote.playTrackAt(position)
     override fun playTrack(uri: Uri) = remote.playTrack(uri)
-    override fun remove(key: Uri) {
+
+    override fun remove(context: Context, key: Uri) {
         viewModelScope.launch {
-            remote.remove(key)
+            val removed = remote.remove(key)
+            val msg = if (removed) R.string.track_remove_msg else R.string.track_remove_error_msg
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun cycleRepeatMode() {
         viewModelScope.launch {
             remote.cycleRepeatMode()
-            val newMode = remote.repeatMode
-            // (repeatMode as MutableState).value = newMode
+        }
+    }
 
-            toaster.show(
-                title = "Repeat Mode",
-                message = when (newMode) {
-                    Player.REPEAT_MODE_OFF -> "Repeat mode none."
-                    Player.REPEAT_MODE_ALL -> "Repeat mode all."
-                    else -> "Repeat mode one."
-                },
-                leading = R.drawable.ic_repeat
-            )
+    override fun clear(context: Context) {
+        viewModelScope.launch {
+            val msg = "The playing queue will be cleared shortly."
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            remote.clear()
         }
     }
 
     override fun seekTo(mills: Long) {
         viewModelScope.launch {
             // update the state.
+            if (duration == C.TIME_UNSET)
+                return@launch
             val upto = mills.coerceIn(0, duration)
             position = upto
             remote.seekTo(upto)
@@ -117,9 +125,8 @@ class ConsoleViewModel @Inject constructor(
         viewModelScope.launch {
             // currently not available.
             toaster.show(
-                message = "Temporarily disabled!!",
-                title = "Working on it.",
-                accent = Color.Amber,
+                title = R.string.coming_soon,
+                message = R.string.coming_soon_msg,
                 leading = Icons.Outlined.MoreTime
             )
         }
@@ -140,15 +147,12 @@ class ConsoleViewModel @Inject constructor(
                 )
             // update the favourite
             this@ConsoleViewModel.favourite = !favourite && res
-            toaster.show(
-                message = when {
-                    !res -> Text("An error occured while adding/removing the item to favourite playlist")
-                    !favourite -> Text(R.string.msg_fav_added)
-                    else -> Text(R.string.msg_fav_removed)
-                },
-                title = Text("Favourites"),
-                leading = R.drawable.ic_heart
-            )
+            if (!res)
+                toaster.show(
+                    message = Text("An error occurred while adding/removing the item to favourite playlist"),
+                    title = Text("Favourites"),
+                    leading = R.drawable.ic_heart
+                )
         }
     }
 
@@ -157,11 +161,6 @@ class ConsoleViewModel @Inject constructor(
             val newValue = !remote.shuffle
             remote.shuffle = newValue
             shuffle = newValue
-            toaster.show(
-                message = if (newValue) "Shuffle enabled." else "Shuffle disabled.",
-                title = "Shuffle",
-                leading = R.drawable.ic_shuffle,
-            )
         }
     }
 
@@ -207,6 +206,7 @@ class ConsoleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             remote.events
+                .onStart { emit(null) }
                 .collect {
                     if (it == null) {
                         // init with events.

@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.Material
@@ -119,7 +120,8 @@ class MembersViewModel @Inject constructor(
                         else -> error("$order invalid")
                     }
                 }
-        }.catch {
+        }
+            .catch {
             // any exception.
             toaster.show(
                 "Some unknown error occured!.",
@@ -128,7 +130,7 @@ class MembersViewModel @Inject constructor(
                 accent = Color.Rose,
                 duration = Channel.Duration.Indefinite
             )
-        }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
@@ -210,22 +212,55 @@ class MembersViewModel @Inject constructor(
 
     fun playNext() {
         viewModelScope.launch {
-            toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
-                leading = Icons.Outlined.MoreTime
-            )
+            val index = remote.nextIndex
+            // might return -1 if nextIndex is unset. in this case the item will be added to end of
+            // queue.
+            addToQueue(index)
         }
     }
 
 
-    fun addToQueue() {
+    fun addToQueue(index: Int = -1) {
         viewModelScope.launch {
-            toaster.show(
-                title = "Coming soon.",
-                message = "Requires more polishing. Please wait!",
-                leading = Icons.Outlined.MoreTime
-            )
+            with(toaster) {
+                // because the order is necessary to play intented item first.
+                val src = data.firstOrNull()?.values?.flatten() ?: return@launch
+                val list = when {
+                    focused.isNotBlank() -> listOf(focused)
+                    selected.isNotEmpty() -> ArrayList(selected)
+                    else -> {
+                        toaster.show("No item selected.", "Message")
+                        return@launch
+                    }
+                }
+                // consume selected
+                clear()
+                // show warning
+                show(
+                    R.string.warning_queue_add_experimental,
+                    R.string.warning,
+                    ResourcesCompat.ID_NULL,
+                    Icons.Outlined.Warning,
+                    Color.DahliaYellow,
+                    Channel.Duration.Short
+                )
+                // map keys to media item
+                val audios = list.mapNotNull {id ->
+                    src.find { it.uri == id}?.toMediaItem
+                }
+                // This case is just a guard case here.
+                // As this will never be called under normal circumstances.
+                if (audios.isEmpty())
+                    return@launch
+                val count = remote.add(*audios.toTypedArray(), index = index)
+                show(
+                    buildPluralResource(id = R.plurals.queue_update_msg, count, count, audios.size),
+                    buildTextResource(if (count == 0) R.string.error_status_uncertain else R.string.success),
+                    null,
+                    Icons.Outlined.Queue,
+                    if (count == 0) Color.RedViolet else Color.MetroGreen
+                )
+            }
         }
     }
 

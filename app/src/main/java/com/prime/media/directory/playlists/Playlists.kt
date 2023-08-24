@@ -179,6 +179,7 @@ class PlaylistsViewModel @Inject constructor(
                 else -> error("$order invalid")
             }
         }
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 }
 
 private val TILE_WIDTH = 80.dp

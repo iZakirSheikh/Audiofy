@@ -35,15 +35,15 @@ object Singleton {
     @Provides
     fun resolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
+
+    @Provides
+    @Singleton
+    fun remote(@ApplicationContext context: Context) = Remote(context)
 }
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
 object Activity {
-    @ActivityRetainedScoped
-    @Provides
-    fun remote(@ApplicationContext context: Context) = Remote(context)
-
     @ActivityRetainedScoped
     @Provides
     fun toaster() = Channel()

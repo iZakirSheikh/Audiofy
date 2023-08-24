@@ -2,22 +2,32 @@
 
 package com.prime.media.impl
 
+import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import com.prime.media.core.db.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.util.toMember
+import com.prime.media.settings.Settings
+import com.primex.preferences.Preferences
+import com.primex.preferences.value
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
 
 private const val TAG = "Repository"
 
@@ -45,7 +55,8 @@ private fun toAudioTrackUri(id: Long) =
 @ActivityRetainedScoped
 class Repository @Inject constructor(
     private val playlistz: Playlists,
-    private val resolver: ContentResolver
+    private val resolver: ContentResolver,
+    private val preferences: Preferences
 ) {
     companion object {
         private const val ALBUM_ART_URI: String = "content://media/external/audio/albumart"
@@ -89,7 +100,15 @@ class Repository @Inject constructor(
      * @return A [Flow] that emits `true` when the content identified by the given URI changes, and
      * `false` otherwise.
      */
-    fun observe(uri: Uri) = resolver.observe(uri)
+    // FixMe: Move the logic of black list to MediaStore.
+    fun observe(uri: Uri) = combine(
+        flow = resolver.observe(uri),
+        flow2 = preferences[Settings.BLACKLISTED_FILES],
+        flow3 = preferences[Settings.MIN_TRACK_LENGTH_SECS]
+    ) { self, _, _ ->
+        self
+    }
+
 
     /**
      * Returns the most recent album IDs from the user's device as a flow of Long integers.
@@ -160,6 +179,38 @@ class Repository @Inject constructor(
         }
 
     /**
+     * Filters the given list of audios by excluding the ones that match the blacklisted paths or
+     * are shorter than the minimum track length.
+     *
+     * @param values The list of audios to be filtered.
+     * @return The list of audios that satisfy the filtering criteria.
+     */
+    private suspend fun filter(values: List<Audio>): List<Audio> {
+        val excludePaths = preferences.value(Settings.BLACKLISTED_FILES)
+
+        // A helper function that checks if a given path is blacklisted or not.
+        fun isExcluded(path: String): Boolean {
+            // If the excludePaths list is null, return false.
+            if (excludePaths == null) return false
+            // Otherwise, loop through the excludePaths list and check if the path matches or starts
+            // with any of them.
+            for (p in excludePaths) {
+                if (p == path || path.startsWith("$p/"))
+                    return true
+            }
+            // If none of them match, return false.
+            return false
+        }
+
+        val limit = preferences.value(Settings.MIN_TRACK_LENGTH_SECS)
+        // Filter out the audios that are blacklisted or shorter than the limit.
+        return values.filter { audio ->
+            // Convert the duration from milliseconds to seconds and compare it with the limit.
+            (audio.duration / 1000) > limit && !isExcluded(audio.data)
+        }
+    }
+
+    /**
      * Returns a list of all local audios.
      * Audios can include any type of audio file, such as music files, ringtones, and alarm sounds.
      *
@@ -187,7 +238,7 @@ class Repository @Inject constructor(
         ascending: Boolean = true,
         offset: Int = 0,
         limit: Int = Int.MAX_VALUE
-    ) = resolver.getAudios(query, order, ascending, offset = offset, limit = limit)
+    ) = filter(resolver.getAudios(query, order, ascending, offset = offset, limit = limit))
 
     /**
      * Returns a list of audios that are contained within the specified folder.
@@ -214,7 +265,7 @@ class Repository @Inject constructor(
         query: String? = null,
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
-    ) = resolver.getFolder(path, query, order, ascending)
+    ) = filter(resolver.getFolder(path, query, order, ascending))
 
 
     /**
@@ -242,7 +293,7 @@ class Repository @Inject constructor(
         query: String? = null,
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
-    ) = resolver.getGenre(name, query, order, ascending)
+    ) = filter(resolver.getGenre(name, query, order, ascending))
 
     /**
      * Returns the [Audio]s from the artist represented by the given [name].
@@ -269,7 +320,7 @@ class Repository @Inject constructor(
         query: String? = null,
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
-    ) = resolver.getArtist(name, query, order, ascending)
+    ) = filter(resolver.getArtist(name, query, order, ascending))
 
 
     /**
@@ -295,7 +346,7 @@ class Repository @Inject constructor(
         query: String? = null,
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,
-    ) = resolver.getAlbum(title, query, order, ascending)
+    ) = filter(resolver.getAlbum(title, query, order, ascending))
 
 
     /**
@@ -342,8 +393,22 @@ class Repository @Inject constructor(
     suspend fun getFolders(
         filter: String? = null,
         ascending: Boolean = true,
-    ) = resolver.getFolders(filter, ascending)
-
+    ) = resolver.getFolders(filter, ascending).let { folders ->
+        val excludePaths = preferences.value(Settings.BLACKLISTED_FILES)
+        fun isExcluded(path: String): Boolean {
+            // If the excludePaths list is null, return false.
+            if (excludePaths == null) return false
+            // Otherwise, loop through the excludePaths list and check if the path matches or starts
+            // with any of them.
+            for (p in excludePaths) {
+                if (p == path || path.startsWith("$path/"))
+                    return true
+            }
+            // If none of them match, return false.
+            return false
+        }
+        folders.filter { !isExcluded(it.path) }
+    }
 
     /**
      * Returns a list of [Artist]s that match the given [filter], ordered by the specified [order]
@@ -792,7 +857,7 @@ class Repository @Inject constructor(
      * @author Zakir Sheikh
      */
     @Deprecated("Use simple insert")
-    suspend fun upsert(value: Member): Boolean{
+    suspend fun upsert(value: Member): Boolean {
         // if the item is already in playlist return false;
         // because we don't support same uri's in single playlist
         if (exists(value.playlistID, value.uri))
@@ -820,11 +885,11 @@ class Repository @Inject constructor(
         // ensure that order is coerced in limit.
         val member =
             if (value.order < 0 || value.order > order + 1)
-                value.copy(order = value.order.coerceIn(0, order + 1), )
-        else
-            value
+                value.copy(order = value.order.coerceIn(0, order + 1))
+            else
+                value
         val success = playlistsDb.insert(member = member) != -1L
-        if (success){
+        if (success) {
             // update the modified time of the playlist.
             // here this should not be null
             // but we should play safe
@@ -854,11 +919,11 @@ class Repository @Inject constructor(
         // ensure that order is coerced in limit.
         val member =
             if (value.order < 0 || value.order > order + 1)
-                value.copy(order = value.order.coerceIn(0, order + 1), )
+                value.copy(order = value.order.coerceIn(0, order + 1))
             else
                 value
         val success = playlistsDb.update(member = member) != -1L
-        if (success){
+        if (success) {
             // update the modified time of the playlist.
             // here this should not be null
             // but we should play safe
@@ -866,5 +931,29 @@ class Repository @Inject constructor(
             update(old.copy(dateModified = System.currentTimeMillis()))
         }
         return success
+    }
+
+    /**
+     * @see com.prime.media.core.db.delete
+     */
+    suspend fun delete(activity: Activity, vararg uri: Uri, trash: Boolean = true): Int {
+        return withContext(Dispatchers.IO) {
+            val result = runCatching {
+                // if less than R simply delete the items.
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R)
+                    return@runCatching resolver.delete(*uri)
+                if (activity is ComponentActivity)
+                    return@runCatching if (trash) resolver.trash(
+                        activity,
+                        *uri
+                    ) else resolver.delete(activity, *uri)
+                return@runCatching if (trash) resolver.trash(activity, *uri) else resolver.trash(
+                    activity,
+                    *uri
+                )
+            }
+            // return -1 if failure.
+            result.getOrElse { -1 }
+        }
     }
 }

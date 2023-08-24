@@ -27,4 +27,30 @@ interface Library {
     val carousel: StateFlow<Long?>
     val newlyAdded: Flow<List<Audio>>
 
+    /**
+     * Callback method invoked upon clicking a history item.
+     *
+     * This method manages diverse scenarios contingent on the selected history item:
+     *
+     * - Scenario 1: In the event the newly added file is already present in the playback queue,
+     *   the queue will be directed to the chosen item's position, initiating playback from there.
+     *
+     * - Scenario 2: If the recently added item is absent from the queue, the ensuing sub-scenarios arise:
+     *   - Sub-Scenario 2.1: A Snackbar is exhibited to the user, offering options to either append
+     *     the item to the current queue at next or substitute the queue with this recently added playlist.
+     *   - Sub-Scenario 2.2: Further actions are contingent upon the user's decision.
+     *
+     * @param uri The URI of the history item clicked by the user.
+     */
+    fun onClickRecentFile(uri: String)
+
+    /**
+     * Callback method triggered when a recently added  item is clicked.
+     * This function handles the action where the recently added file is either included in the
+     * playback queue or prompts the user to replace the existing queue with recently added items.
+     *
+     * @param id The unique identifier of the recently added history item.
+     */
+    fun onClickRecentAddedFile(id: Long)
+
 }

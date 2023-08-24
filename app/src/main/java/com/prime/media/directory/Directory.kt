@@ -39,6 +39,7 @@ import com.prime.media.core.compose.*
 import com.primex.core.*
 import com.primex.material2.*
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * The visual representation of the [Action] as a DropDownMenu item.
@@ -740,8 +741,8 @@ private fun <T : Any> List(
     //TODO: Currently we are only representing the items. However, this logic will be moved
     //outside in the future.
     //Currently, we only support mapped data, but we aim to support paged data in the future."
-
-    val data by resolver.data.collectAsState(initial = null) as State<Mapped<T>?>
+    val flow = resolver.data as StateFlow<Mapped<T>>
+    val data by flow.collectAsState() as State<Mapped<T>?>
 
     // The data can be in following cases:
     // case 1: data is null; means the initial loading state.

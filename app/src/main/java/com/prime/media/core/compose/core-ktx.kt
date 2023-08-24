@@ -92,7 +92,7 @@ fun composable(condition: Boolean, content: @Composable () -> Unit) =
     }
 
 @Composable
-fun stringResource(value: Text?) =
+private fun stringResource(value: Text?) =
     if (value == null) null else com.primex.core.stringResource(value = value)
 
 /**

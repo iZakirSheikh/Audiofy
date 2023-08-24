@@ -77,6 +77,8 @@ import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.Settings
+import com.primex.core.Amber
+import com.primex.core.DahliaYellow
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
@@ -253,10 +255,10 @@ private val LightPrimaryColor = Color(0xFF17618D)
 private val LightPrimaryVariantColor = Color(0xFF14547B)
 private val LightSecondaryColor = Color(0xFF8B008B)
 private val LightSecondaryVariantColor = Color(0xFF7B0084)
-private val DarkPrimaryColor = Color(0xFF17618D)
-private val DarkPrimaryVariantColor = Color(0xFF14547B)
-private val DarkSecondaryColor = Color(0xFF8B008B)
-private val DarkSecondaryVariantColor = Color(0xFF7B0084)
+private val DarkPrimaryColor = Color(0xFFff8f00)
+private val DarkPrimaryVariantColor = Color.Amber
+private val DarkSecondaryColor = Color.DahliaYellow
+private val DarkSecondaryVariantColor = Color(0xFFf57d00)
 
 @Composable
 @NonRestartableComposable
@@ -285,7 +287,7 @@ fun Material(
         secondaryVariant = secondaryVariant,
         onPrimary = Color.SignalWhite,
         onSurface = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
-        onBackground = if (darkTheme) Color.SignalWhite else Color.Black,
+        onBackground = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
         error = Color.OrientRed,
         onSecondary = Color.SignalWhite,
         onError = Color.SignalWhite,
@@ -373,8 +375,8 @@ private fun NavGraph(
     }
 }
 
-private val LightSystemBarsColor = Color(0x20000000)
-private val DarkSystemBarsColor = Color(0x11FFFFFF)
+private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
+private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
 
 @Composable
 fun Home(
@@ -392,7 +394,7 @@ fun Home(
             val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
             val facade = LocalSystemFacade.current
             Scaffold2(
-                vertical = vertical,
+                vertical = true, // currently don't pass value of vertical unless layout is ready.
                 channel = channel,
                 state = state,
                 sheetPeekHeight = if (facade.isPlayerReady) Settings.MINI_PLAYER_HEIGHT else 0.dp,
@@ -417,7 +419,8 @@ fun Home(
         val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
         val color = when {
             colorSystemBars -> Material.colors.primary
-            else -> Color.Transparent
+            isDark -> DarkSystemBarsColor
+            else -> LightSystemBarsColor
         }
         SideEffect {
             val window = (view.context as Activity).window

@@ -82,7 +82,7 @@ interface SystemFacade {
         @StringRes message: Int,
         @StringRes title: Int = ResourcesCompat.ID_NULL,
         @StringRes action: Int = ResourcesCompat.ID_NULL,
-        icon: Any = ResourcesCompat.ID_NULL,
+        icon: Any? = null,
         accent: Color = Color.Unspecified,
         duration: Channel.Duration = Channel.Duration.Short
     ) = show(
