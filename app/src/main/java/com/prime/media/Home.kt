@@ -236,8 +236,8 @@ private fun Permission() {
     }
     Placeholder(
         iconResId = R.raw.lt_permission,
-        title = stringResource(R.string.storage_permission),
-        message = stringResource(R.string.storage_permission_message),
+        title = stringResource(R.string.permission_screen_title),
+        message = stringResource(R.string.permission_screen_desc),
     ) {
         OutlinedButton(
             onClick = { permission.launchPermissionRequest() },

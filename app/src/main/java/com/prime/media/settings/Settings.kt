@@ -209,22 +209,22 @@ private inline fun ColumnScope.Body(
 private inline fun ColumnScope.FeedBack() {
     val facade = LocalSystemFacade.current
     Preference(
-        title = stringResource(R.string.feedback),
-        summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
+        title = stringResource(R.string.pref_feedback),
+        summery = stringResource(id = R.string.pref_feedback_summery) + "\nTap to open feedback dialog.",
         icon = Icons.Outlined.Feedback,
         modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
-        title = stringResource(R.string.rate_us),
-        summery = stringResource(id = R.string.review_msg),
+        title = stringResource(R.string.pref_rate_us),
+        summery = stringResource(id = R.string.pref_review_summery),
         icon = Icons.Outlined.Star,
         modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
-        title = stringResource(R.string.spread_the_word),
-        summery = stringResource(R.string.spread_the_word_summery),
+        title = stringResource(R.string.pref_spread_the_word),
+        summery = stringResource(R.string.pref_spread_the_word_summery),
         icon = Icons.Outlined.Share,
         modifier = Modifier.clickable { facade.shareApp() }
     )
@@ -234,7 +234,7 @@ private inline fun ColumnScope.FeedBack() {
 private inline fun ColumnScope.AboutUs() {
     val provider = LocalSystemFacade.current
     Text(
-        text = stringHtmlResource(R.string.about_us_desc),
+        text = stringHtmlResource(R.string.pref_about_us_summery),
         style = MaterialTheme.typography.body2,
         modifier = Modifier
             .padding(start = RESERVE_PADDING, end = ContentPadding.xLarge)

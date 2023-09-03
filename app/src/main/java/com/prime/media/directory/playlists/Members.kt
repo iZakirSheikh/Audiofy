@@ -33,7 +33,6 @@ import com.prime.media.core.util.addDistinct
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.impl.Repository
-import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMediaItem
 import com.primex.core.*
 import com.primex.material2.*
@@ -237,7 +236,7 @@ class MembersViewModel @Inject constructor(
                 clear()
                 // show warning
                 show(
-                    R.string.warning_queue_add_experimental,
+                    R.string.msg_queue_add_experimental_warning,
                     R.string.warning,
                     ResourcesCompat.ID_NULL,
                     Icons.Outlined.Warning,
@@ -254,8 +253,8 @@ class MembersViewModel @Inject constructor(
                     return@launch
                 val count = remote.add(*audios.toTypedArray(), index = index)
                 show(
-                    buildPluralResource(id = R.plurals.queue_update_msg, count, count, audios.size),
-                    buildTextResource(if (count == 0) R.string.error_status_uncertain else R.string.success),
+                    buildPluralResource(id = R.plurals.msg_queue_updated_dd, count, count, audios.size),
+                    buildTextResource(if (count == 0) R.string.msg_error_status_uncertain else R.string.success),
                     null,
                     Icons.Outlined.Queue,
                     if (count == 0) Color.RedViolet else Color.MetroGreen

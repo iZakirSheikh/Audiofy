@@ -2,7 +2,6 @@ package com.prime.media.directory.store
 
 import android.provider.MediaStore
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -115,7 +114,7 @@ class FoldersViewModel @Inject constructor(
                 val list = preferences.value(Settings.BLACKLISTED_FILES)
                 val name = PathUtils.name(path)
                 val response = show(
-                    Text(R.string.block_folder_warning_msg, name),
+                    Text(R.string.msg_block_folder_warning_s, name),
                     Text(id = R.string.warning),
                     Text(id = R.string.add),
                     Icons.Outlined.Block,
@@ -127,14 +126,14 @@ class FoldersViewModel @Inject constructor(
                 val result = preferences.block(path)
                 if (result > 0)
                     show(
-                        Text(R.string.block_success_msg, name),
-                        Text(R.string.blacklist),
+                        Text(R.string.msg_block_success_s, name),
+                        Text(R.string.pref_blacklist),
                         leading = Icons.Outlined.Block,
                         accent = Color.Rose,
                         duration = Channel.Duration.Short,
                     )
                 else
-                    show(R.string.error_msg, R.string.error)
+                    show(R.string.msg_unknown_error, R.string.error)
             }
         }
     }

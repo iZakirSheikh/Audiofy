@@ -1,7 +1,6 @@
 package com.prime.media
 
 import android.animation.ObjectAnimator
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.audiofx.AudioEffect
@@ -10,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
@@ -241,7 +239,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
                 manager.requestUpdateFlow().collect { result ->
                     when (result) {
                         AppUpdateResult.NotAvailable ->
-                            if (report) channel.show("The app is already updated to the latest version.")
+                            if (report) channel.show(R.string.msg_no_new_update_available)
 
                         is AppUpdateResult.InProgress -> {
                             val state = result.installState
@@ -270,9 +268,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
                             }
                             // else show the toast.
                             val res = channel.show(
-                                title = "Update",
-                                message = "An update has just been downloaded.",
-                                action = "RESTART",
+                                message = R.string.msg_new_update_downloaded,
+                                action = R.string.update,
                                 duration = Duration.Indefinite,
                                 accent = Color.MetroGreen
                             )
@@ -301,7 +298,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun shareApp() {
         ShareCompat.IntentBuilder(this).setType("text/plain")
             .setChooserTitle(getString(R.string.app_name))
-            .setText("Let me recommend you this application ${Audiofy.GOOGLE_STORE}").startChooser()
+            .setText(getString(R.string.share_app_desc_s, Audiofy.GOOGLE_STORE)).startChooser()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -317,8 +314,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
             ) == PackageManager.PERMISSION_GRANTED
         if (!isPermitted) {
             show(
-                R.string.storage_permission_message,
-                R.string.storage_permission,
+                R.string.permission_screen_desc,
+                R.string.permission_screen_title,
                 icon = Icons.TwoTone.Memory
             )
             return
@@ -327,7 +324,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         lifecycleScope.launch {
             val audio = runCatching { findAudio(data) }.getOrNull()
             if (audio == null) {
-                show(R.string.error_msg, R.string.error)
+                show(R.string.msg_unknown_error, R.string.error)
                 return@launch
             }
             remote.set(listOf(audio.toMediaItem))
@@ -338,7 +335,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun launchEqualizer(id: Int) {
         lifecycleScope.launch {
             if (id == AudioEffect.ERROR_BAD_VALUE)
-                return@launch show(R.string.error_msg, R.string.error)
+                return@launch show(R.string.msg_unknown_error, R.string.error)
             val result = kotlin.runCatching {
                 startActivity(
                     Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -351,7 +348,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
             if (!result.isFailure)
                 return@launch
            val res = channel.show(
-               message = R.string.equalizer_3rd_party_not_found_msg,
+               message = R.string.msg_3rd_party_equalizer_not_found,
                action = R.string.launch,
                accent = Color.OrientRed,
                duration = Duration.Short

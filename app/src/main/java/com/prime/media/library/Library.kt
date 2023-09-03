@@ -1,4 +1,5 @@
 @file:Suppress("CrossfadeLabel", "FunctionName")
+@file:OptIn(ExperimentalTextApi::class)
 
 package com.prime.media.library
 
@@ -28,14 +29,11 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.Composable
@@ -49,8 +47,10 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
@@ -91,12 +91,13 @@ import com.prime.media.small2
 import com.primex.core.gradient
 import com.primex.core.padding
 import com.primex.core.rememberState
-import com.primex.core.stringHtmlResource
+import com.primex.core.textResource
 import com.primex.core.withSpanStyle
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton2
 import com.primex.material2.Search
+import com.primex.material2.Text
 
 private const val TAG = "Library"
 
@@ -210,7 +211,7 @@ private fun TopBar(modifier: Modifier = Modifier) {
             // Formatted as html resource.
             title = {
                 Text(
-                    text = stringHtmlResource(id = R.string.title_audio_library_html),
+                    text = textResource(id = R.string.library_title),
                     style = Material.typography.h5,
                     fontWeight = FontWeight.Light
                 )
@@ -316,34 +317,34 @@ private fun Shortcuts(
                 Shortcut(
                     onAction = { navigator.navigate(Folders.direction()) },
                     icon = Icons.Default.Folder,
-                    label = "Folders"
+                    label = textResource(id = R.string.folders)
                 )
 
                 Shortcut(
                     onAction = { navigator.navigate(Genres.direction()) },
                     icon = Icons.Outlined.Grain,
-                    label = "Genres"
+                    label = textResource(id = R.string.genres)
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
                     icon = Icons.Outlined.GraphicEq,
-                    label = "Audios"
+                    label = textResource(id =R.string.audios)
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Artists.direction()) },
                     icon = Icons.Outlined.Person,
-                    label = "Artists"
+                    label = textResource(id =R.string.artists)
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                     icon = Icons.Outlined.FavoriteBorder,
-                    label = "Favourite"
+                    label = textResource(id =R.string.favourite)
                 )
 
                 Shortcut(
                     onAction = { navigator.navigate(Playlists.direction()) },
                     icon = Icons.Outlined.PlaylistPlay,
-                    label = "Playlists"
+                    label = textResource(id = R.string.playlists)
                 )
             }
         )
@@ -401,7 +402,7 @@ private fun Tile(
             )
 
             Text(
-                text = "Albums".uppercase(),
+                text = textResource(id = R.string.albums).toString().uppercase(),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(start = ContentPadding.normal),
                 letterSpacing = 6.sp,
@@ -539,6 +540,7 @@ private val OFFSET_Y_SEARCH = (-32).dp
 fun Library(
     viewModel: Library
 ) {
+    val res = LocalContext.current.resources
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Material.colors.background,
@@ -562,8 +564,8 @@ fun Library(
                         .fillMaxWidth()
                         .offset(y = OFFSET_Y_SEARCH)
                         .padding(horizontal = ContentPadding.medium),
-                    title = "Shortcuts",
-                    subtitle = "The faster way to get things done.",
+                    title = res.getString(R.string.library_shortcuts),
+                    subtitle = res.getString(R.string.library_shortcuts_tag_line),
                 )
 
                 Shortcuts(
@@ -581,8 +583,8 @@ fun Library(
                         .fillMaxWidth()
                         .offset(y = OFFSET_Y_SEARCH)
                         .padding(horizontal = ContentPadding.medium),
-                    title = "Recent",
-                    subtitle = "The recently played tracks.",
+                    title = res.getString(R.string.library_recent),
+                    subtitle = res.getString(R.string.library_recent_tag_line),
                     onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) }
                 )
 
@@ -608,8 +610,8 @@ fun Library(
                         .fillMaxWidth()
                         .offset(y = OFFSET_Y_SEARCH)
                         .padding(horizontal = ContentPadding.medium),
-                    title = "Recently Added",
-                    subtitle = "The tracks that have been recently added",
+                    title = res.getString(R.string.library_recently_added),
+                    subtitle = res.getString(R.string.library_recently_added_tag_line),
                     onClick = {
                         navigator.navigate(
                             Audios.direction(

@@ -13,11 +13,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -248,10 +246,10 @@ class AudiosViewModel @Inject constructor(
                     GroupBy.None -> mapOf(Text("") to list)
                     GroupBy.Length -> list.groupBy { audio ->
                         when {
-                            audio.duration < TimeUnit.MINUTES.toMillis(2) -> Text(R.string.list_title_less_then_2_mins)
-                            audio.duration < TimeUnit.MINUTES.toMillis(5) -> Text(R.string.list_title_less_than_5_mins)
-                            audio.duration < TimeUnit.MINUTES.toMillis(10) -> Text(R.string.list_title_less_than_10_mins)
-                            else -> Text(R.string.list_title_greater_than_10_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(2) -> Text(R.string.audios_scr_less_then_2_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(5) -> Text(R.string.audios_scr_less_than_5_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(10) -> Text(R.string.audios_scr_less_than_10_mins)
+                            else -> Text(R.string.audios_scr_greater_than_10_mins)
                         }
                     }
 
@@ -458,7 +456,7 @@ class AudiosViewModel @Inject constructor(
                 clear()
                 // show warning
                 show(
-                    R.string.warning_queue_add_experimental,
+                    R.string.msg_queue_add_experimental_warning,
                     R.string.warning,
                     ResourcesCompat.ID_NULL,
                     Icons.Outlined.Warning,
@@ -475,8 +473,8 @@ class AudiosViewModel @Inject constructor(
                     return@launch
                 val count = remote.add(*audios.toTypedArray(), index = index)
                 show(
-                    buildPluralResource(id = R.plurals.queue_update_msg, count, count, audios.size),
-                    buildTextResource(if (count == 0) R.string.error_status_uncertain else R.string.success),
+                    buildPluralResource(id = R.plurals.msg_queue_updated_dd, count, count, audios.size),
+                    buildTextResource(if (count == 0) R.string.msg_error_status_uncertain else R.string.success),
                     null,
                     Icons.Outlined.Queue,
                     if (count == 0) Color.RedViolet else Color.MetroGreen
@@ -504,7 +502,7 @@ class AudiosViewModel @Inject constructor(
                 clear()
                 val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
                 val res = show(
-                    buildTextResource(if (isTrashEnabled) R.string.trash_files_warning_msg else R.string.delete_files_warning_msg, list.size),
+                    buildTextResource(if (isTrashEnabled) R.string.msg_trash_files_warning_d else R.string.msg_delete_files_warning_d, list.size),
                     buildTextResource(R.string.alert),
                     buildTextResource(if (isTrashEnabled) R.string.trash else R.string.delete),
                     Icons.Outlined.WarningAmber,
@@ -528,27 +526,27 @@ class AudiosViewModel @Inject constructor(
                 // show appropriate message
                 when (result) {
                     -2 -> show(
-                        R.string.delete_dialog_show_msg,
+                        R.string.msg_showing_delete_dialog,
                         R.string.confirm,
                         leading = Icons.Outlined.DeleteForever,
                         accent = Color.Rose,
                     )
 
                     -3 -> show(
-                        R.string.deleting_process_cancelled,
+                        R.string.msg_deleting_process_cancelled,
                         R.string.cancelled,
                         leading = Icons.Outlined.Cancel,
                     )
                     // handle general case
                     -1 -> show(
-                        R.string.delete_audio_error,
+                        R.string.msg_delete_unknown_error,
                         R.string.error,
                         leading = Icons.Outlined.Error,
                         accent = Color.Rose
                     )
 
                     else -> show(
-                        buildTextResource(id = R.string.delete_success_msg, result, uris.size),
+                        buildTextResource(id = R.string.msg_delete_success_ss, result, uris.size),
                         buildTextResource(R.string.success),
                         null,
                         Icons.Outlined.Delete,

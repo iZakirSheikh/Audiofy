@@ -73,7 +73,7 @@ private fun Blacklist(
             true -> Placeholder(
                 title = "Empty",
                 iconResId = R.raw.lt_empty_box,
-                message = stringResource(R.string.blacklist_empty_msg)
+                message = stringResource(R.string.blacklist_empty_desc)
             )
             // Show actual list
             else -> LazyColumn() {
@@ -96,7 +96,7 @@ fun Toolbar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Label(text = stringResource(id = R.string.blacklist)) },
+        title = { Label(text = stringResource(id = R.string.pref_blacklist)) },
         modifier = modifier,
         actions = { IconButton(imageVector = Icons.Outlined.Close, onClick = onDismissRequest) },
         navigationIcon = {

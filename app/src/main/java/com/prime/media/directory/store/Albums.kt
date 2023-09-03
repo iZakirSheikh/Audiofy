@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTextApi::class)
+
 package com.prime.media.directory.store
 
 import android.provider.MediaStore
@@ -13,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -30,6 +33,7 @@ import com.prime.media.directory.*
 import com.prime.media.small2
 import com.primex.core.Rose
 import com.primex.core.Text
+import com.primex.core.textResource
 import com.primex.material2.Label
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -67,7 +71,7 @@ class AlbumsViewModel @Inject constructor(
     init {
         // emit the name to meta
         //TODO: Add other fields in future versions.
-        meta = MetaData(Text("Albums"))
+        meta = MetaData(Text(R.string.albums))
     }
 
     override fun toggleViewType() {
@@ -103,8 +107,7 @@ class AlbumsViewModel @Inject constructor(
             .catch {
                 // any exception.
                 toaster.show(
-                    "Some unknown error occured!.",
-                    "Error",
+                    R.string.msg_unknown_error,
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose,
                     duration = Channel.Duration.Indefinite
@@ -159,7 +162,7 @@ fun Album(
 
         // Subtitle
         Label(
-            text = "Year: ${value.firstYear}",
+            text = textResource(R.string.albums_scr_year_d, value.firstYear),
             style = Material.typography.caption2
         )
     }

@@ -153,7 +153,7 @@ private fun PlayButton(
             atEnd = !isPlaying,
             scale = 1.5f,
             progressRange = 0.0f..0.5f,
-            duration = 1200
+            duration = 1600
         )
     }
 }

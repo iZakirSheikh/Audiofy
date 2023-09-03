@@ -90,7 +90,7 @@ class LibraryViewModel @Inject constructor(
             // item will be added to the playlist, initiating playback from this item's index.
             // If the user decides otherwise, the item will be added to the queue following the current queue order.
             val res = channel.show(
-                R.string.library_recent_click_msg,
+                R.string.msg_library_recent_click,
                 action = R.string.reset,
                 leading = Icons.Outlined.Message,
                 accent = Color.MetroGreen
@@ -99,8 +99,7 @@ class LibraryViewModel @Inject constructor(
             val file = files?.find { it.uri == uri }
             if (files == null || file == null) {
                 channel.show(
-                    R.string.error_msg,
-                    R.string.error,
+                    R.string.msg_unknown_error,
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose
                 )
@@ -126,7 +125,7 @@ class LibraryViewModel @Inject constructor(
             val item = files?.find { it.id == id }
             if (files == null || item == null) {
                 channel.show(
-                    R.string.error_msg,
+                    R.string.msg_unknown_error,
                     R.string.error,
                     leading = Icons.Outlined.Error,
                     accent = Color.Rose
@@ -139,7 +138,7 @@ class LibraryViewModel @Inject constructor(
             if (isAlreadyInPlaylist)
                 return@launch
             val res = channel.show(
-                R.string.library_msg_recently_added_click,
+                R.string.msg_library_recently_added_click,
                 action = R.string.reset,
                 leading = Icons.Outlined.ClearAll,
                 accent = Color.DahliaYellow
