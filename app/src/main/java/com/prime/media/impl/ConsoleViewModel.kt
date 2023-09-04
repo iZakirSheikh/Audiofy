@@ -23,10 +23,8 @@ import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.MainHandler
-import com.primex.core.Amber
-import com.primex.core.Text
+import com.primex.core.OrientRed
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -91,7 +89,7 @@ class ConsoleViewModel @Inject constructor(
     override fun remove(context: Context, key: Uri) {
         viewModelScope.launch {
             val removed = remote.remove(key)
-            val msg = if (removed) R.string.track_remove_msg else R.string.track_remove_error_msg
+            val msg = if (removed) R.string.msg_track_will_be_removed else R.string.msg_track_remove_error
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
@@ -104,8 +102,7 @@ class ConsoleViewModel @Inject constructor(
 
     override fun clear(context: Context) {
         viewModelScope.launch {
-            val msg = "The playing queue will be cleared shortly."
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.msg_clearing_playing_queue, Toast.LENGTH_SHORT).show()
             remote.clear()
         }
     }
@@ -125,8 +122,7 @@ class ConsoleViewModel @Inject constructor(
         viewModelScope.launch {
             // currently not available.
             toaster.show(
-                title = R.string.coming_soon,
-                message = R.string.coming_soon_msg,
+                message = R.string.msg_feature_coming_soon,
                 leading = Icons.Outlined.MoreTime
             )
         }
@@ -149,9 +145,9 @@ class ConsoleViewModel @Inject constructor(
             this@ConsoleViewModel.favourite = !favourite && res
             if (!res)
                 toaster.show(
-                    message = Text("An error occurred while adding/removing the item to favourite playlist"),
-                    title = Text("Favourites"),
-                    leading = R.drawable.ic_heart
+                    message = R.string.msg_error_fav_playlist_update,
+                    leading = R.drawable.ic_heart,
+                    accent = Color.OrientRed
                 )
         }
     }

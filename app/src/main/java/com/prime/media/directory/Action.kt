@@ -1,9 +1,11 @@
 package com.prime.media.directory
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.prime.media.R
 import com.primex.core.Text
 
 /**
@@ -25,21 +27,23 @@ sealed class Action(val id: String, val title: Text, val icon: ImageVector) {
      */
     constructor(id: String, title: String, icon: ImageVector) : this(id, Text(title), icon)
 
-    object Play : Action("action_play", "Play", Icons.Outlined.PlayArrow)
-    object Shuffle : Action("action_shuffle", "Shuffle", Icons.Outlined.Shuffle)
-    object Share : Action("action_share", "Share", Icons.Outlined.Share)
-    object Delete : Action("action_delete", "Delete", Icons.Outlined.Delete)
-    object PlaylistAdd :
-        Action("action_add_to_playlist", "Add to Playlist", Icons.Outlined.PlaylistAdd)
+    constructor(id: String, @StringRes title: Int, icon: ImageVector):this(id, Text(title), icon)
 
-    object Make : Action("action_create", "Create", Icons.Outlined.AddCircle)
-    object Edit : Action("action_edit", "Edit", Icons.Outlined.Edit)
-    object GoToArtist : Action("action_go_to_artist", "Go to Artist", Icons.Outlined.Person)
-    object GoToAlbum : Action("action_go_to_album", "Go to Album", Icons.Outlined.Album)
-    object Properties : Action("action_properties", "Properties", Icons.Outlined.Info)
-    object SelectAll : Action("action_select_all", "Select All", Icons.Outlined.SelectAll)
-    object AddToQueue : Action("action_add_to_queue", "Add to Queue", Icons.Outlined.AddToQueue)
-    object PlayNext : Action("action_play_next", "Play Next", Icons.Outlined.QueuePlayNext)
+    object Play : Action("action_play", R.string.play, Icons.Outlined.PlayArrow)
+    object Shuffle : Action("action_shuffle", R.string.shuffle, Icons.Outlined.Shuffle)
+    object Share : Action("action_share", R.string.share, Icons.Outlined.Share)
+    object Delete : Action("action_delete", R.string.delete, Icons.Outlined.Delete)
+    object PlaylistAdd :
+        Action("action_add_to_playlist", R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
+
+    object Make : Action("action_create", R.string.create, Icons.Outlined.AddCircle)
+    object Edit : Action("action_edit", R.string.edit, Icons.Outlined.Edit)
+    object GoToArtist : Action("action_go_to_artist", R.string.go_to_artist, Icons.Outlined.Person)
+    object GoToAlbum : Action("action_go_to_album", R.string.go_to_album, Icons.Outlined.Album)
+    object Properties : Action("action_properties", R.string.properties, Icons.Outlined.Info)
+    object SelectAll : Action("action_select_all", R.string.select_all, Icons.Outlined.SelectAll)
+    object AddToQueue : Action("action_add_to_queue", R.string.add_to_queue, Icons.Outlined.AddToQueue)
+    object PlayNext : Action("action_play_next", R.string.play_next, Icons.Outlined.QueuePlayNext)
 
     /**
      * Check if this `Action` instance is equal to another object.
@@ -84,20 +88,20 @@ sealed class Action(val id: String, val title: Text, val icon: ImageVector) {
 @Stable
 sealed class GroupBy(id: String, title: Text, icon: ImageVector) : Action(id, title, icon) {
     private constructor(id: String, title: String, icon: ImageVector) : this(id, Text(title), icon)
-
+    private constructor(id: String, @StringRes title: Int, icon: ImageVector):this(id, Text(title), icon)
     /**
      * GroupBy the title/Name of the item.
      */
-    object None : GroupBy(ORDER_BY_NONE, "None", Icons.Outlined.FilterNone)
-    object Name : GroupBy(ORDER_BY_NAME, "Name", Icons.Outlined.Title)
+    object None : GroupBy(ORDER_BY_NONE, R.string.none, Icons.Outlined.FilterNone)
+    object Name : GroupBy(ORDER_BY_NAME, R.string.name, Icons.Outlined.Title)
     object DateModified :
-        GroupBy(ORDER_BY_DATE_MODIFIED, "Date Modified", Icons.Outlined.AccessTime)
+        GroupBy(ORDER_BY_DATE_MODIFIED, R.string.date_modified, Icons.Outlined.AccessTime)
 
-    object DateAdded : GroupBy(ORDER_BY_DATE_ADDED, "Date Added", Icons.Outlined.CalendarMonth)
-    object Artist : GroupBy(ORDER_BY_ARTIST, "Artist", Icons.Outlined.Person)
-    object Album : GroupBy(ORDER_BY_ALBUM, "Album", Icons.Outlined.Album)
-    object Folder : GroupBy(ORDER_BY_FOLDER, "Folder", Icons.Outlined.Folder)
-    object Length : GroupBy(ORDER_BY_LENGTH, "Length", Icons.Outlined.AvTimer)
+    object DateAdded : GroupBy(ORDER_BY_DATE_ADDED, R.string.date_added, Icons.Outlined.CalendarMonth)
+    object Artist : GroupBy(ORDER_BY_ARTIST, R.string.artist, Icons.Outlined.Person)
+    object Album : GroupBy(ORDER_BY_ALBUM, R.string.album, Icons.Outlined.Album)
+    object Folder : GroupBy(ORDER_BY_FOLDER, R.string.folder, Icons.Outlined.Folder)
+    object Length : GroupBy(ORDER_BY_LENGTH, R.string.length, Icons.Outlined.AvTimer)
 
     companion object {
         private const val ORDER_BY_NONE = "order_by_none"
@@ -145,9 +149,10 @@ sealed class GroupBy(id: String, title: Text, icon: ImageVector) : Action(id, ti
 @Stable
 sealed class ViewType(id: String, title: Text, icon: ImageVector) : Action(id, title, icon) {
     private constructor(id: String, title: String, icon: ImageVector) : this(id, Text(title), icon)
+    private constructor(id: String, @StringRes title: Int, icon: ImageVector):this(id, Text(title), icon)
 
-    object List : ViewType(VIEW_TYPE_LIST, "List", Icons.Outlined.List)
-    object Grid : ViewType(VIEW_TYPE_GRID, "Grid", Icons.Outlined.GridView)
+    object List : ViewType(VIEW_TYPE_LIST, R.string.list, Icons.Outlined.List)
+    object Grid : ViewType(VIEW_TYPE_GRID, R.string.grid, Icons.Outlined.GridView)
 
     companion object {
         val VIEW_TYPE_LIST = "view_type_list"

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTextApi::class)
+
 package com.prime.media.settings
 
 import android.content.Intent
@@ -51,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
@@ -73,6 +76,7 @@ import com.primex.core.drawHorizontalDivider
 import com.primex.core.rememberState
 import com.primex.core.stringHtmlResource
 import com.primex.core.stringResource
+import com.primex.core.textResource
 import com.primex.core.value
 import com.primex.material2.DropDownPreference
 import com.primex.material2.IconButton
@@ -80,6 +84,7 @@ import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.primex.material2.Preference
 import com.primex.material2.SwitchPreference
+import com.primex.material2.Text
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
 
 private const val TAG = "Settings"
@@ -115,7 +120,7 @@ private fun TopAppBar(
 private val RESERVE_PADDING = 56.dp
 
 @Composable
-private inline fun PrefHeader(text: String) {
+private inline fun PrefHeader(text: CharSequence) {
     val primary = MaterialTheme.colors.secondary
     Label(
         text = text,
@@ -209,22 +214,22 @@ private inline fun ColumnScope.Body(
 private inline fun ColumnScope.FeedBack() {
     val facade = LocalSystemFacade.current
     Preference(
-        title = stringResource(R.string.feedback),
-        summery = stringResource(id = R.string.feedback_dialog_placeholder) + "\nTap to open feedback dialog.",
+        title = stringResource(R.string.pref_feedback),
+        summery = stringResource(id = R.string.pref_feedback_summery) + "\nTap to open feedback dialog.",
         icon = Icons.Outlined.Feedback,
         modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
-        title = stringResource(R.string.rate_us),
-        summery = stringResource(id = R.string.review_msg),
+        title = stringResource(R.string.pref_rate_us),
+        summery = stringResource(id = R.string.pref_review_summery),
         icon = Icons.Outlined.Star,
         modifier = Modifier.clickable { facade.launchAppStore() }
     )
 
     Preference(
-        title = stringResource(R.string.spread_the_word),
-        summery = stringResource(R.string.spread_the_word_summery),
+        title = stringResource(R.string.pref_spread_the_word),
+        summery = stringResource(R.string.pref_spread_the_word_summery),
         icon = Icons.Outlined.Share,
         modifier = Modifier.clickable { facade.shareApp() }
     )
@@ -234,7 +239,7 @@ private inline fun ColumnScope.FeedBack() {
 private inline fun ColumnScope.AboutUs() {
     val provider = LocalSystemFacade.current
     Text(
-        text = stringHtmlResource(R.string.about_us_desc),
+        text = stringHtmlResource(R.string.pref_about_us_summery),
         style = MaterialTheme.typography.body2,
         modifier = Modifier
             .padding(start = RESERVE_PADDING, end = ContentPadding.xLarge)
@@ -350,18 +355,20 @@ private fun GetToKnowUs(modifier: Modifier = Modifier) {
         modifier = modifier.offset(x = ContentPadding.normal),
         color = Color.Transparent,
         overline = {
-            com.primex.material2.Text(
-                text = "Audiofy",
-                style = Material.typography.h4,
-                fontWeight = FontWeight.Bold
+            Text(
+                text = textResource(id = R.string.app_name),
+                style = Material.typography.h3,
+                fontWeight = FontWeight.Bold,
+                fontFamily = Settings.DancingScriptFontFamily
             )
         },
         headline = {
             Text(
-                text = "v" + BuildConfig.VERSION_NAME + " by Zakir Sheikh",
+                text = textResource(R.string.pref_get_to_know_us_subttile_s, BuildConfig.VERSION_NAME),
                 style = Material.typography.caption
             )
         },
+        centerAlign = true,
         leading = {
             Icon(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -384,28 +391,28 @@ private fun GetToKnowUs(modifier: Modifier = Modifier) {
                     imageVector = Icons.Outlined.AlternateEmail,
                     onClick = { ctx.startActivity(FeedbackIntent) },
                     modifier = Modifier
-                        .scale(0.7f)
+                        .scale(0.85f)
                         .border(ButtonDefaults.outlinedBorder, CircleShape)
                 )
                 IconButton(
                     imageVector = Icons.Outlined.DataObject,
                     onClick = { ctx.startActivity(GithubIntent) },
                     modifier = Modifier
-                        .scale(0.7f)
+                        .scale(0.85f)
                         .border(ButtonDefaults.outlinedBorder, CircleShape)
                 )
                 IconButton(
                     imageVector = Icons.Outlined.BugReport,
                     onClick = { ctx.startActivity(GitHubIssuesPage) },
                     modifier = Modifier
-                        .scale(0.7f)
+                        .scale(0.85f)
                         .border(ButtonDefaults.outlinedBorder, CircleShape)
                 )
                 IconButton(
                     imageVector = Icons.Outlined.SupportAgent,
                     onClick = { ctx.startActivity(TelegramIntent) },
                     modifier = Modifier
-                        .scale(0.7f)
+                        .scale(0.85f)
                         .border(ButtonDefaults.outlinedBorder, CircleShape)
                 )
             }
@@ -422,14 +429,14 @@ private fun Compact(state: Settings) {
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            PrefHeader(text = "Get to Know Us")
+            PrefHeader(text = textResource(R.string.pref_get_to_know_us))
             GetToKnowUs(modifier = Modifier.padding(start = ContentPadding.normal))
             Body(state)
-            PrefHeader(text = "General")
+            PrefHeader(text = textResource(R.string.general))
             General(state = state)
-            PrefHeader(text = "Feedback")
+            PrefHeader(text = textResource(R.string.feedback))
             FeedBack()
-            PrefHeader(text = stringResource(R.string.about_us))
+            PrefHeader(text = textResource(R.string.about_us))
             AboutUs()
             // Add the necessary padding.
             val padding = LocalWindowPadding.current

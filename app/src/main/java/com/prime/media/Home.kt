@@ -236,8 +236,8 @@ private fun Permission() {
     }
     Placeholder(
         iconResId = R.raw.lt_permission,
-        title = stringResource(R.string.storage_permission),
-        message = stringResource(R.string.storage_permission_message),
+        title = stringResource(R.string.permission_screen_title),
+        message = stringResource(R.string.permission_screen_desc),
     ) {
         OutlinedButton(
             onClick = { permission.launchPermissionRequest() },
@@ -251,8 +251,8 @@ private fun Permission() {
     }
 }
 
-private val LightPrimaryColor = Color(0xFF17618D)
-private val LightPrimaryVariantColor = Color(0xFF14547B)
+private val LightPrimaryColor = Color(0xFF244285)
+private val LightPrimaryVariantColor = Color(0xFF305EA5)
 private val LightSecondaryColor = Color(0xFF8B008B)
 private val LightSecondaryVariantColor = Color(0xFF7B0084)
 private val DarkPrimaryColor = Color(0xFFff8f00)
@@ -297,7 +297,7 @@ fun Material(
     MaterialTheme(
         colors = colors,
         content = content,
-        typography = Typography(Settings.LatoFontFamily)
+        typography = Typography(Settings.DefaultFontFamily)
     )
 }
 

@@ -336,7 +336,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
     override fun onPlayerError(error: PlaybackException) {
         // make a simple toast
-        Toast.makeText(this, getString(R.string.unplayable_file), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.msg_unplayable_file), Toast.LENGTH_SHORT).show()
         //player.seekToNextMediaItem()
     }
 }

@@ -39,8 +39,8 @@ class SettingsViewModel @Inject constructor(
         preferences[Settings.NIGHT_MODE].map {
             Preference(
                 value = it,
-                title = Text(R.string.app_theme),
-                summery = Text(R.string.app_theme_summery),
+                title = Text(R.string.pref_app_theme),
+                summery = Text(R.string.pref_app_theme_summery),
                 vector = Icons.Outlined.Lightbulb
             )
         }.asComposeState()
@@ -51,8 +51,8 @@ class SettingsViewModel @Inject constructor(
         preferences[Settings.COLOR_STATUS_BAR].map {
             Preference(
                 vector = null,
-                title = Text(R.string.color_status_bar),
-                summery = Text(R.string.color_stutus_bar_summery),
+                title = Text(R.string.pref_color_system_bars),
+                summery = Text(R.string.pref_color_system_bars_summery),
                 value = it
             )
         }.asComposeState()
@@ -62,8 +62,8 @@ class SettingsViewModel @Inject constructor(
         preferences[Settings.HIDE_STATUS_BAR].map {
             Preference(
                 value = it,
-                title = Text(R.string.immersive_view),
-                summery = Text(R.string.immersive_view_summery),
+                title = Text(R.string.pref_hide_status_bar),
+                summery = Text(R.string.pref_hide_status_bar_summery),
                 vector = Icons.Outlined.HideImage
             )
         }.asComposeState()
@@ -73,8 +73,8 @@ class SettingsViewModel @Inject constructor(
         preferences[Settings.FORCE_COLORIZE].map {
             Preference(
                 value = it,
-                title = Text(R.string.force_accent_color),
-                summery = Text(R.string.force_aacent_color_summery)
+                title = Text(R.string.pref_force_accent_color),
+                summery = Text(R.string.pref_force_accent_color_summery)
             )
         }.asComposeState()
     }
@@ -82,8 +82,8 @@ class SettingsViewModel @Inject constructor(
     override val minTrackLength: Preference<Int> by with(preferences) {
         preferences[Settings.MIN_TRACK_LENGTH_SECS].map {
             Preference(
-                title = Text(R.string.minimum_track_length),
-                summery = Text(R.string.minimum_track_length_summery),
+                title = Text(R.string.pref_minimum_track_length),
+                summery = Text(R.string.pref_minimum_track_length_summery),
                 value = it
             )
         }.asComposeState()
@@ -92,8 +92,8 @@ class SettingsViewModel @Inject constructor(
     override val recentPlaylistLimit: Preference<Int> by with(preferences) {
         preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
             Preference(
-                title = Text(R.string.recent_playlist_size),
-                summery = Text(R.string.recent_playlist_size_summery),
+                title = Text(R.string.pref_recent_playlist_size),
+                summery = Text(R.string.pref_recent_playlist_size_summery),
                 value = it
             )
         }.asComposeState()
@@ -102,8 +102,8 @@ class SettingsViewModel @Inject constructor(
     override val fetchArtworkFromMS: Preference<Boolean> by with(preferences) {
         preferences[Settings.USE_LEGACY_ARTWORK_METHOD].map {
             Preference(
-                title = Text(R.string.fetch_artwork_from_mediastore),
-                summery = Text(R.string.fetch_artwork_from_mediastore_summery),
+                title = Text(R.string.pref_fetch_artwork_from_mediastore),
+                summery = Text(R.string.pref_fetch_artwork_from_mediastore_summery),
                 value = it
             )
         }.asComposeState()
@@ -112,8 +112,8 @@ class SettingsViewModel @Inject constructor(
     override val enableTrashCan: Preference<Boolean> by with(preferences) {
         preferences[Settings.TRASH_CAN_ENABLED].map {
             Preference(
-                title = Text(R.string.enable_trash_can),
-                summery = Text(R.string.enable_trash_can_summery, isHtml = true),
+                title = Text(R.string.pref_enable_trash_can),
+                summery = Text(R.string.pref_enable_trash_can_summery, isHtml = true),
                 value = it
             )
         }.asComposeState()
@@ -121,8 +121,8 @@ class SettingsViewModel @Inject constructor(
     override val excludedFiles: Preference<Set<String>?> by with(preferences) {
         preferences[Settings.BLACKLISTED_FILES].map {
             Preference(
-                title = Text(R.string.blacklist),
-                summery = Text(R.string.blacklist_summery),
+                title = Text(R.string.pref_blacklist),
+                summery = Text(R.string.pref_blacklist_summery),
                 value = it
             )
         }.asComposeState()
@@ -130,8 +130,8 @@ class SettingsViewModel @Inject constructor(
     override val gaplessPlayback: Preference<Boolean> by with(preferences) {
         preferences[Settings.TRASH_CAN_ENABLED].map {
             Preference(
-                title = Text(R.string.enable_gapless_playback),
-                summery = Text(R.string.enable_gapless_playback_summery),
+                title = Text(R.string.pref_enable_gapless_playback),
+                summery = Text(R.string.pref_enable_gapless_playback_summery),
                 value = it
             )
         }.asComposeState()
@@ -139,8 +139,8 @@ class SettingsViewModel @Inject constructor(
     override val crossfadeTime: Preference<Int> by with(preferences) {
         preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
             Preference(
-                title = Text(R.string.crossfade_time),
-                summery = Text(R.string.crossfade_time_summery),
+                title = Text(R.string.pref_crossfade_time),
+                summery = Text(R.string.pref_crossfade_time_summery),
                 value = it
             )
         }.asComposeState()
@@ -162,7 +162,7 @@ class SettingsViewModel @Inject constructor(
             val res = blacklist.remove(path)
             val name = PathUtils.name(path)
             if (res)
-                Toast.makeText(context, "$name has been successfully removed from blacklist", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.msg_blacklist_item_remove_success_s, name), Toast.LENGTH_SHORT).show()
             else
                 Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
             preferences[Settings.BLACKLISTED_FILES] = blacklist

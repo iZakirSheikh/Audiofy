@@ -411,9 +411,9 @@ private fun Snackbar2(
             text = {
                 Label(
                     text = data.message.value,
-                    color = LocalContentColor.current.copy(ContentAlpha.medium),
+                    color = LocalContentColor.current,
                     style = MaterialTheme.typography.body2,
-                    maxLines = 4,
+                    maxLines = 5,
                 )
             },
             overlineText = composableOrNull(data.title != null) {

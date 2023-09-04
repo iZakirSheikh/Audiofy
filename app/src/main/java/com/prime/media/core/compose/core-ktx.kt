@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.primex.core.Text
-import com.primex.core.resolve
 
 private const val TAG = "ComposeUtil"
 
@@ -75,11 +74,6 @@ val LocalWindowSizeClass = staticCompositionLocalOf<WindowSizeClass> {
  */
 val NavHostController.current
     @Composable inline get() = currentBackStackEntryAsState().value?.destination?.route
-
-inline fun Resources.stringResource(res: Text) = resolve(res)
-
-@JvmName("stringResource1")
-inline fun Resources.stringResource(res: Text?) = resolve(res)
 
 /**
  * @return [content] if [condition] is true else null
