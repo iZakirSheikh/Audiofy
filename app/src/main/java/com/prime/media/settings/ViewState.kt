@@ -78,7 +78,8 @@ interface Settings : Blacklist {
          */
         val MINI_PLAYER_HEIGHT = 68.dp
 
-        val LatoFontFamily = FontFamily("Roboto")
+        val DefaultFontFamily = FontFamily("Roboto")
+        val DancingScriptFontFamily = FontFamily("Dancing Script")
 
         /**
          * Retrieves/Sets The [NightMode] Strategy

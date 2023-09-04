@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.Audiofy" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:fitsSystemWindows">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">false</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -12,7 +12,7 @@
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.Audiofy</item>
-        <item name="windowSplashScreenBackground">#14547B</item>
+        <item name="windowSplashScreenBackground">@color/primary</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:windowSplashScreenBrandingImage">@drawable/ic_branded_image</item>

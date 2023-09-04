@@ -83,15 +83,17 @@ import androidx.media3.common.Player
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
+import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.AVDIconButton
+import com.prime.media.core.LongDurationMills
+import com.prime.media.core.MediumDurationMills
+import com.prime.media.core.compose.AnimatedIconButton
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.rememberAnimatedVectorResource
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.util.DateUtils
 import com.prime.media.darkShadowColor
@@ -152,8 +154,9 @@ private fun PlayButton(
             id = R.raw.lt_play_pause,
             atEnd = !isPlaying,
             scale = 1.5f,
-            progressRange = 0.0f..0.5f,
-            duration = 1600
+            progressRange = 0.0f..0.29f,
+            duration = Anim.MediumDurationMills,
+            easing = LinearEasing
         )
     }
 }
@@ -295,7 +298,7 @@ private fun Vertical(
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
-            fontFamily = FontFamily.Cursive,
+            fontFamily = Settings.DancingScriptFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
             modifier = Modifier
@@ -491,7 +494,7 @@ private fun Vertical(
         )
 
         val mode = state.repeatMode
-        AVDIconButton(
+        AnimatedIconButton(
             id  = R.drawable.avd_repeat_more_one_all,
             onClick = { state.cycleRepeatMode();facade.launchReviewFlow(); },
             atEnd = mode == Player.REPEAT_MODE_ALL,

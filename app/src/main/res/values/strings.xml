@@ -75,6 +75,8 @@
     <string name="favourite">Favourite</string>
     <string name="playlists">Playlists</string>
     <string name="albums">Albums</string>
+    <string name="general">General</string>
+    <string name="feedback">Feedback</string>
     <!--The play store add of this app recommended by someone arg: playstore address -->
     <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
     <!--A plural represents how many items are there-->
@@ -120,9 +122,8 @@
         remove the track.
     </string>
     <!--Delete files-->
-    <string name="msg_delete_files_warning_d"><b>Warning\n</b>
-        You are about to delete %d files permanently. This cannot be undone. Click ‘Delete’
-        or the message will cancel itself.
+    <string name="msg_delete_files_warning_d"><b>Warning\n</b>You are about to delete %d files
+        permanently. This cannot be undone. Click <b>Delete</b> or the message will cancel itself.
     </string>
     <string name="msg_trash_files_warning_d"><b>Warning\n</b>
         You are about to trash %d files. Deleted files will be moved to the trashcan and
@@ -141,7 +142,7 @@
         The deleting of files was <b>cancelled</b> by the user.
     </string>
     <!--Delete message success with args deleted/total-->
-    <string name="msg_delete_success_ss">
+    <string name="msg_delete_success_ss"><b>Success\n</b>
         The %1$s/%2$s files from the storage have been successfully deleted.
     </string>
     <!--Block path-->
@@ -250,6 +251,8 @@
         We appreciate your support for the app. If you love it, please share it with your friends,
         family and WhatsApp groups. Remember, sharing is caring!
     </string>
+    <string name="pref_get_to_know_us">Get to Know Us</string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1$s by &author;"</string>
 
     <!--=====================            Media Library          =================================-->
     <!--Title to the audio library screen-->
@@ -286,8 +289,6 @@
     <!--============================          Albums     ==================================      -->
     <string name="albums_scr_year_d">Year: %1$s</string>
     <string name="albums_scr_title">@string/albums</string>
-
-
 
 
 

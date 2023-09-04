@@ -503,7 +503,7 @@ class AudiosViewModel @Inject constructor(
                 val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
                 val res = show(
                     buildTextResource(if (isTrashEnabled) R.string.msg_trash_files_warning_d else R.string.msg_delete_files_warning_d, list.size),
-                    buildTextResource(R.string.alert),
+                    null,
                     buildTextResource(if (isTrashEnabled) R.string.trash else R.string.delete),
                     Icons.Outlined.WarningAmber,
                     accent = Color.Rose,
@@ -547,7 +547,7 @@ class AudiosViewModel @Inject constructor(
 
                     else -> show(
                         buildTextResource(id = R.string.msg_delete_success_ss, result, uris.size),
-                        buildTextResource(R.string.success),
+                       null,
                         null,
                         Icons.Outlined.Delete,
                         Color.MetroGreen

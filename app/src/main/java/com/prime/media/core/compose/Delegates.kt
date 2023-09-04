@@ -10,6 +10,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -149,14 +151,15 @@ inline fun LottieAnimation(
     atEnd: Boolean = false,
     scale: Float = 1f,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    duration: Int = -1
+    duration: Int = -1,
+    easing: Easing = FastOutSlowInEasing
 ) {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val duration2 = composition?.duration?.roundToLong() ?: AnimationConstants.LongDurationMills
     val progress by animateFloatAsState(
         targetValue = if (atEnd) progressRange.start else progressRange.endInclusive,
         label = "Lottie $id",
-        animationSpec = tween(if (duration == -1) duration2.toInt() else duration)
+        animationSpec = tween(if (duration == -1) duration2.toInt() else duration, easing = easing)
     )
     LottieAnimation(
         composition = composition,
@@ -285,7 +288,7 @@ inline fun LottieAnimButton(
  */
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
-inline fun AVDIconButton(
+inline fun AnimatedIconButton(
     @DrawableRes id: Int,
     noinline onClick: () -> Unit,
     modifier: Modifier = Modifier,

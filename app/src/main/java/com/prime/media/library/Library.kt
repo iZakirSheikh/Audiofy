@@ -1,5 +1,5 @@
 @file:Suppress("CrossfadeLabel", "FunctionName")
-@file:OptIn(ExperimentalTextApi::class)
+@file:OptIn(ExperimentalTextApi::class, ExperimentalTextApi::class)
 
 package com.prime.media.library
 
@@ -64,6 +64,7 @@ import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
+import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.KenBurns
@@ -541,12 +542,13 @@ fun Library(
     viewModel: Library
 ) {
     val res = LocalContext.current.resources
+    val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Material.colors.background,
         content = {
             val navigator = LocalNavController.current
-            LazyColumn() {
+            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 // The TopBar.
                 // TODO: Maybe make it collapsable.
                 TopBar(Modifier.statusBarsPadding())
@@ -577,6 +579,15 @@ fun Library(
                             vertical = ContentPadding.small
                         )
                 )
+
+                if (!purchase.purchased)
+                item {
+                        Banner(
+                            placementID = BuildConfig.PLACEMENT_BANNER_1,
+                            modifier = Modifier.padding(ContentPadding.medium).offset(y = OFFSET_Y_SEARCH)
+                        )
+                }
+
                 // Recents.
                 Header(
                     modifier = Modifier
