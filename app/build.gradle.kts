@@ -30,7 +30,7 @@ android {
         minSdk = 21
         targetSdk = 34
         versionCode = 48
-        versionName = "2.3.0"
+        versionName = "2.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
