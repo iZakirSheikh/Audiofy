@@ -51,12 +51,12 @@ import com.prime.media.core.util.addDistinct
 import com.prime.media.core.util.share
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
-import com.prime.media.directory.dialogs.Properties
 import com.prime.media.impl.Repository
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.db.key
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMember
+import com.prime.media.dialog.Properties
 import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
@@ -793,11 +793,12 @@ fun Audios(viewModel: AudiosViewModel) {
 
         // if is focused and action is properties
         // show the dialog.
-        with(audio) {
-            Properties(expanded = confirm == Action.Properties && focused) {
+        Properties(
+            expanded = confirm == Action.Properties && focused,
+            path = audio.data, onDismissListener = {
                 confirm = null
             }
-        }
+        )
 
         // actual content
         Audio(

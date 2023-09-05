@@ -2,14 +2,12 @@
 ![Featured Graphics](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/e696e11c-58fa-4162-80ec-9ef0328c0e4d)
 <h1><img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/27f792dc-25db-40ca-92ff-b67b3bdba9a5" height = 48 alt="logo"/> Audiofy - Media Player</h1>
 <h6>An Open-Source Media Player App for all your needs!</h6>
-<!--Github Stars etc.-->
 
-[![jetpack-compose](https://img.shields.io/badge/Jetpack%20Compose-1.6.0-brightgreen)](https://developer.android.com/jetpack/compose)
-![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)
-![Github issues](https://img.shields.io/github/issues/iZakirSheikh/Audiofy2)
-![GitHub license](https://img.shields.io/github/license/iZakirSheikh/Audiofy2)
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40iZakirSheikh)](https://twitter.com/iZakirSheikh)
-![Email Badge](https://badgen.net/badge/email/helpline.prime.zs%40gmail.com/blue?icon=mail)
+<!--Info-->
+[![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Playstore](https://img.shields.io/endpoint?color=crimson&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Google Play Installs](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Google Play Rating](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)
 
 ## Don't forget to ⭐ the repo
 
@@ -17,6 +15,12 @@
 ![GitHub forks](https://img.shields.io/github/forks/iZakirSheikh/Audiofy2?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/iZakirSheikh/Audiofy2?style=social)
 ![GitHub follow](https://img.shields.io/github/followers/iZakirSheikh?label=Follow&style=social)
+
+## Contact
+<!--Contact-->
+[![Telegram Group](https://img.shields.io/badge/Telegram-Discussion-252850?color=orangered&logo=telegram)](https://telegram.dog/audiofy_support)
+![Email Badge](https://badgen.net/badge/email/helpline.prime.zs%40gmail.com/blue?icon=mail)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40iZakirSheikh)](https://twitter.com/iZakirSheikh)
 
 | Donate | Download |
 | --- | --- |
@@ -50,7 +54,7 @@
 | Tag Editing Support | Edit the metadata of your songs, such as title, artist, album, etc. | :soon: |
 | Play videos as audio | Play any video file on your device as audio only | :hourglass: |
 | Auto Song Recommendations | Get personalized song recommendations based on your listening habits | :white_check_mark: |
-| Inbuilt Equalizer | Adjust the sound quality and effects of the songs using an inbuilt equalizer | :x: |
+| Inbuilt Equalizer | Adjust the sound quality and effects of the songs using an inbuilt equalizer | :soon: |
 | Backup & Restore | Backup and restore your app data, such as playlists, favorites, history, etc. | :white_check_mark: |
 | Auto Update Check | Check for updates automatically and download them if available | :white_check_mark: |
 | Delete Tracks from within the app. | Delete any song from your device storage from within the app.  | :white_check_mark: |
@@ -73,40 +77,10 @@ If you are a developer and want to build and run the Audiofy app from the source
 To build the Audiofy app, follow these steps:
 
 1. Clone the repository: Open a terminal window and type the following command: `git clone https://github.com/iZakirSheikh/audiofy2.git`
-2. Add the private file:
-
-Some features and functionalities of the app require a private file that contains some keys and ids. To add this file to the project, do the following:
-
-- Create a file named `Private.kt` in the package `com.prime.media.core.billing`.
-- Paste the following code into the file:
-
-```kotlin
-package com.prime.media.core.billing
-
-object Private {
-    /**
-     * Base64-encoded RSA public key to include in your app binary
-     */
-    const val PLAY_CONSOLE_PUBLIC_KEY = "replace_this_with_id"
-    const val UNITY_APP_ID = "replace_this_with_id"
-}
-
-object Product {
-    const val DISABLE_ADS = "replace_this_with_id"
-}
-
-object Placement {
-    const val INTERSTITIAL = "replace_this_with_id"
-    const val BANNER_SETTINGS = "replace_this_with_id"
-    const val BANNER_UNIT_CONVERTER = "replace_this_with_id"
-}
-```
-Note: Replace the placeholders `replace_this_with_id` with the appropriate values for your app. You can get these values from the Play Console, Unity Dashboard, or other sources.
-
-3. Open Android Studio and select Open an existing project.
-4. Navigate to the folder where you cloned or downloaded this repository and select it.
-5. Wait for Android Studio to sync the project and resolve the dependencies.
-6. Run the app on an emulator or a connected device by clicking the Run button.
+2. Open Android Studio and select Open an existing project.
+3. Navigate to the folder where you cloned or downloaded this repository and select it.
+4. Wait for Android Studio to sync the project and resolve the dependencies.
+65 Run the app on an emulator or a connected device by clicking the Run button.
 
 You have successfully built and run the Audiofy app from the source code. Enjoy!
 
@@ -131,5 +105,4 @@ You have successfully built and run the Audiofy app from the source code. Enjoy!
     limitations under the License.
 
 ```
-
 
