@@ -77,6 +77,25 @@
     <string name="albums">Albums</string>
     <string name="general">General</string>
     <string name="feedback">Feedback</string>
+    <string name="title">Title</string>
+    <string name="file_path">File path</string>
+    <string name="size">Size</string>
+    <string name="format">Format</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="sampling_rate">Sampling Rate</string>
+    <string name="bits_per_sample">Bits per sample</string>
+    <string name="year">Year</string>
+    <string name="disk_number">Disk number</string>
+    <string name="property">property</string>
+    <string name="track_number">Track number</string>
+    <string name="genre">Genre</string>
+    <string name="composer">Composer</string>
+    <string name="author">Author</string>
+    <string name="writer">Writer</string>
+    <string name="done">Done</string>
+    <string name="not_available_abbv">N/A</string>
+
+
     <!--The play store add of this app recommended by someone arg: playstore address -->
     <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
     <!--A plural represents how many items are there-->
@@ -289,7 +308,7 @@
     <!--============================          Albums     ==================================      -->
     <string name="albums_scr_year_d">Year: %1$s</string>
     <string name="albums_scr_title">@string/albums</string>
-
+    <string name="duration">Duration</string>
 
 
 </resources>

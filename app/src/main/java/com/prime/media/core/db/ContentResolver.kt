@@ -177,11 +177,14 @@ suspend fun ContentResolver.getAudios(
     offset: Int = 0,
     limit: Int = Int.MAX_VALUE
 ): List<Audio> {
+    val title = MediaStore.Audio.Media.TITLE
+    val artist = MediaStore.Audio.Media.ARTIST
+    val album = MediaStore.Audio.Media.ALBUM
     return query2(
         uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         projection = AUDIO_PROJECTION,
         ascending = ascending,
-        selection = DEFAULT_AUDIO_SELECTION + if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else "",
+        selection = DEFAULT_AUDIO_SELECTION + if (filter != null) " AND $title || $artist || $album LIKE ?" else "",
         args = if (filter != null) arrayOf("%$filter%") else null,
         order = order,
         offset = offset,
