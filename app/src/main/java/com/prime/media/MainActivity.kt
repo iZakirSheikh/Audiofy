@@ -191,16 +191,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
             // the time when lastly asked for review
             val lastAskedTime = preferences.value(KEY_LAST_REVIEW_TIME)
             // obtain teh first install time.
-            val firstInstallTime =
-                com.primex.core.runCatching(TAG + "_review") {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                        packageManager.getPackageInfo(
-                            packageName,
-                            PackageManager.PackageInfoFlags.of(0)
-                        )
-                    else
-                        packageManager.getPackageInfo(packageName, 0)
-                }?.firstInstallTime
+            val firstInstallTime = (application as Audiofy).packageInfo?.firstInstallTime
             // obtain the current time.
             val currentTime = System.currentTimeMillis()
             // Only first time we should not ask immediately
@@ -250,7 +241,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
                                 total == downloaded -> Float.NaN
                                 else -> downloaded / total.toFloat()
                             }
-                            _inAppUpdateProgress.value = progress
+                            _inAppUpdateProgress.floatValue = progress
                         }
 
                         is AppUpdateResult.Downloaded -> {
