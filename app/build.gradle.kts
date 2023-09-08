@@ -29,8 +29,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 49
-        versionName = "2.3.2"
+        versionCode = 50
+        versionName = "2.3.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -75,7 +75,7 @@ android {
 
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
-    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.core:core-ktx:1.12.0")
     val compose_version = "1.6.0-alpha02"
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
@@ -119,9 +119,9 @@ dependencies {
     // Unity Ads
     implementation("com.unity3d.ads:unity-ads:4.8.0")
     // Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.7.1")
+    implementation("androidx.navigation:navigation-compose:2.7.2")
     // Compose Downloadable fonts
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.1")
     // Hilt
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-android-compiler:2.48")

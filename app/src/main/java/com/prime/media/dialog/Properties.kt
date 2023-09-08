@@ -303,6 +303,8 @@ private inline fun Properties(
 fun Properties(
     expanded: Boolean, path: String, onDismissListener: () -> Unit
 ) {
+    if (!expanded)
+        return Unit
     var retriver: MediaMetadataRetriever? by remember {
         mutableStateOf(null)
     }

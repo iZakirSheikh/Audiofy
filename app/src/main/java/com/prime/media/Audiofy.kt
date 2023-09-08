@@ -1,6 +1,7 @@
 package com.prime.media
 
 import android.app.Application
+import android.content.pm.PackageManager
 import android.os.Build
 import com.primex.preferences.intPreferenceKey
 import dagger.hilt.android.HiltAndroidApp
@@ -41,5 +42,21 @@ class Audiofy : Application() {
             else
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     }
+
+    /**
+     * Gets the package info of this app using the package manager.
+     * @return a PackageInfo object containing information about the app, or null if an exception occurs.
+     * @see android.content.pm.PackageManager.getPackageInfo
+     */
+    val packageInfo
+        get() = com.primex.core.runCatching(TAG + "_review") {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.PackageInfoFlags.of(0)
+                )
+            else
+                packageManager.getPackageInfo(packageName, 0)
+        }
 }
 
