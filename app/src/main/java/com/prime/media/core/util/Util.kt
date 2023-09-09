@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.State
@@ -45,6 +46,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 private const val TAG = "Util"
 
@@ -340,3 +342,20 @@ val Uri.removeId: Uri
         }
         return builder.build()
     }
+
+/**
+ * @see registerActivityResultLauncher
+ */
+suspend fun <I, O> ComponentActivity.getActivityResult(
+    contract: ActivityResultContract<I, O>,
+    request: I,
+): O = suspendCoroutine { continuation ->
+    val key = UUID.randomUUID().toString()
+    var launcher: ActivityResultLauncher<I>? = null
+    val callback = ActivityResultCallback<O> { output ->
+        continuation.resume(output)
+        launcher?.unregister()
+    }
+    launcher = activityResultRegistry.register(key, contract, callback)
+    launcher.launch(request)
+}

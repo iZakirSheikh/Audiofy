@@ -103,11 +103,11 @@ private fun initSplashScreen(isColdStart: Boolean) {
 class MainActivity : ComponentActivity(), SystemFacade {
 
     private val advertiser by lazy { Advertiser(this) }
-    private val billingManager by lazy { BillingManager(this, arrayOf(BuildConfig.IAP_NO_ADS)) }
+    private val billingManager by lazy { BillingManager(this, arrayOf(BuildConfig.IAP_NO_ADS, BuildConfig.IAP_TAG_EDITOR_PRO)) }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
     override val inAppUpdateProgress: Float
-        get() = _inAppUpdateProgress.value
+        get() = _inAppUpdateProgress.floatValue
 
     private lateinit var _isPLayerReady: State<Boolean>
     override val isPlayerReady: Boolean
