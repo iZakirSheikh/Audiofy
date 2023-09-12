@@ -14,6 +14,7 @@ jobs:
         run: |
           echo "DATE_TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
           echo "IAP_NO_ADS=$(echo ${{ secrets.IAP_NO_ADS }})" >> $GITHUB_ENV
+          echo "IAP_TAG_EDITOR_PRO=$(echo ${{ secrets.IAP_TAG_EDITOR_PRO }})" >> $GITHUB_ENV
           echo "PLACEMENT_BANNER_1=$(echo ${{ secrets.PLACEMENT_BANNER_1 }})" >> $GITHUB_ENV
           echo "PLACEMENT_BANNER_2=$(echo ${{ secrets.PLACEMENT_BANNER_2 }})" >> $GITHUB_ENV
           echo "PLACEMENT_INTERSTITIAL=$(echo ${{ secrets.PLACEMENT_INTERSTITIAL }})" >> $GITHUB_ENV
@@ -28,6 +29,7 @@ jobs:
           echo $PLACEMENT_INTERSTITIAL | sed 's/./&‌/g'
           echo $PLAY_CONSOLE_APP_RSA_KEY | sed 's/./&‌/g'
           echo $IAP_NO_ADS | sed 's/./&‌/g'
+          echo $IAP_TAG_EDITOR_PRO | sed 's/./&‌/g'
           echo $GIT_TAG | sed 's/./&‌/g'
       - name: Configuring Java environment with Zulu JDK 17 and Gradle cache,
         uses: actions/setup-java@v3
