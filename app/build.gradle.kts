@@ -20,6 +20,7 @@ val secrets = arrayOf(
     "PLACEMENT_INTERSTITIAL",
     "UNITY_APP_ID",
     "PLAY_CONSOLE_APP_RSA_KEY",
+    "IAP_TAG_EDITOR_PRO"
 )
 
 android {
@@ -29,8 +30,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 50
-        versionName = "2.3.3"
+        versionCode = 51
+        versionName = "2.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -143,4 +144,7 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
     implementation("androidx.media3:media3-session:$media3_version")
+    //Tag Editor
+    // Currently it only supports mp3;
+    implementation("com.mpatric:mp3agic:0.9.1")
 }

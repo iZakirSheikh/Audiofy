@@ -72,9 +72,11 @@ import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
+import com.prime.media.editor.TagEditor
 import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
+import com.prime.media.impl.TagEditorViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
@@ -371,6 +373,11 @@ private fun NavGraph(
         composable(Members.route) {
             val viewModel = hiltViewModel<MembersViewModel>()
             Members(viewModel = viewModel)
+        }
+
+        composable(TagEditor.route){
+            val viewModel = hiltViewModel<TagEditorViewModel>()
+            TagEditor(state = viewModel)
         }
     }
 }

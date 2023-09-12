@@ -329,17 +329,17 @@ private fun Shortcuts(
                 Shortcut(
                     onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
                     icon = Icons.Outlined.GraphicEq,
-                    label = textResource(id =R.string.audios)
+                    label = textResource(id = R.string.audios)
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Artists.direction()) },
                     icon = Icons.Outlined.Person,
-                    label = textResource(id =R.string.artists)
+                    label = textResource(id = R.string.artists)
                 )
                 Shortcut(
                     onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                     icon = Icons.Outlined.FavoriteBorder,
-                    label = textResource(id =R.string.favourite)
+                    label = textResource(id = R.string.favourite)
                 )
 
                 Shortcut(
@@ -513,7 +513,7 @@ fun NewlyAdded(
             ) {
                 GridItem(
                     it.name,
-                    onClick = { state.onClickRecentAddedFile(it.id)},
+                    onClick = { state.onClickRecentAddedFile(it.id) },
                     modifier = Modifier
                         .width(75.dp)
                         .animateItemPlacement(),
@@ -581,12 +581,14 @@ fun Library(
                 )
 
                 if (!purchase.purchased)
-                item {
+                    item {
                         Banner(
                             placementID = BuildConfig.PLACEMENT_BANNER_1,
-                            modifier = Modifier.padding(ContentPadding.medium).offset(y = OFFSET_Y_SEARCH)
+                            modifier = Modifier
+                                .padding(ContentPadding.medium)
+                                .offset(y = OFFSET_Y_SEARCH)
                         )
-                }
+                    }
 
                 // Recents.
                 Header(

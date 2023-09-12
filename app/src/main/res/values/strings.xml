@@ -94,7 +94,14 @@
     <string name="writer">Writer</string>
     <string name="done">Done</string>
     <string name="not_available_abbv">N/A</string>
-
+    <string name="duration">Duration</string>
+    <string name="album_artist">Album artist</string>
+    <string name="comment">Comment</string>
+    <string name="copywriter">Copywriter</string>
+    <string name="total_disks">Total Disks</string>
+    <string name="url">Url</string>
+    <string name="original_artist">Original Artist</string>
+    <string name="publisher">Publisher</string>
 
     <!--The play store add of this app recommended by someone arg: playstore address -->
     <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
@@ -194,6 +201,7 @@
     <string name="msg_new_update_downloaded"><b>Alert\n</b> An update has just been downloaded.</string>
     <string name="msg_no_new_update_available">The app is already updated to the latest version.</string>
     <string name="msg_error_fav_playlist_update"><b>Error\n</b>An error occurred while adding/removing the item to favourite playlist</string>
+    <string name="msg_upgrade_to_pro">Upgrade to the Pro version to unlock this feature.</string>
 
     <!--======================   Settings screen      ===========================================-->
 
@@ -308,7 +316,28 @@
     <!--============================          Albums     ==================================      -->
     <string name="albums_scr_year_d">Year: %1$s</string>
     <string name="albums_scr_title">@string/albums</string>
-    <string name="duration">Duration</string>
 
-
+    <!--============================          TagEditor     ==================================      -->
+    <string name="overwrite">Overwrite</string>
+    <string name="tag_editor_scr_pro_title">Tag Editor <sup>Pro</sup></string>
+    <string name="tag_editor_scr_title">Tag Editor</string>
+    <string name="tag_editor_scr_extra_immutable_info_ssss">Channel <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
+    <string name="msg_tag_editor_reset_warning"><b>Warning</b>\nReset will result in data loss. Are you sure?</string>
+    <string name="msg_tag_editor_scr_overwrite_waring"><b>Warning</b>\nThis action will overwrite 
+        the file, and it cannot be undone. Proceed with caution.
+    </string>
+    <string name="msg_tag_editor_overwrite_permission_revoked"><b>Permission\n</b>User declined the file overwrite.</string>
+    <string name="msg_tag_editor_file_update_success">File update completed successfully.</string>
+    <string name="msg_tag_editor_buy_me_banner">Enhance your experience by upgrading to
+        <b>Tag Editor Pro</b>, where you can edit lyrics and album art seamlessly.
+    </string>
+    <string name="tag_editor_screen_buy_now_action">Get Tag Editor Pro</string>
+    <string name="tag_editor_property_placeholder">Tap here to enter text</string>
+    <string name="tag_editor_web_address_prefix"><font color = "#00a300">http://</font></string>
+    <string name="lyrics">\"Lyrics\"</string>
+    <string name="msg_tag_editor_error_s"><b>Error</b> \n%1s</string>
+    <string name="tag_editor_lyrics_placeholder">
+        Please input your lyrics in either:\n
+        1. Synchronized Lyrics (“[MM:SS.XX] line”), or\n
+        2. Un-Synchronized Text.</string>
 </resources>

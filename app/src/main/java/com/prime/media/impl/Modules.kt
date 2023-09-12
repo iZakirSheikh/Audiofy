@@ -17,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object Singleton {
+object SingletonModules {
     /**
      * Provides the Singleton Implementation of Preferences DataStore.
      */
@@ -39,11 +39,15 @@ object Singleton {
     @Provides
     @Singleton
     fun remote(@ApplicationContext context: Context) = Remote(context)
+
+    @Provides
+    @Singleton
+    fun resource(@ApplicationContext context: Context) = context.resources
 }
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
-object Activity {
+object ActivityModules {
     @ActivityRetainedScoped
     @Provides
     fun toaster() = Channel()

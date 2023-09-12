@@ -57,6 +57,7 @@ import com.prime.media.core.db.key
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.util.toMember
 import com.prime.media.dialog.Properties
+import com.prime.media.editor.TagEditor
 import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
@@ -134,6 +135,7 @@ class AudiosViewModel @Inject constructor(
             Action.Delete,
             Action.Share,
             Action.Properties,
+            Action.Edit
         )
 
     init {
@@ -287,11 +289,15 @@ class AudiosViewModel @Inject constructor(
                 mutable.addDistinct(Action.Properties)
             }
 
-            selected.size == 1 -> mutable.addDistinct(Action.SelectAll)
+            selected.size == 1 -> {
+                mutable.addDistinct(Action.SelectAll)
+                mutable.addDistinct(Action.Edit)
+            }
             selected.size == 2 -> {
                 mutable.remove(Action.Properties)
                 mutable.remove(Action.GoToArtist)
                 mutable.remove(Action.GoToAlbum)
+                mutable.remove(Action.Edit)
             }
         }
     }
@@ -620,6 +626,14 @@ class AudiosViewModel @Inject constructor(
             controller.navigate(direction)
         }
     }
+
+    fun toTagEditor(controller: NavHostController) {
+        viewModelScope.launch {
+            val album = repository.findAudio(focused.toLongOrNull() ?: 0) ?: return@launch
+            val direction = TagEditor.direction(album.data)
+            controller.navigate(direction)
+        }
+    }
 }
 
 @Composable
@@ -767,6 +781,7 @@ fun Audios(viewModel: AudiosViewModel) {
             Action.GoToArtist -> viewModel.toArtist(navigator)
             Action.Shuffle -> viewModel.play(true)
             Action.Play -> viewModel.play(false)
+            Action.Edit -> viewModel.toTagEditor(navigator)
             else -> error("Action: $action not supported.")
         }
     }
