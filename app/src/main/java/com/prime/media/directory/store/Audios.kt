@@ -663,8 +663,7 @@ private inline fun Actions(
             Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
             DropdownMenu(
                 expanded = showMore,
-                onDismissRequest = { showMore = false },
-                modifier = Modifier.clip(RoundedCornerShape(30))
+                onDismissRequest = { showMore = false }
             ) {
                 // first 5 as list item
                 repeat(4) {

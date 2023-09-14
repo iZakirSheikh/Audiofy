@@ -3,13 +3,18 @@ package com.prime.media
 import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
+import coil.request.CachePolicy
 import com.primex.preferences.intPreferenceKey
 import dagger.hilt.android.HiltAndroidApp
 
 private const val TAG = "Audiofy"
 
 @HiltAndroidApp
-class Audiofy : Application() {
+class Audiofy : Application(), ImageLoaderFactory {
 
     companion object {
         /**
@@ -58,5 +63,29 @@ class Audiofy : Application() {
             else
                 packageManager.getPackageInfo(packageName, 0)
         }
+
+    override fun newImageLoader(): ImageLoader {
+        return ImageLoader.Builder(this)
+            .components {
+//                add(VideoFrameDecoder.Factory())
+//                add(SvgDecoder.Factory())
+//                add(GifDecoder.Factory())
+            }
+            .memoryCache {
+                MemoryCache.Builder(this)
+                    .strongReferencesEnabled(true)
+                    .build()
+            }
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache/coil"))
+                    //.maxSizePercent(0.02)
+                    .maxSizeBytes(20_000)
+                    .build()
+            }
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .build()
+    }
 }
 

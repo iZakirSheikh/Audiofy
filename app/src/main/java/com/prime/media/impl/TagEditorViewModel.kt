@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateUtils
+import android.webkit.MimeTypeMap
 import androidx.activity.ComponentActivity
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mpatric.mp3agic.ID3v1Genres
 import com.mpatric.mp3agic.Mp3File
 import com.prime.media.R
 import com.prime.media.core.compose.Channel
@@ -49,8 +51,9 @@ private const val TAG = "TagEditorViewModel"
  * otherwise, it uses the title from ID3v2.
  */
 private var Mp3File.title
-    get() = id3v1Tag?.title ?: id3v2Tag?.title
+    get() = id3v2Tag?.title ?: id3v1Tag?.title
     set(value) {
+        if (title == value) return
         id3v1Tag?.title = value
         id3v2Tag?.title = value
     }
@@ -61,8 +64,9 @@ private var Mp3File.title
  * otherwise, it uses the artist from ID3v2.
  */
 private var Mp3File.artist
-    get() = id3v1Tag?.artist ?: id3v2Tag?.artist
+    get() = id3v2Tag?.artist?: id3v1Tag?.artist
     set(value) {
+        if (artist == value) return
         id3v1Tag?.artist = value
         id3v2Tag?.artist = value
     }
@@ -73,8 +77,9 @@ private var Mp3File.artist
  * otherwise, it uses the album from ID3v2.
  */
 private var Mp3File.album
-    get() = id3v1Tag?.album ?: id3v2Tag?.album
+    get() =  id3v2Tag?.album?: id3v1Tag?.album
     set(value) {
+        if (album == value) return
         id3v1Tag?.album = value
         id3v2Tag?.album = value
     }
@@ -85,6 +90,7 @@ private var Mp3File.album
 private var Mp3File.composer
     get() = id3v2Tag?.composer
     set(value) {
+        if (composer == value) return
         id3v2Tag?.composer = value
     }
 
@@ -94,6 +100,7 @@ private var Mp3File.composer
 private var Mp3File.albumArtist
     get() = id3v2Tag?.albumArtist
     set(value) {
+        if (albumArtist == value) return
         id3v2Tag?.albumArtist = value
     }
 
@@ -105,6 +112,8 @@ private var Mp3File.albumArtist
 private var Mp3File.genre
     get() = id3v2Tag?.genreDescription ?: id3v1Tag?.genreDescription
     set(value) {
+        // old value is new value or genre is not from pre-defiend values just return
+        if (genre == value || ID3v1Genres.matchGenreDescription(value) < 0) return
         //id3v1Tag?.genreDescription = value
         id3v2Tag?.genreDescription = value
     }
@@ -115,6 +124,7 @@ private var Mp3File.genre
 private var Mp3File.lyrics
     get() = id3v2Tag?.lyrics
     set(value) {
+        if (lyrics == value) return
         id3v2Tag?.lyrics = value
     }
 
@@ -124,8 +134,9 @@ private var Mp3File.lyrics
  * otherwise, it uses the comment from ID3v2.
  */
 private var Mp3File.comment
-    get() = id3v1Tag?.comment ?: id3v2Tag.comment
+    get() = id3v2Tag.comment ?: id3v1Tag?.comment
     set(value) {
+        if (comment == value) return
         id3v1Tag?.comment = value
         id3v2Tag?.comment = value
     }
@@ -136,6 +147,7 @@ private var Mp3File.comment
 private var Mp3File.copyright
     get() = id3v2Tag?.copyright
     set(value) {
+        if (copyright == value) return
         id3v2Tag?.copyright = value
     }
 
@@ -145,6 +157,7 @@ private var Mp3File.copyright
 private var Mp3File.url
     get() = id3v2Tag?.url
     set(value) {
+        if (url == value) return
         id3v2Tag?.url = value
     }
 
@@ -154,6 +167,7 @@ private var Mp3File.url
 private var Mp3File.publisher
     get() = id3v2Tag?.publisher
     set(value) {
+        if (publisher == value) return
         id3v2Tag?.publisher = value
     }
 
@@ -163,6 +177,7 @@ private var Mp3File.publisher
 private var Mp3File.originalArtist
     get() = id3v2Tag?.originalArtist
     set(value) {
+        if (originalArtist == value) return
         id3v2Tag?.originalArtist = value
     }
 
@@ -172,8 +187,11 @@ private var Mp3File.originalArtist
 private var Mp3File.encoder
     get() = id3v2Tag?.encoder
     set(value) {
+        if (encoder == value) return
         id3v2Tag?.encoder = value
     }
+
+private val ALBUM_ART_MIME_TYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("png")
 
 /**
  * Gets or sets the artwork (album cover) of the MP3 file from the ID3v2 tag.
@@ -181,7 +199,9 @@ private var Mp3File.encoder
 private var Mp3File.artwork
     get() = id3v2Tag?.albumImage
     set(value) {
-        id3v2Tag?.setAlbumImage(value, id3v2Tag.albumImageMimeType)
+        // same
+        if (artwork.contentEquals(value)) return
+        id3v2Tag?.setAlbumImage(value, ALBUM_ART_MIME_TYPE)
     }
 
 /**
@@ -190,6 +210,7 @@ private var Mp3File.artwork
 private var Mp3File.albumArtMimeType
     get() = id3v2Tag?.albumImageMimeType
     set(value) {
+        if (albumArtMimeType == value) return
         id3v2Tag?.setAlbumImage(id3v2Tag?.albumImage, value)
     }
 
@@ -198,8 +219,9 @@ private var Mp3File.albumArtMimeType
  * then the ID3v2 tag, and defaults to 0 if neither has a valid year.
  */
 private var Mp3File.year
-    get() = id3v1Tag?.year?.toIntOrNull() ?: id3v2Tag?.year?.toIntOrNull() ?: 0
+    get() = id3v2Tag?.year?.toIntOrNull() ?: id3v1Tag?.year?.toIntOrNull()  ?: 0
     set(value) {
+        if (year == value) return
         id3v1Tag?.year = "$value"
         id3v2Tag?.year = "$value"
     }
@@ -209,8 +231,9 @@ private var Mp3File.year
  * then the ID3v2 tag, and defaults to 0 if neither has a valid track number.
  */
 private var Mp3File.trackNumber
-    get() = id3v1Tag?.track?.toIntOrNull() ?: id3v2Tag?.track?.toIntOrNull() ?: 0
+    get() =  id3v2Tag?.track?.toIntOrNull() ?: id3v1Tag?.track?.toIntOrNull() ?: 0
     set(value) {
+        if (trackNumber == value) return
         id3v1Tag?.track = "$value"
         id3v2Tag?.track = "$value"
     }
@@ -232,6 +255,7 @@ private var Mp3File.disks: Int
         return 0
     }
     set(value) {
+        if (disks == value) return
         // Get the TPOS frame
         val partOfSet = id3v2Tag?.partOfSet ?: "0/0"
         val parts = partOfSet.split("/")
@@ -255,6 +279,7 @@ private var Mp3File.diskNumber: Int
         return parts[0].toIntOrNull() ?: 0
     }
     set(value) {
+        if (diskNumber == value) return
         // Get the TPOS frame
         val partOfSet = id3v2Tag?.partOfSet ?: "0/0"
         val parts = partOfSet.split("/")
@@ -405,6 +430,7 @@ class TagEditorViewModel @Inject constructor(
         file.originalArtist = this@TagEditorViewModel.originalArtist.text
         file.publisher = this@TagEditorViewModel.publisher.text
         file.url = this@TagEditorViewModel.url.text
+        file.artwork = _artwork
     }
 
     override fun save(ctx: Context) {
