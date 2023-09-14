@@ -3,8 +3,6 @@ package com.prime.media.impl
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -21,12 +19,12 @@ import com.prime.media.console.Console
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
+import com.prime.media.core.playback.Playback.Companion.UNINITIALIZED_SLEEP_TIME_MILLIS
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.util.MainHandler
 import com.primex.core.OrientRed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -76,6 +74,7 @@ class ConsoleViewModel @Inject constructor(
     override val isFirst: Boolean get() = !remote.hasPreviousTrack
     override val duration: Long get() = remote.duration
     override val audioSessionId: Int get() = remote.audioSessionId
+    override var sleepAfterMills by mutableLongStateOf(UNINITIALIZED_SLEEP_TIME_MILLIS)
 
 
     override val queue: Flow<List<MediaItem>> = remote.queue
@@ -118,13 +117,13 @@ class ConsoleViewModel @Inject constructor(
         }
     }
 
-    override fun setSleepAfter(minutes: Int) {
+    override fun setSleepAfter(mills: Long) {
         viewModelScope.launch {
-            // currently not available.
-            toaster.show(
-                message = R.string.msg_feature_coming_soon,
-                leading = Icons.Outlined.MoreTime
-            )
+            // if not playing don't change.
+            if (!playing)
+                return@launch
+            remote.setSleepTimeAt(mills)
+            sleepAfterMills = if (mills == UNINITIALIZED_SLEEP_TIME_MILLIS) mills else mills - System.currentTimeMillis()
         }
     }
 
@@ -163,6 +162,11 @@ class ConsoleViewModel @Inject constructor(
     // listener to progress changes.
     private val onProgressUpdate = {
         position = remote.position
+        viewModelScope.launch {
+            val scheduled = remote.getSleepTimeAt()
+            sleepAfterMills = if (scheduled == UNINITIALIZED_SLEEP_TIME_MILLIS) scheduled else scheduled - System.currentTimeMillis()
+        }
+        Unit
     }
 
     private fun onPlayerEvent(event: Int) {
@@ -172,6 +176,7 @@ class ConsoleViewModel @Inject constructor(
             // may be add some more check.
             Player.EVENT_IS_PLAYING_CHANGED -> {
                 playing = remote.isPlaying
+                sleepAfterMills = UNINITIALIZED_SLEEP_TIME_MILLIS
                 if (remote.isPlaying)
                     MainHandler.repeat(PROGRESS_TOKEN, 1000, call = onProgressUpdate)
                 else
@@ -202,14 +207,16 @@ class ConsoleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             remote.events
-                .onStart { emit(null) }
+               // .onStart { emit(null) }
                 .collect {
                     if (it == null) {
                         // init with events.
+                        sleepAfterMills = remote.getSleepTimeAt()
+                        position = remote.position
                         onPlayerEvent(event = Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)
                         onPlayerEvent(event = Player.EVENT_REPEAT_MODE_CHANGED)
-                        onPlayerEvent(Player.EVENT_IS_PLAYING_CHANGED)
                         onPlayerEvent(Player.EVENT_MEDIA_ITEM_TRANSITION)
+                        onPlayerEvent(Player.EVENT_IS_PLAYING_CHANGED)
                         return@collect
                     }
                     // emit the event.

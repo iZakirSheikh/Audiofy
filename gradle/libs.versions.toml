@@ -1,5 +1,5 @@
 [plugins]
-androidApplication = { id = "com.android.application", version = "8.2.0-beta03" }
+androidApplication = { id = "com.android.application", version = "8.2.0-beta04" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version = "1.9.10" }
 firebase = { id = "com.google.gms.google-services", version = "4.3.15" }
 hilt = { id = "com.google.dagger.hilt.android", version = "2.48"}

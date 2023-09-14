@@ -2,6 +2,7 @@
 
 package com.prime.media.console
 
+import android.text.format.DateUtils.*
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
@@ -55,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -97,7 +99,9 @@ import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.util.DateUtils
 import com.prime.media.darkShadowColor
+import com.prime.media.dialog.PlaybackSpeedDialog
 import com.prime.media.dialog.PlayingQueue
+import com.prime.media.dialog.Timer
 import com.prime.media.lightShadowColor
 import com.prime.media.outline
 import com.prime.media.settings.Settings
@@ -163,40 +167,6 @@ private fun PlayButton(
 
 private val ARTWORK_STROKE_DEFAULT_EXPANDED = 8.dp
 private val ARTWORK_STROKE_DEFAULT_COLLAPSED = 3.dp
-
-@Composable
-private fun SpeedControllerLayout(
-    value: Float,
-    modifier: Modifier = Modifier,
-    onRequestChange: (new: Float) -> Unit
-) {
-    Surface(modifier = modifier) {
-        Column() {
-            TopAppBar(
-                title = { Label(text = "Playback Speed", style = Material.typography.body2) },
-                backgroundColor = Material.colors.background,
-            )
-
-            Label(
-                text = "${String.format("%.2f", value)}x",
-                modifier = Modifier
-                    .padding(top = ContentPadding.normal)
-                    .align(Alignment.CenterHorizontally),
-                style = Material.typography.h6
-            )
-
-            Slider(
-                value = value,
-                onValueChange = onRequestChange,
-                valueRange = 0.25f..2f,
-                steps = 6,
-                modifier = Modifier.padding(
-                    horizontal = ContentPadding.xLarge,
-                )
-            )
-        }
-    }
-}
 
 @Composable
 private fun Artwork(
@@ -461,14 +431,15 @@ private fun Vertical(
         )
 
         var showSpeedController by rememberState(initial = false)
-        BottomSheetDialog(
+        PlaybackSpeedDialog(
             expanded = showSpeedController,
-            onDismissRequest = { showSpeedController = false }) {
-            var speed by rememberState(initial = state.playbackSpeed)
-            SpeedControllerLayout(
-                value = speed,
-                onRequestChange = { speed = it; state.playbackSpeed = it })
-        }
+            value = state.playbackSpeed,
+            onRequestChange = {
+                if (it != -2f)
+                    state.playbackSpeed = it
+                showSpeedController = false
+            }
+        )
 
         IconButton(
             onClick = { showSpeedController = true },
@@ -477,12 +448,32 @@ private fun Vertical(
             tint = onColor
         )
 
-        IconButton(
-            onClick = { /*TODO: Implement this.*/ state.setSleepAfter(1) },
-            painter = rememberVectorPainter(image = Icons.Outlined.Timer),
-            modifier = Modifier.layoutID(Console.SLEEP),
-            tint = onColor
+        var showSleepAfter by remember { mutableStateOf(false) }
+        Timer(
+            expanded = showSleepAfter,
+            onValueChange = {
+                if (it != -2L)
+                    state.setSleepAfter(it)
+                showSleepAfter = false
+            }
         )
+
+        androidx.compose.material.IconButton(
+            onClick = { showSleepAfter = true },
+            modifier = Modifier.layoutID(Console.SLEEP),
+            content = {
+                val mills = state.sleepAfterMills
+                if (mills == -1L)
+                    return@IconButton Icon(imageVector = Icons.Outlined.Timer, contentDescription = null)
+                Label(
+                    text = formatElapsedTime(mills/1000L),
+                    style = Material.typography.caption2,
+                    fontWeight = FontWeight.Bold,
+                    color = Material.colors.secondary
+                )
+            }
+        )
+        
         val shuffle = state.shuffle
         LottieAnimButton(
             id = R.raw.lt_shuffle_on_off,
