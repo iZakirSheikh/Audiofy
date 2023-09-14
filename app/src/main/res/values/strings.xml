@@ -319,9 +319,9 @@
 
     <!--============================          TagEditor     ==================================      -->
     <string name="overwrite">Overwrite</string>
-    <string name="tag_editor_scr_pro_title">Tag Editor <sup>Pro</sup></string>
+    <string name="tag_editor_scr_pro_title">Tag Editor <sup><font color = "#00a300" size= "11">Pro</font></sup></string>
     <string name="tag_editor_scr_title">Tag Editor</string>
-    <string name="tag_editor_scr_extra_immutable_info_ssss">Channel <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
+    <string name="tag_editor_scr_extra_immutable_info_ssss"><small>Channel</small> <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
     <string name="msg_tag_editor_reset_warning"><b>Warning</b>\nReset will result in data loss. Are you sure?</string>
     <string name="msg_tag_editor_scr_overwrite_waring"><b>Warning</b>\nThis action will overwrite 
         the file, and it cannot be undone. Proceed with caution.
@@ -334,7 +334,7 @@
     <string name="tag_editor_screen_buy_now_action">Get Tag Editor Pro</string>
     <string name="tag_editor_property_placeholder">Tap here to enter text</string>
     <string name="tag_editor_web_address_prefix"><font color = "#00a300">http://</font></string>
-    <string name="lyrics">\"Lyrics\"</string>
+    <string name="lyrics">Lyrics</string>
     <string name="msg_tag_editor_error_s"><b>Error</b> \n%1s</string>
     <string name="tag_editor_lyrics_placeholder">
         Please input your lyrics in either:\n

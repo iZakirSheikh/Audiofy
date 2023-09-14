@@ -231,6 +231,7 @@ private inline fun Lyrics(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            enabled = enabled,
             placeholder = { Text(textResource(id = R.string.tag_editor_lyrics_placeholder)) },
         )
     }
@@ -270,7 +271,7 @@ private inline fun Artwork(
                     .clip(ArtworkShape)
                     .background(Material.colors.overlay, ArtworkShape)
                     .aspectRatio(1.0f) // different when width > height
-                    .gradient(radius = Float.MAX_VALUE)
+                    .gradient(true, listOf(Color.Black.copy(0.3f), Color.Black.copy(0.3f)))
             )
             // Representational Icon.
             Icon(imageVector = Icons.Outlined.Edit, contentDescription = null, tint = Color.White)
@@ -493,8 +494,9 @@ private fun Toolbar(
     state: TagEditor,
     modifier: Modifier = Modifier
 ) {
+    val purchase by purchase(id = BuildConfig.IAP_TAG_EDITOR_PRO)
     androidx.compose.material.TopAppBar(
-        title = { Label(text = "Tag Editor") },
+        title = { Label(text =  textResource(id = if (purchase.purchased) R.string.tag_editor_scr_pro_title else R.string.tag_editor_scr_title)  ) },
         navigationIcon = {
             val navigator = LocalNavController.current
             com.primex.material2.IconButton(

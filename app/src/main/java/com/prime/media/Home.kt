@@ -30,12 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -88,6 +90,7 @@ import com.primex.core.UmbraGrey
 import com.primex.core.drawHorizontalDivider
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.launch
+import kotlin.math.ln
 
 private const val TAG = "Home"
 
@@ -195,6 +198,23 @@ val Colors.lightShadowColor
     @Composable inline get() = if (isLight) Color.White else Color.White.copy(0.025f)
 val Colors.darkShadowColor
     @Composable inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(0.6f)
+
+/**
+ * Computes the surface tonal color at different elevation levels e.g. surface1 through surface5. This function is inspired by the Material 3 design system.
+ *
+ * @param elevation Elevation value used to compute alpha of the color overlay layer.
+ *
+ * @return the [ColorScheme.surface] color with an alpha of the [Colors.primary] color
+ * overlaid on top of it.
+
+ */
+fun Colors.surfaceColorAtElevation(
+    elevation: Dp,
+): Color {
+    if (elevation == 0.dp) return surface
+    val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
+    return primary.copy(alpha = alpha).compositeOver(surface)
+}
 
 /**
  * A simple composable that helps in resolving the current app theme as suggested by the [Gallery.NIGHT_MODE]
