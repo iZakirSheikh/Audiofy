@@ -14,6 +14,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.prime.media.core.db.Playlist
+import com.prime.media.core.db.Playlists
+import com.prime.media.core.util.Member
 
 private const val TAG = "Delegates"
 
@@ -151,3 +153,75 @@ val MediaItem.artworkUri get() = mediaMetadata.artworkUri
 val MediaItem.title get() = mediaMetadata.title
 val MediaItem.subtitle get() = mediaMetadata.subtitle
 val MediaItem.mediaUri get() = requestMetadata.mediaUri
+
+/**
+ * Adds a [MediaItem] to the list of recent items.
+ *
+ * This extension function is designed to be used within the context of the [Playback] service
+ * and should not be accessed externally.
+ *
+ * @receiver Playback: The playback service to which this function is scoped.
+ * @param item The [MediaItem] to be added to the list of recent items.
+ * @param limit The maximum number of recent items to retain.
+ *
+ * @throws IllegalArgumentException if [limit] is less than or equal to zero.
+ *
+ * @see Playback
+ */
+context(Playback)
+suspend fun Playlists.addToRecent(item: MediaItem, limit: Long) {
+
+    val playlistId =
+        get(Playback.PLAYLIST_RECENT)?.id ?: insert(Playlist(name = Playback.PLAYLIST_RECENT))
+    // here two cases arise
+    // case 1 the member already exists:
+    // in this case we just have to update the order and nothing else
+    // case 2 the member needs to be inserted.
+    // In both cases the playlist's dateModified needs to be updated.
+    val playlist = get(playlistId)!!
+    update(playlist = playlist.copy(dateModified = System.currentTimeMillis()))
+
+    val member = get(playlistId, item.requestMetadata.mediaUri.toString())
+
+    when (member != null) {
+        // exists
+        true -> {
+            //localDb.members.update(member.copy(order = 0))
+            // updating the member doesn't work as expected.
+            // localDb.members.delete(member)
+            update(member = member.copy(order = 0))
+        }
+
+        else -> {
+            // delete above member
+            delete(playlistId, limit)
+            insert(Member(item, playlistId, 0))
+        }
+    }
+}
+
+
+/**
+ * Replaces the current queue with the provided list of [items].
+ *
+ * This extension function is designed to be used within the context of the [Playback] service
+ * and should not be accessed externally.
+ *
+ * @receiver Playback: The playback service to which this function is scoped.
+ * @param items The list of [MediaItem] to replace the current queue with.
+ *
+ * @see Playback
+ */
+context(Playback)
+suspend fun Playlists.save(items: List<MediaItem>) {
+    val id = get(Playback.PLAYLIST_QUEUE)?.id ?: insert(
+        Playlist(name = Playback.PLAYLIST_QUEUE)
+    )
+
+    // delete all old
+    delete(id, 0)
+    var order = 0
+    val members = items.map { Member(it, id, order++) }
+    insert(members)
+}
+

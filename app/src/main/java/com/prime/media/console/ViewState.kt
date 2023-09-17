@@ -15,6 +15,13 @@ interface Console : PlayingQueue {
     val position: Long
     val favourite: Boolean
 
+    /**
+     * The time in milliseconds when the player will pause.
+     *
+     * Default value is [com.prime.media.core.playback.Playback.UNINITIALIZED_SLEEP_TIME_MILLIS].
+     */
+    val sleepAfterMills: Long
+
     // getters.
     val artwork get() = current?.mediaMetadata?.artworkUri
     val progress: Float get() = (position / duration.toFloat())
@@ -41,7 +48,10 @@ interface Console : PlayingQueue {
 
     fun seekTo(mills: Long)
 
-    fun setSleepAfter(minutes: Int)
+    /**
+     * @see com.prime.media.core.playback.Remote.setSleepTimeAt
+     */
+    fun setSleepAfter(mills: Long)
 
     /**
      * Seek pct of [Remote.duration]

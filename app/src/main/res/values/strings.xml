@@ -102,6 +102,7 @@
     <string name="url">Url</string>
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
+    <string name="start">Start</string>
 
     <!--The play store add of this app recommended by someone arg: playstore address -->
     <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
@@ -340,4 +341,12 @@
         Please input your lyrics in either:\n
         1. Synchronized Lyrics (“[MM:SS.XX] line”), or\n
         2. Un-Synchronized Text.</string>
+
+    <!--======================         Sleep Timer Dialog        ======================      -->
+    <string name="sleep_timer_dialog_title">Sleep Timer <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
+    <string name="sleep_timer_dialog_minute_s">%1$s min</string>
+
+    <!--======================         Playback speed Dialog        ======================      -->
+    <string name="playback_speed_dialog_title">Playback Speed <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
+    <string name="playback_speed_dialog_x_f">%1$.2f x</string>
 </resources>
