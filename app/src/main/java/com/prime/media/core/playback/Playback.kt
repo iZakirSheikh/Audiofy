@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
+import android.content.ContentResolver
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
@@ -167,6 +170,18 @@ private const val EXTRA_SCHEDULED_TIME_MILLS =
 private const val UNINITIALIZED_SLEEP_TIME_MILLIS = -1L
 
 /**
+ * Checks if the given URI is from a third-party source.
+ *
+ * This property evaluates whether the URI scheme is "content://" and the authority
+ * is not equal to [MediaStore.AUTHORITY]. If these conditions are met, it indicates
+ * that the URI is from a third-party source.
+ *
+ * @param uri The URI to be checked.
+ * @return `true` if the URI is from a third-party source, `false` otherwise.
+ */
+private val Uri.isThirdPartyUri get() = scheme == ContentResolver.SCHEME_CONTENT && authority != MediaStore.AUTHORITY
+
+/**
  * The Playback Service class that utilizes Media3 for media playback.
  *
  * This service class extends [MediaLibraryService] and implements the [Callback] and [Player.Listener]
@@ -269,7 +284,14 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
             // Seek to the saved playback position
             val index = preferences.value(PREF_KEY_INDEX)
-            if (index != C.INDEX_UNSET) seekTo(index, preferences.value(PREF_KEY_BOOKMARK))
+            if (index != C.INDEX_UNSET) {
+                seekTo(index, preferences.value(PREF_KEY_BOOKMARK))
+
+                // Now if the currentMediaItem is 3rd party uri.
+                // just remove it.
+                if (currentMediaItem?.mediaUri?.isThirdPartyUri == true)
+                    player.removeMediaItem(index)
+            }
         }
     }
 
@@ -394,7 +416,11 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     ) {
         // save current index in preference
         preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex
-        if (mediaItem != null) {
+
+        // Add the media item to the "recent" playlist if the mediaItem is not null
+        // and its media URI is not from a third-party source. Third-party content URIs
+        // are unplayable after an app reboot.
+        if (mediaItem != null && mediaItem.mediaUri?.isThirdPartyUri == false) {
             val limit = preferences.value(PREF_KEY_RECENT_PLAYLIST_LIMIT)
             scope.launch(Dispatchers.IO) { playlists.addToRecent(mediaItem, limit.toLong()) }
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)

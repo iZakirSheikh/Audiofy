@@ -89,6 +89,7 @@ import com.prime.media.onOverlay
 import com.prime.media.overlay
 import com.prime.media.settings.Settings
 import com.prime.media.small2
+import com.prime.media.surfaceColorAtElevation
 import com.primex.core.gradient
 import com.primex.core.padding
 import com.primex.core.rememberState
@@ -193,12 +194,12 @@ private fun TopBar(modifier: Modifier = Modifier) {
         val provider = LocalSystemFacade.current
         TopAppBar(
             modifier = Modifier
-                .background(Material.colors.overlay)
+                .background(Material.colors.surfaceColorAtElevation(2.dp))
                 .requiredHeight(TOP_BAR_HEIGHT)
                 .then(modifier),
             elevation = 0.dp,
             backgroundColor = Color.Transparent,
-            contentColor = Material.colors.onOverlay,
+            contentColor = Material.colors.onSurface,
             // navigation icon pointing to the about section of the app.
             // TODO - Add navigation to about us in future.
             navigationIcon = {

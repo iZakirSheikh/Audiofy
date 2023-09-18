@@ -464,7 +464,7 @@ private fun Vertical(
             content = {
                 val mills = state.sleepAfterMills
                 if (mills == -1L)
-                    return@IconButton Icon(imageVector = Icons.Outlined.Timer, contentDescription = null)
+                    return@IconButton Icon(imageVector = Icons.Outlined.Timer, contentDescription = null,  tint = onColor)
                 Label(
                     text = formatElapsedTime(mills/1000L),
                     style = Material.typography.caption2,

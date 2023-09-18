@@ -3,6 +3,7 @@ package com.prime.media
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Build
@@ -47,6 +48,7 @@ import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.db.toMediaItem
+import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.Remote
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
@@ -58,6 +60,8 @@ import com.primex.preferences.observeAsState
 import com.primex.preferences.value
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -103,7 +107,12 @@ private fun initSplashScreen(isColdStart: Boolean) {
 class MainActivity : ComponentActivity(), SystemFacade {
 
     private val advertiser by lazy { Advertiser(this) }
-    private val billingManager by lazy { BillingManager(this, arrayOf(BuildConfig.IAP_NO_ADS, BuildConfig.IAP_TAG_EDITOR_PRO)) }
+    private val billingManager by lazy {
+        BillingManager(
+            this,
+            arrayOf(BuildConfig.IAP_NO_ADS, BuildConfig.IAP_TAG_EDITOR_PRO)
+        )
+    }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
     override val inAppUpdateProgress: Float
@@ -297,28 +306,39 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Move this code to somewhere else
         if (intent == null || intent.action != Intent.ACTION_VIEW)
             return
-        // This message will not be shown, since home is not loaded yet.
-        val isPermitted =
-            ContextCompat.checkSelfPermission(
-                this,
-                Audiofy.STORAGE_PERMISSION
-            ) == PackageManager.PERMISSION_GRANTED
-        if (!isPermitted) {
-            show(
-                R.string.permission_screen_desc,
-                R.string.permission_screen_title,
-                icon = Icons.TwoTone.Memory
-            )
-            return
-        }
+
+        // Obtain the URI from the incoming intent
         val data = intent.data ?: return
+
+        // Use a coroutine to handle the artwork retrieval and playback
         lifecycleScope.launch {
-            val audio = runCatching { findAudio(data) }.getOrNull()
-            if (audio == null) {
-                show(R.string.msg_unknown_error, R.string.error)
-                return@launch
+            val retriever = MediaMetadataRetriever().also {
+                it.setDataSource(this@MainActivity, data)
             }
-            remote.set(listOf(audio.toMediaItem))
+
+            // Obtain the URI of the image obtained from the data in the above intent
+            // and save it in the cache.
+            val uri = com.primex.core.runCatching(TAG) {
+                val bytes = retriever.embeddedPicture ?: return@runCatching null
+                val cacheFile = File(cacheDir, "tmp_artwork.png")
+                val fos = FileOutputStream(cacheFile)
+                fos.write(bytes)
+                fos.close()
+                Uri.fromFile(cacheFile)
+            }
+
+            // Obtain title and subtitle
+            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                ?: getString(R.string.unknown)
+            val subtitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                ?: getString(R.string.unknown)
+
+            // Construct a MediaItem using the obtained parameters.
+            // (Currently, details about playback queue setup are missing.)
+            val item = MediaItem(data, title, subtitle, artwork = uri)
+
+            // Play the media by replacing the existing queue.
+            remote.set(listOf(item))
             remote.play()
         }
     }
@@ -338,12 +358,12 @@ class MainActivity : ComponentActivity(), SystemFacade {
             }
             if (!result.isFailure)
                 return@launch
-           val res = channel.show(
-               message = R.string.msg_3rd_party_equalizer_not_found,
-               action = R.string.launch,
-               accent = Color.OrientRed,
-               duration = Duration.Short
-           )
+            val res = channel.show(
+                message = R.string.msg_3rd_party_equalizer_not_found,
+                action = R.string.launch,
+                accent = Color.OrientRed,
+                duration = Duration.Short
+            )
             if (res != Channel.Result.ActionPerformed)
                 return@launch
             runCatching {
