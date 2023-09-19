@@ -2,14 +2,24 @@ package com.prime.media
 
 import android.app.Application
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
+import coil.fetch.Fetcher
+import coil.fetch.Fetcher.Factory
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import coil.request.Options
+import com.prime.media.impl.MediaMetaDataArtFetcher
+import com.prime.media.settings.Settings
+import com.primex.preferences.Preferences
 import com.primex.preferences.intPreferenceKey
+import com.primex.preferences.value
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 private const val TAG = "Audiofy"
 
@@ -64,13 +74,33 @@ class Audiofy : Application(), ImageLoaderFactory {
                 packageManager.getPackageInfo(packageName, 0)
         }
 
+    @Inject
+    lateinit var preferences: Preferences
+
+    private fun MediaMetaDataArtFactory() = object : Factory<Uri> {
+        override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
+            // Check if the provided Uri corresponds to an album art Uri within the MediaStore.
+            val isAlbumUri = let {
+                if (data.authority != MediaStore.AUTHORITY) return@let false
+                val segments = data.pathSegments
+                val size = segments.size
+                return@let size >= 3 && segments[size - 3] == "audio" && segments[size - 2] == "albums"
+            }
+
+            // If the preferences indicate the use of the legacy artwork method and it's not an album Uri,
+            // return null to indicate that this factory should not be used.
+            if (preferences.value(Settings.USE_LEGACY_ARTWORK_METHOD) && !isAlbumUri) return null
+
+            // Otherwise, create and return a MediaMetaDataArtFetcher for handling the artwork retrieval.
+            return MediaMetaDataArtFetcher(data, options)
+        }
+    }
+
+
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
-            .components {
-//                add(VideoFrameDecoder.Factory())
-//                add(SvgDecoder.Factory())
-//                add(GifDecoder.Factory())
-            }
+            // Add the MediaMetaDataArtFactory
+            .components { add(MediaMetaDataArtFactory()) }
             .memoryCache {
                 MemoryCache.Builder(this)
                     .strongReferencesEnabled(true)

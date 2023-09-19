@@ -26,10 +26,10 @@ android {
     namespace = "com.prime.media"
     defaultConfig {
         applicationId = "com.prime.player"
-        minSdk = 21
+        minSdk = 27
         targetSdk = 34
         versionCode = 54
-        versionName = "2.5.0"
+        versionName = "2.5.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig

@@ -59,6 +59,7 @@ import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.prime.media.small2
+import com.prime.media.surfaceColorAtElevation
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -142,7 +143,7 @@ private fun TopAppBar(
 ) {
     TopAppBar(
         title = { Label(text = stringResource(R.string.playing_queue), style =  Material.typography.body2, fontWeight = FontWeight.Bold) },
-        backgroundColor = Material.colors.surface,
+        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
         contentColor = Material.colors.onSurface,
         elevation = 0.dp,
         modifier = modifier,
@@ -307,6 +308,7 @@ fun PlayingQueue(
                         modifier = Modifier.padding(it)
                     )
                 },
+                backgroundColor = Material.colors.surface,
             )
         }
     )
