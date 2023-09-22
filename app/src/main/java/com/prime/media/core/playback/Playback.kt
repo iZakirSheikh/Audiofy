@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Intent
+import android.media.audiofx.Equalizer
+import android.media.audiofx.Equalizer.Settings
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -43,6 +45,7 @@ import kotlin.getValue
 import kotlin.lazy
 import kotlin.random.Random
 import kotlin.runCatching
+import kotlin.toString
 import kotlin.with
 import androidx.media3.session.SessionCommand as Command
 import androidx.media3.session.SessionResult as Result
@@ -95,6 +98,8 @@ private val PREF_KEY_REPEAT_MODE = intPreferenceKey("_repeat_mode", Player.REPEA
 private val PREF_KEY_INDEX = intPreferenceKey("_index", C.INDEX_UNSET)
 private val PREF_KEY_BOOKMARK = longPreferenceKey("_bookmark", C.TIME_UNSET)
 private val PREF_KEY_RECENT_PLAYLIST_LIMIT = intPreferenceKey("_max_recent_size", 50)
+private val PREF_KEY_EQUALIZER_ENABLED = booleanPreferenceKey(TAG + "_equalizer_enabled")
+private val PREF_KEY_EQUALIZER_PROPERTIES = stringPreferenceKey(TAG + "_equalizer_properties")
 
 /**
  * Key for saving custom orders of items in SharedPreferences.
@@ -168,6 +173,35 @@ private const val EXTRA_SCHEDULED_TIME_MILLS =
  * When no sleep timer is scheduled or if it has been canceled, this value is used.
  */
 private const val UNINITIALIZED_SLEEP_TIME_MILLIS = -1L
+
+/**
+ * Action string for getting or setting the configuration of the equalizer effect.
+ * This action can be used to send a custom command to the service with a bundle containing the equalizer settings.
+ * To get the current configuration, send an empty bundle with this action.
+ *
+ * To set a new configuration, send a bundle with the following extras:
+ * @see EXTRA_EQUALIZER_ENABLED,
+ * @see EXTRA_EQUALIZER_PROPERTIES
+ */
+private const val ACTION_EQUALIZER_CONFIG = BuildConfig.APPLICATION_ID + ".extra.EQUALIZER"
+
+/**
+ * A boolean extra indicating whether the equalizer is enabled or not.
+ * This extra can be used with the [ACTION_EQUALIZER_CONFIG] action to get or set the equalizer state.
+ * The default value is false.
+ */
+private const val EXTRA_EQUALIZER_ENABLED =
+    BuildConfig.APPLICATION_ID + ".extra.EXTRA_EQUALIZER_ENABLED"
+
+/**
+ * A Parcelable extra containing an Equalizer.Settings object with the equalizer parameters.
+ * This extra can be used with the [ACTION_EQUALIZER_CONFIG] action to get or set the equalizer configuration.
+ * The default value is null.
+ * @see Equalizer.Settings.toString
+ */
+private const val EXTRA_EQUALIZER_PROPERTIES =
+    BuildConfig.APPLICATION_ID + ".extra.EXTRA_EQUALIZER_PROPERTIES"
+
 
 /**
  * Checks if the given URI is from a third-party source.
@@ -246,14 +280,6 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
      * and sets the session activity using the [activity] PendingIntent.
      */
     private val session: MediaLibrarySession by lazy {
-        // // Asynchronously restore the saved state of the service
-        scope.launch {
-            runCatching { onRestoreSavedState() }
-            // Regardless of whether errors occurred during state restoration or not, add the current
-            // class as a player listener
-            player.addListener(this@Playback)
-        }
-
         // Build and configure the MediaLibrarySession
         MediaLibrarySession.Builder(this, player, this)
             .setSessionActivity(activity)
@@ -261,8 +287,33 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     }
 
     /**
-     * Restore the saved state of this service, including shuffle mode, repeat mode, media items,
-     * shuffle order, and playback position.
+     * Manages the audio equalizer for enhancing audio effects.
+     *
+     * This class is responsible for configuring and controlling the audio equalizer
+     * to improve the quality of audio output.
+     *
+     * @see ACTION_EQUALIZER_CONFIG
+     */
+    private var equalizer: Equalizer? = null
+
+    @SuppressLint("UnsafeOptInUsageError")
+    override fun onCreate() {
+        super.onCreate()
+        // // Asynchronously restore the saved state of the service
+        scope.launch {
+            runCatching { onRestoreSavedState() }
+            // Regardless of whether errors occurred during state restoration or not, add the current
+            // class as a player listener
+            player.addListener(this@Playback)
+
+            // Initialize the audio effets;
+            onAudioSessionIdChanged(-1)
+        }
+    }
+
+    /**
+     * Initialize the service lazily and restore its saved state, including shuffle mode, repeat mode,
+     * media items, shuffle order, and playback position.
      */
     @SuppressLint("UnsafeOptInUsageError")
     private suspend fun onRestoreSavedState() {
@@ -515,10 +566,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         player.seekToNextMediaItem()
     }
 
-    override fun onIsPlayingChanged(
-        isPlaying: Boolean
-    ) {
-        super.onIsPlayingChanged(isPlaying)
+    override fun onPlayWhenReadyChanged(isPlaying: Boolean, reason: Int) {
+        super.onPlayWhenReadyChanged(isPlaying, reason)
         //  Just cancel the job in case is playing false
         if (!isPlaying) {
             playbackMonitorJob?.cancel()
@@ -527,7 +576,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         }
         // Launch a new job
         else playbackMonitorJob = scope.launch {
-            var isPlaying = player.isPlaying
+            var isPlaying = player.playWhenReady
             do {
                 // Save the current playback position to preferences
                 preferences[PREF_KEY_BOOKMARK] = player.currentPosition
@@ -569,11 +618,41 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // add commands to session.
         available.add(Command(ACTION_AUDIO_SESSION_ID, Bundle.EMPTY))
         available.add(Command(ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY))
+        available.add(Command(ACTION_EQUALIZER_CONFIG, Bundle.EMPTY))
 
         // return the result.
         return ConnectionResult.AcceptedResultBuilder(session)
             .setAvailableSessionCommands(available.build())
             .build()
+    }
+
+    /**
+     * Initialize audio effects here. If the [audioSessionId] is -1, it indicates that someone called
+     * this function locally, and there is no need to create a new instance of the effect.
+     * Instead, only initialize the settings of the effect.
+     *
+     * If the effect is null, it should be created if supported; otherwise, it should not be created.
+     */
+    @SuppressLint("UnsafeOptInUsageError")
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        if (audioSessionId != -1)
+            super.onAudioSessionIdChanged(audioSessionId)
+        // Initialize the equalizer with audio session ID from the ExoPlayer.
+        if (equalizer == null || audioSessionId == -1) {
+            equalizer?.release()
+            equalizer = Equalizer(0, (player as ExoPlayer).audioSessionId)
+        }
+
+        // Enable the equalizer.
+        equalizer?.enabled = preferences.value(PREF_KEY_EQUALIZER_ENABLED) ?: false
+
+        // Retrieve equalizer properties from preferences.
+        val properties = preferences.value(PREF_KEY_EQUALIZER_PROPERTIES)
+
+        // Apply equalizer properties only if they are not null or blank.
+        if (!properties.isNullOrBlank()) {
+            equalizer?.properties = Settings(properties)
+        }
     }
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -622,7 +701,40 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 )
             }
 
-            // Handle unrecognized or unsupported commands.
+            ACTION_EQUALIZER_CONFIG -> {
+                // obtain the extras that are accompanied with this action.
+                val extras = command.customExtras
+
+                // if extras are empty means user wants to retrieve the equalizer saved config.
+                if (!extras.isEmpty) {
+                    val isEqualizerEnabled =
+                        command.customExtras.getBoolean(EXTRA_EQUALIZER_ENABLED)
+                    val properties = command.customExtras.getString(
+                        EXTRA_EQUALIZER_PROPERTIES, null
+                    )
+                    // save in pref
+                    preferences[PREF_KEY_EQUALIZER_PROPERTIES] = properties
+                    preferences[PREF_KEY_EQUALIZER_ENABLED] = isEqualizerEnabled
+                    onAudioSessionIdChanged(-1)
+                }
+
+                // in both cases weather retrieve or set; return the extras
+                // include the current config of equalizer response to the client.
+                Futures.immediateFuture(
+                    Result(Result.RESULT_SUCCESS) {
+                        putBoolean(
+                            EXTRA_EQUALIZER_ENABLED,
+                            preferences.value(PREF_KEY_EQUALIZER_ENABLED) ?: false
+                        )
+                        putString(
+                            EXTRA_EQUALIZER_PROPERTIES,
+                            preferences.value(PREF_KEY_EQUALIZER_PROPERTIES)
+                        )
+                    }
+                )
+            }
+
+                // Handle unrecognized or unsupported commands.
             else -> Futures.immediateFuture(Result(Result.RESULT_ERROR_UNKNOWN))
         }
     }
@@ -686,5 +798,23 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
          */
         const val UNINITIALIZED_SLEEP_TIME_MILLIS =
             com.prime.media.core.playback.UNINITIALIZED_SLEEP_TIME_MILLIS
+
+        /**
+         * @see com.prime.media.core.playback.ACTION_EQUALIZER_CONFIG
+         */
+        const val ACTION_EQUALIZER_CONFIG =
+            com.prime.media.core.playback.ACTION_EQUALIZER_CONFIG
+
+        /**
+         * @see com.prime.media.core.playback.EXTRA_EQUALIZER_ENABLED
+         */
+        const val EXTRA_EQUALIZER_ENABLED =
+            com.prime.media.core.playback.EXTRA_EQUALIZER_ENABLED
+
+        /**
+         * @see com.prime.media.core.playback.EXTRA_EQUALIZER_PROPERTIES
+         */
+        const val EXTRA_EQUALIZER_PROPERTIES =
+            com.prime.media.core.playback.EXTRA_EQUALIZER_PROPERTIES
     }
 }

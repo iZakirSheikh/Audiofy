@@ -3,6 +3,7 @@ package com.prime.media.impl
 import android.content.ComponentName
 import android.content.Context
 import android.media.AudioManager
+import android.media.audiofx.Equalizer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -41,7 +42,7 @@ private const val TAG = "Remote"
 /**
  * @see Command
  */
-private inline fun Command(action: String, args: Bundle.() -> Unit) =
+private inline fun Command(action: String, args: Bundle.() -> Unit = { Bundle.EMPTY }) =
     Command(action, Bundle().apply(args))
 
 private val MediaBrowser.nextMediaItem
@@ -103,6 +104,8 @@ private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
         }
 
     override val isPlaying: Boolean get() = browser?.isPlaying ?: false
+    override val playWhenReady: Boolean get() = browser?.playWhenReady ?: false
+
     override var audioSessionId: Int = AudioManager.AUDIO_SESSION_ID_GENERATE
     override val hasPreviousTrack: Boolean get() = browser?.hasPreviousMediaItem() ?: false
 
@@ -410,5 +413,49 @@ private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
         )
         // Get the scheduled time from the result or use the uninitialized value
         return result.await().extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
+    }
+
+    override suspend fun setEqualizer(eq: Equalizer?) {
+
+        // Extract the enabled state and properties from the provided Equalizer instance.
+        val enabled = eq?.enabled ?: false
+        val properties = eq?.properties?.toString()
+
+        // Release the provided Equalizer instance.
+        eq?.release()
+
+        // Get the media browser object from a deferred value
+        val browser = fBrowser.await()
+
+        // Send a custom command to the Playback with required equalizer args.
+        browser.sendCustomCommand(
+            Command(Playback.ACTION_EQUALIZER_CONFIG) {
+                // Put the calculated future time into the extras bundle
+                putBoolean(Playback.EXTRA_EQUALIZER_ENABLED, enabled)
+                putString(Playback.EXTRA_EQUALIZER_PROPERTIES, properties)
+            },
+            Bundle.EMPTY
+        )
+    }
+
+    override suspend fun getEqualizer(priority: Int): Equalizer {
+        // construct an equalizer from the settings received from the service
+        val browser = fBrowser.await()
+
+        // Send a custom command to the browser with the ACTION_EQUALIZER_CONFIG action and an empty bundle.
+        val args =
+            browser.sendCustomCommand(Command(Playback.ACTION_EQUALIZER_CONFIG), Bundle.EMPTY)
+                .await()
+
+        // Create a new Equalizer instance with the specified priority and audio session ID.
+        return Equalizer(
+            priority,
+            audioSessionId
+        ).apply {
+            enabled = args.extras.getBoolean(Playback.EXTRA_EQUALIZER_ENABLED)
+            val properties = args.extras.getString(Playback.EXTRA_EQUALIZER_PROPERTIES)
+            if (properties != null)
+                setProperties(Equalizer.Settings(properties))
+        }
     }
 }

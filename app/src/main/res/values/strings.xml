@@ -350,4 +350,10 @@
     <!--======================         Playback speed Dialog        ======================      -->
     <string name="playback_speed_dialog_title">Playback Speed <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
     <string name="playback_speed_dialog_x_f">%1$.2f x</string>
+
+    <!--======================         Equalizer        ======================      -->
+    <string name="equalizer">Equalizer <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
+    <string name="apply">Apply</string>
+    <string name="equalizer_scr_abbr_db_suffix_d">%1$s dB</string>
+    <string name="equalizer_scr_abbr_hz_suffix_d">%1$s Hz</string>
 </resources>

@@ -2,18 +2,14 @@ package com.prime.media
 
 import android.animation.ObjectAnimator
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.media.audiofx.AudioEffect
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.Memory
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -25,7 +21,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.core.animation.doOnEnd
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -46,8 +41,6 @@ import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.SystemFacade
-import com.prime.media.core.db.findAudio
-import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.Remote
 import com.primex.core.MetroGreen
@@ -59,6 +52,7 @@ import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -306,21 +300,23 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Move this code to somewhere else
         if (intent == null || intent.action != Intent.ACTION_VIEW)
             return
-
         // Obtain the URI from the incoming intent
         val data = intent.data ?: return
-
         // Use a coroutine to handle the artwork retrieval and playback
         lifecycleScope.launch {
             val retriever = MediaMetadataRetriever().also {
                 it.setDataSource(this@MainActivity, data)
             }
-
             // Obtain the URI of the image obtained from the data in the above intent
             // and save it in the cache.
             val uri = com.primex.core.runCatching(TAG) {
-                val bytes = retriever.embeddedPicture ?: return@runCatching null
                 val cacheFile = File(cacheDir, "tmp_artwork.png")
+                // This action will delete the old file, if it exists.
+                // It's safe to perform this operation even if the file doesn't exist.
+                // This step is necessary because occasionally, a track may lack album art,
+                // and the system may load previously cached art, leading to the need for an update.
+                cacheFile.delete()
+                val bytes = retriever.embeddedPicture ?: return@runCatching null
                 val fos = FileOutputStream(cacheFile)
                 fos.write(bytes)
                 fos.close()
@@ -336,7 +332,14 @@ class MainActivity : ComponentActivity(), SystemFacade {
             // Construct a MediaItem using the obtained parameters.
             // (Currently, details about playback queue setup are missing.)
             val item = MediaItem(data, title, subtitle, artwork = uri)
-
+            // Introducing a delay to accommodate proper service restoration.
+            // This delay is crucial because the service restoration process
+            // may potentially interfere with the addition of this track, especially considering
+            // that this track holds authority separate from the MediaStore.
+            // The delay should only be applied when the primary purpose of the app is to view content, not its main operation.
+            // In this context, we assume that service restoration typically takes around 5 seconds.
+            if (getIntent().action != Intent.ACTION_MAIN)
+                delay(4_000)
             // Play the media by replacing the existing queue.
             remote.set(listOf(item))
             remote.play()
