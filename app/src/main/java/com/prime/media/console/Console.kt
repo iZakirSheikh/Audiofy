@@ -92,6 +92,7 @@ import com.prime.media.core.LongDurationMills
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.AnimatedIconButton
 import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
@@ -102,6 +103,7 @@ import com.prime.media.darkShadowColor
 import com.prime.media.dialog.PlaybackSpeedDialog
 import com.prime.media.dialog.PlayingQueue
 import com.prime.media.dialog.Timer
+import com.prime.media.effects.AudioFx
 import com.prime.media.lightShadowColor
 import com.prime.media.outline
 import com.prime.media.settings.Settings
@@ -335,8 +337,9 @@ private fun Vertical(
             atEnd = !favourite
         )
 
+        val controller = LocalNavController.current
         IconButton(
-            onClick = { facade.launchEqualizer(state.audioSessionId) },
+            onClick = { controller.navigate(AudioFx.route) },
             imageVector = Icons.Outlined.Tune,
             contentDescription = null,
             modifier = Modifier.layoutID(Console.EQUALIZER),

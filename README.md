@@ -4,7 +4,7 @@
 <h6>An Open-Source Media Player App for all your needs!</h6>
 
 <!--Info-->
-[![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://github.com/iZakirSheikh/Audiofy/releases)
 [![Playstore](https://img.shields.io/endpoint?color=crimson&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
 [![Google Play Installs](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
 [![Google Play Rating](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)

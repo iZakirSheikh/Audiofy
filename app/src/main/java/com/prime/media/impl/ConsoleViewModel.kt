@@ -174,10 +174,10 @@ class ConsoleViewModel @Inject constructor(
             // when state of playing.
             // FixMe: This event is triggered more often e.g., when track is changed.
             // may be add some more check.
-            Player.EVENT_IS_PLAYING_CHANGED -> {
-                playing = remote.isPlaying
+            Player.EVENT_PLAY_WHEN_READY_CHANGED -> {
+                playing = remote.playWhenReady
                 sleepAfterMills = UNINITIALIZED_SLEEP_TIME_MILLIS
-                if (remote.isPlaying)
+                if (remote.playWhenReady)
                     MainHandler.repeat(PROGRESS_TOKEN, 1000, call = onProgressUpdate)
                 else
                     MainHandler.remove(PROGRESS_TOKEN)

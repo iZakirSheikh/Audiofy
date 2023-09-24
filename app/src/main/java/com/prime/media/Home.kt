@@ -46,6 +46,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -75,6 +76,8 @@ import com.prime.media.directory.store.FoldersViewModel
 import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
 import com.prime.media.editor.TagEditor
+import com.prime.media.effects.AudioFx
+import com.prime.media.impl.AudioFxViewModel
 import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
@@ -398,6 +401,11 @@ private fun NavGraph(
         composable(TagEditor.route){
             val viewModel = hiltViewModel<TagEditorViewModel>()
             TagEditor(state = viewModel)
+        }
+
+        dialog(AudioFx.route){
+            val viewModel = hiltViewModel<AudioFxViewModel>()
+            AudioFx(state = viewModel)
         }
     }
 }
