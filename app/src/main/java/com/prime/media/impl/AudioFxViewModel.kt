@@ -1,36 +1,47 @@
 package com.prime.media.impl
 
-import android.content.ContentResolver
-import android.content.res.Resources
 import android.media.audiofx.Equalizer
-import android.media.audiofx.PresetReverb
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prime.media.core.compose.Channel
 import com.prime.media.core.playback.Remote
-import com.prime.media.editor.TagEditor
 import com.prime.media.effects.AudioFx
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private const val TAG = "AudioFxViewModel"
 
+/**
+ * Gets an array of band levels for the equalizer.
+ * Each element in the array corresponds to the band level at a specific band index.
+ * The values are represented as floating-point numbers.
+ */
 private val Equalizer.bandLevels
-    get() = List(numberOfBands.toInt()) {
+    get() = Array(numberOfBands.toInt()) {
         getBandLevel(it.toShort()).toFloat()
     }
 
-// TODO: Handle the case for not supported.
+/**
+ * Returns all the presets supported by the equalizer, including custom presets.
+ * If a preset doesn't exist at a particular index, it returns "Custom."
+ */
+private val Equalizer.presets
+    get() = Array(numberOfPresets + 1) {
+        if (it == 0) "Custom" else getPresetName((it - 1).toShort())
+    }
+
+/**
+ * Gets the status of the equalizer, which can be one of the following values:
+ * - [AudioFx.EFFECT_STATUS_NO_CONTROL]: The equalizer does not have control over the audio.
+ * - [AudioFx.EFFECT_STATUS_ENABLED]: The equalizer is enabled and actively affecting the audio.
+ * - [AudioFx.EFFECT_STATUS_DISABLED]: The equalizer is disabled.
+ */
 private val Equalizer.status
     get() = when {
         !hasControl() -> AudioFx.EFFECT_STATUS_NO_CONTROL
@@ -38,76 +49,143 @@ private val Equalizer.status
         else -> AudioFx.EFFECT_STATUS_DISABLED
     }
 
+/**
+ * Constant representing a custom preset in the equalizer.
+ */
+private const val PRESET_CUSTOM = 0
+
+/**
+ * Retries the operation to retrieve an Equalizer from the remote source with increasing delays.
+ *
+ * @param priority The priority of the operation.
+ * @return An [Equalizer] object if the operation is successful, or null if it fails after maximum retries.
+ */
+private suspend fun Remote.getEqualizerOrRetry(priority: Int): Equalizer? {
+    // Initialize the number of retry attempts.
+    var tries = 0
+    // Initialize the result variable to null.
+    var result: Equalizer? = null
+    // Use a while loop to retry the operation until the maximum number of tries (3) is reached.
+    while (tries != 3) {
+        // Increment the number of tries.
+        tries++
+
+        // Attempt to retrieve the equalizer from the remote source using runCatching.
+        result = runCatching { getEqualizer(priority) }.getOrNull()
+
+        // Check if the result is null, indicating a failure.
+        if (result == null) {
+            // If the result is null, delay for a progressively longer time before the next retry.
+            delay(tries * 100L)
+        } else {
+            // If the result is not null (success), exit the loop.
+            break
+        }
+    }
+    return result
+}
+
 @HiltViewModel
 class AudioFxViewModel @Inject constructor(
-    private val remote: Remote
+    private val remote: Remote,
 ) : ViewModel(), AudioFx {
 
-    // TODO: Find proper way to get this property.
-    private val equalizer = runBlocking { remote.getEqualizer(2) }
+    private var equalizer: Equalizer? = null
 
-    private var _eqStatus by mutableIntStateOf(equalizer.status)
-    var _eqCurrentPreset: Int by mutableIntStateOf(equalizer.currentPreset.toInt())
+    // init the variables
+    // By default the effect is in not ready state.
+    override var stateOfEqualizer: Int by mutableIntStateOf(AudioFx.EFFECT_STATUS_NOT_READY)
+    private var _eqCurrentPreset: Int by mutableIntStateOf(0)
+
+    override var eqNumberOfBands: Int = 0
+    override val eqBandLevels = mutableStateListOf<Float>()
+    override var eqBandLevelRange: ClosedFloatingPointRange<Float> = 0.0f..1.0f
+    override var eqPresets: Array<String> = emptyArray()
+
+    // Note: It is assumed that this function will only be called when the state of the equalizer
+    // is not supported. Therefore, you can safely use the double bang (!!) operator here.
+    override fun getBandFreqRange(band: Int): ClosedFloatingPointRange<Float> =
+        equalizer!!.getBandFreqRange(band.toShort()).let { it[0].toFloat()..it[1].toFloat() }
+
+    override fun getBandCenterFreq(band: Int): Int =
+        equalizer!!.getCenterFreq(band.toShort())
+
+    override fun setBandLevel(band: Int, level: Float) {
+        eqCurrentPreset = PRESET_CUSTOM
+        equalizer!!.setBandLevel(band.toShort(), level.roundToInt().toShort())
+    }
+
 
     override var isEqualizerEnabled: Boolean
-        get() = _eqStatus == AudioFx.EFFECT_STATUS_ENABLED
+        get() = stateOfEqualizer == AudioFx.EFFECT_STATUS_ENABLED
         set(value) {
-            //TODO: Handle case when not supported.
-            _eqStatus = if (value) AudioFx.EFFECT_STATUS_ENABLED else AudioFx.EFFECT_STATUS_DISABLED
-            equalizer.enabled = value
+            // Maybe show Toast here.
+            // TODO: Handle case when not supported.
+            if (
+                equalizer == null ||
+                stateOfEqualizer == AudioFx.EFFECT_STATUS_NOT_READY ||
+                stateOfEqualizer == AudioFx.EFFECT_STATUS_NOT_READY
+            )
+                return
+
+            stateOfEqualizer =
+                if (value) AudioFx.EFFECT_STATUS_ENABLED else AudioFx.EFFECT_STATUS_DISABLED
+            equalizer!!.enabled = value
         }
-    override val eqPresets: List<String> =
-        List(equalizer.numberOfPresets.toInt()) {
-            equalizer.getPresetName(it.toShort())
-        }
-    override val eqNumberOfBands: Int = equalizer.numberOfBands.toInt()
-    override val eqNumPresets: Int = equalizer.numberOfPresets.toInt()
+
     override var eqCurrentPreset: Int
         get() = _eqCurrentPreset
         set(value) {
             _eqCurrentPreset = value
-            // only set preset when in range
-            if (value in 0 until equalizer.numberOfPresets)
-                equalizer.usePreset(value.toShort())
-            val levels = equalizer.bandLevels
-            levels.forEachIndexed { index, value ->
-                eqBandLevels[index] = equalizer.getBandLevel(index.toShort()).toFloat()
+
+            // Only set the preset when it's within a valid range.
+            // The default presets of the equalizer represent values between 1 and the number of presets + 1.
+            if (value in 1 until equalizer!!.numberOfPresets + 1)
+                equalizer!!.usePreset((value - 1).toShort())
+
+            // Retrieve the band levels from the equalizer.
+            val levels = equalizer!!.bandLevels
+
+            // Update the bandLevels list with the levels for the current preset.
+            repeat(levels.size) { index ->
+                eqBandLevels[index] = equalizer!!.getBandLevel(index.toShort()).toFloat()
             }
         }
 
-    override val eqBandLevels =
-        mutableStateListOf<Float>().also {
-            it.addAll(equalizer.bandLevels)
-        }
-    override val eqBandLevelRange: ClosedFloatingPointRange<Float> =
-        equalizer.bandLevelRange.let { it[0].toFloat()..it[1].toFloat() }
-
-    override fun getBandFreqRange(band: Int): ClosedFloatingPointRange<Float> =
-        equalizer.getBandFreqRange(band.toShort()).let { it[0].toFloat()..it[1].toFloat() }
-
-    override fun getBandCenterFreq(band: Int): Int =
-        equalizer.getCenterFreq(band.toShort())
-
-    override fun setBandLevel(band: Int, level: Float) {
-        eqCurrentPreset = -1
-        equalizer.setBandLevel(band.toShort(), level.roundToInt().toShort())
-
-        /*repeat(eqNumberOfBands) { b ->
-            val value = level * if (b == band) 1.0f else 0.75f / abs(band - b) // distance.
-            equalizer.setBandLevel(band.toShort(), value.roundToInt().toShort())
-            eqBandLevels[b] = value
-        }*/
+    override fun onCleared() {
+        // when discarded
+        equalizer?.release()
+        super.onCleared()
     }
 
     override fun apply() {
         viewModelScope.launch {
+            // ignore if not supported.
+            // Maybe show Toast for this state.
+            if (stateOfEqualizer == AudioFx.EFFECT_STATUS_NOT_READY || stateOfEqualizer == AudioFx.EFFECT_STATUS_NOT_SUPPORTED)
+                return@launch
             // equalizer will be release by calling this
             remote.setEqualizer(equalizer)
         }
     }
 
-    override fun onCleared() {
-        equalizer.release()
-        super.onCleared()
+    //initializer the variables.
+    init {
+        viewModelScope.launch {
+            val result = remote.getEqualizerOrRetry(1)
+            // Check if there was a failure when retrieving the equalizer.
+            // Optionally, you might consider showing a toast to inform the user of the error.
+            // Show a toast message or log an error.
+                ?: return@launch
+            // The retrieval was successful, get the equalizer instance
+            // init the variables
+            equalizer = result
+            _eqCurrentPreset = result.currentPreset + 1
+            eqNumberOfBands = result.numberOfBands.toInt()
+            eqBandLevels.addAll(result.bandLevels)
+            eqBandLevelRange = result.bandLevelRange.let { it[0].toFloat()..it[1].toFloat() }
+            eqPresets = result.presets
+            stateOfEqualizer = result.status
+        }
     }
 }

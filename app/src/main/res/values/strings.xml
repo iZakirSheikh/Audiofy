@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
      Naming convention for string resources:
      - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
      - The string resources should be named as follows:
@@ -10,8 +9,7 @@
        5. The snackbar message should have this structure: Title\n bold + experimental + message.
    -->
 <!--Some common variables-->
-<!DOCTYPE resources [<!ENTITY appname "Audiofy"><!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev">]>
-<!--The string resources should follow the above rules strictly-->
+<!DOCTYPE resources [<!ENTITY appname "Audiofy"><!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev"> <!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">]><!--The string resources should follow the above rules strictly-->
 <resources>
     <string name="app_name">&appname;</string>
     <!--The name of the app icon in launcher.-->
@@ -87,6 +85,7 @@
     <string name="year">Year</string>
     <string name="disk_number">Disk number</string>
     <string name="property">property</string>
+    <string name="apply">Apply</string>
     <string name="track_number">Track number</string>
     <string name="genre">Genre</string>
     <string name="composer">Composer</string>
@@ -230,11 +229,22 @@
     <!--Recent Playlist Size-->
     <string name="pref_recent_playlist_size">Recent playlist size</string>
     <string name="pref_recent_playlist_size_summery">
-        "Set the maximum number of tracks that should be stored in the playlist history."
+        Set the maximum number of tracks that should be stored in the playlist history.
     </string>
+
+    <!--Stop Playback when app is removed from recents.-->
+    <string name="pref_stop_playback_when_task_removed">Stop Playback</string>
+    <string name="pref_stop_playback_when_task_removed_summery">Stop playback service when app is
+        removed from recents.
+    </string>
+
+    <string name="pref_use_inbuilt_audio_effects">Audio Effects</string>
+    <string name="pref_use_inbuilt_audio_effects_summery">Switch between in-built or 3rd party
+        audio effects.\n<i>Turn Off in-built effects manually if using 3rd party app.</i></string>
+
     <!--Fetch_artwork_from_MediaStore-->
-    <string name="pref_fetch_artwork_from_mediastore">Fetch artwork from MediaStore</string>
-    <string name="pref_fetch_artwork_from_mediastore_summery">
+    <string name="pref_fetch_artwork_from_media_store">Fetch artwork from MediaStore</string>
+    <string name="pref_fetch_artwork_from_media_store_summery">
          Faster artwork loading times, but there is a possibility of displaying incorrect artwork.\n
         Changing this setting requires <i>restarting</i> the app.
     </string>
@@ -321,7 +331,7 @@
 
     <!--============================          TagEditor     ==================================      -->
     <string name="overwrite">Overwrite</string>
-    <string name="tag_editor_scr_pro_title">Tag Editor <sup><font color = "#00a300" size= "11">Pro</font></sup></string>
+    <string name="tag_editor_scr_pro_title">Tag Editor <sup><font color="#00a300" size="11">Pro</font></sup></string>
     <string name="tag_editor_scr_title">Tag Editor</string>
     <string name="tag_editor_scr_extra_immutable_info_ssss"><small>Channel</small> <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
     <string name="msg_tag_editor_reset_warning"><b>Warning</b>\nReset will result in data loss. Are you sure?</string>
@@ -335,7 +345,7 @@
     </string>
     <string name="tag_editor_screen_buy_now_action">Get Tag Editor Pro</string>
     <string name="tag_editor_property_placeholder">Tap here to enter text</string>
-    <string name="tag_editor_web_address_prefix"><font color = "#00a300">http://</font></string>
+    <string name="tag_editor_web_address_prefix"><font color="#00a300">http://</font></string>
     <string name="lyrics">Lyrics</string>
     <string name="msg_tag_editor_error_s"><b>Error</b> \n%1s</string>
     <string name="tag_editor_lyrics_placeholder">
@@ -344,16 +354,30 @@
         2. Un-Synchronized Text.</string>
 
     <!--======================         Sleep Timer Dialog        ======================      -->
-    <string name="sleep_timer_dialog_title">Sleep Timer <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
+    <string name="sleep_timer_dialog_title">Sleep Timer &beta;</string>
     <string name="sleep_timer_dialog_minute_s">%1$s min</string>
 
     <!--======================         Playback speed Dialog        ======================      -->
-    <string name="playback_speed_dialog_title">Playback Speed <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
+    <string name="playback_speed_dialog_title">Playback Speed &beta;</string>
     <string name="playback_speed_dialog_x_f">%1$.2f x</string>
 
-    <!--======================         Equalizer        ======================      -->
-    <string name="equalizer">Equalizer <sup><font color = "#ae1c27" size= "10"><b>Beta</b></font></sup></string>
-    <string name="apply">Apply</string>
-    <string name="equalizer_scr_abbr_db_suffix_d">%1$s dB</string>
-    <string name="equalizer_scr_abbr_hz_suffix_d">%1$s Hz</string>
+    <!--======================         AudioFx        ======================      -->
+    <string name="audio_fx_scr_ttile">@string/equalizer</string>
+    <string name="equalizer">Equalizer &beta;</string>
+    <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
+    <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
+    <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
+    <array name="audio_fx_scr_equalizer_presets">
+        <item>Custom</item>
+        <item>Normal</item>
+        <item>Classical</item>
+        <item>Dance</item>
+        <item>Flat</item>
+        <item>Folk</item>
+        <item>Heavy Metal</item>
+        <item>Hip Hop</item>
+        <item>Jazz</item>
+        <item>Pop</item>
+        <item>Rock</item>
+    </array>
 </resources>

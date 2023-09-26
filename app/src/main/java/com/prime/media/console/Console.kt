@@ -97,6 +97,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
+import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.util.DateUtils
 import com.prime.media.darkShadowColor
@@ -338,8 +339,15 @@ private fun Vertical(
         )
 
         val controller = LocalNavController.current
+        // FixMe: State is not required here. implement to get value without state.
+        val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
         IconButton(
-            onClick = { controller.navigate(AudioFx.route) },
+            onClick = {
+                if (useBuiltIn)
+                    controller.navigate(AudioFx.route)
+                else
+                    facade.launchEqualizer(state.audioSessionId)
+            },
             imageVector = Icons.Outlined.Tune,
             contentDescription = null,
             modifier = Modifier.layoutID(Console.EQUALIZER),
@@ -467,16 +475,20 @@ private fun Vertical(
             content = {
                 val mills = state.sleepAfterMills
                 if (mills == -1L)
-                    return@IconButton Icon(imageVector = Icons.Outlined.Timer, contentDescription = null,  tint = onColor)
+                    return@IconButton Icon(
+                        imageVector = Icons.Outlined.Timer,
+                        contentDescription = null,
+                        tint = onColor
+                    )
                 Label(
-                    text = formatElapsedTime(mills/1000L),
+                    text = formatElapsedTime(mills / 1000L),
                     style = Material.typography.caption2,
                     fontWeight = FontWeight.Bold,
                     color = Material.colors.secondary
                 )
             }
         )
-        
+
         val shuffle = state.shuffle
         LottieAnimButton(
             id = R.raw.lt_shuffle_on_off,
@@ -489,7 +501,7 @@ private fun Vertical(
 
         val mode = state.repeatMode
         AnimatedIconButton(
-            id  = R.drawable.avd_repeat_more_one_all,
+            id = R.drawable.avd_repeat_more_one_all,
             onClick = { state.cycleRepeatMode();facade.launchReviewFlow(); },
             atEnd = mode == Player.REPEAT_MODE_ALL,
             modifier = Modifier.layoutID(Console.REPEAT),

@@ -102,8 +102,8 @@ class SettingsViewModel @Inject constructor(
     override val fetchArtworkFromMS: Preference<Boolean> by with(preferences) {
         preferences[Settings.USE_LEGACY_ARTWORK_METHOD].map {
             Preference(
-                title = Text(R.string.pref_fetch_artwork_from_mediastore),
-                summery = Text(R.string.pref_fetch_artwork_from_mediastore_summery),
+                title = Text(R.string.pref_fetch_artwork_from_media_store),
+                summery = Text(R.string.pref_fetch_artwork_from_media_store_summery),
                 value = it
             )
         }.asComposeState()
@@ -141,6 +141,24 @@ class SettingsViewModel @Inject constructor(
             Preference(
                 title = Text(R.string.pref_crossfade_time),
                 summery = Text(R.string.pref_crossfade_time_summery),
+                value = it
+            )
+        }.asComposeState()
+    }
+    override val closePlaybackWhenTaskRemoved by with(preferences) {
+        preferences[Settings.CLOSE_WHEN_TASK_REMOVED].map {
+            Preference(
+                title = Text(R.string.pref_stop_playback_when_task_removed),
+                summery = Text(R.string.pref_stop_playback_when_task_removed_summery),
+                value = it
+            )
+        }.asComposeState()
+    }
+    override val useInbuiltAudioFx by with(preferences) {
+        preferences[Settings.USE_IN_BUILT_AUDIO_FX].map {
+            Preference(
+                title = Text(R.string.pref_use_inbuilt_audio_effects),
+                summery = Text(R.string.pref_use_inbuilt_audio_effects_summery),
                 value = it
             )
         }.asComposeState()

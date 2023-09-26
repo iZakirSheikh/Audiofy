@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.material.icons.outlined.HideSource
 import androidx.compose.material.icons.outlined.Recycling
 import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Share
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -328,6 +330,28 @@ private inline fun General(
         valueRange = 50f..200f,
         preview = "${maxRecentSize.value} files",
         steps = 5
+    )
+
+    val useInbuiltAudioFx = state.useInbuiltAudioFx
+    SwitchPreference(
+        title = stringResource(value = useInbuiltAudioFx.title),
+        checked = useInbuiltAudioFx.value,
+        summery = stringResource(value = useInbuiltAudioFx.summery),
+        onCheckedChange = {
+            state.set(Settings.USE_IN_BUILT_AUDIO_FX, it)
+        },
+        icon = Icons.Outlined.Tune
+    )
+
+    val closePlaybackWhenTaskRemoved = state.closePlaybackWhenTaskRemoved
+    SwitchPreference(
+        title = stringResource(value = closePlaybackWhenTaskRemoved.title),
+        checked = closePlaybackWhenTaskRemoved.value,
+        summery = stringResource(value = closePlaybackWhenTaskRemoved.summery),
+        onCheckedChange = {
+            state.set(Settings.CLOSE_WHEN_TASK_REMOVED, it)
+        },
+        icon = Icons.Outlined.HideSource
     )
 }
 

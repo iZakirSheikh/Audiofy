@@ -25,11 +25,51 @@ interface AudioFx {
          */
         fun direction() = route
 
-        const val EFFECT_STATUS_UNSUPPORTED = -1
+        /**
+         * Represents that the audio effect is not supported on the device.
+         * This means that the device or platform does not provide the capability
+         * to use the specific audio effect.
+         */
+        const val EFFECT_STATUS_NOT_SUPPORTED = -1
+
+        /**
+         * Represents that the audio effect is disabled.
+         * The effect is available on the device but is currently turned off.
+         */
         const val EFFECT_STATUS_DISABLED = 0
+
+        /**
+         * Represents that the audio effect is enabled and actively affecting the audio.
+         * The effect is currently active and applied to the audio stream.
+         */
         const val EFFECT_STATUS_ENABLED = 1
+
+        /**
+         * Represents that the audio effect does not have control over the audio.
+         * This state typically indicates that the effect cannot modify the audio stream
+         * due to various reasons, such as lack of permissions or conflicts with other effects.
+         */
         const val EFFECT_STATUS_NO_CONTROL = 2
+
+        /**
+         * Represents that the audio effect is not ready for use.
+         * This state indicates that the effect is not yet prepared to process audio data.
+         * It may require initialization or configuration before it can be enabled.
+         */
+        const val EFFECT_STATUS_NOT_READY = 3
     }
+
+    /**
+     * Represents the state of the equalizer, which can be one of the following values:
+     * - [EFFECT_STATUS_NOT_SUPPORTED]: The equalizer is not supported on the device.
+     * - [EFFECT_STATUS_DISABLED]: The equalizer is currently disabled.
+     * - [EFFECT_STATUS_ENABLED]: The equalizer is currently enabled and actively affecting the audio.
+     * - [EFFECT_STATUS_NO_CONTROL]: The equalizer does not have control over the audio.
+     * - [EFFECT_STATUS_NOT_READY]: The equalizer is not ready for use and requires initialization or configuration.
+     *
+     * You can enable or disable the equalizer using the [isEqualizerEnabled] property.
+     */
+    val stateOfEqualizer: Int
 
     /**
      * Property for enabling or disabling the Equalizer.
@@ -39,7 +79,7 @@ interface AudioFx {
     /**
      * List of supported Equalizer presets.
      */
-    val eqPresets: List<String>
+    val eqPresets: Array<String>
 
     /**
      * Get the number of supported bands in the Equalizer.

@@ -2,6 +2,7 @@
 
 package com.prime.media.effects
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -74,7 +75,6 @@ private fun TopBar(
     )
 }
 
-
 @Composable
 @NonRestartableComposable
 private fun BottomBar(
@@ -101,7 +101,6 @@ private fun BottomBar(
     }
 }
 
-
 @Composable
 private fun Equalizer(
     fx: AudioFx,
@@ -121,14 +120,14 @@ private fun Equalizer(
             CompositionLocalProvider(LocalTextStyle provides Material.typography.caption) {
                 Label(
                     text = stringResource(
-                        id = R.string.equalizer_scr_abbr_db_suffix_d,
+                        id = R.string.audio_fx_scr_abbr_db_suffix_d,
                         fx.eqBandLevelRange.endInclusive / 1000
                     )
                 )
-                Label(text = stringResource(id = R.string.equalizer_scr_abbr_db_suffix_d, 0))
+                Label(text = stringResource(id = R.string.audio_fx_scr_abbr_db_suffix_d, 0))
                 Label(
                     text = stringResource(
-                        id = R.string.equalizer_scr_abbr_db_suffix_d,
+                        id = R.string.audio_fx_scr_abbr_db_suffix_d,
                         fx.eqBandLevelRange.start / 1000
                     )
                 )
@@ -150,7 +149,7 @@ private fun Equalizer(
 
                 Label(
                     text = stringResource(
-                        id = R.string.equalizer_scr_abbr_hz_suffix_d,
+                        id = R.string.audio_fx_scr_abbr_hz_suffix_d,
                         fx.getBandCenterFreq(band) / 1000
                     ),
                     style = Material.typography.caption2
@@ -197,6 +196,9 @@ fun Preset(
 }
 
 
+private inline val AudioFx.isEqualizerReady
+    get() = stateOfEqualizer != AudioFx.EFFECT_STATUS_NOT_READY || stateOfEqualizer != AudioFx.EFFECT_STATUS_NOT_SUPPORTED
+
 @Composable
 @NonRestartableComposable
 fun AudioFx(
@@ -207,36 +209,33 @@ fun AudioFx(
             .clip(Material.shapes.small2)
             .background(Material.colors.surface)
             .fillMaxWidth()
+            .animateContentSize()
             .pointerInput(Unit) {}
     ) {
         TopBar(state.isEqualizerEnabled, onToggleState = { state.isEqualizerEnabled = it })
-        Row(
-            Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
-        ) {
-            val current = state.eqCurrentPreset
-            Preset(
-                label = "Custom",
-                onClick = { state.eqCurrentPreset = -1 },
-                selected = current == -1
-            )
-            state.eqPresets.forEachIndexed { index, s ->
-                Preset(
-                    label = s,
-                    onClick = { state.eqCurrentPreset = index },
-                    selected = current == index
-                )
+        if (state.isEqualizerReady) {
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
+            ) {
+                state.eqPresets.forEachIndexed { index, s ->
+                    val current = state.eqCurrentPreset
+                    Preset(
+                        label = s,
+                        onClick = { state.eqCurrentPreset = index },
+                        selected = current == index
+                    )
+                }
             }
+
+            Equalizer(
+                fx = state,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
+            )
         }
-
-        Equalizer(
-            fx = state,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
-        )
-
         val controller = LocalNavController.current
         BottomBar(
             onDismissRequest = {

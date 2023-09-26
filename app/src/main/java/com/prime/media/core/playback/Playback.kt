@@ -100,6 +100,7 @@ private val PREF_KEY_BOOKMARK = longPreferenceKey("_bookmark", C.TIME_UNSET)
 private val PREF_KEY_RECENT_PLAYLIST_LIMIT = intPreferenceKey("_max_recent_size", 50)
 private val PREF_KEY_EQUALIZER_ENABLED = booleanPreferenceKey(TAG + "_equalizer_enabled")
 private val PREF_KEY_EQUALIZER_PROPERTIES = stringPreferenceKey(TAG + "_equalizer_properties")
+private val PREF_KEY_CLOSE_WHEN_REMOVED = booleanPreferenceKey(TAG + "_stop_playback_when_removed", false)
 
 /**
  * Key for saving custom orders of items in SharedPreferences.
@@ -210,7 +211,7 @@ private const val EXTRA_EQUALIZER_PROPERTIES =
  * is not equal to [MediaStore.AUTHORITY]. If these conditions are met, it indicates
  * that the URI is from a third-party source.
  *
- * @param uri The URI to be checked.
+ * @context uri The URI to be checked.
  * @return `true` if the URI is from a third-party source, `false` otherwise.
  */
 private val Uri.isThirdPartyUri get() = scheme == ContentResolver.SCHEME_CONTENT && authority != MediaStore.AUTHORITY
@@ -441,18 +442,6 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             )
         }
         return Futures.immediateFuture(LibraryResult.ofItemList(children, params))
-    }
-
-    /**
-     * Releases resources and cancels any associated scope before destroying the service.
-     * @see Service.onDestroy
-     */
-    override fun onDestroy() {
-        player.release()
-        session.release()
-        // Cancel the coroutine scope when the service is destroyed
-        scope.cancel()
-        super.onDestroy()
     }
 
     /**
@@ -739,6 +728,35 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         }
     }
 
+    /**
+     * Releases resources and cancels any associated scope before destroying the service.
+     * @see Service.onDestroy
+     */
+    override fun onDestroy() {
+        // Release the media player to free up system resources.
+        player.release()
+
+        // Release the audio session associated with the media player.
+        session.release()
+
+        // Release the equalizer (if it exists) to free up resources.
+        equalizer?.release()
+
+        // Cancel any ongoing coroutines associated with this scope.
+        scope.cancel()
+
+        // Call the superclass method to properly handle onDestroy().
+        super.onDestroy()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        if (preferences.value(PREF_KEY_CLOSE_WHEN_REMOVED)){
+            player.playWhenReady = false
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+        }
+    }
 
     companion object {
         /**
@@ -770,6 +788,14 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         @JvmField
         val PREF_KEY_RECENT_PLAYLIST_LIMIT =
             com.prime.media.core.playback.PREF_KEY_RECENT_PLAYLIST_LIMIT
+
+
+        /**
+         * @see [com.prime.media.core.playback.PREF_KEY_CLOSE_WHEN_REMOVED]
+         */
+        @JvmField
+        val PREF_KEY_CLOSE_WHEN_REMOVED =
+            com.prime.media.core.playback.PREF_KEY_CLOSE_WHEN_REMOVED
 
         /**
          * @see com.prime.media.core.playback.ACTION_AUDIO_SESSION_ID

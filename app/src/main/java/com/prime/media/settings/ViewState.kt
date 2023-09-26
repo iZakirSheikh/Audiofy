@@ -117,6 +117,20 @@ interface Settings : Blacklist {
         val BLACKLISTED_FILES = stringSetPreferenceKey(PREFIX + "_blacklisted_files")
         val GAPLESS_PLAYBACK = booleanPreferenceKey(PREFIX + "_gap_less_playback")
         val CROSS_FADE_DURATION_SECS = intPreferenceKey(PREFIX + "_cross_fade_tracks_durations")
+
+        /**
+         * Determines whether playback should automatically stop when the associated task is removed.
+         * If set to true, the playback will be closed when the task is removed.
+         * If set to false, the playback will continue even if the task is removed.
+         */
+        val CLOSE_WHEN_TASK_REMOVED = Playback.PREF_KEY_CLOSE_WHEN_REMOVED
+
+        /**
+         * Indicates whether to use the built-in audio effects or third-party audio effects.
+         * If set to true, the application will use the built-in audio effects.
+         * If set to false, third-party audio effects may be used, if available.
+         */
+        val USE_IN_BUILT_AUDIO_FX = booleanPreferenceKey(PREFIX + "_use_in_built_audio_fx", true)
     }
 
     val darkUiMode: Preference<NightMode>
@@ -130,6 +144,8 @@ interface Settings : Blacklist {
     val excludedFiles: Preference<Set<String>?>
     val gaplessPlayback: Preference<Boolean>
     val crossfadeTime: Preference<Int>
+    val closePlaybackWhenTaskRemoved: Preference<Boolean>
+    val useInbuiltAudioFx: Preference<Boolean>
 
     fun <S, O> set(key: Key<S, O>, value: O)
 }
