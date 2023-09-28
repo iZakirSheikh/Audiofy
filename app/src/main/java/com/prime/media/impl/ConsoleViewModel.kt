@@ -216,7 +216,7 @@ class ConsoleViewModel @Inject constructor(
                         onPlayerEvent(event = Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)
                         onPlayerEvent(event = Player.EVENT_REPEAT_MODE_CHANGED)
                         onPlayerEvent(Player.EVENT_MEDIA_ITEM_TRANSITION)
-                        onPlayerEvent(Player.EVENT_IS_PLAYING_CHANGED)
+                        onPlayerEvent(Player.EVENT_PLAY_WHEN_READY_CHANGED)
                         return@collect
                     }
                     // emit the event.
@@ -225,5 +225,11 @@ class ConsoleViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    override fun onCleared() {
+        MainHandler.remove(PROGRESS_TOKEN)
+        super.onCleared()
+
     }
 }

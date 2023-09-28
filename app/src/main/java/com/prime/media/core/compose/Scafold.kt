@@ -1,297 +1,231 @@
 package com.prime.media.core.compose
 
 import androidx.annotation.FloatRange
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.*
-import com.airbnb.lottie.utils.MiscUtils.lerp
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
+
+private const val TAG = "Scaffold2"
 
 // TODO: b/177571613 this should be a proper decay settling
 // this is taken from the DrawerLayout's DragViewHelper as a min duration.
 private val AnimationSpec = TweenSpec<Float>(durationMillis = 500)
 
-private const val TAG = "Player"
-
-/**
- * Possible values of [ScaffoldState].
- */
-enum class SheetValue {
-
-    /**
-     * The state of the bottom drawer is collapsed.
-     */
-    COLLAPSED,
-
-    /**
-     * The state of the bottom drawer when it is expanded (i.e. at 100% height).
-     */
-    EXPANDED
-}
-
-
 /**
  * The content padding for the screen under current [NavGraph]
  */
+@Deprecated("This is no use from now on.")
 val LocalWindowPadding = compositionLocalOf {
     PaddingValues(0.dp)
 }
 
-/**
- * State of the [Scaffold2] composable.
- * @param initial The initial value of the state.
- * @param open: The percentage of screen that is considered open.
- */
-@OptIn(ExperimentalMaterialApi::class)
-@Stable
-class ScaffoldState(
-    initial: SheetValue
-) {
-    /**
-     * Maps between [SheetValue] and screen.
-     */
-    private fun map(value: SheetValue): Float = when (value) {
-        SheetValue.COLLAPSED -> 0f
-        SheetValue.EXPANDED -> 1f
-    }
-
-    /**
-     * Maps between [SheetValue] and screen.
-     */
-    private fun map(progress: Float): SheetValue = when (progress) {
-        0f -> SheetValue.COLLAPSED
-        else -> SheetValue.EXPANDED
-    }
-
-    private val animatable = Animatable(
-        map(initial),
-        Float.VectorConverter,
-        visibilityThreshold = 0.0001f,
-    )
-
-    /**
-     * Represents a value between 0 and 1.
-     * O implies [CurtainValue.CLOSED].
-     * 1 implies [CurtainValue.OPEN]
-     */
-    val progress = animatable.asState()
-
-    /**
-     * The current state of the [SheetValue]
-     */
-    val current
-        get() = map(progress.value)
-
-    /**
-     * Whether the drawer is closed.
-     */
-    inline val isCollapsed: Boolean
-        get() = current == SheetValue.COLLAPSED
-
-    /**
-     * Whether the drawer is expanded.
-     */
-    inline val isExpanded: Boolean
-        get() = current == SheetValue.EXPANDED
-
-
-    /**
-     * Set the state to the target value by starting an animation.
-     *
-     * @param targetValue The new value to animate to.
-     * @param anim The animation that will be used to animate to the new value.
-     */
-    @ExperimentalMaterialApi
-    private suspend fun animateTo(
-        targetValue: SheetValue, anim: AnimationSpec<Float> = AnimationSpec
-    ) {
-        animatable.animateTo(map(targetValue), animationSpec = anim)
-    }
-
-    /**
-     * @see [Animatable.snapTo]
-     */
-    suspend fun snapTo(@FloatRange(0.0, 1.0) targetValue: Float) {
-        animatable.snapTo(targetValue)
-    }
-
-    suspend fun snapTo(targetValue: SheetValue) {
-        animatable.snapTo(map(targetValue))
-    }
-
-    /**
-     * Open the drawer with animation and suspend until it if fully opened or animation has been
-     * cancelled. If the content height is less than [BottomDrawerOpenFraction], the drawer state
-     * will move to [BottomDrawerValue.Expanded] instead.
-     *
-     * @throws [CancellationException] if the animation is interrupted
-     *
-     */
-    suspend fun collapse(animate: Boolean = true) {
-        if (animate)
-            animateTo(SheetValue.COLLAPSED)
-        else
-            snapTo(SheetValue.COLLAPSED)
-    }
-
-    /**
-     * @see collapse
-     * @see expand
-     */
-    suspend fun toggle(animate: Boolean = true) =
-        if (current == SheetValue.EXPANDED) collapse(animate) else expand(animate)
-
-    /**
-     * Expand the drawer with animation and suspend until it if fully expanded or animation has
-     * been cancelled.
-     *
-     * @throws [CancellationException] if the animation is interrupted
-     *
-     */
-    suspend fun expand(animate: Boolean = true) {
-        if (animate)
-            animateTo(SheetValue.EXPANDED)
-        else
-            snapTo(SheetValue.EXPANDED)
-    }
-
-    companion object {
-        /**
-         * The default [Saver] implementation for [ScaffoldState].
-         */
-        fun Saver() =
-            Saver<ScaffoldState, SheetValue>(save = { it.current }, restore = { ScaffoldState(it) })
-    }
-}
+private const val LAYOUT_ID_PROGRESS_BAR = "_layout_id_progress_bar"
 
 /**
- * Create and [remember] a [ScaffoldState].
+ * Scaffold implements the top-level visual layout structure.
  *
- * @param initial The initial value of the state.
- * @param open: How much percent is considered open
- */
-@Composable
-fun rememberScaffoldState2(
-    initial: SheetValue
-): ScaffoldState {
-    return rememberSaveable(saver = ScaffoldState.Saver()) {
-        ScaffoldState(initial)
-    }
-}
-
-/**
- * This houses the logic to show [Toast]s, animates [sheet] and displays update progress.
- * @param progress progress for the linear progress bar. pass [Float.NaN] to hide and -1 to show
- * indeterminate and value between 0 and 1 to show progress
+ * This component provides an API to assemble multiple components into a screen, ensuring proper
+ * layout strategy and coordination between the components.
+ *
+ * @param vertical Determines the layout structure, allowing either vertical or horizontal
+ *                 orientation. When set to true, a vertical layout is used, and a navRail is used
+ *                 instead of a navbar in the horizontal layout.
+ * @param content The main content of the screen to be displayed. The context is automatically
+ *                boxed, so manual boxing is not required.
+ * @param modifier Optional [Modifier] to be applied to the composable.
+ * @param channel Optional [SnackbarHostState] object to handle displaying [Snack] messages.
+ * @param progress Optional progress value to show a linear progress bar. Pass [Float.NaN] to hide
+ *                 the progress bar, -1 to show an indeterminate progress bar, or a value between 0 and 1 to show a determinate progress bar.
+ * @param tabs Optional [Composable] function to display a navigation bar or toolbar.
+ * @param hideNavBar Optional value to force hiding the navigation bar.
  */
 @Composable
 fun Scaffold2(
-    sheet: @Composable () -> Unit,
+    vertical: Boolean,
+    content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    sheetPeekHeight: Dp = 56.dp,
-    color: Color = MaterialTheme.colors.background,
-    state: ScaffoldState = rememberScaffoldState2(initial = SheetValue.COLLAPSED),
+    hideNavigationBar: Boolean = false,
     channel: Channel = remember(::Channel),
-    vertical: Boolean = true,
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
-    content: @Composable () -> Unit
+    navBar: @Composable () -> Unit,
 ) {
     val realContent =
         @Composable {
-            // stack each part over the player.
-            CompositionLocalProvider(LocalWindowPadding provides PaddingValues(bottom = 0.dp)) {
-                Surface(content = content)
-            }
-            SnackbarProvider(state = channel)
-            // don't draw sheet when closed.
-            sheet()
-            // don't draw progressBar.
+            // The main content. Autoboxed inside surface.
+            Surface(content = content, color = Color.Transparent)
+            // The SnackBar
+            SnackbarProvider(channel)
+            // ProgressBar
+            // Don't draw when progress is Float.NaN
             when {
-                progress == -1f -> LinearProgressIndicator()
-                !progress.isNaN() -> LinearProgressIndicator(progress = progress)
+                // special value indicating that the progress is about to start.
+                progress == -1f -> LinearProgressIndicator(
+                    modifier = Modifier.layoutId(LAYOUT_ID_PROGRESS_BAR)
+                )
+                // draw the progress bar at the bottom of the screen when is not a NAN.
+                !progress.isNaN() -> LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.layoutId(LAYOUT_ID_PROGRESS_BAR)
+                )
+                // draw nothing.
+                else -> Unit
+            }
+            // Don't show the NavigationBar if hideNavigationBar
+            // Show BottomBar when vertical else show NavigationRail.
+            when {
+                // Don't show anything.
+                hideNavigationBar -> Unit
+                // Show BottomAppBar
+                // Push content to centre of the screen.
+                else -> navBar()
             }
         }
-    // The scaffold will fill whole screen.
-    // Set the background to color.
-    val modifier = modifier
-        .background(color = color)
-        .fillMaxSize()
-    val progress by state.progress
-    val expanded = state.isExpanded
     when (vertical) {
-        true -> Vertical(sheetPeekHeight, expanded, progress, modifier, realContent)
-        false -> TODO("Not Implemented yet.")
+        true -> Vertical(content = realContent, modifier = modifier.fillMaxSize())
+        else -> Horizontal(content = realContent, modifier = modifier.fillMaxSize())
     }
 }
 
 @Composable
 private inline fun Vertical(
-    sheetPeekHeight: Dp,
-    expanded: Boolean,
-    progress: Float,
+    content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
 ) {
-    val density = LocalDensity.current
-    val imePaddingPx = WindowInsets.ime.getBottom(density)
-    val navBarPaddingPx = WindowInsets.navigationBars.getBottom(density)
-    // TODO: Maybe hide on scroll.
-    Layout(
-        content,
-        modifier = modifier.fillMaxSize(),
-    ) { measurables, constraints ->
-        // The height of the layout.
-        val lHeight = constraints.maxHeight
-        val lWidth = constraints.maxWidth
-        // Measure content
-        val unrestrected = constraints.copy(minWidth = 0, minHeight = 0)
-        val placeableChannel = measurables[1].measure(unrestrected)
-        val placeableProgressBar = measurables.getOrNull(3)?.measure(unrestrected)
-        var width = lWidth
-        var height = lHeight - sheetPeekHeight.roundToPx() - navBarPaddingPx
-        val placeableContent = measurables[0].measure(
-            constraints.copy(0, width, 0, height)
-        )
-        // measure sheet
-        // measure min height against orgSheetPeekHeightPx
-        val sheetPeekHeightPx = sheetPeekHeight.toPx()
-        width = lWidth
-        height = lerp(sheetPeekHeightPx, lHeight.toFloat(), progress).roundToInt()
-        val placeableSheet = measurables[2].measure(
-            constraints.copy(0, width, 0, height)
-        )
-        layout(lWidth, lHeight) {
-            var x = 0
-            var y = 0
-            placeableContent.placeRelative(x, y)
-            // Place sheet at top if sheetHeight == height
-            // else place at the bottom.
-            y = lHeight - placeableSheet.height - lerp(
-                navBarPaddingPx.toFloat(),
-                0f,
-                progress
-            ).roundToInt() //
-            placeableSheet.placeRelative(x, y)
-            // the diff to accomondate
-            val diff = lerp(sheetPeekHeightPx, 0f, progress)
-            x = lWidth / 2 - placeableChannel.width / 2
-            y =
-                lHeight - (placeableChannel.height + diff.roundToInt() + navBarPaddingPx + imePaddingPx)
-            placeableChannel.placeRelative(x, y)
-            if (placeableProgressBar == null)
-                return@layout
-            x = lWidth / 2 - placeableProgressBar.width / 2
-            y = lHeight - placeableProgressBar.height - navBarPaddingPx
-            placeableProgressBar.placeRelative(x, y)
+    var orgNavBarHeightPx by remember { mutableFloatStateOf(Float.NaN) }
+    val orgAnmNavBarHeight by animateFloatAsState(targetValue = if (orgNavBarHeightPx.isNaN()) 0f else orgNavBarHeightPx, tween(500))
+    var navBarHeight by remember { mutableFloatStateOf(0f) }
+    val connection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                val delta = available.y
+                // if not init return
+                if (orgNavBarHeightPx.isNaN()) return Offset.Zero
+                val newOffset = navBarHeight - delta.roundToInt()
+                // calculate how much height should be reduced or increased.
+                navBarHeight = newOffset.coerceIn(0f, orgNavBarHeightPx)
+                // return nothing consumed.
+                return Offset.Zero
+            }
         }
     }
+    Layout(
+        content = content,
+        modifier = modifier
+            .nestedScroll(connection)
+            .fillMaxSize(),
+    ) { measurables, constraints ->
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        // The content's length should be equal to height - navBar suggested length.
+        val navBarOffsetY = if (orgAnmNavBarHeight == 0f) 0f else orgAnmNavBarHeight - navBarHeight
+        var h = height - navBarOffsetY.roundToInt()
+        val placeableContent = measurables[0].measure(
+            constraints.copy(minHeight = h, maxHeight = h)
+        )
+        val channelPlaceable = measurables[1].measure(
+            constraints.copy(minWidth = 0, minHeight = 0)
+        )
+        val measurable = measurables.getOrNull(2)
+        val placeable = measurable?.measure(constraints.copy(minHeight = 0))
+        val placeableProgress =
+            if (measurable?.layoutId == LAYOUT_ID_PROGRESS_BAR) placeable else null
+        val placeableNavBar =
+            if (measurable?.layoutId != LAYOUT_ID_PROGRESS_BAR) placeable else null
+
+        // update the height etc.
+        orgNavBarHeightPx = placeableNavBar?.height?.toFloat() ?: Float.NaN
+        layout(width, height) {
+            var x: Int = 0
+            var y: Int = 0
+            placeableContent.placeRelative(0, 0)
+            // Place Channel at the centre bottom of the screen
+            // remove nav bar offset from it.
+            x = width / 2 - channelPlaceable.width / 2   // centre
+            // full height - toaster height - navbar - 16dp padding + navbar offset.
+            y = (height - channelPlaceable.height - navBarOffsetY).roundToInt()
+            channelPlaceable.placeRelative(x, y)
+            // NavBar
+            x = width / 2 - (placeableNavBar?.width ?: 0) / 2
+            y = (height - navBarOffsetY).roundToInt()
+            placeableNavBar?.placeRelative(x, y)
+            // the progress bar
+            x = width / 2 - (placeableProgress?.width ?: 0) / 2
+            y = (height - (placeableProgress?.height ?: 0) - navBarOffsetY).roundToInt()
+            placeableProgress?.placeRelative(x, y)
+        }
+    }
+}
+
+@Composable
+private inline fun Horizontal(
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Layout(
+        content = content,
+        modifier = modifier,
+        measurePolicy = { measurables, constraints ->
+            val width = constraints.maxWidth
+            val height = constraints.maxHeight
+            // First thing first.
+            // try to find the progress measurable.
+            // The index of progress measurable is 2
+            val measurable = when {
+                measurables.size == 4 -> measurables[2]
+                measurables.size == 3 && measurables[2].layoutId == LAYOUT_ID_PROGRESS_BAR -> measurables[2]
+                else -> null
+            }
+            // obtain the nav rail placeable
+            val placeableNavRail = measurables.getOrNull(if (measurable == null) 2 else 3)
+                ?.measure(constraints.copy(minWidth = 0))
+            var w = width - (placeableNavRail?.width ?: 0)
+            val modified = constraints.copy(minWidth = w, maxWidth = w)
+            val placeableProgressBar = measurable?.measure(modified)
+            val placeableContent = measurables[0].measure(modified)
+            val placeableChannel = measurables[1].measure(modified.copy(minWidth = 0))
+            layout(width, height) {
+                var x: Int = 0
+                var y: Int = 0
+                placeableContent.placeRelative(x, y)
+                // Place toaster at the centre bottom of the screen
+                // remove nav bar offset from it.
+                x = (placeableNavRail?.width
+                    ?: 0) + (placeableContent.width / 2) - placeableChannel.width / 2   // centre
+                // full height - toaster height - navbar - 16dp padding + navbar offset.
+                y = (height - placeableChannel.height)
+                placeableChannel.placeRelative(x, y)
+                // NavBar place at the start of the screen.
+                x = width - (placeableNavRail?.width ?: 0)
+                y = 0
+                placeableNavRail?.placeRelative(x, y)
+                // Place ProgressBar at the bottom of the screen.
+                x = placeableContent.width / 2 - (placeableProgressBar?.width ?: 0) / 2
+                y = height - (placeableProgressBar?.height ?: 0)
+                placeableProgressBar?.placeRelative(x, y)
+            }
+        }
+    )
 }

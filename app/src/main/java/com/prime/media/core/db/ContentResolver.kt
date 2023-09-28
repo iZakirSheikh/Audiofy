@@ -135,7 +135,9 @@ private inline val Cursor.toAudio
         album = getString(3) ?: MediaStore.UNKNOWN_STRING,
         artist = getString(2) ?: MediaStore.UNKNOWN_STRING,
         composer = getString(6) ?: MediaStore.UNKNOWN_STRING,
-        mimeType = getString(10),
+        // If the 'mimeType' is null, we set it to a default value of "audio/*"
+        // This handles cases where the MIME type for the audio file couldn't be determined.
+        mimeType = getString(10) ?: "audio/*",
         track = getInt(11),
         dateAdded = getLong(5) * 1000,
         dateModified = getLong(13) * 1000,

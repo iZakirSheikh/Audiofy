@@ -251,6 +251,7 @@ inline fun LottieAnimButton(
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     duration: Int = -1,
     enabled: Boolean = true,
+    easing: Easing = FastOutSlowInEasing,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     IconButton(
@@ -263,6 +264,7 @@ inline fun LottieAnimButton(
                 id = id,
                 atEnd = atEnd,
                 scale = scale,
+                easing = easing,
                 progressRange = progressRange,
                 duration = duration
             )
