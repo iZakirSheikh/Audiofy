@@ -1,7 +1,6 @@
 package com.prime.media.console
 
 import androidx.compose.runtime.Stable
-import androidx.media3.common.MediaItem
 import com.prime.media.dialog.PlayingQueue
 import java.util.concurrent.TimeUnit
 
@@ -73,5 +72,8 @@ interface Console : PlayingQueue {
     fun forward(mills: Long = TimeUnit.SECONDS.toMillis(30)) =
         seekTo((position + mills).coerceIn(0, duration))
 
-    companion object
+    companion object {
+        const val route = "route_console"
+        fun direction() = route
+    }
 }

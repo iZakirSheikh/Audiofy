@@ -135,14 +135,15 @@ private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
             }
         }
             .flowOn(Dispatchers.Main)
-            .shareIn(
-                // what show I use to replace this.
-                GlobalScope,
-                // un-register when subscriber count is zero.
-                SharingStarted.WhileSubscribed(2000, replayExpirationMillis = 5000),
-                //
-                1
-            )
+//            .shareIn(
+//                // what show I use to replace this.
+//                GlobalScope,
+//                // un-register when subscriber count is zero.
+//                SharingStarted.WhileSubscribed(2000, replayExpirationMillis = 5000),
+//                //
+//                1
+//            )
+
     override val loaded: Flow<Boolean> = events.map { current != null }
 
     @OptIn(FlowPreview::class)

@@ -28,8 +28,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 27
         targetSdk = 34
-        versionCode = 57
-        versionName = "2.6.1"
+        versionCode = 58
+        versionName = "2.6.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -116,7 +116,7 @@ dependencies {
     implementation("com.android.billingclient:billing:$billing_version")
     implementation("com.android.billingclient:billing-ktx:$billing_version")
     // Unity Ads
-    implementation("com.unity3d.ads:unity-ads:4.8.0")
+    implementation("com.unity3d.ads:unity-ads:4.9.0")
     // Compose navigation
     implementation("androidx.navigation:navigation-compose:2.7.2")
     // Compose Downloadable fonts

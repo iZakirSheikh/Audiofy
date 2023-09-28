@@ -4,7 +4,6 @@ package com.prime.media
 
 import android.app.Activity
 import android.content.pm.PackageManager
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationConstants
@@ -12,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,8 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -51,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.prime.media.console.Console
+import com.prime.media.console.MiniPlayer
 import com.prime.media.core.NightMode
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalNavController
@@ -58,9 +59,8 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.Scaffold2
-import com.prime.media.core.compose.SheetValue
+import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
-import com.prime.media.core.compose.rememberScaffoldState2
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -92,7 +92,6 @@ import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.drawHorizontalDivider
 import com.primex.material2.OutlinedButton
-import kotlinx.coroutines.launch
 import kotlin.math.ln
 
 private const val TAG = "Home"
@@ -398,20 +397,32 @@ private fun NavGraph(
             Members(viewModel = viewModel)
         }
 
-        composable(TagEditor.route){
+        composable(TagEditor.route) {
             val viewModel = hiltViewModel<TagEditorViewModel>()
             TagEditor(state = viewModel)
         }
 
-        dialog(AudioFx.route){
+        dialog(AudioFx.route) {
             val viewModel = hiltViewModel<AudioFxViewModel>()
             AudioFx(state = viewModel)
+        }
+
+        composable(Console.route) {
+            val viewModel = hiltViewModel<ConsoleViewModel>()
+            val navController = LocalNavController.current
+            Console(state = viewModel, progress = 1.0f, onRequestToggle = navController::navigateUp)
         }
     }
 }
 
 private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
 private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
+
+private val hiddenDestRotes = arrayOf(
+    Console.route,
+    PERMISSION_ROUTE,
+    AudioFx.route
+)
 
 @Composable
 fun Home(
@@ -420,27 +431,21 @@ fun Home(
     val isDark = isPrefDarkTheme()
     Material(isDark) {
         val navController = rememberNavController()
-        // Collapse if expanded and back button is clicked.
-        // FixMe: Currently it doesn't work if navGraph ihas not start Dest.
-        val scope = rememberCoroutineScope()
-        val state = rememberScaffoldState2(initial = SheetValue.COLLAPSED)
-        BackHandler(state.isExpanded) { scope.launch { state.collapse(false) } }
         CompositionLocalProvider(LocalNavController provides navController) {
             val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
+            val remote = (LocalView.current.context as MainActivity).remote
             val facade = LocalSystemFacade.current
+            val isPlayerLoaded by remote.loaded.collectAsState(initial = false)
             Scaffold2(
                 vertical = true, // currently don't pass value of vertical unless layout is ready.
                 channel = channel,
-                state = state,
-                sheetPeekHeight = if (facade.isPlayerReady) Settings.MINI_PLAYER_HEIGHT else 0.dp,
-                color = MaterialTheme.colors.background,
+                hideNavigationBar = !isPlayerLoaded || navController.current in hiddenDestRotes,
                 progress = facade.inAppUpdateProgress,
+                modifier = Modifier.background(Material.colors.background),
                 content = { NavGraph(Modifier.drawHorizontalDivider(color = Material.colors.onSurface)) },
-                sheet = {
-                    val viewModel = hiltViewModel<ConsoleViewModel>()
-                    Console(state = viewModel, expanded = state.isExpanded) {
-                        scope.launch { state.toggle(false) }
-                    }
+                navBar = {
+                    // Maybe Find Better alternative of representing this.
+                    MiniPlayer(remote = remote)
                 }
             )
         }

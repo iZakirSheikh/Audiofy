@@ -626,8 +626,12 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
         if (audioSessionId != -1)
             super.onAudioSessionIdChanged(audioSessionId)
-        // Initialize the equalizer with audio session ID from the ExoPlayer.
-        if (equalizer == null || audioSessionId == -1) {
+
+        // Initialize the equalizer with the audio session ID from the ExoPlayer.
+        // We only reinitialize it if the 'audioSessionId' is not -1,
+        // which means the system called this function with a new session ID.
+        // In this case, we reinitialize the audio effect; otherwise, we just apply settings.
+        if (equalizer == null || audioSessionId != -1) {
             equalizer?.release()
             equalizer = Equalizer(0, (player as ExoPlayer).audioSessionId)
         }
