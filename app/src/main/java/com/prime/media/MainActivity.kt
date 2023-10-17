@@ -2,7 +2,6 @@ package com.prime.media
 
 import android.animation.ObjectAnimator
 import android.content.Intent
-import android.media.MediaMetadataRetriever
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Bundle
@@ -41,7 +40,6 @@ import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.SystemFacade
-import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.Remote
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
@@ -54,8 +52,6 @@ import com.primex.preferences.value
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -295,57 +291,6 @@ class MainActivity : ComponentActivity(), SystemFacade {
             .setText(getString(R.string.share_app_desc_s, Audiofy.GOOGLE_STORE)).startChooser()
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        // Move this code to somewhere else
-        if (intent == null || intent.action != Intent.ACTION_VIEW)
-            return
-        // Obtain the URI from the incoming intent
-        val data = intent.data ?: return
-        // Use a coroutine to handle the artwork retrieval and playback
-        lifecycleScope.launch {
-            val retriever = MediaMetadataRetriever().also {
-                it.setDataSource(this@MainActivity, data)
-            }
-            // Obtain the URI of the image obtained from the data in the above intent
-            // and save it in the cache.
-            val uri = com.primex.core.runCatching(TAG) {
-                val cacheFile = File(cacheDir, "tmp_artwork.png")
-                // This action will delete the old file, if it exists.
-                // It's safe to perform this operation even if the file doesn't exist.
-                // This step is necessary because occasionally, a track may lack album art,
-                // and the system may load previously cached art, leading to the need for an update.
-                cacheFile.delete()
-                val bytes = retriever.embeddedPicture ?: return@runCatching null
-                val fos = FileOutputStream(cacheFile)
-                fos.write(bytes)
-                fos.close()
-                Uri.fromFile(cacheFile)
-            }
-
-            // Obtain title and subtitle
-            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-                ?: getString(R.string.unknown)
-            val subtitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-                ?: getString(R.string.unknown)
-
-            // Construct a MediaItem using the obtained parameters.
-            // (Currently, details about playback queue setup are missing.)
-            val item = MediaItem(data, title, subtitle, artwork = uri)
-            // Introducing a delay to accommodate proper service restoration.
-            // This delay is crucial because the service restoration process
-            // may potentially interfere with the addition of this track, especially considering
-            // that this track holds authority separate from the MediaStore.
-            // The delay should only be applied when the primary purpose of the app is to view content, not its main operation.
-            // In this context, we assume that service restoration typically takes around 5 seconds.
-            if (getIntent().action != Intent.ACTION_MAIN)
-                delay(4_000)
-            // Play the media by replacing the existing queue.
-            remote.set(listOf(item))
-            remote.play()
-        }
-    }
-
     override fun launchEqualizer(id: Int) {
         lifecycleScope.launch {
             if (id == AudioEffect.ERROR_BAD_VALUE)
@@ -396,6 +341,17 @@ class MainActivity : ComponentActivity(), SystemFacade {
             launchUpdateFlow()
             // TODO: Try to reconcile if it is any good to ask for reviews here.
             // launchReviewFlow()
+
+            // pass intent to onNewIntent; but only when cold start; so that it is not called
+            // multiple times
+            lifecycleScope.launch {
+                // Introducing a delay of 1000 milliseconds (1 second) here is essential
+                // to ensure that the UI is fully prepared to receive the intent.
+                // This delay gives the UI components time to initialize and be ready
+                // to handle the incoming intent without any potential issues.
+                delay(1000)
+                onNewIntent(intent)
+            }
         }
         // Manually handle decor.
         // I think I am handling this in AppTheme Already.

@@ -3,6 +3,7 @@
 package com.prime.media
 
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
@@ -24,10 +25,12 @@ import androidx.compose.material.Typography
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -61,6 +64,7 @@ import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
+import com.prime.media.core.playback.MediaItem
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -92,6 +96,7 @@ import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.drawHorizontalDivider
 import com.primex.material2.OutlinedButton
+import kotlinx.coroutines.launch
 import kotlin.math.ln
 
 private const val TAG = "Home"
@@ -323,6 +328,39 @@ fun Material(
         content = content,
         typography = Typography(Settings.DefaultFontFamily)
     )
+
+    // In this block, we handle status_bar related tasks, but this occurs only when
+    // the application is in edit mode.
+    // FixMe: Consider handling scenarios where the current activity is not MainActivity,
+    //  as preferences may depend on the MainActivity.
+    // Handle SystemBars logic.
+    val view = LocalView.current
+    // Early return
+    if (view.isInEditMode)
+        return@Material
+    // FixMe: It seems sideEffect is not working for hideSystemBars.
+    val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
+    val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
+    val color = when {
+        colorSystemBars -> Material.colors.primary
+        darkTheme -> DarkSystemBarsColor
+        else -> LightSystemBarsColor
+    }
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.navigationBarColor = color.toArgb()
+        window.statusBarColor = color.toArgb()
+        WindowCompat
+            .getInsetsController(window, view)
+            .isAppearanceLightStatusBars = !darkTheme && !colorSystemBars
+        //
+        if (hideStatusBar)
+            WindowCompat.getInsetsController(window, view)
+                .hide(WindowInsetsCompat.Type.statusBars())
+        else
+            WindowCompat.getInsetsController(window, view)
+                .show(WindowInsetsCompat.Type.statusBars())
+    }
 }
 
 /**
@@ -409,8 +447,7 @@ private fun NavGraph(
 
         composable(Console.route) {
             val viewModel = hiltViewModel<ConsoleViewModel>()
-            val navController = LocalNavController.current
-            Console(state = viewModel, progress = 1.0f, onRequestToggle = navController::navigateUp)
+            Console(state = viewModel)
         }
     }
 }
@@ -418,7 +455,10 @@ private fun NavGraph(
 private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
 private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
 
-private val hiddenDestRotes = arrayOf(
+/**
+ * The array of routes that are required to hide the miniplayer.
+ */
+private val HIDDEN_DEST_ROUTES = arrayOf(
     Console.route,
     PERMISSION_ROUTE,
     AudioFx.route
@@ -431,15 +471,16 @@ fun Home(
     val isDark = isPrefDarkTheme()
     Material(isDark) {
         val navController = rememberNavController()
+        val activity = LocalView.current.context as MainActivity
+        val remote = activity.remote
         CompositionLocalProvider(LocalNavController provides navController) {
             val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
-            val remote = (LocalView.current.context as MainActivity).remote
             val facade = LocalSystemFacade.current
             val isPlayerLoaded by remote.loaded.collectAsState(initial = false)
             Scaffold2(
                 vertical = true, // currently don't pass value of vertical unless layout is ready.
                 channel = channel,
-                hideNavigationBar = !isPlayerLoaded || navController.current in hiddenDestRotes,
+                hideNavigationBar = !isPlayerLoaded || navController.current in HIDDEN_DEST_ROUTES,
                 progress = facade.inAppUpdateProgress,
                 modifier = Modifier.background(Material.colors.background),
                 content = { NavGraph(Modifier.drawHorizontalDivider(color = Material.colors.onSurface)) },
@@ -449,33 +490,38 @@ fun Home(
                 }
             )
         }
-        // Handle SystemBars logic.
-        val view = LocalView.current
-        // Early return
-        if (view.isInEditMode)
-            return@Material
-        // FixMe: It seems sideEffect is not working for hideSystemBars.
-        val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
-        val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
-        val color = when {
-            colorSystemBars -> Material.colors.primary
-            isDark -> DarkSystemBarsColor
-            else -> LightSystemBarsColor
-        }
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.navigationBarColor = color.toArgb()
-            window.statusBarColor = color.toArgb()
-            WindowCompat
-                .getInsetsController(window, view)
-                .isAppearanceLightStatusBars = !isDark && !colorSystemBars
-            //
-            if (hideStatusBar)
-                WindowCompat.getInsetsController(window, view)
-                    .hide(WindowInsetsCompat.Type.statusBars())
-            else
-                WindowCompat.getInsetsController(window, view)
-                    .show(WindowInsetsCompat.Type.statusBars())
+
+        // In this section, we handle incoming intents.
+        // Intents can be of two types: video or audio. If it's a video intent,
+        // we navigate to the video screen; otherwise, we play the media item in the MiniPlayer.
+        // In both cases, we trigger a remote action to initiate playback.
+        // Create a coroutine scope to handle asynchronous operations.
+        val scope = rememberCoroutineScope()
+        // Construct the DisposableEffect and listen for events.
+        DisposableEffect(Unit) {
+            // Create a listener for observing changes in incoming intents.
+            val listener = listener@{ intent: Intent ->
+                // Check if the intent action is not ACTION_VIEW; if so, return.
+                if (intent.action != Intent.ACTION_VIEW)
+                    return@listener
+                // Obtain the URI from the incoming intent data.
+                val data = intent.data ?: return@listener
+                // Use a coroutine to handle the media item construction and playback.
+                scope.launch {
+                    // Construct a MediaItem using the obtained parameters.
+                    // (Currently, details about playback queue setup are missing.)
+                    val item = MediaItem(activity, data)
+                    // Play the media item by replacing the existing queue.
+                    activity.remote.set(listOf(item))
+                    activity.remote.play()
+                }
+                // If the intent is related to video content, navigate to the video player screen.
+                navController.navigate(Console.direction())
+            }
+            // Register the intent listener with the activity.
+            activity.addOnNewIntentListener(listener)
+            // Unregister the intent listener when this composable is disposed.
+            onDispose { activity.removeOnNewIntentListener(listener) }
         }
     }
 }

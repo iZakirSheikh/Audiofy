@@ -1,21 +1,27 @@
 package com.prime.media.core.playback
 
+import android.content.Context
 import android.graphics.Typeface
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StyleSpan
 import androidx.annotation.OptIn
+import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.*
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import com.prime.media.R
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.db.Playlists
 import com.prime.media.core.util.Member
+import java.io.File
+import java.io.FileOutputStream
 
 private const val TAG = "Delegates"
 
@@ -84,7 +90,7 @@ val MediaItem.toMediaSource
  *
  * FixMe: Extracts array from player using reflection.
  */
-val Player. orders: IntArray
+val Player.orders: IntArray
     @OptIn(androidx.media3.common.util.UnstableApi::class)
     get() {
         require(this is ExoPlayer)
@@ -225,3 +231,86 @@ suspend fun Playlists.save(items: List<MediaItem>) {
     insert(members)
 }
 
+/**
+ * A function that returns the file name from a given URI
+ * @param context The context object to access the content resolver
+ * @param uri The URI of the file
+ * @return The file name as a string, or null if not found
+ */
+private fun Context.fileName(uri: Uri): String? {
+    // Use DocumentFile to get the display name
+    val displayName = DocumentFile.fromSingleUri(this, uri)?.name
+    // Return the display name if not null
+    if (displayName != null) {
+        return displayName
+    }
+    // Use ContentResolver to query the content provider
+    val cursor = this.contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        // Move to the first row
+        if (it.moveToFirst()) {
+            // Try to get the display name column
+            val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (displayNameIndex != -1) {
+                // Return the display name value
+                return it.getString(displayNameIndex)
+            }
+            // Try to get the data column
+            val dataIndex = it.getColumnIndex(MediaStore.MediaColumns.DATA)
+            if (dataIndex != -1) {
+                // Return the last segment of the data value
+                return it.getString(dataIndex).substringAfterLast('/')
+            }
+        }
+    }
+    // Use File to get the path and name
+    val fileName = File(uri.path ?: return null).name
+    // Return the file name if not empty
+    if (fileName.isNotEmpty()) {
+        return fileName
+    }
+    // Return null if no file name found
+    return null
+}
+
+/**
+ * Constructs a new [MediaItem] from the provided [uri].
+ *
+ * This factory method creates a [MediaItem] object from the given URI by extracting
+ * media metadata such as title, subtitle, and artwork. It provides a more convenient
+ * and flexible way to create [MediaItem] instances compared to [MediaItem.fromUri],
+ * as it allows customization of metadata retrieval and caching of artwork.
+ *
+ * @param uri The URI of the media item.
+ * @return A [MediaItem] object representing the media item.
+ */
+fun MediaItem(context: Context, uri: Uri): MediaItem {
+    val retriever = MediaMetadataRetriever().also {
+        it.setDataSource(context, uri)
+    }
+    // Obtain the URI of the image obtained from the data in the above intent
+    // and save it in the cache.
+    val imageUri = com.primex.core.runCatching(TAG) {
+        val cacheFile = File(context.cacheDir, "tmp_artwork.png")
+        // This action will delete the old file, if it exists.
+        // It's safe to perform this operation even if the file doesn't exist.
+        // This step is necessary because occasionally, a track may lack album art,
+        // and the system may load previously cached art, leading to the need for an update.
+        cacheFile.delete()
+        val bytes = retriever.embeddedPicture ?: return@runCatching null
+        val fos = FileOutputStream(cacheFile)
+        fos.write(bytes)
+        fos.close()
+        Uri.fromFile(cacheFile)
+    }
+
+    // Obtain title and subtitle
+    val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+        ?: context.fileName(uri) ?: context.getString(R.string.unknown)
+    val subtitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+        ?: context.getString(R.string.unknown)
+
+    // Construct a MediaItem using the obtained parameters.
+    // (Currently, details about playback queue setup are missing.)
+    return MediaItem(uri, title, subtitle, artwork = imageUri)
+}

@@ -51,4 +51,9 @@ object ActivityModules {
     @ActivityRetainedScoped
     @Provides
     fun toaster() = Channel()
+
+    @ActivityRetainedScoped
+    @Provides
+    fun systemDelegate(@ApplicationContext ctx: Context, channel: Channel): SystemDelegate =
+        SystemDelegate(ctx, channel)
 }
