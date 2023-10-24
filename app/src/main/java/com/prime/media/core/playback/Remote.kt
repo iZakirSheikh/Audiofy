@@ -190,6 +190,25 @@ interface Remote {
     val nextIndex: Int
 
     /**
+    * Provides access to the [Player] responsible for media playback.
+    * @see Player
+    */
+    val player: Player?
+
+    /**
+     * Indicates whether the current media item is seekable or not.
+     * A seekable media item allows users to jump to specific positions during playback.
+     */
+    val isCurrentMediaItemSeekable: Boolean
+
+    /**
+     * Indicates whether the current media item is a video.
+     * If `true`, the current media item is a video; otherwise, it's not.
+     */
+    val isCurrentMediaItemVideo: Boolean
+
+
+    /**
      * Starts playing the underlying service.
      *
      * @param playWhenReady Pass true to start playback immediately, or false to start in a paused state.

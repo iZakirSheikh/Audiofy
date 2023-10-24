@@ -356,8 +356,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Manually handle decor.
         // I think I am handling this in AppTheme Already.
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // pass intent to onNewIntent
-        onNewIntent(intent)
+
         // Set the content.
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)

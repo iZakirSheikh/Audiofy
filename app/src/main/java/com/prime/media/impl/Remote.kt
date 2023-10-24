@@ -115,6 +115,14 @@ private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
             browser?.setPlaybackSpeed(value)
         }
 
+    override val isCurrentMediaItemSeekable: Boolean
+        get() = browser?.isCurrentMediaItemSeekable ?: false
+    override val player: Player?
+        get() = browser
+    override val isCurrentMediaItemVideo: Boolean
+        get() = player?.currentTracks?.groups?.find { it.type == C.TRACK_TYPE_VIDEO } != null
+
+
     @OptIn(DelicateCoroutinesApi::class)
     override val events: Flow<Player.Events?> =
         callbackFlow {

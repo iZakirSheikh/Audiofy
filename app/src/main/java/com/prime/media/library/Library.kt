@@ -3,6 +3,9 @@
 
 package com.prime.media.library
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -35,6 +38,7 @@ import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlaylistPlay
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -62,6 +66,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
+import com.prime.media.console.Console
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.Banner
@@ -304,9 +309,13 @@ private inline fun Shortcut(
     }
 }
 
+private val PickVideoRequest =
+    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+
 context(LazyListScope)
 @OptIn(ExperimentalLayoutApi::class)
 private fun Shortcuts(
+    state: Library,
     modifier: Modifier = Modifier
 ) {
     item(contentType = "content_type_shortcuts") {
@@ -348,6 +357,21 @@ private fun Shortcuts(
                     icon = Icons.Outlined.PlaylistPlay,
                     label = textResource(id = R.string.playlists)
                 )
+
+                val context = LocalContext.current
+                val navController = LocalNavController.current
+                val launcher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+                        if (it == null) return@rememberLauncherForActivityResult
+                        state.onRequestPlayVideo(it, context)
+                        navController.navigate(Console.direction())
+                    }
+                Shortcut(
+                    icon = Icons.Outlined.VideoLibrary,
+                    label = "Videos",
+                    onAction = { launcher.launch(PickVideoRequest) }
+                )
+
             }
         )
     }
@@ -572,6 +596,7 @@ fun Library(
                 )
 
                 Shortcuts(
+                    state = viewModel,
                     Modifier
                         .offset(y = OFFSET_Y_SEARCH)
                         .fillMaxWidth()
