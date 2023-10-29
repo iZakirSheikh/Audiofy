@@ -28,8 +28,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 27
         targetSdk = 34
-        versionCode = 59
-        versionName = "2.6.3"
+        versionCode = 60
+        versionName = "2.7.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -75,7 +75,7 @@ android {
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
-    val compose_version = "1.6.0-alpha07"
+    val compose_version = "1.6.0-alpha08"
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
     implementation("androidx.compose.animation:animation-graphics:$compose_version")
@@ -98,7 +98,7 @@ dependencies {
     // Splash Screen API
     implementation("androidx.core:core-splashscreen:1.0.1")
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation(platform("com.google.firebase:firebase-bom:32.4.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     // WindowSizeClasses
@@ -120,13 +120,13 @@ dependencies {
     // Compose navigation
     implementation("androidx.navigation:navigation-compose:2.7.4")
     // Compose Downloadable fonts
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.3")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     // Hilt
     implementation("com.google.dagger:hilt-android:2.48.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     // Room Database
-    val room_version = "2.6.0-rc01"
+    val room_version = "2.6.0"
     implementation("androidx.room:room-runtime:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
@@ -134,7 +134,7 @@ dependencies {
     // FixMe: Build Compose alternative; check compose marque modifier.
     implementation("com.flaviofaria:kenburnsview:1.0.7")
     //Wavy Slider
-    implementation("ir.mahozad.multiplatform:wavy-slider:0.0.1")
+    implementation("ir.mahozad.multiplatform:wavy-slider:0.3.0")
     // Constraint Layout
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     val media3_version = "1.1.1"

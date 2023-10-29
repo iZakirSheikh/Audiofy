@@ -1,5 +1,7 @@
 package com.prime.media.library
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,4 +55,10 @@ interface Library {
      */
     fun onClickRecentAddedFile(id: Long)
 
+    /**
+     * Requests to play a video from a given URI using Media3 player.
+     * @param uri The URI of the video to play, such as a content URI or a web URL.
+     * @param context The context of the caller, such as an activity or a service.
+     */
+    fun onRequestPlayVideo(uri: Uri, context: Context)
 }
