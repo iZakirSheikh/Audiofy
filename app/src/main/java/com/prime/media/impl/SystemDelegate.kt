@@ -20,6 +20,9 @@ interface SystemDelegate {
     @Deprecated("Try to avoid using this.")
     val resources: Resources
 
+    @Deprecated("Try to avoid using this.")
+    val context: Context
+
     /**
      * @see getText2
      */
@@ -74,6 +77,9 @@ fun SystemDelegate(ctx: Context, channel: SnackbarHostState2) =
         @Deprecated("Try to avoid using this.")
         override val resources: Resources
             get() = ctx.resources
+
+        override val context: Context
+            get() = ctx
 
         override fun getText(id: Int): CharSequence = resources.getText2(id)
         override fun getText(id: Int, vararg args: Any) =

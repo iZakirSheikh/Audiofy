@@ -7,7 +7,10 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -19,15 +22,20 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
+import androidx.compose.material.NavigationRail
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.outlined.ReplyAll
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -44,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -52,6 +61,7 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.playback.artworkUri
@@ -60,6 +70,7 @@ import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.prime.media.small2
 import com.prime.media.surfaceColorAtElevation
+import com.primex.core.rotateTransform
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -183,6 +194,58 @@ private fun TopAppBar(
     )
 }
 
+@Composable
+fun SideBar(
+    state: PlayingQueue,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NavigationRail(
+        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
+        contentColor = Material.colors.onSurface,
+        elevation = 0.dp,
+        modifier = modifier
+    ){
+        IconButton(
+            onClick = onDismissRequest,
+            imageVector = Icons.AutoMirrored.Outlined.ReplyAll,
+            contentDescription = null
+        )
+
+        Label(
+            text = stringResource(R.string.playing_queue),
+            style = Material.typography.body2,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(vertical = ContentPadding.small)
+                .rotateTransform(false)
+                .weight(1f)
+        )
+
+        val ctx = LocalContext.current
+        IconButton(
+            onClick = { state.clear(ctx)},
+            imageVector = Icons.Outlined.ClearAll,
+            contentDescription = null,
+        )
+
+        val shuffle = state.shuffle
+        LottieAnimButton(
+            id = R.raw.lt_shuffle_on_off,
+            onClick = { state.toggleShuffle()},
+            atEnd = !shuffle,
+            progressRange = 0f..0.8f,
+            scale = 1.5f
+        )
+
+        Icon(
+            imageVector = Icons.Outlined.Queue,
+            contentDescription = null,
+            modifier = Modifier
+        )
+    }
+}
+
 context(LazyListScope)
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 @OptIn(ExperimentalFoundationApi::class)
@@ -205,7 +268,6 @@ private inline fun ListHeader(
         )
     }
 }
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -283,7 +345,43 @@ fun Content(
     }
 }
 
-// TODO: Maybe Consider moving away from using Dialog; just provide layout.
+@Composable
+private fun Portrait(
+    state: PlayingQueue,
+    onDismissRequest: () -> Unit
+) {
+    Scaffold(
+        topBar = { TopAppBar(state = state, onDismissRequest = onDismissRequest) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.60f) // different when width > height
+            .clip(Material.shapes.small2),
+        // content.
+        content = {
+            Content(
+                resolver = state,
+                modifier = Modifier.padding(it)
+            )
+        },
+        backgroundColor = Material.colors.surface,
+    )
+}
+
+@Composable
+fun Landscape(
+    state: PlayingQueue,
+    onDismissRequest: () -> Unit
+) {
+    Surface(shape = Material.shapes.small2) {
+        Row() {
+            SideBar(state = state, onDismissRequest = onDismissRequest)
+            Content(
+                resolver = state,
+            )
+        }
+    }
+}
+
 @Composable
 @NonRestartableComposable
 fun PlayingQueue(
@@ -295,21 +393,11 @@ fun PlayingQueue(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         content = {
-            Scaffold(
-                topBar = { TopAppBar(state = state, onDismissRequest = onDismissRequest) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.60f) // different when width > height
-                    .clip(Material.shapes.small2),
-                // content.
-                content = {
-                    Content(
-                        resolver = state,
-                        modifier = Modifier.padding(it)
-                    )
-                },
-                backgroundColor = Material.colors.surface,
-            )
+            val size = LocalWindowSizeClass.current
+            if (size.widthSizeClass == WindowWidthSizeClass.Compact)
+                Portrait(state = state, onDismissRequest)
+            else
+                Landscape(state = state, onDismissRequest)
         }
     )
 }
