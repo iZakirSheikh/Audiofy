@@ -110,7 +110,7 @@ private inline fun Layout(
         // start the timer.
         TextButton(
             label = textResource(id = R.string.start),
-            onClick = { onValueChange(System.currentTimeMillis() + (value.roundToInt() * 60 * 1_000L)) })
+            onClick = { onValueChange((value.roundToInt() * 60 * 1_000L)) })
     }
 }
 

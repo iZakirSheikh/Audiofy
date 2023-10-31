@@ -13,7 +13,7 @@ interface PlayingQueue {
      * The playing queue.
      */
     val queue: Flow<List<MediaItem>>
-    val shuffle: Boolean
+    var shuffle: Boolean
     val current: MediaItem?
     val playing: Boolean
 

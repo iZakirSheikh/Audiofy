@@ -343,9 +343,6 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 // just remove it.
                 if (currentMediaItem?.mediaUri?.isThirdPartyUri == true)
                     player.removeMediaItem(index)
-
-                // Prepare the player at current media item index.
-                player.prepare()
             }
         }
     }

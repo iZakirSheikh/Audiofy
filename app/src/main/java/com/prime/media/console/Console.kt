@@ -1,5 +1,8 @@
 @file:Suppress(
-    "InfiniteTransitionLabel", "InfinitePropertiesLabel", "AnimatedContentLabel", "CrossfadeLabel"
+    "InfiniteTransitionLabel",
+    "InfinitePropertiesLabel",
+    "AnimatedContentLabel",
+    "CrossfadeLabel"
 )
 
 package com.prime.media.console
@@ -47,23 +50,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.prime.media.Material
 import com.prime.media.R
@@ -72,14 +79,16 @@ import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.AnimatedIconButton
-import com.prime.media.core.compose.Image
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.preference
+import com.prime.media.core.compose.resources
 import com.prime.media.core.compose.shape.CompactDisk
+import com.prime.media.core.playback.subtitle
+import com.prime.media.core.playback.title
 import com.prime.media.darkShadowColor
 import com.prime.media.dialog.PlaybackSpeedDialog
 import com.prime.media.dialog.PlayingQueue
@@ -90,18 +99,19 @@ import com.prime.media.outline
 import com.prime.media.settings.Settings
 import com.primex.core.rememberState
 import com.primex.core.rotateTransform
-import com.primex.core.withSpanStyle
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton2
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "Console"
 
-private inline val MediaItem.fTitle get() = mediaMetadata.title?.toString()
-private inline val MediaItem.fSubtitle get() = mediaMetadata.subtitle?.toString()
+// Extensions | Helpers
+private inline val Console.title get() = current?.title?.toString()
+private inline val Console.subtitle get() = current?.subtitle?.toString()
 
 /**
  * Shows or hides the system bars, such as the status bar and the navigation bar.
@@ -143,11 +153,11 @@ private val ROTATING_DISK_BORDER_STROKE = 8.dp
  */
 @Composable
 private fun RotatingDisk(
-    data: Any?,
+    value: ImageBitmap?,
     modifier: Modifier = Modifier,
     isRotating: Boolean = false
 ) {
-// Create an InfiniteTransition object
+    // Create an InfiniteTransition object
     val infiniteTransition = rememberInfiniteTransition()
     // Create an Animatable value for the rotation angle
     val angle by infiniteTransition.animateFloat(
@@ -160,8 +170,9 @@ private fun RotatingDisk(
     )
     val imageShape = CompactDisk
     val style = Material.typography.h3
-    Image(
-        data = data,
+
+    Crossfade(
+        targetState = value,
         modifier = Modifier
             .graphicsLayer {
                 scale = 0.8f
@@ -176,8 +187,25 @@ private fun RotatingDisk(
             }
             .background(Material.colors.surface)
             .border(ROTATING_DISK_BORDER_STROKE, Color.White, imageShape)
-            .then(modifier),
-    )
+            .then(modifier)
+    ) { res ->
+        if (res == null)
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.default_art),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            )
+        else
+            androidx.compose.foundation.Image(
+                bitmap = res,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            )
+    }
 }
 
 private val RoundedCornerShape_24 = RoundedCornerShape(24)
@@ -219,7 +247,7 @@ private fun NeumorphicPlayButton(
  * are handled internally by this widget, so the user does not need to implement any logic for that.
  */
 @Composable
-private inline fun MoreIconButton(
+private inline fun More(
     state: Console,
     modifier: Modifier = Modifier
 ) {
@@ -239,7 +267,7 @@ private inline fun MoreIconButton(
  * An Icon Button That houses the logic for displaying/hiding the [PlayingQueue]
  */
 @Composable
-private inline fun QueueIconButton(
+private inline fun Queue(
     state: Console,
     modifier: Modifier = Modifier
 ) {
@@ -265,7 +293,7 @@ private inline fun QueueIconButton(
  * An IconButton That displays the queue.
  */
 @Composable
-private inline fun SpeedIconButton(
+private inline fun PlayingSpeed(
     state: Console,
     modifier: Modifier = Modifier
 ) {
@@ -288,7 +316,7 @@ private inline fun SpeedIconButton(
 }
 
 @Composable
-private inline fun SleepAfterIconButton(
+private inline fun SleepAfter(
     state: Console,
     modifier: Modifier = Modifier
 ) {
@@ -297,7 +325,7 @@ private inline fun SleepAfterIconButton(
         expanded = showSleepAfter,
         onValueChange = {
             if (it != -2L)
-                state.setSleepAfter(it)
+                state.sleepAfterMills = it
             showSleepAfter = false
         }
     )
@@ -323,27 +351,6 @@ private inline fun SleepAfterIconButton(
                 }
             }
         },
-    )
-}
-
-@Composable
-private inline fun Position(
-    mills: Long,
-    duration: Long,
-    modifier: Modifier = Modifier
-) {
-    val color = LocalContentColor.current
-    Label(
-        text = buildAnnotatedString {
-            append(formatElapsedTime(mills / 1000))
-            append(" - ")
-            withSpanStyle(color = color.copy(ContentAlpha.disabled)) {
-                append(formatElapsedTime(duration / 1000))
-            }
-        },
-        modifier = modifier,
-        style = Material.typography.caption2,
-        fontWeight = FontWeight.Bold
     )
 }
 
@@ -391,22 +398,22 @@ private fun Controls(
 
         // Artwork
         RotatingDisk(
-            data = state.artwork,
+            value = state.artwork,
             modifier = Modifier.layoutId(R.id.np_artwork),
             isRotating = state.playing
         )
 
-        // Position
-        Position(
-            mills = state.position,
-            duration = state.duration,
-            modifier = Modifier.layoutId(R.id.np_timer)
+        //Timer
+        Label(
+            text = state.position(LocalContentColor.current.copy(ContentAlpha.disabled)),
+            modifier = Modifier.layoutId(R.id.np_timer),
+            style = Material.typography.caption2,
+            fontWeight = FontWeight.Bold
         )
 
         //Subtitle
-        val current = state.current
         Label(
-            text = current?.fSubtitle ?: stringResource(id = R.string.unknown),
+            text = state.subtitle ?: stringResource(id = R.string.unknown),
             style = Material.typography.caption2,
             modifier = Modifier.layoutId(R.id.np_subtitle),
             color = onColor
@@ -414,7 +421,7 @@ private fun Controls(
 
         // Title
         Label(
-            text = current?.fTitle ?: stringResource(id = R.string.unknown),
+            text = state.title ?: stringResource(id = R.string.unknown),
             fontSize = 44.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -439,12 +446,12 @@ private fun Controls(
         // The Wavy has minSDK of 24; currently don't know if it might trigger some error below API 24.
         // So be carefully until I found some new solution.
         WavySlider(
-            value = state.progress,
-            onValueChange = { state.seekTo(it) },
+            value = if (state.isSeekable) state.progress else 1f,
+            onValueChange = { state.progress = it },
             modifier = Modifier.layoutId(R.id.np_slider),
             waveLength = 75.dp,
             waveHeight = 60.dp,
-            shouldFlatten = true
+            shouldFlatten = true,
         )
 
         val controller = LocalNavController.current
@@ -474,7 +481,7 @@ private fun Controls(
         )
 
         // Skip to Prev
-        var enabled = if (current != null) !state.isFirst else false
+        var enabled = !state.isFirst
         IconButton(
             onClick = { state.skipToPrev(); facade.launchReviewFlow() },
             painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowLeft),
@@ -485,7 +492,7 @@ private fun Controls(
         )
 
         // Skip to Next
-        enabled = if (current != null) !state.isLast else false
+        enabled = !state.isLast
         IconButton(
             onClick = { state.skipToNext(); facade.launchReviewFlow() },
             painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowRight),
@@ -498,7 +505,7 @@ private fun Controls(
         // SeekBack_10
         enabled = playing
         IconButton(
-            onClick = { state.replay() },
+            onClick = { state.seek(mills = -TimeUnit.SECONDS.toMillis(10)) },
             imageVector = Icons.Outlined.Replay10,
             contentDescription = null,
             modifier = Modifier.layoutId(R.id.np_seek_back_10),
@@ -508,7 +515,7 @@ private fun Controls(
 
         // SeekForward_30
         IconButton(
-            onClick = { state.forward() },
+            onClick = { state.seek(mills = TimeUnit.SECONDS.toMillis(30)) },
             imageVector = Icons.Outlined.Forward30,
             contentDescription = null,
             modifier = Modifier.layoutId(R.id.np_seek_forward_30),
@@ -518,13 +525,22 @@ private fun Controls(
 
         // Option Row
         // Playing Queue / Option 2 | Option Row
-        QueueIconButton(state = state, modifier = Modifier.layoutId(R.id.np_option_2))
+        Queue(
+            state = state,
+            modifier = Modifier.layoutId(R.id.np_option_2)
+        )
 
         // Playing Speed | Option 3
-        SpeedIconButton(state = state, Modifier.layoutId(R.id.np_option_3))
+        PlayingSpeed(
+            state = state,
+            Modifier.layoutId(R.id.np_option_3)
+        )
 
         // SleepAfter | Option 4
-        SleepAfterIconButton(state = state, Modifier.layoutId(R.id.np_option_4))
+        SleepAfter(
+            state = state,
+            Modifier.layoutId(R.id.np_option_4)
+        )
 
         // Shuffle | Option 5
         val shuffle = state.shuffle
