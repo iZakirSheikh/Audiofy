@@ -1,10 +1,12 @@
 package com.prime.media.core.compose
 
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.compose.material.MaterialTheme
@@ -16,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.Player
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import com.flaviofaria.kenburnsview.KenBurnsView
 import com.flaviofaria.kenburnsview.TransitionGenerator
 
@@ -88,4 +93,37 @@ fun Seekbar(
             layer.getDrawable(0).setTint(color.copy(0.45f).toArgb())
         }
     }
+}
+
+
+/**
+ * A wrapper around Media3 [PlayerView]
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Composable
+fun PlayerView(
+    player: Player?,
+    modifier: Modifier = Modifier,
+    resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_FIT
+) {
+    AndroidView(
+        modifier = modifier,
+        factory = {
+            PlayerView(it).apply {
+                hideController()
+                useController = false
+                this.player = player
+                this.resizeMode = resizeMode
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                clipToOutline = true
+                // Set the Background Color of the player as Solid Black Color.
+                setBackgroundColor(Color.Black.toArgb())
+                keepScreenOn = true
+            }
+        },
+        update = { it.resizeMode = resizeMode; it.player = player },
+        onRelease = {it.player = null}
+    )
 }

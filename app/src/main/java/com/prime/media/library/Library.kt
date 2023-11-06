@@ -309,8 +309,7 @@ private inline fun Shortcut(
     }
 }
 
-private val PickVideoRequest =
-    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+private val PickVideoRequest = ActivityResultContracts.OpenDocument()
 
 context(LazyListScope)
 @OptIn(ExperimentalLayoutApi::class)
@@ -361,7 +360,7 @@ private fun Shortcuts(
                 val context = LocalContext.current
                 val navController = LocalNavController.current
                 val launcher =
-                    rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+                    rememberLauncherForActivityResult(PickVideoRequest) {
                         if (it == null) return@rememberLauncherForActivityResult
                         state.onRequestPlayVideo(it, context)
                         navController.navigate(Console.direction())
@@ -369,7 +368,7 @@ private fun Shortcuts(
                 Shortcut(
                     icon = Icons.Outlined.VideoLibrary,
                     label = "Videos",
-                    onAction = { launcher.launch(PickVideoRequest) }
+                    onAction = { launcher.launch(arrayOf("video/*")) }
                 )
 
             }
