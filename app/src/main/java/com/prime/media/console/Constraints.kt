@@ -3,11 +3,9 @@ package com.prime.media.console
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
-import androidx.constraintlayout.compose.ConstraintLayoutBaseScope
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.HorizontalChainReference
 import androidx.constraintlayout.compose.HorizontalChainScope
 import androidx.constraintlayout.compose.Visibility
 import com.prime.media.R
@@ -283,5 +281,249 @@ private val AudioLandscapeConstraintSet = ConstraintSet {
     constrain(OPTION_6){
         top.linkTo(OPTION_2.top)
         bottom.linkTo(OPTION_2.bottom)
+    }
+}
+
+val Console.Companion.VideoPortraitConstraintSet get() = com.prime.media.console.VideoPortraitConstraintSet
+private val VideoPortraitConstraintSet = ConstraintSet {
+    // Title row
+    constrain(TITLE, CLOSE, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+    }
+
+    // title
+    constrain(TITLE){
+        width = Dimension.fillToConstraints
+        top.linkTo(CLOSE.top)
+        bottom.linkTo(CLOSE.bottom)
+        translationX = -5.dp
+    }
+
+    // Artwork Row
+    constrain(ARTWORK){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+        top.linkTo(SIGNATURE.bottom)
+        bottom.linkTo(TIMER.top)
+        width = Dimension.fillToConstraints
+        height = Dimension.ratio("1:1")
+        visibility = Visibility.Gone
+    }
+
+
+    constrain(SIGNATURE){
+        visibility = Visibility.Gone
+    }
+
+    constrain(TIMER){
+        start.linkTo(TITLE.start)
+        top.linkTo(TITLE.bottom)
+    }
+    constrain(SUBTITLE){
+        start.linkTo(TIMER.end, ContentPadding.small)
+        bottom.linkTo(TIMER.bottom)
+        end.linkTo(TITLE.end)
+        width = Dimension.percent(0.6f)
+    }
+
+    // Playback Controls
+    constrain(SEEK_BACK_10, SKIP_TO_PREV, PLAY_TOGGLE, SKIP_TO_NEXT, SEEK_FORWARD_30, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+    }
+    constrain(PLAY_TOGGLE){
+        top.linkTo(parent.top)
+        bottom.linkTo(parent.bottom)
+    }
+    constrain(SEEK_BACK_10){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SKIP_TO_PREV){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SKIP_TO_NEXT){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SEEK_FORWARD_30){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+
+
+    // slider
+    constrain(OPTION_0, SLIDER, OPTION_1, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.xLarge)
+        end.linkTo(parent.end, ContentPadding.xLarge)
+    }
+
+    // Slider Row
+    constrain(SLIDER){
+        bottom.linkTo(parent.bottom)
+        width = Dimension.fillToConstraints
+    }
+    constrain(OPTION_0){
+        top.linkTo(SLIDER.top)
+        bottom.linkTo(SLIDER.bottom)
+    }
+
+    constrain(OPTION_1){
+        top.linkTo(SLIDER.top)
+        bottom.linkTo(SLIDER.bottom)
+    }
+
+    //options
+    constrain(OPTION_2, OPTION_3, OPTION_4, OPTION_5, OPTION_6, chainStyle = ChainStyle.Packed(1.0f)){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(OPTION_1.end)
+    }
+    constrain(OPTION_2){
+        bottom.linkTo(SLIDER.top)
+    }
+    constrain(OPTION_3){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_4){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_5){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_6){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+}
+
+val Console.Companion.VideoLandscapeConstraintSet get() = com.prime.media.console.VideoLandscapeConstraintSet
+private val VideoLandscapeConstraintSet = ConstraintSet {
+
+    constrain(CLOSE, TITLE, OPTION_2, OPTION_3, OPTION_4, OPTION_5, OPTION_6, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+    }
+
+    constrain(CLOSE){
+        top.linkTo(parent.top)
+    }
+
+    constrain(TITLE){
+        // top.linkTo(CLOSE.top)
+        // bottom.linkTo(CLOSE.bottom)
+        width = Dimension.fillToConstraints
+    }
+
+    val ref = createVerticalChain(TITLE, SUBTITLE, chainStyle = ChainStyle.Packed)
+    constrain(ref){
+        top.linkTo(CLOSE.top)
+        bottom.linkTo(CLOSE.bottom)
+    }
+
+
+    constrain(SUBTITLE){
+        start.linkTo(TITLE.start)
+        top.linkTo(TITLE.bottom)
+        end.linkTo(TITLE.end)
+        width = Dimension.percent(0.6f)
+    }
+
+    constrain(OPTION_2){
+        top.linkTo(CLOSE.top)
+        bottom.linkTo(CLOSE.bottom)
+    }
+
+    constrain(OPTION_3){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_4){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_5){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+    constrain(OPTION_6){
+        top.linkTo(OPTION_2.top)
+        bottom.linkTo(OPTION_2.bottom)
+    }
+
+    constrain(SIGNATURE){
+        start.linkTo(parent.start)
+        bottom.linkTo(parent.bottom)
+        visibility = Visibility.Gone
+    }
+
+    // Artwork Row
+    constrain(ARTWORK){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+        top.linkTo(SIGNATURE.bottom)
+        bottom.linkTo(TIMER.top)
+        width = Dimension.fillToConstraints
+        height = Dimension.ratio("1:1")
+        visibility = Visibility.Gone
+    }
+
+
+    // Playback Controls
+    constrain(SEEK_BACK_10, SKIP_TO_PREV, PLAY_TOGGLE, SKIP_TO_NEXT, SEEK_FORWARD_30, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.normal)
+        end.linkTo(parent.end, ContentPadding.normal)
+    }
+    constrain(PLAY_TOGGLE){
+        top.linkTo(parent.top)
+        bottom.linkTo(parent.bottom)
+    }
+    constrain(SEEK_BACK_10){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SKIP_TO_PREV){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SKIP_TO_NEXT){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+    constrain(SEEK_FORWARD_30){
+        top.linkTo(PLAY_TOGGLE.top)
+        bottom.linkTo(PLAY_TOGGLE.bottom)
+    }
+
+
+
+    // slider
+    constrain(OPTION_0, SLIDER, OPTION_1, chainStyle = ChainStyle.Packed){
+        start.linkTo(parent.start, ContentPadding.xLarge)
+        end.linkTo(parent.end, ContentPadding.xLarge)
+    }
+
+    constrain(TIMER){
+        start.linkTo(SLIDER.start)
+        bottom.linkTo(SLIDER.top)
+    }
+
+    // Slider Row
+    constrain(SLIDER){
+        bottom.linkTo(parent.bottom)
+        width = Dimension.fillToConstraints
+    }
+    constrain(OPTION_0){
+        top.linkTo(SLIDER.top)
+        bottom.linkTo(SLIDER.bottom)
+    }
+
+    constrain(OPTION_1){
+        top.linkTo(SLIDER.top)
+        bottom.linkTo(SLIDER.bottom)
     }
 }

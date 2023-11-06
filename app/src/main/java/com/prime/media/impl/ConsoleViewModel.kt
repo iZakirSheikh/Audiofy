@@ -118,6 +118,8 @@ class ConsoleViewModel @Inject constructor(
     private var _isPlaying by mutableStateOf(remote.isPlaying)
     private var _repeatMode by mutableIntStateOf(remote.repeatMode)
     private var _shuffle by mutableStateOf(remote.shuffle)
+    override var isVideo: Boolean by mutableStateOf(remote.isCurrentMediaItemVideo)
+    override var resizeMode: Int by mutableStateOf(Console.RESIZE_MORE_FIT)
 
     // simple properties
     override var artwork: ImageBitmap? by mutableStateOf(null)
@@ -125,6 +127,7 @@ class ConsoleViewModel @Inject constructor(
     override var neighbours by mutableIntStateOf(remote.neighbours)
     override val queue: Flow<List<MediaItem>> = remote.queue
     override var current: MediaItem? by mutableStateOf(remote.current)
+    override val player: Player? get() = remote.player
 
     /**
      * A coroutine job that periodically updates the state of the properties of this class based on
@@ -276,6 +279,8 @@ class ConsoleViewModel @Inject constructor(
                         onPlayerEvent(event = Player.EVENT_REPEAT_MODE_CHANGED)
                         onPlayerEvent(Player.EVENT_MEDIA_ITEM_TRANSITION)
                         onPlayerEvent(Player.EVENT_PLAY_WHEN_READY_CHANGED)
+                        onPlayerEvent(Player.EVENT_PLAY_WHEN_READY_CHANGED)
+                        onPlayerEvent(Player.EVENT_IS_PLAYING_CHANGED)
                         return@collect
                     }
                     // emit the event.
@@ -287,10 +292,8 @@ class ConsoleViewModel @Inject constructor(
     }
 
     private fun onPlayerEvent(event: Int) {
-
-        // on any call to event; update the common properties here.
+        // On any call to event; update the common properties here.
         neighbours = remote.neighbours
-
         // update individual events here.
         when (event) {
             // update the shuffle mode.
@@ -317,7 +320,7 @@ class ConsoleViewModel @Inject constructor(
                     }
                 }
             }
-
+            // Called when item is transitioned from current to another.
             Player.EVENT_MEDIA_ITEM_TRANSITION -> {
                 val mediaItem = remote.current
                 val uri = mediaItem?.mediaUri?.toString() ?: ""
@@ -336,6 +339,8 @@ class ConsoleViewModel @Inject constructor(
                     ).drawable?.toBitmap()?.asImageBitmap()
                 }
             }
+            // Called whenever some state change takes place
+            Player.EVENT_IS_PLAYING_CHANGED -> isVideo = remote.isCurrentMediaItemVideo
         }
     }
 }

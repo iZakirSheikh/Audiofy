@@ -1,11 +1,15 @@
 package com.prime.media.console
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.AnnotatedString
 import androidx.media3.common.C
+import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.AspectRatioFrameLayout.ResizeMode
 import com.prime.media.dialog.PlayingQueue
 
 @Stable
@@ -82,6 +86,21 @@ interface Console : PlayingQueue {
     val audioSessionId: Int
 
     /**
+     * Gets weather [current] is Video or just a audio.
+     */
+    val isVideo: Boolean
+
+    /**
+     * Gets/Sets The resizeMode for current Player.
+     */
+    var resizeMode: Int
+
+    /**
+     * Gets the underlying player instance.
+     */
+    val player: Player?
+
+    /**
      * Seeks the track to a new position, either by adding or subtracting [mills] from the current
      * position, or by setting it to a specific [position].
      *
@@ -127,8 +146,16 @@ interface Console : PlayingQueue {
     override val isLast: Boolean get() = neighbours <= 0
     override val playing: Boolean get() = isPlaying
 
+
     companion object {
         const val route = "route_console"
         fun direction() = route
+
+
+        @SuppressLint("UnsafeOptInUsageError")
+        const val RESIZE_MORE_FIT = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        @SuppressLint("UnsafeOptInUsageError")
+        const val RESIZE_MODE_FILL = AspectRatioFrameLayout.RESIZE_MODE_FILL
+
     }
 }

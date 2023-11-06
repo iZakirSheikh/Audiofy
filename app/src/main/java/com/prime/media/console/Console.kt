@@ -7,9 +7,11 @@
 
 package com.prime.media.console
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.text.format.DateUtils.formatElapsedTime
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -17,9 +19,12 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -32,20 +37,27 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Forward30
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.Replay10
+import androidx.compose.material.icons.outlined.ScreenRotation
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,34 +70,34 @@ import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.media3.common.Player
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.MediumDurationMills
-import com.prime.media.core.compose.AnimatedIconButton
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
+import com.prime.media.core.compose.PlayerView
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.preference
-import com.prime.media.core.compose.resources
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
@@ -97,6 +109,7 @@ import com.prime.media.effects.AudioFx
 import com.prime.media.lightShadowColor
 import com.prime.media.outline
 import com.prime.media.settings.Settings
+import com.primex.core.activity
 import com.primex.core.rememberState
 import com.primex.core.rotateTransform
 import com.primex.material2.IconButton
@@ -112,6 +125,14 @@ private const val TAG = "Console"
 // Extensions | Helpers
 private inline val Console.title get() = current?.title?.toString()
 private inline val Console.subtitle get() = current?.subtitle?.toString()
+
+/**
+ * Utility Fun that toggles [Console.resizeMode]
+ */
+private fun Console.toggleResizeMode() {
+    resizeMode =
+        if (resizeMode == Console.RESIZE_MODE_FILL) Console.RESIZE_MORE_FIT else Console.RESIZE_MODE_FILL
+}
 
 /**
  * Shows or hides the system bars, such as the status bar and the navigation bar.
@@ -360,11 +381,22 @@ private fun Controls(
     modifier: Modifier = Modifier,
     accent: Color = Material.colors.primary,
 ) {
+    val isVideo = state.isVideo
     val portrait =
         LocalConfiguration.current.orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    val constraintSet =
-        if (portrait) Console.AudioPortraitConstraintSet else Console.AudioLandscapeConstraintSet
-    ConstraintLayout(modifier = modifier, constraintSet = constraintSet) {
+    // Determine the right type of Constraints.
+    val constraints = when {
+        portrait && isVideo -> Console.VideoPortraitConstraintSet
+        portrait && !isVideo -> Console.AudioPortraitConstraintSet
+        !portrait && isVideo -> Console.VideoLandscapeConstraintSet
+        else -> Console.AudioLandscapeConstraintSet
+    }
+    // Place the items.
+    ConstraintLayout(
+        modifier = modifier,
+        constraintSet = constraints
+    ) {
+
         val onColor = LocalContentColor.current
         // Signature
         Text(
@@ -390,7 +422,10 @@ private fun Controls(
             modifier = Modifier
                 .scale(0.8f)
                 .layoutId(R.id.np_close),
-            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
+            colors = ButtonDefaults.outlinedButtonColors(
+                backgroundColor = Color.Transparent,
+                accent
+            ),
             contentPadding = PaddingValues(vertical = 16.dp),
             shape = RoundedCornerShape_24,
             content = { Icon(imageVector = Icons.Outlined.Close, contentDescription = "Collpase") },
@@ -403,7 +438,7 @@ private fun Controls(
             isRotating = state.playing
         )
 
-        //Timer
+        // Timer
         Label(
             text = state.position(LocalContentColor.current.copy(ContentAlpha.disabled)),
             modifier = Modifier.layoutId(R.id.np_timer),
@@ -411,7 +446,7 @@ private fun Controls(
             fontWeight = FontWeight.Bold
         )
 
-        //Subtitle
+        // Subtitle
         Label(
             text = state.subtitle ?: stringResource(id = R.string.unknown),
             style = Material.typography.caption2,
@@ -422,7 +457,7 @@ private fun Controls(
         // Title
         Label(
             text = state.title ?: stringResource(id = R.string.unknown),
-            fontSize = 44.sp,
+            fontSize = if (isVideo) 16.sp else 44.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
@@ -430,58 +465,10 @@ private fun Controls(
             color = onColor
         )
 
-        val favourite = state.favourite
-        val facade = LocalSystemFacade.current
-        LottieAnimButton(
-            id = R.raw.lt_twitter_heart_filled_unfilled,
-            onClick = { state.toggleFav(); facade.launchReviewFlow() },
-            modifier = Modifier.layoutId(R.id.np_option_0),
-            scale = 3.5f,
-            progressRange = 0.13f..0.95f,
-            duration = 800,
-            atEnd = !favourite
-        )
-
-        // Slider
-        // The Wavy has minSDK of 24; currently don't know if it might trigger some error below API 24.
-        // So be carefully until I found some new solution.
-        WavySlider(
-            value = if (state.isSeekable) state.progress else 1f,
-            onValueChange = { state.progress = it },
-            modifier = Modifier.layoutId(R.id.np_slider),
-            waveLength = 75.dp,
-            waveHeight = 60.dp,
-            shouldFlatten = true,
-        )
-
-        val controller = LocalNavController.current
-        // FixMe: State is not required here. implement to get value without state.
-        val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
-        IconButton(
-            onClick = {
-                if (useBuiltIn)
-                    controller.navigate(AudioFx.route)
-                else
-                    facade.launchEqualizer(state.audioSessionId)
-            },
-            imageVector = Icons.Outlined.Tune,
-            contentDescription = null,
-            modifier = Modifier.layoutId(R.id.np_option_1),
-            tint = onColor
-        )
-
-        // PlayButton
-        val playing = state.playing
-        NeumorphicPlayButton(
-            onClick = { state.togglePlay(); facade.launchReviewFlow() },
-            isPlaying = playing,
-            modifier = Modifier
-                .size(60.dp)
-                .layoutId(R.id.np_play_toggle),
-        )
 
         // Skip to Prev
         var enabled = !state.isFirst
+        val facade = LocalSystemFacade.current
         IconButton(
             onClick = { state.skipToPrev(); facade.launchReviewFlow() },
             painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowLeft),
@@ -503,7 +490,7 @@ private fun Controls(
         )
 
         // SeekBack_10
-        enabled = playing
+        enabled = state.progress != -1f
         IconButton(
             onClick = { state.seek(mills = -TimeUnit.SECONDS.toMillis(10)) },
             imageVector = Icons.Outlined.Replay10,
@@ -553,36 +540,149 @@ private fun Controls(
             scale = 1.5f
         )
 
-        // CycleRepeatMode | Option 6
-        val mode = state.repeatMode
-        AnimatedIconButton(
-            id = R.drawable.avd_repeat_more_one_all,
-            onClick = { state.cycleRepeatMode();facade.launchReviewFlow(); },
-            atEnd = mode == Player.REPEAT_MODE_ALL,
-            modifier = Modifier.layoutId(R.id.np_option_6),
-            tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
+        // More
+        More(state = state, modifier = Modifier.layoutId(R.id.np_option_6))
+
+        // Audio
+        if (!isVideo) {
+            val favourite = state.favourite
+            LottieAnimButton(
+                id = R.raw.lt_twitter_heart_filled_unfilled,
+                onClick = { state.toggleFav(); facade.launchReviewFlow() },
+                modifier = Modifier.layoutId(R.id.np_option_0),
+                scale = 3.5f,
+                progressRange = 0.13f..0.95f,
+                duration = 800,
+                atEnd = !favourite
+            )
+
+            // Slider
+            // The Wavy has minSDK of 24; currently don't know if it might trigger some error below API 24.
+            // So be carefully until I found some new solution.
+            WavySlider(
+                value = if (state.isSeekable) state.progress else 1f,
+                onValueChange = { state.progress = it },
+                modifier = Modifier.layoutId(R.id.np_slider),
+                waveLength = 75.dp,
+                waveHeight = 60.dp,
+                shouldFlatten = true,
+            )
+
+            val controller = LocalNavController.current
+            // FixMe: State is not required here. implement to get value without state.
+            val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
+            IconButton(
+                onClick = {
+                    if (useBuiltIn)
+                        controller.navigate(AudioFx.route)
+                    else
+                        facade.launchEqualizer(state.audioSessionId)
+                },
+                imageVector = Icons.Outlined.Tune,
+                contentDescription = null,
+                modifier = Modifier.layoutId(R.id.np_option_1),
+                tint = onColor
+            )
+
+            // PlayButton
+            val playing = state.playing
+            NeumorphicPlayButton(
+                onClick = { state.togglePlay(); facade.launchReviewFlow() },
+                isPlaying = playing,
+                modifier = Modifier
+                    .size(60.dp)
+                    .layoutId(R.id.np_play_toggle),
+            )
+            // return from here
+            return@ConstraintLayout
+        }
+
+        // else video
+        val playing = state.playing
+        IconButton(
+            painter = painterResource(id = if (playing) R.drawable.media3_notification_pause else R.drawable.media3_notification_play),
+            modifier = Modifier
+                .size(60.dp)
+                .layoutId(R.id.np_play_toggle)
+                .scale(2f),
+            onClick = { state.togglePlay(); facade.launchReviewFlow() }
+        )
+
+        Slider(
+            value = if (state.isSeekable) state.progress else 1f,
+            onValueChange = { state.progress = it },
+            modifier = Modifier.layoutId(R.id.np_slider),
+            colors = SliderDefaults.colors(activeTrackColor = accent, thumbColor = accent)
+        )
+
+        val activity = LocalContext.activity
+        IconButton(
+            imageVector = Icons.Outlined.ScreenRotation,
+            onClick = { activity.toggleRotation() },
+            modifier = Modifier.layoutId(R.id.np_option_1),
+        )
+
+        val resizeMode = state.resizeMode
+        IconButton(
+            imageVector = if (resizeMode == Console.RESIZE_MODE_FILL) Icons.Outlined.Fullscreen else Icons.Outlined.FitScreen,
+            onClick = state::toggleResizeMode,
+            modifier = Modifier.layoutId(R.id.np_option_0),
         )
     }
 }
 
+@SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun Console(state: Console) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background
-        Spacer(
-            Modifier
-                .background(Material.colors.background)
-                .fillMaxSize()
-        )
-
-        // The Controller
-        val contentColor = Material.colors.onSurface
-        CompositionLocalProvider(value = LocalContentColor provides contentColor) {
-            Controls(
-                state = state, modifier = Modifier
+        val showVideoPlayer = state.isVideo
+        var showController by remember { mutableStateOf(true) }
+        // Show Background or VideoPlayer
+        when (showVideoPlayer) {
+            // Background
+            false -> Spacer(
+                Modifier
+                    .background(Material.colors.background)
                     .fillMaxSize()
-                    .systemBarsPadding()
+            )
+
+            // Show Video Player.
+            else -> PlayerView(
+                player = state.player,
+                resizeMode = state.resizeMode,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput("") {
+                        detectTapGestures {
+                            showController = !showController
+                        }
+                    }
             )
         }
+        // Overlay with controller
+        // The Controller
+        val contentColor = if (showVideoPlayer) Color.White else Material.colors.onSurface
+        CompositionLocalProvider(value = LocalContentColor provides contentColor) {
+            // Always how controller if not video
+            AnimatedVisibility(
+                visible = showController || !showVideoPlayer,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Controls(
+                    state = state,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .systemBarsPadding(),
+                    accent = if (showVideoPlayer) Color.White else Material.colors.primary,
+                )
+            }
+        }
+        // only execute from here onwards if is video player
+        if (!showVideoPlayer)
+            return@Box
+        val activity = LocalContext.activity
+        val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+        controller.immersiveMode(showController)
     }
 }

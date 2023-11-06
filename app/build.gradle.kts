@@ -28,8 +28,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 27
         targetSdk = 34
-        versionCode = 61
-        versionName = "2.7.0-alpha2"
+        versionCode = 62
+        versionName = "2.7.0-alpha3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -86,7 +86,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:$compose_version")
     implementation("androidx.compose.material:material-icons-extended:$compose_version")
     // The Accompanist Libraries
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     //Lottie
     implementation("com.airbnb.android:lottie-compose:6.1.0")
@@ -98,7 +98,7 @@ dependencies {
     // Splash Screen API
     implementation("androidx.core:core-splashscreen:1.0.1")
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.4.0"))
+    implementation(platform("com.google.firebase:firebase-bom:32.5.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     // WindowSizeClasses
@@ -142,7 +142,18 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
     implementation("androidx.media3:media3-session:$media3_version")
+    // For building media playback UIs
+    implementation ("androidx.media3:media3-ui:$media3_version")
     //Tag Editor
     // Currently it only supports mp3;
     implementation("com.mpatric:mp3agic:0.9.1")
+}
+
+// TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.
+//       Please investigate if this issue is related to the Wavy Slider and resolve it. Once the main issue is fixed,
+//       consider removing this block of code.
+configurations{
+    all {
+        exclude(group = "androidx.compose.material3", module = "material3")
+    }
 }
