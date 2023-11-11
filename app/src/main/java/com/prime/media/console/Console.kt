@@ -26,7 +26,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -34,6 +36,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
@@ -42,6 +45,7 @@ import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Forward30
 import androidx.compose.material.icons.outlined.Fullscreen
@@ -51,14 +55,14 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.Replay10
 import androidx.compose.material.icons.outlined.ScreenRotation
+import androidx.compose.material.icons.outlined.Speaker
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -75,9 +79,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,18 +89,22 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.Player
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.MediumDurationMills
+import com.prime.media.core.compose.AnimatedIconButton
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.PlayerView
 import com.prime.media.core.compose.marque
+import com.prime.media.core.compose.menu.DropDownMenu2
+import com.prime.media.core.compose.menu.DropDownMenuItem2
 import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.playback.subtitle
@@ -112,6 +120,7 @@ import com.prime.media.settings.Settings
 import com.primex.core.activity
 import com.primex.core.rememberState
 import com.primex.core.rotateTransform
+import com.primex.core.withSpanStyle
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton2
@@ -272,15 +281,139 @@ private inline fun More(
     state: Console,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    IconButton(onClick = { expanded = true }, modifier = modifier) {
+    // Represents the state of all menus in this class. 0 means main menu, 1 means audio menu and 2 means
+    var expanded by remember { mutableIntStateOf(-1) }
+    IconButton(onClick = { expanded = 0 }, modifier = modifier) {
         // The icon of this item.
         Icon(
             imageVector = Icons.Outlined.MoreVert,
             contentDescription = null,
             tint = LocalContentColor.current
         )
-        // tint
+
+        // MainMenu
+        DropDownMenu2(
+            expanded = expanded == 0,
+            onDismissRequest = { expanded = -1 }
+        ) {
+            val onColor = LocalContentColor.current
+            Column {
+                // First Row
+                Row {
+                    // CycleRepeatMode | Option 6
+                    val facade = LocalSystemFacade.current
+                    val mode = state.repeatMode
+                    AnimatedIconButton(
+                        id = R.drawable.avd_repeat_more_one_all,
+                        onClick = {
+                            state.cycleRepeatMode();facade.launchReviewFlow(); expanded = -1
+                        },
+                        atEnd = mode == Player.REPEAT_MODE_ALL,
+                        modifier = Modifier.layoutId(R.id.np_option_6),
+                        tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
+                    )
+
+                    if (!state.isVideo) return@Row
+
+                    val controller = LocalNavController.current
+                    // FixMe: State is not required here. implement to get value without state.
+                    val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
+                    IconButton(
+                        onClick = {
+                            if (useBuiltIn)
+                                controller.navigate(AudioFx.route)
+                            else
+                                facade.launchEqualizer(state.audioSessionId)
+                            expanded = -1
+                        },
+                        imageVector = Icons.Outlined.Tune,
+                        contentDescription = null,
+                        modifier = Modifier.layoutId(R.id.np_option_1),
+                        tint = onColor
+                    )
+
+                    val favourite = state.favourite
+                    LottieAnimButton(
+                        id = R.raw.lt_twitter_heart_filled_unfilled,
+                        onClick = { state.toggleFav(); facade.launchReviewFlow(); expanded = -1 },
+                        modifier = Modifier.layoutId(R.id.np_option_0),
+                        scale = 3.5f,
+                        progressRange = 0.13f..0.95f,
+                        duration = 800,
+                        atEnd = !favourite
+                    )
+                }
+
+                //
+                Divider()
+
+                // Audio
+                DropDownMenuItem2(
+                    title = buildAnnotatedString {
+                        append("Audio")
+                        withSpanStyle(
+                            color = onColor.copy(ContentAlpha.disabled),
+                            fontSize = 11.sp
+                        ) {
+                            append("\n${state.currAudioTrack?.name ?: "Auto"}")
+                        }
+                    },
+                    onClick = { expanded = 1 },
+                    leading = rememberVectorPainter(image = Icons.Outlined.Speaker),
+                    enabled = state.isVideo
+                )
+
+                // Subtitle
+                DropDownMenuItem2(
+                    title = buildAnnotatedString {
+                        append("Subtitle")
+                        withSpanStyle(
+                            color = onColor.copy(ContentAlpha.disabled),
+                            fontSize = 11.sp
+                        ) {
+                            append("\n${state.currSubtitleTrack?.name ?: "Off"}")
+                        }
+                    },
+                    onClick = { expanded = 2 },
+                    leading = rememberVectorPainter(image = Icons.Outlined.ClosedCaption),
+                    enabled = state.isVideo
+                )
+            }
+        }
+
+        // Audio Menu
+        DropDownMenu2(
+            expanded = expanded == 1,
+            onDismissRequest = { expanded = 0 }
+        ) {
+            Column {
+                DropDownMenuItem2(
+                    title = "Auto",
+                    onClick = { state.currAudioTrack = null; expanded = 0 })
+                state.audios.forEach { track ->
+                    DropDownMenuItem2(
+                        title = track.name,
+                        onClick = { state.currAudioTrack = track; expanded = 0 })
+                }
+            }
+        }
+
+        // Subttile Menu
+        DropDownMenu2(
+            expanded = expanded == 2,
+            onDismissRequest = { expanded = 0 }
+        ) {
+            Column {
+                DropDownMenuItem2(
+                    title = "Off",
+                    onClick = { state.currSubtitleTrack = null; expanded = 0 })
+                state.subtiles.forEach { track ->
+                    DropDownMenuItem2(
+                        title = track.name,
+                        onClick = { state.currSubtitleTrack = track; expanded = 0 })
+                }
+            }
+        }
     }
 }
 
@@ -682,7 +815,8 @@ fun Console(state: Console) {
         if (!showVideoPlayer)
             return@Box
         val activity = LocalContext.activity
-        val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+        val controller =
+            WindowCompat.getInsetsController(activity.window, activity.window.decorView)
         controller.immersiveMode(showController)
     }
 }

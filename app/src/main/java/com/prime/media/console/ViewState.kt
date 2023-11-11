@@ -8,6 +8,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
+import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.AspectRatioFrameLayout.ResizeMode
 import com.prime.media.dialog.PlayingQueue
@@ -145,7 +146,59 @@ interface Console : PlayingQueue {
     override fun toggleShuffle() { shuffle = !shuffle }
     override val isLast: Boolean get() = neighbours <= 0
     override val playing: Boolean get() = isPlaying
+    /**
+     * Represents the list of all available audio tracks for the [current] [MediaItem].
+     *
+     * @property audios A list containing all available audio tracks.
+     *
+     * @see MediaItem
+     * @see Tracks
+     */
+    val audios: List<TrackInfo>
 
+    /**
+     * Gets or sets the currently selected audio track for the player.
+     *
+     * This property returns a [TrackInfo] object that contains the name and the params of the
+     * selected audio track, or null if no audio track is selected or the player is not ready.
+     *
+     * This property can be used to change the audio track selection parameters of the player by
+     * setting it to a [TrackInfo] object that represents the desired audio track, or null to reset
+     * the parameters to the default ones. The player will select the track that matches the
+     * override specified by the [TrackInfo] object, or the best track based on the available tracks,
+     * the track selection parameters, and the adaptive policy.
+     *
+     * Note that this property only works if the player supports changing the track selection
+     * parameters, which can be checked by calling
+     * [player.isCommandAvailable(Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS)].
+     *
+     * For example, to get the name of the current audio track, you can write:
+     * ```
+     * val currAudioTrackName = currAudioTrack?.name
+     * ```
+     *
+     * To reset the audio track selection parameters to the default ones, you can write:
+     * ```
+     * currAudioTrack = null
+     * ```
+     *
+     * @see Tracks
+     * @see TrackInfo
+     * @see TrackSelectionParameters
+     * @see TrackSelectionOverride
+     */
+    var currAudioTrack: TrackInfo?
+
+    /**
+     * @see audios
+     */
+    val subtiles: List<TrackInfo>
+
+    /**
+     * Note: passing or receiving null means disabled state.
+     * @see currAudioTrack
+     */
+    var currSubtitleTrack: TrackInfo?
 
     companion object {
         const val route = "route_console"
@@ -155,7 +208,19 @@ interface Console : PlayingQueue {
         @SuppressLint("UnsafeOptInUsageError")
         const val RESIZE_MORE_FIT = AspectRatioFrameLayout.RESIZE_MODE_FIT
         @SuppressLint("UnsafeOptInUsageError")
-        const val RESIZE_MODE_FILL = AspectRatioFrameLayout.RESIZE_MODE_FILL
-
+        const val RESIZE_MODE_FILL = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
     }
 }
+
+/**
+ * Represents a track, such as subtitle or audio, available in a [MediaItem].
+ * Used to construct a [TrackSelectionOverride] for overriding the default track in [MediaItem].
+ *
+ * @property name The name of the track.
+ * @property params The [TrackSelectionOverride] containing parameters for track selection.
+ *
+ * @see MediaItem
+ * @see TrackSelectionOverride
+ */
+data class TrackInfo(val name: String, val params: TrackSelectionOverride)
+

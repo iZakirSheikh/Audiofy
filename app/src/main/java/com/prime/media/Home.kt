@@ -267,6 +267,7 @@ private fun Permission() {
         iconResId = R.raw.lt_permission,
         title = stringResource(R.string.permission_screen_title),
         message = stringResource(R.string.permission_screen_desc),
+        vertical = LocalWindowSizeClass.current.widthSizeClass == WindowWidthSizeClass.Compact
     ) {
         OutlinedButton(
             onClick = { permission.launchPermissionRequest() },
@@ -478,11 +479,11 @@ fun Home(
             val facade = LocalSystemFacade.current
             val isPlayerLoaded by remote.loaded.collectAsState(initial = false)
             Scaffold2(
-                vertical = true, // currently don't pass value of vertical unless layout is ready.
+                // TODO: Make it dependent LocalWindowSizeClass once horizontal layout of MiniPlayer is Ready.
+                vertical = true,
                 channel = channel,
                 hideNavigationBar = !isPlayerLoaded || navController.current in HIDDEN_DEST_ROUTES,
                 progress = facade.inAppUpdateProgress,
-                modifier = Modifier.background(Material.colors.background),
                 content = { NavGraph(Modifier.drawHorizontalDivider(color = Material.colors.onSurface)) },
                 navBar = {
                     // Maybe Find Better alternative of representing this.
