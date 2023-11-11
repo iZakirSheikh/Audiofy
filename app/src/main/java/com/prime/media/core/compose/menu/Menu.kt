@@ -119,7 +119,7 @@ internal fun DropdownMenuContent(
             scaleY = scale
             this.alpha = alpha
             transformOrigin = transformOriginState.value
-        },
+        }.width(IntrinsicSize.Max),
         elevation = elevation.takeOrElse { MenuElevation },
         contentColor = contentColor,
         content = content,

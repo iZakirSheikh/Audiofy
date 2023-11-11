@@ -1,5 +1,8 @@
+@file:SuppressLint("UnsafeOptInUsageError")
+
 package com.prime.media.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
@@ -18,12 +21,16 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.ui.DefaultTrackNameProvider
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.prime.media.R
 import com.prime.media.console.Console
+import com.prime.media.console.TrackInfo
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Playback.Companion.UNINITIALIZED_SLEEP_TIME_MILLIS
@@ -103,6 +110,131 @@ private inline fun suspended(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     noinline block: suspend CoroutineScope.() -> Unit
 ) = viewModelScope.launch(context, start, block)
+
+/**
+ * @return: [List] of tracks of [type] that user can select.
+ */
+
+private fun Player?.gatherSupportedTrackInfosOfType(
+    type: Int,
+    provider: DefaultTrackNameProvider
+): List<TrackInfo> {
+    // Get the current tracks from the player or return an empty list if the player is null
+    val tracks = this?.currentTracks ?: return emptyList()
+    // Get the track groups from the tracks
+    val groups = tracks.groups
+    // Create an empty list to store the track infos
+    val list = ArrayList<TrackInfo>()
+    // Loop through the indices of the track groups
+    for (index in groups.indices) {
+        // Get the track group at the current index
+        val group = groups[index]
+        // Skip the group if it is not of the given type
+        if (group.type != type)
+            continue
+        // Loop through the tracks in the group
+        for (trackIndex in 0 until group.length) {
+            // Skip the track if it is not selected
+            if (!group.isTrackSupported(trackIndex))
+                continue
+            // Get the format of the track
+            val format = group.getTrackFormat(trackIndex)
+            // Skip the track if it has the forced selection flag
+            /*if (format.selectionFlags and C.SELECTION_FLAG_FORCED != 0) {
+                continue
+            }*/
+            // Get the name of the track from the track name provider
+            val name = provider.getTrackName(format)
+            // Create a track selection override object with the group and the track index
+            val params = TrackSelectionOverride(group.mediaTrackGroup, trackIndex)
+            // Create a track info object with the name and the params
+            list.add(TrackInfo(name, params))
+        }
+    }
+    // Return the list of track infos
+    return list
+}
+
+/**
+ * Selects the track of the given type based on the given value.
+ * If the value is null, the track selection is set to auto for audio tracks and off for text tracks.
+ * If the value is not null, the track selection is set to the specified track.
+ * This function only works if the player has the [Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS] command available.
+ * @param value The [TrackInfo] object that contains the track parameters to select, or null to clear the selection.
+ * @param type The track type, either [C.TRACK_TYPE_TEXT] or [C.TRACK_TYPE_AUDIO].
+ * @throws IllegalArgumentException If the track type is not valid.
+ */
+
+private fun Player?.select(value: TrackInfo?, type: Int) {
+    val player = this ?: return // return early if player is null
+    // check if the player can set track selection parameters
+    if (!player.isCommandAvailable(Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS)) return
+    // Get the current track selection parameters and build a new one
+    player.trackSelectionParameters =
+        player.trackSelectionParameters
+            .buildUpon()
+            .apply {
+                when{
+                    type == C.TRACK_TYPE_TEXT && value == null -> {
+                        // clear text track overrides and ignore forced text tracks
+                        clearOverridesOfType(C.TRACK_TYPE_TEXT)
+                        setIgnoredTextSelectionFlags(C.SELECTION_FLAG_FORCED.inv())
+                    }
+                    type == C.TRACK_TYPE_AUDIO && value == null -> {
+                        // clear audio track overrides and enable audio track rendering
+                        clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                            .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                    }
+                    value != null -> {
+                        // select the specified audio track and enable audio track rendering
+                        setOverrideForType(value.params)
+                        setTrackTypeDisabled(value.params.type, false)
+                    }
+                    else -> error("Track $value & $type cannot be null or invalid")
+                }
+            }.build()
+}
+
+
+/**
+ * Gets the selected track info of the given type for the player, or null if no selection is made. The null in case of audio represents auto selection and null in case of text represents off state.
+ * A selection is possible if the player has the [Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS] command available and the current tracks have a group of the given type.
+ * A selection is made if the player has a track selection override for the given type and the selected track is not disabled.
+ * @param provider The [DefaultTrackNameProvider] object that provides the name of the track based on its format.
+ * @param type The track type, either [C.TRACK_TYPE_TEXT] or [C.TRACK_TYPE_AUDIO].
+ * @return The [TrackInfo] object that contains the name and the parameters of the selected track, or null if no selection is made or possible.
+ * @throws IllegalArgumentException If the track type is not valid or null.
+ * @see Player.trackSelectionParameters
+ * @sample selectTrack
+ */
+
+private fun Player?.getSelectedTrack(
+    provider: DefaultTrackNameProvider,
+    type: Int
+): TrackInfo? {
+    val player = this ?: return null // return null if player is null
+    // check if the player can set track selection parameters
+    if (!player.isCommandAvailable(Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS)) return null
+    // get the current tracks and loop through the groups
+    val groups = player.currentTracks.groups
+    for (group in groups) {
+        // skip the group if it is not of the given type
+        if (group.type != type) continue
+        // loop through the tracks in the group
+        for (trackIndex in 0 until group.length) {
+            // skip the track if it is not selected
+            if (!group.isTrackSelected(trackIndex)) continue
+            // get the format and the name of the track
+            val format = group.getTrackFormat(trackIndex)
+            val name = provider.getTrackName(format)
+            // create a track selection override object with the group and the track index
+            val params = TrackSelectionOverride(group.mediaTrackGroup, trackIndex)
+            // create and return a track info object with the name and the params
+            return TrackInfo(name, params)
+        }
+    }
+    return null // no selection is made or possible
+}
 
 @HiltViewModel
 class ConsoleViewModel @Inject constructor(
@@ -223,6 +355,31 @@ class ConsoleViewModel @Inject constructor(
         set(value) {
             TODO("Not yet implemented")
         }
+
+    private val trackNameProvider by lazy {
+        object : DefaultTrackNameProvider(resources) {
+            override fun getTrackName(format: Format): String {
+                var trackName = super.getTrackName(format)
+                val label = format.label
+                if (!label.isNullOrBlank() && !trackName.startsWith(label)) { // HACK
+                    trackName += " - $label";
+                }
+                return trackName
+            }
+        }
+    }
+
+    override val subtiles: List<TrackInfo>
+        get() = player.gatherSupportedTrackInfosOfType(C.TRACK_TYPE_TEXT, trackNameProvider)
+    override val audios: List<TrackInfo>
+        get() = player.gatherSupportedTrackInfosOfType(C.TRACK_TYPE_AUDIO, trackNameProvider)
+    override var currAudioTrack: TrackInfo?
+        get() = player?.getSelectedTrack(trackNameProvider, C.TRACK_TYPE_AUDIO)
+        set(value) = player.select(value, C.TRACK_TYPE_AUDIO)
+
+    override var currSubtitleTrack: TrackInfo?
+        get() = player?.getSelectedTrack(trackNameProvider, C.TRACK_TYPE_TEXT)
+        set(value) = player.select(value, C.TRACK_TYPE_TEXT)
 
     override fun cycleRepeatMode(): Int = remote.cycleRepeatMode()
     override fun playTrack(uri: Uri) = remote.playTrack(uri)

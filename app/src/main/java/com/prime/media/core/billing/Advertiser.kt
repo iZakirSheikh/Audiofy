@@ -164,7 +164,7 @@ fun Advertiser(
         force: Boolean,
         action: (() -> Unit)?
     ) {
-        if (!UnityAds.isInitialized()) return
+        if (!UnityAds.isInitialized) return
         if (!isReady) {
             UnityAds.load(placementID, loadListener); return
         }

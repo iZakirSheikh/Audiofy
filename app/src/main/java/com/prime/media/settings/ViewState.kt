@@ -107,7 +107,7 @@ interface Settings : Blacklist {
         /**
          * The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
          */
-        val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", true)
+        val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
         val TRASH_CAN_ENABLED =
             booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
 

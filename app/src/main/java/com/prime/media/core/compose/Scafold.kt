@@ -4,11 +4,16 @@ import androidx.annotation.FloatRange
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -65,6 +70,8 @@ fun Scaffold2(
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     hideNavigationBar: Boolean = false,
+    background: Color = MaterialTheme.colors.background,
+    contentColor: Color = contentColorFor(backgroundColor = background),
     channel: Channel = remember(::Channel),
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
     navBar: @Composable () -> Unit,
@@ -72,7 +79,10 @@ fun Scaffold2(
     val realContent =
         @Composable {
             // The main content. Autoboxed inside surface.
-            Surface(content = content, color = Color.Transparent)
+            CompositionLocalProvider(
+                value = LocalContentColor provides contentColor,
+                content = content
+            )
             // The SnackBar
             SnackbarProvider(channel)
             // ProgressBar
@@ -101,8 +111,8 @@ fun Scaffold2(
             }
         }
     when (vertical) {
-        true -> Vertical(content = realContent, modifier = modifier.fillMaxSize())
-        else -> Horizontal(content = realContent, modifier = modifier.fillMaxSize())
+        true -> Vertical(content = realContent, modifier = modifier.background(background).fillMaxSize())
+        else -> Horizontal(content = realContent, modifier = modifier.background(background).fillMaxSize())
     }
 }
 
