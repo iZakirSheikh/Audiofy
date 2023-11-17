@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,6 +52,8 @@ import androidx.compose.material.icons.outlined.Forward30
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.Replay10
@@ -61,6 +64,7 @@ import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -79,6 +83,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -89,6 +94,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.Player
 import com.prime.media.Material
 import com.prime.media.R
@@ -152,18 +159,29 @@ private fun WindowInsetsControllerCompat.immersiveMode(value: Boolean) =
     if (value) show(WindowInsetsCompat.Type.systemBars()) else hide(WindowInsetsCompat.Type.systemBars())
 
 /**
- * Toggles the screen orientation of the activity between portrait and landscape.
- * @return the new screen orientation value.
+ * Toggles the screen orientation of the activity between portrait and sensor-based landscape modes.
+ *
+ * If the current screen orientation is unspecified, the function sets it to
+ * [ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE]. If it is already in sensor-based landscape mode,
+ * the function sets it back to [ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED].
+ *
+ * @return The new screen orientation value after the toggle.
  */
 private fun Activity.toggleRotation(): Int {
+    // Determine the new screen orientation based on the current state.
     val rotation =
-        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         else
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+    // Set the requested screen orientation to the calculated value.
     requestedOrientation = rotation
+
+    // Return the new screen orientation value.
     return rotation
 }
+
 
 /**
  * A short-hand for setting scale in android compose [GraphicsLayerScope].
@@ -341,6 +359,12 @@ private inline fun More(
                         progressRange = 0.13f..0.95f,
                         duration = 800,
                         atEnd = !favourite
+                    )
+
+                    // Lock
+                    IconButton(
+                        imageVector = Icons.Outlined.Lock,
+                        onClick = { state.visibility = Visibility.Locked() }
                     )
                 }
 
@@ -769,7 +793,7 @@ private fun Controls(
 fun Console(state: Console) {
     Box(modifier = Modifier.fillMaxSize()) {
         val showVideoPlayer = state.isVideo
-        var showController by remember { mutableStateOf(true) }
+        val showController = state.visibility.isVisible
         // Show Background or VideoPlayer
         when (showVideoPlayer) {
             // Background
@@ -787,7 +811,9 @@ fun Console(state: Console) {
                     .fillMaxSize()
                     .pointerInput("") {
                         detectTapGestures {
-                            showController = !showController
+                            val visibility = state.visibility
+                            if (visibility is Visibility.Visible) return@detectTapGestures
+                            state.visibility = visibility.toggle()
                         }
                     }
             )
@@ -817,6 +843,58 @@ fun Console(state: Console) {
         val activity = LocalContext.activity
         val controller =
             WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+
+        //Show Lock in case in progress of getting closed
+        if (state.visibility is Visibility.Locked && (state.visibility as Visibility.Locked).mills != 0L)
+            IconButton(
+                imageVector = Icons.Outlined.LockOpen,
+                onClick = { state.visibility = Visibility.Limited() },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(40.dp),
+                tint = Color.White
+            )
+
+        // Set immersive mode based on the visibility state.
         controller.immersiveMode(showController)
+
+        // Call to pause the screen when the user intends to leave the screen, and the current content is a video.
+        val owner = LocalLifecycleOwner.current
+
+        // Determine the default appearance of light system bars based on user preferences and material theme.
+        val defaultLightSystemBars =
+            preference(key = Settings.COLOR_STATUS_BAR).value && !Material.colors.isLight
+
+        // Use DisposableEffect to observe the lifecycle events of the current owner (typically the current composable).
+        DisposableEffect(key1 = owner) {
+
+            // Define a LifecycleEventObserver to pause playback when the screen is paused.
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_PAUSE) {
+                    // Pause the playback when the screen is paused.
+                    state.isPlaying = false
+                }
+            }
+
+            // Add the observer to the owner's lifecycle.
+            owner.lifecycle.addObserver(observer)
+
+            // Set the appearance of system bars to ensure visibility in a video playback scenario.
+            controller.isAppearanceLightStatusBars = false
+            controller.isAppearanceLightNavigationBars = false
+
+            // Define cleanup logic when the effect is disposed of.
+            onDispose {
+                // Remove the observer from the owner's lifecycle.
+                owner.lifecycle.removeObserver(observer)
+
+                // Restore the default color appearance of system bars based on the theme.
+                controller.isAppearanceLightStatusBars = defaultLightSystemBars
+                controller.isAppearanceLightNavigationBars = defaultLightSystemBars
+
+                // Reset the screen orientation to allow the system to manage it automatically.
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }
+        }
     }
 }

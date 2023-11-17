@@ -28,8 +28,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 27
         targetSdk = 34
-        versionCode = 63
-        versionName = "2.7.1"
+        versionCode = 64
+        versionName = "2.7.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -75,13 +75,13 @@ android {
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
-    val compose_version = "1.6.0-alpha08"
+    val compose_version = "1.6.0-beta01"
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
     implementation("androidx.compose.animation:animation-graphics:$compose_version")
     implementation("androidx.compose.material:material:$compose_version")
     // Integration with activities
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.activity:activity-compose:1.8.1")
     // Material design icons
     implementation("androidx.compose.material:material-icons-core:$compose_version")
     implementation("androidx.compose.material:material-icons-extended:$compose_version")
@@ -112,7 +112,7 @@ dependencies {
     implementation("com.google.android.play:review:$in_app_review")
     implementation("com.google.android.play:review-ktx:$in_app_review")
     // Google play in-app billing
-    val billing_version = "6.0.1"
+    val billing_version = "6.1.0"
     implementation("com.android.billingclient:billing:$billing_version")
     implementation("com.android.billingclient:billing-ktx:$billing_version")
     // Unity Ads
@@ -137,7 +137,7 @@ dependencies {
     implementation("ir.mahozad.multiplatform:wavy-slider:0.3.0")
     // Constraint Layout
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    val media3_version = "1.1.1"
+    val media3_version = "1.2.0"
     // For media playback using ExoPlayer
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     // For exposing and controlling media sessions
