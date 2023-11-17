@@ -140,12 +140,22 @@ interface Console : PlayingQueue {
     val isFirst get() = neighbours != -1 && neighbours != 2
     fun skipToPrev() = seek(position = -2)
     fun skipToNext() = seek(position = -3)
-    fun toggleFav() { favourite = !favourite }
+    fun toggleFav() {
+        favourite = !favourite
+    }
+
     val isSeekable get() = progress in 0f..1f
-    fun togglePlay() { isPlaying = !isPlaying }
-    override fun toggleShuffle() { shuffle = !shuffle }
+    fun togglePlay() {
+        isPlaying = !isPlaying
+    }
+
+    override fun toggleShuffle() {
+        shuffle = !shuffle
+    }
+
     override val isLast: Boolean get() = neighbours <= 0
     override val playing: Boolean get() = isPlaying
+
     /**
      * Represents the list of all available audio tracks for the [current] [MediaItem].
      *
@@ -200,6 +210,12 @@ interface Console : PlayingQueue {
      */
     var currSubtitleTrack: TrackInfo?
 
+    /**
+     * Gets/Sets the visibility of the Media Controller.
+     */
+    var visibility: Visibility
+
+
     companion object {
         const val route = "route_console"
         fun direction() = route
@@ -207,6 +223,7 @@ interface Console : PlayingQueue {
 
         @SuppressLint("UnsafeOptInUsageError")
         const val RESIZE_MORE_FIT = AspectRatioFrameLayout.RESIZE_MODE_FIT
+
         @SuppressLint("UnsafeOptInUsageError")
         const val RESIZE_MODE_FILL = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
     }
@@ -223,4 +240,61 @@ interface Console : PlayingQueue {
  * @see TrackSelectionOverride
  */
 data class TrackInfo(val name: String, val params: TrackSelectionOverride)
+
+private const val CONTROLLER_DEFAULT_VISIBILITY_MILLS = 5_000L
+
+/**
+ * Represents the visibility states of a media controller.
+ */
+sealed interface Visibility {
+
+    /**
+     * The media controller is currently visible.
+     */
+    data object Visible : Visibility
+
+    /**
+     * The media controller is visible for a limited duration specified by [mills].
+     *
+     * @property mills The duration in milliseconds for which the controller is visible.
+     *                A value of 0 defines an invisible state.
+     */
+    @JvmInline
+    value class Limited(val mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) : Visibility
+
+    /**
+     * The media controller is in a fully locked state after a delay specified by [mills].
+     *
+     * @property mills The duration in milliseconds after which the controller is fully locked.
+     *                A value of 0 defines a fully locked state.
+     */
+    @JvmInline
+    value class Locked(val mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) : Visibility
+
+    /**
+     * Gets weather the controller is visibile full or partially
+     */
+    val isVisible get() = (this is Visible) || ((this is Limited) && (this.mills != 0L))
+
+    /**
+     * Refreshes the instance with new value in case of [Limited] || [Locked] and returns same in case of [Visible].
+     * @param mills: The time in [mills]. default [CONTROLLER_DEFAULT_VISIBILITY_MILLS]. pass 0 to make it invisible.
+     */
+    fun refresh(mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) =
+        when (this) {
+            is Limited -> Limited(mills = mills)
+            is Locked -> Locked(mills = mills)
+            else -> this
+        }
+
+    /**
+     * Toggle between 0 and [mills]. if instance mills is > 0 sets to 0 else [mills].
+     */
+    fun toggle(mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) =
+        when (this) {
+            is Limited -> Limited(mills = if (this.mills > 0) 0 else mills)
+            is Locked -> Locked(mills = if (this.mills > 0) 0 else mills)
+            else -> this
+        }
+}
 

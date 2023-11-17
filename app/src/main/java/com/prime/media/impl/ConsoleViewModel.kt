@@ -31,6 +31,7 @@ import coil.request.ImageRequest
 import com.prime.media.R
 import com.prime.media.console.Console
 import com.prime.media.console.TrackInfo
+import com.prime.media.console.Visibility
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Playback.Companion.UNINITIALIZED_SLEEP_TIME_MILLIS
@@ -252,6 +253,7 @@ class ConsoleViewModel @Inject constructor(
     private var _shuffle by mutableStateOf(remote.shuffle)
     override var isVideo: Boolean by mutableStateOf(remote.isCurrentMediaItemVideo)
     override var resizeMode: Int by mutableStateOf(Console.RESIZE_MORE_FIT)
+    private var _visibility: Visibility by mutableStateOf(Visibility.Visible)
 
     // simple properties
     override var artwork: ImageBitmap? by mutableStateOf(null)
@@ -262,16 +264,50 @@ class ConsoleViewModel @Inject constructor(
     override val player: Player? get() = remote.player
 
     /**
-     * A coroutine job that periodically updates the state of the properties of this class based on
-     * the current playback status.
-     * This job runs on a background thread and uses a fixed interval, usually 500ms, to check and
-     * update the properties such as [progress], [sleepAfterMills], etc.
-     * This job is started when the media player is prepared or resumed, and is cancelled when the
-     * media player is stopped or released.
+     * Manages an array of coroutine jobs associated with the ViewModel.
+     *
+     * The jobs are essential for tracking repetitive tasks and handling various aspects of the media player's behavior.
+     *
+     * - **Job 0:**  A coroutine job that periodically updates the state of the properties of this class based on
+     *               the current playback status.
+     *               This job runs on a background thread and uses a fixed interval, usually 500ms, to check and
+     *               update the properties such as [progress], [sleepAfterMills], etc.
+     *               This job is started when the media player is prepared or resumed, and is cancelled when the
+     *               media player is stopped or released.
+     *
+     * - **Job 1:** The job at index 1 defines tasks related to showing and hiding the controller.
+     *              It is active when the [visibility] is [Visibility.Limited] or [Visibility.Locked].
+     *
+     * @property jobs An array of coroutine jobs associated with the ViewModel.
+     *               Index 0 corresponds to the periodic update job, and index 1 corresponds to the controller visibility job.
+     *               Initialized with null values.
      */
-    private var playbackMonitorJob: Job? = null
+    private var jobs: Array<Job?> = Array(2){ null }
 
     // getter setters.
+    override var visibility: Visibility
+        get() = _visibility
+        set(value) {
+            _visibility = value
+            // Cancel the previous job if any, to avoid conflicting updates
+            jobs[1]?.cancel()
+            // Obtain the duration in milliseconds from the value
+            val mills = when (value) {
+                // If the value is a Limited or Locked state, get the mills property
+                is Visibility.Limited -> value.mills
+                is Visibility.Locked -> value.mills
+                // If the value is a Full state, do nothing and return
+                else -> return
+            }
+            // Launch a new coroutine job to update the visibility after the duration
+            jobs[1] = suspended {
+                // Wait for the specified duration
+                delay(mills)
+                // After the delay, update the visibility to either invisible or locked
+                _visibility = if (value is Visibility.Limited) Visibility.Limited(0) else Visibility.Locked(0)
+            }
+        }
+
     override var shuffle: Boolean
         get() = _shuffle
         set(value) {
@@ -462,11 +498,10 @@ class ConsoleViewModel @Inject constructor(
                 _isPlaying = remote.playWhenReady
                 // disable it
                 _sleepAfterMills = UNINITIALIZED_SLEEP_TIME_MILLIS
-                playbackMonitorJob?.cancel()
-                playbackMonitorJob = null
+                jobs[0]?.cancel()
                 if (!remote.playWhenReady)
                     return
-                playbackMonitorJob = suspended {
+                jobs[0] = suspended {
                     while (true) {
                         val scheduled = remote.getSleepTimeAt()
                         _sleepAfterMills =
@@ -497,7 +532,10 @@ class ConsoleViewModel @Inject constructor(
                 }
             }
             // Called whenever some state change takes place
-            Player.EVENT_IS_PLAYING_CHANGED -> isVideo = remote.isCurrentMediaItemVideo
+            Player.EVENT_IS_PLAYING_CHANGED -> {
+                isVideo = remote.isCurrentMediaItemVideo
+                visibility = if (isVideo) Visibility.Limited()  else Visibility.Visible
+            }
         }
     }
 }

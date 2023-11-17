@@ -633,7 +633,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // In this case, we reinitialize the audio effect; otherwise, we just apply settings.
         if (equalizer == null || audioSessionId != -1) {
             equalizer?.release()
-            equalizer = Equalizer(0, (player as ExoPlayer).audioSessionId)
+            // TODO: Find the real reason why equalizer is not init when calling from onCreate.
+            equalizer = com.primex.core.runCatching(TAG){
+                Equalizer(0, (player as ExoPlayer).audioSessionId)
+            }
         }
 
         // Enable the equalizer.
