@@ -6,11 +6,12 @@
 <!--Info-->
 [![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://github.com/iZakirSheikh/Audiofy/releases)
 [![Playstore](https://img.shields.io/endpoint?color=crimson&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![GitHub Installs](https://img.shields.io/github/downloads/iZakirSheikh/Audiofy/total?logo=github&cacheSeconds=3600)]
 [![Google Play Installs](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
 [![Google Play Rating](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FiZakirSheikh%2FAudiofy&countColor=%23dce775&style=plastic&labelStyle=lower)
 
 ## Don't forget to ⭐ the repo
-
 ![GitHub stars](https://img.shields.io/github/stars/iZakirSheikh/Audiofy2?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/iZakirSheikh/Audiofy2?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/iZakirSheikh/Audiofy2?style=social)
@@ -26,16 +27,33 @@
 | --- | --- |
 |<a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a>
 
-# Description
-| Description | Light/Dark Mode Preview |
+## Description
+
+**Audiofy Media Player** is an open-source multimedia player app that lets you play music and videos on your Android device.
+
+**Audiofy Media Player**  is a mulitmedia app that lets you enjoy various videos and audio formats on your Android device or Android TV. It uses the ffmpeg extension of Media3, a powerful media player library, to support common and special audio formats such as Vorbis, Opus, FLAC, MP3, AAC, DTS, etc. It also supports video formats such as H.264, H.265, VP8, VP9, AV1, etc. You can also sync audio and video tracks when using Bluetooth earphones or speaker, for a smooth viewing experience. It has a simple and minimalistic interface that lets you watch videos without any hassle..
+
+| Category | Supported Formats |
 | --- | --- |
-|**Audiofy** is a media player app that lets you **enjoy** your **favorite tracks and playlists** with a simple and intuitive interface. You can **switch** between** light and dark** themes, **search** for **tracks, albums, artists and playlists**, add tracks to your** favorites, create, edit, delete and play your own playlists**, and more. <br><br> **Audiofy** is built using **Jetpack Compose,** a modern toolkit for building native Android UIs. It uses **Kotlin** as the programming language, coroutines and flow for asynchronous and concurrent programming, **Jetpack DataStore** for data storage, **Android Architecture Components** for robust, testable, and maintainable design. <br><br> **Audiofy** is a **beta** version of the app and is still **under development**. Some features may not work as expected or may be unavailable. Please **report** any bugs or using the **issue tracker**. Thank you for trying **Audiofy**. 😊 |<img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/d0a81f48-8a93-4e74-85fa-43ed13ada793" alt="Gif" width="300"> 
+| Audio formats | Vorbis, Opus, FLAC, ALAC, PCM/WAVE (μ-law, A-law), MP1, MP2, MP3, AMR (NB, WB), AAC (LC, ELD, HE; xHE on Android 9+), AC-3, E-AC-3, DTS, DTS-HD, TrueHD, AC-4 (on devices with system decoder) |
+| Video formats | H.263, H.264 AVC (Baseline Profile; Main Profile on Android 6+), H.265 HEVC, MPEG-4 SP, VP8, VP9, AV1 |
+| Container formats | MP4, MOV, WebM, MKV, Ogg, MPEG-TS, MPEG-PS, FLV, AVI (under development) |
+| Streaming protocols | DASH, HLS, SmoothStreaming, RTSP |
+| HDR video playback | HDR10+ and Dolby Vision (on compatible/supported hardware) |
 
-## 🌞 Preview 
+## Screenshots
 
-|  Shot-1 | Shot-2 | Shot-3 | Shot-4 | Shot-5 | Shot-6 
-|---|---|---|---|---|--- 
-| ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/2366d45b-ba8a-4e77-8e71-4522dcacda3e) | ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/3e88bb38-a4af-44b0-8528-78b9ed9f9a30) | ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/83abe0e3-dcfe-4408-895f-4ee3eae6f81b) | ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/6130e25d-a7f2-4dd6-8c93-85c7f27010f0) | ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/872663fc-99e0-471a-84d9-e9125ffd7864) | ![image](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/9ed74cbc-aa8b-44ac-bb4a-ae30162b9a17)
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/e9f93cf2-0508-4a1d-ace4-4eb6f3bfb40f" width="310">
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/43d30623-214f-4f0d-ae77-6a38d7aa3ff7" width="310">
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/053fb2d9-24d8-435a-a1a0-f8b0694b9b53" width="310"> <br/>
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/3b74387d-7190-44dd-90b4-f7a40d95d80d" width="65"> 
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/c587e598-420d-442a-99b4-4d3fa438ba1c" width="65"> 
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/0174fc3b-6d82-4a25-954f-59c28a3ec31e" width="65"> 
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/da85b46f-b159-40b3-ab6e-f58ee689baf1" width="65"> 
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/ea2cd0b0-e563-4f25-86be-831db851790f" width="65"> 
+<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/cc4a358d-d64d-4ee5-ba67-68fd7c901b74" width="65">
+
+## Features
 
 | Feature | Description | Roadmap |
 | --- | --- | --- |
@@ -105,4 +123,3 @@ You have successfully built and run the Audiofy app from the source code. Enjoy!
     limitations under the License.
 
 ```
-
