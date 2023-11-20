@@ -193,7 +193,7 @@ fun Artists(viewModel: ArtistsViewModel) {
                     val direction = Audios.direction(Audios.GET_FROM_ARTIST, it.name)
                     navigator.navigate(direction)
                 }
-                .animateItemPlacement()
+               // .animateItemPlacement()
         )
     }
 }

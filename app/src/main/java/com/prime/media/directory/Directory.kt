@@ -700,7 +700,7 @@ private inline fun <T> LazyGridScope.content(
             content = {
                 Header(
                     value = header,
-                    modifier = Modifier.animateItemPlacement()
+                  //  modifier = Modifier.animateItemPlacement()
                 )
             }
         )

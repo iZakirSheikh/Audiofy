@@ -529,7 +529,7 @@ fun Members(viewModel: MembersViewModel) {
             actions = viewModel.actions,
             modifier = Modifier
                 .animateContentSize()
-                .animateItemPlacement()
+               // .animateItemPlacement()
                 .combinedClickable(
                     onClick = {
                         when {

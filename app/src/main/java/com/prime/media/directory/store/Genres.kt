@@ -191,7 +191,7 @@ fun Genres(viewModel: GenresViewModel) {
                     val direction = Audios.direction(Audios.GET_FROM_GENRE, it.name)
                     navigator.navigate(direction)
                 }
-                .animateItemPlacement()
+            //    .animateItemPlacement()
         )
     }
 }

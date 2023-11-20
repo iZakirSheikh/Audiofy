@@ -358,7 +358,7 @@ fun Playlists(viewModel: PlaylistsViewModel) {
                     },
                     enabled = !checked
                 )
-                .animateItemPlacement()
+              //  .animateItemPlacement()
         )
     }
 }

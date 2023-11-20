@@ -28,8 +28,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 27
         targetSdk = 34
-        versionCode = 64
-        versionName = "2.7.2"
+        versionCode = 65
+        versionName = "2.7.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -75,7 +75,9 @@ android {
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
-    val compose_version = "1.6.0-beta01"
+    // FixMe: Downgrading compose due to crashes in constraint layout within lazy list.
+    //        This temporary solution addresses the issue until a more robust fix is implemented.
+    val compose_version = "1.6.0-alpha08"
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
     implementation("androidx.compose.animation:animation-graphics:$compose_version")
@@ -89,7 +91,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     //Lottie
-    implementation("com.airbnb.android:lottie-compose:6.1.0")
+    implementation("com.airbnb.android:lottie-compose:6.2.0")
     // Preferences and other widgets
     val toolkit_version = "1.1.1"
     implementation("com.github.prime-zs.toolkit:preferences:$toolkit_version")
@@ -136,6 +138,9 @@ dependencies {
     //Wavy Slider
     implementation("ir.mahozad.multiplatform:wavy-slider:0.3.0")
     // Constraint Layout
+    // TODO: In future versions of the app, consider removing ConstraintLayout as it is still
+    //  unstable in the release version. Besides, the cost of designing the app with it is too
+    //  high and difficult.
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     val media3_version = "1.2.0"
     // For media playback using ExoPlayer
