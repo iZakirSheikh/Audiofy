@@ -825,7 +825,7 @@ fun Audios(viewModel: AudiosViewModel) {
             onAction = { viewModel.focused = "${audio.id}"; onPerformAction(it) },
             modifier = Modifier
                 .animateContentSize()
-                .animateItemPlacement()
+               // .animateItemPlacement()
                 .combinedClickable(
                     onClick = {
                         when {

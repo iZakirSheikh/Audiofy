@@ -203,7 +203,7 @@ fun Folders(viewModel: FoldersViewModel) {
                     },
                     onLongClick = { viewModel.exclude(it.path) }
                 )
-                .animateItemPlacement()
+                //.animateItemPlacement()
         )
     }
 }

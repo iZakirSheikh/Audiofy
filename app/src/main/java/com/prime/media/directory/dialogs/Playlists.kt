@@ -122,7 +122,7 @@ fun Playlists(
                                 Playlist(
                                     value = value,
                                     onPlaylistClick = { onPlaylistClick(value) },
-                                    modifier = Modifier.animateItemPlacement()
+                                //    modifier = Modifier.animateItemPlacement()
                                 )
                             }
                         }

@@ -73,9 +73,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
@@ -88,6 +90,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -255,6 +258,41 @@ private fun RotatingDisk(
             )
     }
 }
+
+@Composable
+fun Artwork(
+    value: ImageBitmap?,
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(15),
+    elevation: Dp = ContentElevation.medium
+) {
+    Crossfade(
+        targetState = value,
+        modifier = Modifier
+            .scale(0.8f)
+            .shadow(elevation, shape,)
+            .background(Material.colors.surface, shape)
+            .then(modifier)
+    ) { res ->
+        if (res == null)
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.default_art),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            )
+        else
+            androidx.compose.foundation.Image(
+                bitmap = res,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            )
+    }
+}
+
 
 private val RoundedCornerShape_24 = RoundedCornerShape(24)
 
@@ -589,10 +627,10 @@ private fun Controls(
         )
 
         // Artwork
-        RotatingDisk(
+        Artwork(
             value = state.artwork,
             modifier = Modifier.layoutId(R.id.np_artwork),
-            isRotating = state.playing
+            //isRotating = state.playing
         )
 
         // Timer

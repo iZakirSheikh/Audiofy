@@ -186,7 +186,7 @@ fun Albums(viewModel: AlbumsViewModel) {
                     val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
                     navigator.navigate(direction)
                 }
-                .animateItemPlacement()
+               // .animateItemPlacement()
         )
     }
 }
