@@ -4,7 +4,6 @@
 package com.prime.media.library
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -71,7 +70,7 @@ import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.KenBurns
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
@@ -90,8 +89,6 @@ import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
-import com.prime.media.onOverlay
-import com.prime.media.overlay
 import com.prime.media.settings.Settings
 import com.prime.media.small2
 import com.prime.media.surfaceColorAtElevation
@@ -396,7 +393,7 @@ private fun History(
                         .width(75.dp)
                         .animateItemPlacement(),
                     icon = {
-                        Image(
+                        Artwork(
                             data = it.artwork,
                             modifier = Modifier
                                 .border(2.5.dp, Color.White, CompactDisk)
@@ -542,7 +539,7 @@ fun NewlyAdded(
                         .width(75.dp)
                         .animateItemPlacement(),
                     icon = {
-                        Image(
+                        Artwork(
                             data = it.albumUri,
                             modifier = Modifier
                                 .border(2.dp, Material.colors.onSurface, CircleShape)

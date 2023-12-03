@@ -5,6 +5,8 @@ package com.prime.media
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationConstants
@@ -13,15 +15,30 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomAppBar
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Colors
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.PlaylistPlay
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,7 +47,10 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -47,19 +67,25 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.prime.media.console.Console
-import com.prime.media.console.MiniPlayer
+import com.prime.media.console.PopupMedia
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
+import com.prime.media.core.compose.BottomNavigationItem2
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSizeClass
+import com.prime.media.core.compose.NavigationRailItem2
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.current
@@ -95,6 +121,7 @@ import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.drawHorizontalDivider
+import com.primex.core.drawVerticalDivider
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.launch
 import kotlin.math.ln
@@ -465,6 +492,192 @@ private val HIDDEN_DEST_ROUTES = arrayOf(
     AudioFx.route
 )
 
+/**
+ * Extension function for the NavController that facilitates navigation to a specified destination route.
+ *
+ * @param route The destination route to navigate to.
+ *
+ * This function uses the provided route to navigate using the navigation graph.
+ * It includes additional configuration to manage the back stack and ensure a seamless navigation experience.
+ * - It pops up to the start destination of the graph to avoid a buildup of destinations on the back stack.
+ * - It uses the `launchSingleTop` flag to prevent multiple copies of the same destination when re-selecting an item.
+ * - The `restoreState` flag is set to true, ensuring the restoration of state when re-selecting a previously selected item.
+ */
+private fun NavController.toRoute(route: String) {
+    navigate(route) {
+        // Pop up to the start destination of the graph to
+        // avoid building up a large stack of destinations
+        // on the back stack as users select items
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        // Avoid multiple copies of the same destination when
+        // re-selecting the same item
+        launchSingleTop = true
+        // Restore state when re-selecting a previously selected item
+        restoreState = true
+    }
+}
+
+private const val MIME_TYPE_VIDEO = "video/*"
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+@NonRestartableComposable
+private fun BottomNav(modifier: Modifier = Modifier) {
+    val navController = LocalNavController.current
+    BottomAppBar(
+        modifier = modifier,
+        windowInsets = WindowInsets.navigationBars,
+        backgroundColor = Material.colors.background,
+        contentColor = Material.colors.onSurface,
+        contentPadding = PaddingValues(
+            horizontal = ContentPadding.normal,
+            vertical = ContentPadding.medium
+        )
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        PopupMedia(
+            expanded = expanded,
+            onRequestToggle = {expanded = !expanded },
+            modifier = Modifier.padding(end = ContentPadding.normal)
+        )
+
+        // Space of normal.
+        val current by navController.currentBackStackEntryAsState()
+
+        // Home
+        BottomNavigationItem2(
+            label = "Home",
+            icon = Icons.Outlined.Home,
+            checked = current?.destination?.route == Library.route,
+            onClick = { navController.toRoute(Library.direction()) }
+        )
+
+        // Audios
+        BottomNavigationItem2(
+            label = "Audios",
+            icon = Icons.Outlined.LibraryMusic,
+            checked = current?.destination?.route == Audios.route,
+            onClick = { navController.toRoute(Audios.direction(Audios.GET_EVERY)) }
+        )
+
+        // Videos
+        val context = LocalContext.current as MainActivity
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+            if (it == null) return@rememberLauncherForActivityResult
+            val intnet = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(it,  MIME_TYPE_VIDEO)
+                this.`package` = context.packageName
+            }
+            context.startActivity(intnet)
+        }
+        BottomNavigationItem2(
+            label = "Videos",
+            icon = Icons.Outlined.VideoLibrary,
+            checked = false,
+            onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) }
+        )
+
+        // Playlists
+        BottomNavigationItem2(
+            label = "Playlists",
+            icon = Icons.Outlined.PlaylistPlay,
+            checked = current?.destination?.route == Playlists.route,
+            onClick = { navController.toRoute(Playlists.direction()) }
+        )
+
+        // Settings
+        BottomNavigationItem2(
+            label = "Settings",
+            icon = Icons.Outlined.Settings,
+            checked = current?.destination?.route == Settings.route,
+            onClick = { navController.toRoute(Settings.route) }
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun NavRail(modifier: Modifier = Modifier) {
+    androidx.compose.material.NavigationRail(
+        modifier = modifier.width(94.dp),
+        windowInsets = WindowInsets.systemBars,
+        backgroundColor = Material.colors.background,
+        contentColor = Material.colors.onSurface,
+        elevation = 0.dp,
+    ) {
+        val navController = LocalNavController.current
+        // Space of normal.
+        val current by navController.currentBackStackEntryAsState()
+
+        // Home
+        NavigationRailItem2(
+            label = "Home",
+            icon = Icons.Outlined.Home,
+            checked = current?.destination?.route == Library.route,
+            onClick = { navController.toRoute(Library.direction()) }
+        )
+
+        // Audios
+        NavigationRailItem2(
+            label = "Audios",
+            icon = Icons.Outlined.LibraryMusic,
+            checked = current?.destination?.route == Audios.route,
+            onClick = { navController.toRoute(Audios.direction(Audios.GET_EVERY)) }
+        )
+
+        // Videos
+        val context = LocalContext.current as MainActivity
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+            if (it == null) return@rememberLauncherForActivityResult
+            val intnet = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(it,  MIME_TYPE_VIDEO)
+                this.`package` = context.packageName
+            }
+            context.startActivity(intnet)
+        }
+        NavigationRailItem2(
+            label = "Videos",
+            icon = Icons.Outlined.VideoLibrary,
+            checked = false,
+            onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) }
+        )
+
+        // Playlists
+        NavigationRailItem2(
+            label = "Playlists",
+            icon = Icons.Outlined.PlaylistPlay,
+            checked = current?.destination?.route == Playlists.route,
+            onClick = { navController.toRoute(Playlists.direction()) }
+        )
+
+        // Settings
+        NavigationRailItem2(
+            label = "Settings",
+            icon = Icons.Outlined.Settings,
+            checked = current?.destination?.route == Settings.route,
+            onClick = { navController.toRoute(Settings.route) }
+        )
+
+        // Some Space between navs and Icon.
+        Spacer(modifier = Modifier.weight(1f))
+
+        var expanded by remember { mutableStateOf(false) }
+        PopupMedia(
+            expanded = expanded,
+            onRequestToggle = {expanded = !expanded },
+            modifier = Modifier.padding(end = ContentPadding.normal)
+        )
+    }
+}
+
+
+// TODO: Add capability in original API to reverse the drawing of divider.
+private inline fun Modifier.divider(vertical: Boolean, color: Color) =
+    if (vertical) drawVerticalDivider(color) else drawHorizontalDivider(color)
+
 @Composable
 fun Home(
     channel: Channel
@@ -472,22 +685,25 @@ fun Home(
     val isDark = isPrefDarkTheme()
     Material(isDark) {
         val navController = rememberNavController()
-        val activity = LocalView.current.context as MainActivity
-        val remote = activity.remote
         CompositionLocalProvider(LocalNavController provides navController) {
-            val vertical = LocalWindowSizeClass.current.widthSizeClass < WindowWidthSizeClass.Medium
+            val clazz = LocalWindowSizeClass.current.widthSizeClass
             val facade = LocalSystemFacade.current
-            val isPlayerLoaded by remote.loaded.collectAsState(initial = false)
             Scaffold2(
                 // TODO: Make it dependent LocalWindowSizeClass once horizontal layout of MiniPlayer is Ready.
-                vertical = true,
+                vertical = clazz < WindowWidthSizeClass.Medium,
                 channel = channel,
-                hideNavigationBar = !isPlayerLoaded || navController.current in HIDDEN_DEST_ROUTES,
+                hideNavigationBar = navController.current in HIDDEN_DEST_ROUTES,
                 progress = facade.inAppUpdateProgress,
-                content = { NavGraph(Modifier.drawHorizontalDivider(color = Material.colors.onSurface)) },
+                content = { NavGraph(Modifier.divider(clazz > WindowWidthSizeClass.Medium,  Material.colors.onSurface)) },
                 navBar = {
-                    // Maybe Find Better alternative of representing this.
-                    MiniPlayer(remote = remote)
+                    when (clazz) {
+                        // Always display the bottom navigation when in compact mode.
+                        WindowWidthSizeClass.Compact -> BottomNav()
+
+                        // Display the navigation rail for other size classes.
+                        // TODO: Consider displaying a larger version of the navigation UI in expanded mode.
+                        else -> NavRail()
+                    }
                 }
             )
         }
@@ -498,6 +714,7 @@ fun Home(
         // In both cases, we trigger a remote action to initiate playback.
         // Create a coroutine scope to handle asynchronous operations.
         val scope = rememberCoroutineScope()
+        val activity = LocalView.current.context as MainActivity
         // Construct the DisposableEffect and listen for events.
         DisposableEffect(Unit) {
             // Create a listener for observing changes in incoming intents.

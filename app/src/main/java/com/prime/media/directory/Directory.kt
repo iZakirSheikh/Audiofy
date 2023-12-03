@@ -495,7 +495,7 @@ private fun <T : Any> Metadata(
 
         // Artwork.
         // Because this composable only is hown when artwork isn't null; so
-        Image(
+        Artwork(
             data = meta.artwork ?: "",
             modifier = Modifier
                 .shadow(ContentElevation.high, HeaderArtWorkShape)

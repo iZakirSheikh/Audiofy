@@ -113,8 +113,8 @@ import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.PlayerView
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.menu.DropDownMenu2
-import com.prime.media.core.compose.menu.DropDownMenuItem2
+import com.prime.media.core.compose.menu.DropdownMenu2
+import com.prime.media.core.compose.menu.DropdownMenuItem2
 import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.playback.subtitle
@@ -348,132 +348,126 @@ private inline fun More(
         )
 
         // MainMenu
-        DropDownMenu2(
+        DropdownMenu2(
             expanded = expanded == 0,
             onDismissRequest = { expanded = -1 }
         ) {
             val onColor = LocalContentColor.current
-            Column {
-                // First Row
-                Row {
-                    // CycleRepeatMode | Option 6
-                    val facade = LocalSystemFacade.current
-                    val mode = state.repeatMode
-                    AnimatedIconButton(
-                        id = R.drawable.avd_repeat_more_one_all,
-                        onClick = {
-                            state.cycleRepeatMode();facade.launchReviewFlow(); expanded = -1
-                        },
-                        atEnd = mode == Player.REPEAT_MODE_ALL,
-                        modifier = Modifier.layoutId(R.id.np_option_6),
-                        tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
-                    )
-
-                    if (!state.isVideo) return@Row
-
-                    val controller = LocalNavController.current
-                    // FixMe: State is not required here. implement to get value without state.
-                    val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
-                    IconButton(
-                        onClick = {
-                            if (useBuiltIn)
-                                controller.navigate(AudioFx.route)
-                            else
-                                facade.launchEqualizer(state.audioSessionId)
-                            expanded = -1
-                        },
-                        imageVector = Icons.Outlined.Tune,
-                        contentDescription = null,
-                        modifier = Modifier.layoutId(R.id.np_option_1),
-                        tint = onColor
-                    )
-
-                    val favourite = state.favourite
-                    LottieAnimButton(
-                        id = R.raw.lt_twitter_heart_filled_unfilled,
-                        onClick = { state.toggleFav(); facade.launchReviewFlow(); expanded = -1 },
-                        modifier = Modifier.layoutId(R.id.np_option_0),
-                        scale = 3.5f,
-                        progressRange = 0.13f..0.95f,
-                        duration = 800,
-                        atEnd = !favourite
-                    )
-
-                    // Lock
-                    IconButton(
-                        imageVector = Icons.Outlined.Lock,
-                        onClick = { state.visibility = Visibility.Locked() }
-                    )
-                }
-
-                //
-                Divider()
-
-                // Audio
-                DropDownMenuItem2(
-                    title = buildAnnotatedString {
-                        append("Audio")
-                        withSpanStyle(
-                            color = onColor.copy(ContentAlpha.disabled),
-                            fontSize = 11.sp
-                        ) {
-                            append("\n${state.currAudioTrack?.name ?: "Auto"}")
-                        }
+            // First Row
+            Row {
+                // CycleRepeatMode | Option 6
+                val facade = LocalSystemFacade.current
+                val mode = state.repeatMode
+                AnimatedIconButton(
+                    id = R.drawable.avd_repeat_more_one_all,
+                    onClick = {
+                        state.cycleRepeatMode();facade.launchReviewFlow(); expanded = -1
                     },
-                    onClick = { expanded = 1 },
-                    leading = rememberVectorPainter(image = Icons.Outlined.Speaker),
-                    enabled = state.isVideo
+                    atEnd = mode == Player.REPEAT_MODE_ALL,
+                    modifier = Modifier.layoutId(R.id.np_option_6),
+                    tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
                 )
 
-                // Subtitle
-                DropDownMenuItem2(
-                    title = buildAnnotatedString {
-                        append("Subtitle")
-                        withSpanStyle(
-                            color = onColor.copy(ContentAlpha.disabled),
-                            fontSize = 11.sp
-                        ) {
-                            append("\n${state.currSubtitleTrack?.name ?: "Off"}")
-                        }
+                if (!state.isVideo) return@Row
+
+                val controller = LocalNavController.current
+                // FixMe: State is not required here. implement to get value without state.
+                val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
+                IconButton(
+                    onClick = {
+                        if (useBuiltIn)
+                            controller.navigate(AudioFx.route)
+                        else
+                            facade.launchEqualizer(state.audioSessionId)
+                        expanded = -1
                     },
-                    onClick = { expanded = 2 },
-                    leading = rememberVectorPainter(image = Icons.Outlined.ClosedCaption),
-                    enabled = state.isVideo
+                    imageVector = Icons.Outlined.Tune,
+                    contentDescription = null,
+                    modifier = Modifier.layoutId(R.id.np_option_1),
+                    tint = onColor
+                )
+
+                val favourite = state.favourite
+                LottieAnimButton(
+                    id = R.raw.lt_twitter_heart_filled_unfilled,
+                    onClick = { state.toggleFav(); facade.launchReviewFlow(); expanded = -1 },
+                    modifier = Modifier.layoutId(R.id.np_option_0),
+                    scale = 3.5f,
+                    progressRange = 0.13f..0.95f,
+                    duration = 800,
+                    atEnd = !favourite
+                )
+
+                // Lock
+                IconButton(
+                    imageVector = Icons.Outlined.Lock,
+                    onClick = { state.visibility = Visibility.Locked() }
                 )
             }
+
+            //
+            Divider()
+
+            // Audio
+            DropdownMenuItem2(
+                title = buildAnnotatedString {
+                    append("Audio")
+                    withSpanStyle(
+                        color = onColor.copy(ContentAlpha.disabled),
+                        fontSize = 11.sp
+                    ) {
+                        append("\n${state.currAudioTrack?.name ?: "Auto"}")
+                    }
+                },
+                onClick = { expanded = 1 },
+                leading = rememberVectorPainter(image = Icons.Outlined.Speaker),
+                enabled = state.isVideo
+            )
+
+            // Subtitle
+            DropdownMenuItem2(
+                title = buildAnnotatedString {
+                    append("Subtitle")
+                    withSpanStyle(
+                        color = onColor.copy(ContentAlpha.disabled),
+                        fontSize = 11.sp
+                    ) {
+                        append("\n${state.currSubtitleTrack?.name ?: "Off"}")
+                    }
+                },
+                onClick = { expanded = 2 },
+                leading = rememberVectorPainter(image = Icons.Outlined.ClosedCaption),
+                enabled = state.isVideo
+            )
         }
 
         // Audio Menu
-        DropDownMenu2(
+        DropdownMenu2(
             expanded = expanded == 1,
             onDismissRequest = { expanded = 0 }
         ) {
-            Column {
-                DropDownMenuItem2(
-                    title = "Auto",
-                    onClick = { state.currAudioTrack = null; expanded = 0 })
-                state.audios.forEach { track ->
-                    DropDownMenuItem2(
-                        title = track.name,
-                        onClick = { state.currAudioTrack = track; expanded = 0 })
-                }
+            DropdownMenuItem2(
+                title = "Auto",
+                onClick = { state.currAudioTrack = null; expanded = 0 })
+            state.audios.forEach { track ->
+                DropdownMenuItem2(
+                    title = track.name,
+                    onClick = { state.currAudioTrack = track; expanded = 0 })
             }
         }
 
         // Subttile Menu
-        DropDownMenu2(
+        DropdownMenu2(
             expanded = expanded == 2,
             onDismissRequest = { expanded = 0 }
         ) {
-            Column {
-                DropDownMenuItem2(
-                    title = "Off",
-                    onClick = { state.currSubtitleTrack = null; expanded = 0 })
-                state.subtiles.forEach { track ->
-                    DropDownMenuItem2(
-                        title = track.name,
-                        onClick = { state.currSubtitleTrack = track; expanded = 0 })
-                }
+            DropdownMenuItem2(
+                title = "Off",
+                onClick = { state.currSubtitleTrack = null; expanded = 0 })
+            state.subtiles.forEach { track ->
+                DropdownMenuItem2(
+                    title = track.name,
+                    onClick = { state.currSubtitleTrack = track; expanded = 0 })
             }
         }
     }

@@ -145,7 +145,7 @@ fun Album(
                 .fillMaxWidth()
                 .aspectRatio(0.65f),
             content = {
-                Image(
+                Artwork(
                     data = value.uri,
                     fallback = painterResource(id = R.drawable.default_art)
                 )

@@ -9,8 +9,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -20,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.NavigationRail
 import androidx.compose.material.Scaffold
@@ -30,11 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.Queue
-import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,11 +42,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -60,7 +52,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.Placeholder
@@ -94,7 +86,7 @@ private fun Track(
         overline = { Label(text = value.subtitle.toString()) },
         // Leading icon is the artwork
         leading = {
-            Image(
+            Artwork(
                 value.artworkUri,
                 modifier = Modifier
                     .shadow(ContentPadding.small, clip = true, shape = ArtworkShape)
