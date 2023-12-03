@@ -2,195 +2,22 @@
  *  Copied from Android Material2 Compose Menu
  */
 
+@file:Suppress("TransitionPropertiesLabel")
+
 package com.prime.media.core.compose.menu
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideTextStyle
-import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlin.math.max
 import kotlin.math.min
-
-@Composable
-internal fun DropdownMenuContent(
-    expandedStates: MutableTransitionState<Boolean>,
-    transformOriginState: MutableState<TransformOrigin>,
-    modifier: Modifier = Modifier,
-    elevation: Dp = Dp.Unspecified,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = MaterialTheme.colors.onSurface,
-    shape: Shape = MaterialTheme.shapes.small,
-    content: @Composable () -> Unit
-) {
-    // Menu open/close animation.
-    val transition = updateTransition(expandedStates, "DropDownMenu")
-
-    val scale by transition.animateFloat(
-        transitionSpec = {
-            if (false isTransitioningTo true) {
-                // Dismissed to expanded
-                tween(
-                    durationMillis = InTransitionDuration,
-                    easing = LinearOutSlowInEasing
-                )
-            } else {
-                // Expanded to dismissed.
-                tween(
-                    durationMillis = 1,
-                    delayMillis = OutTransitionDuration - 1
-                )
-            }
-        }
-    ) {
-        if (it) {
-            // Menu is expanded.
-            1f
-        } else {
-            // Menu is dismissed.
-            0.8f
-        }
-    }
-
-    val alpha by transition.animateFloat(
-        transitionSpec = {
-            if (false isTransitioningTo true) {
-                // Dismissed to expanded
-                tween(durationMillis = 30)
-            } else {
-                // Expanded to dismissed.
-                tween(durationMillis = OutTransitionDuration)
-            }
-        }
-    ) {
-        if (it) {
-            // Menu is expanded.
-            1f
-        } else {
-            // Menu is dismissed.
-            0f
-        }
-    }
-    Card(
-        modifier = Modifier.graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-            this.alpha = alpha
-            transformOrigin = transformOriginState.value
-        }.width(IntrinsicSize.Max),
-        elevation = elevation.takeOrElse { MenuElevation },
-        contentColor = contentColor,
-        content = content,
-        backgroundColor = backgroundColor,
-        shape = shape
-    )
-}
-
-@Composable
-internal fun DropdownMenuItemContent2(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    contentPadding: PaddingValues = MenuDefaults2.DropdownMenuItemContentPadding,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    content: @Composable RowScope.() -> Unit
-) {
-    // TODO(popam, b/156911853): investigate replacing this Row with ListItem
-    Row(
-        modifier = modifier
-            .clickable(
-                enabled = enabled,
-                onClick = onClick,
-                interactionSource = interactionSource,
-                indication = rememberRipple(true)
-            )
-            .fillMaxWidth()
-            // Preferred min and max width used during the intrinsic measurement.
-            .sizeIn(
-                minWidth = DropdownMenuItemDefaultMinWidth,
-                maxWidth = DropdownMenuItemDefaultMaxWidth,
-                minHeight = DropdownMenuItemDefaultMinHeight
-            )
-            .padding(contentPadding),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val typography = MaterialTheme.typography
-        ProvideTextStyle(typography.body2) {
-            val contentAlpha = if (enabled) ContentAlpha.high else ContentAlpha.disabled
-            CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
-                content()
-            }
-        }
-    }
-}
-
-/**
- * Contains default values used for [DropdownMenuItem].
- */
-object MenuDefaults2 {
-    /**
-     * Default padding used for [DropdownMenuItem].
-     */
-    val DropdownMenuItemContentPadding = PaddingValues(
-        horizontal = DropdownMenuItemHorizontalPadding,
-        vertical = 0.dp
-    )
-}
-
-// Size defaults.
-private val MenuElevation = 8.dp
-internal val MenuVerticalMargin = 48.dp
-private val DropdownMenuItemHorizontalPadding = 16.dp
-internal val DropdownMenuVerticalPadding = 8.dp
-private val DropdownMenuItemDefaultMinWidth = 112.dp
-private val DropdownMenuItemDefaultMaxWidth = 280.dp
-private val DropdownMenuItemDefaultMinHeight = 48.dp
-
-// Menu open/close animation.
-internal const val InTransitionDuration = 120
-internal const val OutTransitionDuration = 75
 
 internal fun calculateTransformOrigin(
     parentBounds: IntRect,
@@ -226,6 +53,7 @@ internal fun calculateTransformOrigin(
 }
 
 // Menu positioning.
+private val MenuVerticalMargin = 48.dp
 
 /**
  * Calculates the position of a Material [DropdownMenu].

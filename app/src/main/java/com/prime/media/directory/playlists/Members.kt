@@ -401,7 +401,7 @@ private fun Member(
             )
         },
         leading = {
-            Image(
+            Artwork(
                 data = value.artwork,
                 fallback = painterResource(id = R.drawable.default_art),
                 contentScale = ContentScale.Crop,

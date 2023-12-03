@@ -53,7 +53,7 @@ import com.primex.material2.Placeholder
 import kotlin.math.roundToLong
 
 @Composable
-inline fun Image(
+inline fun Artwork(
     data: Any?,
     modifier: Modifier = Modifier,
     fallback: Painter? = painterResource(id = R.drawable.default_art),
@@ -81,6 +81,7 @@ inline fun Image(
  * Composes placeholder with lottie icon.
  */
 @Composable
+@Deprecated("The reason for deprication of this is that it doesnt morph for all window sizes.")
 inline fun Placeholder(
     title: String,
     modifier: Modifier = Modifier,

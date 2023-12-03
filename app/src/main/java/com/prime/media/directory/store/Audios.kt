@@ -10,14 +10,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -40,7 +38,7 @@ import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.*
-import com.prime.media.core.compose.Image
+import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.db.Audio
@@ -728,7 +726,7 @@ private fun Audio(
             )
         },
         leading = {
-            Image(
+            Artwork(
                 data = value.albumUri,
                 fallback = painterResource(id = R.drawable.default_art),
                 contentScale = ContentScale.Crop,
