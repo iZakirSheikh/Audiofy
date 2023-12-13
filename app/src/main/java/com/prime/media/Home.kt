@@ -34,6 +34,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.PlaylistPlay
@@ -57,10 +58,12 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -80,6 +83,7 @@ import com.prime.media.console.Console
 import com.prime.media.console.PopupMedia
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
+import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.BottomNavigationItem2
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalNavController
@@ -90,6 +94,7 @@ import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
+import com.prime.media.core.compose.purchase
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
@@ -122,6 +127,7 @@ import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.drawVerticalDivider
+import com.primex.material2.IconButton
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.launch
 import kotlin.math.ln
@@ -539,10 +545,10 @@ private fun BottomNav(modifier: Modifier = Modifier) {
         var expanded by remember { mutableStateOf(false) }
         PopupMedia(
             expanded = expanded,
-            onRequestToggle = {expanded = !expanded },
-            modifier = Modifier.padding(end = ContentPadding.normal)
+            onRequestToggle = {expanded = !expanded }
         )
 
+        Spacer(Modifier.weight(1f))
         // Space of normal.
         val current by navController.currentBackStackEntryAsState()
 
@@ -556,10 +562,10 @@ private fun BottomNav(modifier: Modifier = Modifier) {
 
         // Audios
         BottomNavigationItem2(
-            label = "Audios",
-            icon = Icons.Outlined.LibraryMusic,
-            checked = current?.destination?.route == Audios.route,
-            onClick = { navController.toRoute(Audios.direction(Audios.GET_EVERY)) }
+            label = "Folders",
+            icon = Icons.Outlined.FolderCopy,
+            checked = current?.destination?.route == Folders.route,
+            onClick = { navController.toRoute(Folders.direction()) }
         )
 
         // Videos
@@ -587,6 +593,19 @@ private fun BottomNav(modifier: Modifier = Modifier) {
             onClick = { navController.toRoute(Playlists.direction()) }
         )
 
+        // Buy full version button.
+
+        val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
+        val provider = LocalSystemFacade.current
+        if (!purchase.purchased)
+            IconButton(
+                painter = painterResource(id = R.drawable.ic_remove_ads),
+                contentDescription = null,
+                onClick = {
+                    provider.launchBillingFlow(BuildConfig.IAP_NO_ADS)
+                }
+            )
+        else
         // Settings
         BottomNavigationItem2(
             label = "Settings",
@@ -594,6 +613,10 @@ private fun BottomNav(modifier: Modifier = Modifier) {
             checked = current?.destination?.route == Settings.route,
             onClick = { navController.toRoute(Settings.route) }
         )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+
     }
 }
 
@@ -602,19 +625,31 @@ private fun BottomNav(modifier: Modifier = Modifier) {
 @Composable
 private fun NavRail(modifier: Modifier = Modifier) {
     androidx.compose.material.NavigationRail(
-        modifier = modifier.width(94.dp),
+        modifier = modifier
+            .width(94.dp)
+            .drawVerticalDivider(Material.colors.outline),
         windowInsets = WindowInsets.systemBars,
         backgroundColor = Material.colors.background,
         contentColor = Material.colors.onSurface,
         elevation = 0.dp,
     ) {
+        var expanded by remember { mutableStateOf(false) }
+        PopupMedia(
+            expanded = expanded,
+            onRequestToggle = {expanded = !expanded },
+            offset = DpOffset(30.dp, -30.dp)
+        )
+
+        // Some Space between navs and Icon.
+        Spacer(modifier = Modifier.weight(1f))
+
         val navController = LocalNavController.current
         // Space of normal.
         val current by navController.currentBackStackEntryAsState()
 
         // Home
         NavigationRailItem2(
-            label = "Home",
+            label = "    Home   ",
             icon = Icons.Outlined.Home,
             checked = current?.destination?.route == Library.route,
             onClick = { navController.toRoute(Library.direction()) }
@@ -622,10 +657,10 @@ private fun NavRail(modifier: Modifier = Modifier) {
 
         // Audios
         NavigationRailItem2(
-            label = "Audios",
-            icon = Icons.Outlined.LibraryMusic,
-            checked = current?.destination?.route == Audios.route,
-            onClick = { navController.toRoute(Audios.direction(Audios.GET_EVERY)) }
+            label = "  Folders ",
+            icon = Icons.Outlined.FolderCopy,
+            checked = current?.destination?.route == Folders.route,
+            onClick = { navController.toRoute(Folders.direction()) }
         )
 
         // Videos
@@ -639,7 +674,7 @@ private fun NavRail(modifier: Modifier = Modifier) {
             context.startActivity(intnet)
         }
         NavigationRailItem2(
-            label = "Videos",
+            label = "  Videos ",
             icon = Icons.Outlined.VideoLibrary,
             checked = false,
             onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) }
@@ -653,6 +688,17 @@ private fun NavRail(modifier: Modifier = Modifier) {
             onClick = { navController.toRoute(Playlists.direction()) }
         )
 
+        val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
+        val provider = LocalSystemFacade.current
+        if (!purchase.purchased)
+            IconButton(
+                painter = painterResource(id = R.drawable.ic_remove_ads),
+                contentDescription = null,
+                onClick = {
+                    provider.launchBillingFlow(BuildConfig.IAP_NO_ADS)
+                }
+            )
+        else
         // Settings
         NavigationRailItem2(
             label = "Settings",
@@ -663,20 +709,13 @@ private fun NavRail(modifier: Modifier = Modifier) {
 
         // Some Space between navs and Icon.
         Spacer(modifier = Modifier.weight(1f))
-
-        var expanded by remember { mutableStateOf(false) }
-        PopupMedia(
-            expanded = expanded,
-            onRequestToggle = {expanded = !expanded },
-            modifier = Modifier.padding(end = ContentPadding.normal)
-        )
     }
 }
 
 
 // TODO: Add capability in original API to reverse the drawing of divider.
-private inline fun Modifier.divider(vertical: Boolean, color: Color) =
-    if (vertical) drawVerticalDivider(color) else drawHorizontalDivider(color)
+private inline fun Modifier.divider(hide: Boolean, color: Color) =
+    if (hide) Modifier else drawHorizontalDivider(color)
 
 @Composable
 fun Home(

@@ -3,7 +3,6 @@
 
 package com.prime.media.library
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -29,15 +28,12 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PlaylistPlay
-import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -65,7 +61,6 @@ import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.caption2
-import com.prime.media.console.Console
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.Banner
@@ -74,7 +69,6 @@ import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.KenBurns
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shape.CompactDisk
@@ -82,11 +76,9 @@ import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
-import com.prime.media.directory.playlists.Playlists
 import com.prime.media.directory.store.Albums
 import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
-import com.prime.media.directory.store.Folders
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
@@ -321,11 +313,11 @@ private fun Shortcuts(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             content = {
                 val navigator = LocalNavController.current
-                Shortcut(
+              /*  Shortcut(
                     onAction = { navigator.navigate(Folders.direction()) },
                     icon = Icons.Default.Folder,
                     label = textResource(id = R.string.folders)
-                )
+                )*/
 
                 Shortcut(
                     onAction = { navigator.navigate(Genres.direction()) },
@@ -342,31 +334,40 @@ private fun Shortcuts(
                     icon = Icons.Outlined.Person,
                     label = textResource(id = R.string.artists)
                 )
+
+                Shortcut(
+                    onAction = { navigator.navigate(Albums.direction()) },
+                    icon = Icons.Outlined.Album,
+                    label = textResource(id = R.string.albums)
+                )
+
                 Shortcut(
                     onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                     icon = Icons.Outlined.FavoriteBorder,
                     label = textResource(id = R.string.favourite)
                 )
 
-                Shortcut(
-                    onAction = { navigator.navigate(Playlists.direction()) },
-                    icon = Icons.Outlined.PlaylistPlay,
-                    label = textResource(id = R.string.playlists)
-                )
 
-                val context = LocalContext.current
-                val navController = LocalNavController.current
-                val launcher =
-                    rememberLauncherForActivityResult(PickVideoRequest) {
-                        if (it == null) return@rememberLauncherForActivityResult
-                        state.onRequestPlayVideo(it, context)
-                        navController.navigate(Console.direction())
-                    }
-                Shortcut(
-                    icon = Icons.Outlined.VideoLibrary,
-                    label = "Videos",
-                    onAction = { launcher.launch(arrayOf("video/*")) }
-                )
+
+//                Shortcut(
+//                    onAction = { navigator.navigate(Playlists.direction()) },
+//                    icon = Icons.Outlined.PlaylistPlay,
+//                    label = textResource(id = R.string.playlists)
+//                )
+//
+//                val context = LocalContext.current
+//                val navController = LocalNavController.current
+//                val launcher =
+//                    rememberLauncherForActivityResult(PickVideoRequest) {
+//                        if (it == null) return@rememberLauncherForActivityResult
+//                        state.onRequestPlayVideo(it, context)
+//                        navController.navigate(Console.direction())
+//                    }
+//                Shortcut(
+//                    icon = Icons.Outlined.VideoLibrary,
+//                    label = "Videos",
+//                    onAction = { launcher.launch(arrayOf("video/*")) }
+//                )
 
             }
         )
@@ -581,6 +582,25 @@ fun Library(
                         .padding(horizontal = 22.dp)
                         .zIndex(1f),
                 )
+
+                // Recents.
+                Header(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .padding(horizontal = ContentPadding.medium),
+                    title = res.getString(R.string.library_recent),
+                    subtitle = res.getString(R.string.library_recent_tag_line),
+                    onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) }
+                )
+
+                History(
+                    viewModel,
+                    modifier = Modifier
+                        .offset(y = OFFSET_Y_SEARCH)
+                        .fillMaxWidth(),
+                )
+
                 // Shortcuts.
                 Header(
                     modifier = Modifier
@@ -612,26 +632,10 @@ fun Library(
                         )
                     }
 
-                // Recents.
-                Header(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = OFFSET_Y_SEARCH)
-                        .padding(horizontal = ContentPadding.medium),
-                    title = res.getString(R.string.library_recent),
-                    subtitle = res.getString(R.string.library_recent_tag_line),
-                    onClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) }
-                )
 
-                History(
-                    viewModel,
-                    modifier = Modifier
-                        .offset(y = OFFSET_Y_SEARCH)
-                        .fillMaxWidth(),
-                )
 
                 // Album Tile
-                Tile(
+                /*Tile(
                     viewModel,
                     onClick = { navigator.navigate(Albums.direction()) },
                     modifier = Modifier
@@ -639,7 +643,7 @@ fun Library(
                         .padding(horizontal = ContentPadding.xLarge)
                         .aspectRatio(1.3f)
                         .fillMaxWidth()
-                )
+                )*/
                 Header(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -664,12 +668,6 @@ fun Library(
                         .offset(y = OFFSET_Y_SEARCH)
                         .fillMaxWidth(),
                 )
-
-                // Add the bottom window padding.
-                item(contentType = "Bottom_padding") {
-                    val inset = LocalWindowPadding.current
-                    Spacer(modifier = Modifier.padding(inset))
-                }
             }
         }
     )

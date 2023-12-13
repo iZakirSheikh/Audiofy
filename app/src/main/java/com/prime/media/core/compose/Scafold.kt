@@ -215,9 +215,10 @@ private inline fun Horizontal(
             val modified = constraints.copy(minWidth = w, maxWidth = w)
             val placeableProgressBar = measurable?.measure(modified)
             val placeableContent = measurables[0].measure(modified)
-            val placeableChannel = measurables[1].measure(modified.copy(minWidth = 0))
+            w = (placeableContent.width * 0.8f).roundToInt()
+            val placeableChannel = measurables[1].measure(modified.copy(minWidth = 0, minHeight = 0, maxWidth = w))
             layout(width, height) {
-                var x: Int = 0
+                var x: Int = placeableNavRail?.width ?: 0
                 var y: Int = 0
                 placeableContent.placeRelative(x, y)
                 // Place toaster at the centre bottom of the screen
@@ -225,10 +226,10 @@ private inline fun Horizontal(
                 x = (placeableNavRail?.width
                     ?: 0) + (placeableContent.width / 2) - placeableChannel.width / 2   // centre
                 // full height - toaster height - navbar - 16dp padding + navbar offset.
-                y = (height - placeableChannel.height)
+                y = (height - placeableChannel.height - 40.dp.toPx().roundToInt())
                 placeableChannel.placeRelative(x, y)
                 // NavBar place at the start of the screen.
-                x = width - (placeableNavRail?.width ?: 0)
+                x = /*width - (placeableNavRail?.width ?: 0)*/ 0
                 y = 0
                 placeableNavRail?.placeRelative(x, y)
                 // Place ProgressBar at the bottom of the screen.
