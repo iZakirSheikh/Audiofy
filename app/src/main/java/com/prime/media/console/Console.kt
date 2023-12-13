@@ -11,6 +11,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.text.format.DateUtils.formatElapsedTime
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
@@ -925,8 +926,14 @@ fun Console(state: Console) {
                 controller.isAppearanceLightNavigationBars = defaultLightSystemBars
 
                 // Reset the screen orientation to allow the system to manage it automatically.
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                //activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
+        }
+
+        val enabled = activity.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        BackHandler(enabled) {
+            // Reset the screen orientation to allow the system to manage it automatically.
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 }

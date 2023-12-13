@@ -3,10 +3,12 @@ package com.prime.media.console
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +43,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -119,7 +122,7 @@ private const val DRAG_STIFF_CONST = 3
 /**
  * The maximum width of the [Horizontal] [MiniPlayer].
  */
-private val HORIZONTAL_MAX_WIDTH = 320.dp
+private val HORIZONTAL_MAX_WIDTH = 340.dp
 
 @Composable
 private fun Layout(
@@ -210,7 +213,8 @@ private fun Layout(
 fun PopupMedia(
     expanded: Boolean,
     onRequestToggle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset.Zero
 ) {
     val remote = (LocalView.current.context as MainActivity).remote
     val isLoaded by remote.loaded.collectAsState(initial = false)
@@ -268,6 +272,7 @@ fun PopupMedia(
             contentColor = Color.SignalWhite,
             border = BorderStroke(1.dp, Material.colors.outline),
             shape = MiniPlayerShape,
+            offset = offset,
             content = {
                 val density = LocalDensity.current
                 Layout(
@@ -275,7 +280,9 @@ fun PopupMedia(
                     progress = progress,
                     isPlaying = isPlaying,
                     remote = remote,
-                    modifier = Modifier.draggable(
+                    modifier = Modifier
+                        .clickable(remember { MutableInteractionSource() }, null, onClick = { navController.navigate(Console.direction())})
+                        .draggable(
                         orientation = Orientation.Horizontal,
                         state = rememberDraggableState() { delta ->
                             // Adjust the drag sensitivity by multiplying or dividing 'delta' as needed.
@@ -309,8 +316,8 @@ fun PopupMedia(
         modifier = modifier
             .clip(shape)
             .combinedClickable(
-                onLongClick = onRequestToggle,
-                onClick = {
+                onClick = onRequestToggle,
+                onLongClick = {
                     // navigate to Console
                     navController.navigate(Console.direction())
                 }
