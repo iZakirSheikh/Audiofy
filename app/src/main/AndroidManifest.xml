@@ -28,6 +28,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout"
             android:launchMode="singleTask">
 
             <!--Activity's Intent Filter-->

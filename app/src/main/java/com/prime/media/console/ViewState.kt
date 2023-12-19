@@ -1,17 +1,70 @@
 package com.prime.media.console
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.net.Uri
+import androidx.annotation.IntDef
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.AnnotatedString
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.AspectRatioFrameLayout.ResizeMode
-import com.prime.media.dialog.PlayingQueue
+import kotlinx.coroutines.flow.Flow
+
+/**
+ * Represents a track, such as subtitle or audio, available in a [MediaItem].
+ * Used to construct a [TrackSelectionOverride] for overriding the default track in [MediaItem].
+ *
+ * @property name The name of the track.
+ * @property params The [TrackSelectionOverride] containing parameters for track selection.
+ *
+ * @see MediaItem
+ * @see TrackSelectionOverride
+ */
+data class TrackInfo(val name: String, val params: TrackSelectionOverride)
+
+@Stable
+interface PlayingQueue {
+    /**
+     * The playing queue.
+     */
+    val queue: Flow<List<MediaItem>>
+    var shuffle: Boolean
+    val current: MediaItem?
+    val playing: Boolean
+
+    /**
+     * Returns if current is last.
+     */
+    val isLast: Boolean
+
+    /**
+     * Play the track of the queue at [position]
+     */
+    fun playTrackAt(position: Int)
+
+    /**
+     * Play the track of the queue identified by the [uri]
+     */
+    fun playTrack(uri: Uri)
+
+    /**
+     * Remove the track from the queue identified by [key].
+     */
+    fun remove(context: Context, key: Uri)
+
+    /**
+     * Toggles the shuffle
+     */
+    fun toggleShuffle()
+
+    fun clear(context: Context)
+}
 
 @Stable
 interface Console : PlayingQueue {
@@ -213,88 +266,83 @@ interface Console : PlayingQueue {
     /**
      * Gets/Sets the visibility of the Media Controller.
      */
-    var visibility: Visibility
+    @get:Visibility
+    @set:Visibility
+    var visibility: Int
+
+    /**
+     * A message to be shown to the user for a limited time.
+     * A null value means no message is set.
+     * A non-null value is reset to null after [DEFAULT_MESSAGE_TIME_OUT] ms.
+     *
+     * @property message The message to display or null to hide it.
+     * @see DEFAULT_MESSAGE_TIME_OUT
+     */
+    var message: CharSequence?
 
 
     companion object {
         const val route = "route_console"
-        fun direction() = route
 
+        fun direction() = route
 
         @SuppressLint("UnsafeOptInUsageError")
         const val RESIZE_MORE_FIT = AspectRatioFrameLayout.RESIZE_MODE_FIT
 
         @SuppressLint("UnsafeOptInUsageError")
         const val RESIZE_MODE_FILL = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+
+        /**
+         * The duration (in ms) for showing a message to the user.
+         * After this time, the [message] property becomes null.
+         *
+         * @see message
+         */
+        const val DEFAULT_MESSAGE_TIME_OUT = 6_000L
+
+        /**
+         * The default amount of time, in milliseconds, after which the value of [visibility]
+         * changes from [VISIBILITY_VISIBLE] to [VISIBILITY_HIDDEN].
+         *
+         * @see visibility
+         */
+        const val DEFAULT_CONTROLLER_VISIBILITY_MILLS = 5_000L
+
+        /**
+         * The controller is visible and will hide after [DEFAULT_CONTROLLER_VISIBILITY_MILLS].
+         */
+        const val VISIBILITY_VISIBLE = 0
+
+        /**
+         * The controller is always visible and does not respond to any events or conditions.
+         */
+        const val VISIBILITY_ALWAYS = 2
+
+        /**
+         * The controller is hidden and can toggle to [VISIBILITY_VISIBLE] and back.
+         */
+        const val VISIBILITY_HIDDEN = 3
+
+        /**
+         * The controller is hidden and cannot be made visible.
+         */
+        const val VISIBILITY_LOCKED = 4
     }
 }
 
 /**
- * Represents a track, such as subtitle or audio, available in a [MediaItem].
- * Used to construct a [TrackSelectionOverride] for overriding the default track in [MediaItem].
+ * An annotation for the visibility of the media controller.
+ * It defines the possible values for the [visibility] property.
  *
- * @property name The name of the track.
- * @property params The [TrackSelectionOverride] containing parameters for track selection.
- *
- * @see MediaItem
- * @see TrackSelectionOverride
+ * @see visibility
  */
-data class TrackInfo(val name: String, val params: TrackSelectionOverride)
-
-private const val CONTROLLER_DEFAULT_VISIBILITY_MILLS = 5_000L
-
-/**
- * Represents the visibility states of a media controller.
- */
-sealed interface Visibility {
-
-    /**
-     * The media controller is currently visible.
-     */
-    data object Visible : Visibility
-
-    /**
-     * The media controller is visible for a limited duration specified by [mills].
-     *
-     * @property mills The duration in milliseconds for which the controller is visible.
-     *                A value of 0 defines an invisible state.
-     */
-    @JvmInline
-    value class Limited(val mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) : Visibility
-
-    /**
-     * The media controller is in a fully locked state after a delay specified by [mills].
-     *
-     * @property mills The duration in milliseconds after which the controller is fully locked.
-     *                A value of 0 defines a fully locked state.
-     */
-    @JvmInline
-    value class Locked(val mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) : Visibility
-
-    /**
-     * Gets weather the controller is visibile full or partially
-     */
-    val isVisible get() = (this is Visible) || ((this is Limited) && (this.mills != 0L))
-
-    /**
-     * Refreshes the instance with new value in case of [Limited] || [Locked] and returns same in case of [Visible].
-     * @param mills: The time in [mills]. default [CONTROLLER_DEFAULT_VISIBILITY_MILLS]. pass 0 to make it invisible.
-     */
-    fun refresh(mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) =
-        when (this) {
-            is Limited -> Limited(mills = mills)
-            is Locked -> Locked(mills = mills)
-            else -> this
-        }
-
-    /**
-     * Toggle between 0 and [mills]. if instance mills is > 0 sets to 0 else [mills].
-     */
-    fun toggle(mills: Long = CONTROLLER_DEFAULT_VISIBILITY_MILLS) =
-        when (this) {
-            is Limited -> Limited(mills = if (this.mills > 0) 0 else mills)
-            is Locked -> Locked(mills = if (this.mills > 0) 0 else mills)
-            else -> this
-        }
-}
-
+@IntDef(
+    Console.VISIBILITY_VISIBLE,
+    Console.VISIBILITY_HIDDEN,
+    Console.VISIBILITY_ALWAYS,
+    Console.VISIBILITY_LOCKED
+)
+@Target(AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.PROPERTY_GETTER)
+@Retention(AnnotationRetention.SOURCE)
+@MustBeDocumented
+annotation class Visibility

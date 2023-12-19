@@ -359,7 +359,7 @@
 
     <!--======================         Playback speed Dialog        ======================      -->
     <string name="playback_speed_dialog_title">Playback Speed &beta;</string>
-    <string name="playback_speed_dialog_x_f">%1$.2f x</string>
+    <string name="playback_speed_dialog_x_f">%1$.2fx</string>
 
     <!--======================         AudioFx        ======================      -->
     <string name="audio_fx_scr_ttile">@string/equalizer</string>

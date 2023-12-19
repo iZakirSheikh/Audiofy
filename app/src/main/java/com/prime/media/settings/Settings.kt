@@ -43,7 +43,6 @@ import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
@@ -69,7 +68,8 @@ import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
-import com.prime.media.core.compose.LocalWindowSizeClass
+import com.prime.media.core.compose.LocalWindowSize
+import com.prime.media.core.compose.Reach
 import com.prime.media.core.compose.SliderPreference2
 import com.prime.media.core.compose.purchase
 import com.prime.media.darkShadowColor
@@ -477,9 +477,9 @@ private fun Compact(state: Settings) {
 @Composable
 @NonRestartableComposable
 fun Settings(state: Settings) {
-    val windowClass = LocalWindowSizeClass.current
-    when (windowClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> Compact(state = state)
+    val reach = LocalWindowSize.current.widthReach
+    when (reach) {
+        Reach.Compact -> Compact(state = state)
         else -> Compact(state = state) // for every one currently
     }
 }
