@@ -108,10 +108,6 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override val inAppUpdateProgress: Float
         get() = _inAppUpdateProgress.floatValue
 
-    private lateinit var _isPLayerReady: State<Boolean>
-    override val isPlayerReady: Boolean
-        get() = _isPLayerReady.value
-
     // injectable code.
     @Inject
     lateinit var preferences: Preferences
@@ -360,8 +356,6 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Set the content.
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
-            // Maybe this needs to be moved somewhere else.
-            _isPLayerReady = remote.loaded.collectAsState(initial = false)
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
                 LocalWindowSizeClass provides windowSizeClass,
