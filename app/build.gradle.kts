@@ -1,3 +1,7 @@
+@file:SuppressLint("UseTomlInstead")
+
+import android.annotation.SuppressLint
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -28,8 +32,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 69
-        versionName = "2.7.7"
+        versionCode = 71
+        versionName = "2.7.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -68,7 +72,7 @@ android {
         freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn", "-Xcontext-receivers")
     }
     buildFeatures { compose = true }
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.4" }
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.6" }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 
@@ -77,13 +81,13 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     // FixMe: Downgrading compose due to crashes in constraint layout within lazy list.
     //        This temporary solution addresses the issue until a more robust fix is implemented.
-    val compose_version = "1.6.0-alpha08"
+    val compose_version = "1.6.0-beta03"
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
     implementation("androidx.compose.animation:animation-graphics:$compose_version")
     implementation("androidx.compose.material:material:$compose_version")
     // Integration with activities
-    implementation("androidx.activity:activity-compose:1.8.1")
+    implementation("androidx.activity:activity-compose:1.8.2")
     // Material design icons
     implementation("androidx.compose.material:material-icons-core:$compose_version")
     implementation("androidx.compose.material:material-icons-extended:$compose_version")
@@ -120,15 +124,16 @@ dependencies {
     // Unity Ads
     implementation("com.unity3d.ads:unity-ads:4.9.2")
     // Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.navigation:navigation-compose:2.7.6")
     // Compose Downloadable fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.48.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.48.1")
+    val hilt_version = libs.versions.hilt.get()
+    implementation("com.google.dagger:hilt-android:${hilt_version}")
+    kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     // Room Database
-    val room_version = "2.6.0"
+    val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")

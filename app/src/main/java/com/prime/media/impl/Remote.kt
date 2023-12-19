@@ -14,6 +14,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.mediaUri
@@ -60,7 +61,15 @@ private val MediaBrowser.nextMediaItem
  */
 fun Remote(context: Context): Remote = RemoteImpl(context)
 
-private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
+// TODO: currently a quickfix requirement. find better alternative.
+private fun Context.browser(listener: MediaBrowser.Listener) =
+    MediaBrowser
+        .Builder(this, SessionToken(this, ComponentName(this, Playback::class.java)))
+        .setListener(listener)
+        .buildAsync()
+
+
+private class RemoteImpl(val context: Context) : Remote, MediaBrowser.Listener {
     /**
      * A simple channel to broadcast the [MediaBrowser.Listener.onChildrenChanged] parents.
      */
@@ -76,9 +85,16 @@ private class RemoteImpl(context: Context) : Remote, MediaBrowser.Listener {
         GlobalScope.launch { channel.emit(parentId) }
     }
 
-    private val fBrowser = MediaBrowser.Builder(
-        context, SessionToken(context, ComponentName(context, Playback::class.java))
-    ).setListener(this).buildAsync()
+    // TODO: A quickfix, find better alternative of doing this.
+    private var fBrowser: ListenableFuture<MediaBrowser> = context.browser(this)
+        get() {
+            val value =
+                if (field.isCancelled) context.browser(this)
+            else field
+            field = value
+            return value
+        }
+
     val browser get() = if (fBrowser.isDone) fBrowser.get() else null
 
     override val position
