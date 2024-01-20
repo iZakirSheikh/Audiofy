@@ -34,20 +34,22 @@ private const val ID_OPTIONS = "_options"
 private const val ID_VIDEO_SURFACE = "_video_surface"
 private const val ID_MESSAGE = "_message"
 private const val ID_BACKGROUND = "_background"
+private const val ID_SCRIM = "_scrim"
 
 // These are required so that other can use these as ids.
-inline val Console.Companion.ID_SIGNATURE inline get() = "_signature"
-inline val Console.Companion.ID_CLOSE_BTN inline get() = "_close"
-inline val Console.Companion.ID_ARTWORK inline get() = "_artwork"
-inline val Console.Companion.ID_TITLE inline get() = "_title"
-inline val Console.Companion.ID_POSITION inline get() = "_position"
-inline val Console.Companion.ID_SUBTITLE inline get() = "_subtitle"
-inline val Console.Companion.ID_CONTROLS inline get() = "_controls"
-inline val Console.Companion.ID_TIME_BAR inline get() = "_time_bar"
-inline val Console.Companion.ID_OPTIONS inline get() = "_options"
-inline val Console.Companion.ID_VIDEO_SURFACE inline get() = "_video_surface"
-inline val Console.Companion.ID_MESSAGE inline get() = "_message"
-inline val Console.Companion.ID_BACKGROUND inline get() = "_background"
+val Console.Companion.ID_SIGNATURE get() = com.prime.media.console.ID_SIGNATURE
+val Console.Companion.ID_CLOSE_BTN get() = com.prime.media.console.ID_CLOSE_BTN
+val Console.Companion.ID_ARTWORK get() = com.prime.media.console.ID_ARTWORK
+val Console.Companion.ID_TITLE get() = com.prime.media.console.ID_TITLE
+val Console.Companion.ID_POSITION get() = com.prime.media.console.ID_POSITION
+val Console.Companion.ID_SUBTITLE get() = com.prime.media.console.ID_SUBTITLE
+val Console.Companion.ID_CONTROLS get() = com.prime.media.console.ID_CONTROLS
+val Console.Companion.ID_TIME_BAR get() = com.prime.media.console.ID_TIME_BAR
+val Console.Companion.ID_OPTIONS get() = com.prime.media.console.ID_OPTIONS
+val Console.Companion.ID_VIDEO_SURFACE get() = com.prime.media.console.ID_VIDEO_SURFACE
+val Console.Companion.ID_MESSAGE get() = com.prime.media.console.ID_MESSAGE
+val Console.Companion.ID_BACKGROUND get() = com.prime.media.console.ID_BACKGROUND
+val Console.Companion.ID_SCRIM get() = com.prime.media.console.ID_SCRIM
 
 
 /**
@@ -79,6 +81,7 @@ private val REF_OPTIONS = ConstrainedLayoutReference(ID_OPTIONS)
 private val REF_MESSAGE = ConstrainedLayoutReference(ID_MESSAGE)
 private val REF_VIDEO_SURFACE = ConstrainedLayoutReference(ID_VIDEO_SURFACE)
 private val REF_BACKGROUND = ConstrainedLayoutReference(ID_BACKGROUND)
+private val REF_SCRIM = ConstrainedLayoutReference(ID_SCRIM)
 
 
 /**
@@ -146,6 +149,7 @@ private val onlySurface =
     ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
         // Hide the controllers and just show the video surface.
         hide(
+            REF_SCRIM,
             REF_CLOSE_BTN,
             REF_SIGNATURE,
             REF_ARTWORK,
@@ -185,6 +189,13 @@ private fun Compact(
     val (left, up, right, down) = insets
     // Set the visibility of Sg=ignature to gone.
     constrain(REF_SIGNATURE) {
+        visibility = Visibility.Gone
+    }
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
         visibility = Visibility.Gone
     }
 
@@ -293,6 +304,14 @@ private fun Portrait(
     compact: Boolean
 ) = ConstraintSet(TITLE_TEXT_SIZE_LARGE) {
     val (left, up, right, down) = insets
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+        visibility = Visibility.Gone
+    }
+
     horizontal(
         REF_SIGNATURE,
         REF_CLOSE_BTN,
@@ -400,7 +419,16 @@ private fun Landscape(
     insets: DpRect,
     compact: Boolean
 ) = ConstraintSet(TITLE_TEXT_SIZE_LARGE) {
+
     val (left, up, right, down) = insets
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+        visibility = Visibility.Gone
+    }
+
     constrain(REF_SIGNATURE) {
         // Will be set to visible in future releases.
         visibility = if (compact) Visibility.Gone else Visibility.Invisible
@@ -506,6 +534,14 @@ private fun Medium(
     insets: DpRect
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
     val (left, up, right, down) = insets
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+        visibility = Visibility.Gone
+    }
+
     // This Config of controller doesnt support signature
     constrain(REF_SIGNATURE) {
         visibility = Visibility.Gone
@@ -593,6 +629,14 @@ private fun Large(
     insets: DpRect
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
     val (left, up, right, down) = insets
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+        visibility = Visibility.Gone
+    }
+
     // This Config of controller doesnt support signature
     constrain(REF_SIGNATURE) {
         visibility = Visibility.Gone
@@ -684,6 +728,13 @@ private fun Large(
 private fun VideoPortrait(
     insets: DpRect
 ): NewConstraintSet = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
+    val (left, up, right, down) = insets
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+    }
+
     constrain(REF_SIGNATURE) {
         visibility = Visibility.Gone
     }
@@ -691,15 +742,14 @@ private fun VideoPortrait(
         visibility = Visibility.Gone
     }
 
-    val (left, up, right, down) = insets
-
-    val titleCloseBtnChain = horizontal(
+    horizontal(
         REF_TITLE,
         REF_CLOSE_BTN,
         chainStyle = ChainStyle.SpreadInside,
         constrainBlock = {
-            start.linkTo(parent.start, ContentPadding.normal + left)
-            end.linkTo(parent.end, ContentPadding.normal + right)
+            start.linkTo(parent.start, ContentPadding.large + left)
+            end.linkTo(parent.end, ContentPadding.large + right)
+
         }
     )
 
@@ -715,50 +765,28 @@ private fun VideoPortrait(
         start.linkTo(REF_TITLE.start)
     }
 
-    // Vertical Chain.
-    vertical(
-        REF_CLOSE_BTN,
-        REF_CONTROLS,
-        REF_OPTIONS,
-        REF_TIME_BAR,
-        REF_POSITION,
-        chainStyle = ChainStyle.Spread,
-        constrainBlock = {
-            top.linkTo(parent.top, ContentPadding.normal + up)
-            bottom.linkTo(parent.bottom, ContentPadding.normal + down)
-        }
-    )
+    constrain(REF_CLOSE_BTN){
+        top.linkTo(parent.top, up + ContentPadding.normal)
+    }
 
     constrain(REF_CONTROLS) {
-        start.linkTo(REF_TIME_BAR.start)
-        end.linkTo(REF_TIME_BAR.end)
-        // verticalChainWeight = 1.0f
-        height = Dimension.fillToConstraints
+        linkTo(REF_TIME_BAR.start, parent.top, REF_TIME_BAR.end, parent.bottom)
     }
 
     constrain(REF_OPTIONS) {
         end.linkTo(REF_TIME_BAR.end)
+        bottom.linkTo(REF_TIME_BAR.top)
     }
 
     constrain(REF_TIME_BAR) {
         start.linkTo(parent.start, ContentPadding.normal + left)
-        end.linkTo(parent.end, ContentPadding.normal + left)
+        end.linkTo(parent.end, ContentPadding.normal + right)
+        bottom.linkTo(REF_POSITION.top)
         width = Dimension.fillToConstraints
     }
     constrain(REF_POSITION) {
         start.linkTo(REF_TIME_BAR.start, ContentPadding.normal)
-    }
-
-    constrain(REF_BACKGROUND) {
-        linkTo(parent.start, parent.top, parent.end, parent.bottom)
-        width = Dimension.fillToConstraints
-        height = Dimension.fillToConstraints
-    }
-
-    constrain(REF_VIDEO_SURFACE) {
-        linkTo(parent.start, parent.top, parent.end, parent.bottom)
-        width = Dimension.fillToConstraints
-        height = Dimension.fillToConstraints
+        bottom.linkTo(parent.bottom, ContentPadding.normal + down)
     }
 }
 
@@ -768,6 +796,13 @@ private fun VideoPortrait(
 private fun VideoLandscape(
     insets: DpRect
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
+
+    constrain(REF_SCRIM) {
+        linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        width = Dimension.fillToConstraints
+        height = Dimension.fillToConstraints
+    }
+
     constrain(REF_SIGNATURE) {
         visibility = Visibility.Gone
     }
@@ -779,7 +814,7 @@ private fun VideoLandscape(
     }
 
     val (left, up, right, down) = insets
-    val topChain = horizontal(
+   horizontal(
         REF_CLOSE_BTN,
         REF_TITLE,
         REF_OPTIONS,
@@ -825,8 +860,9 @@ private fun VideoLandscape(
         start.linkTo(REF_TIME_BAR.start, ContentPadding.normal)
     }
     constrain(REF_TIME_BAR) {
-        start.linkTo(topChain.start)
-        end.linkTo(topChain.end)
+        start.linkTo(parent.start, ContentPadding.xLarge + left)
+        end.linkTo(parent.end, ContentPadding.xLarge + right)
+        width = Dimension.fillToConstraints
     }
 
     constrain(REF_BACKGROUND) {

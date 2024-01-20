@@ -116,7 +116,7 @@ kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 # --------------------------------------------------------------------------------------------------
 # Custom slider with a wavy wave-like design, offering a unique and visually appealing way for users to
 # make selections or adjustments within the app.
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "0.6.0" }
+wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "0.7.0" }
 #Splashscreen
 # --------------------------------------------------------------------------------------------------
 splashscreen = {module = "androidx.core:core-splashscreen", version = "1.0.1"}

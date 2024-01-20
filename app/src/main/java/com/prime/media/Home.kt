@@ -318,7 +318,7 @@ private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
 private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
 
 @Composable
-fun Material(
+private fun Material(
     darkTheme: Boolean,
     content: @Composable () -> Unit,
 ) {
