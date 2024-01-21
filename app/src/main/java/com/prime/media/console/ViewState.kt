@@ -298,7 +298,7 @@ interface Console : PlayingQueue {
          *
          * @see message
          */
-        const val DEFAULT_MESSAGE_TIME_OUT = 6_000L
+        const val DEFAULT_MESSAGE_TIME_OUT = 1_000L
 
         /**
          * The default amount of time, in milliseconds, after which the value of [visibility]

@@ -290,19 +290,24 @@ class ConsoleViewModel @Inject constructor(
     override var visibility: Int
         get() = _visibility
         set(value) {
-            _visibility = value
-            // Cancel the previous job if any, to avoid conflicting updates
-            jobs[1]?.cancel()
-            // Return if the current visibility is not 'visible'
-            // Only in this case, automation for hiding is needed.
-            if (_visibility != Console.VISIBILITY_VISIBLE)
-                return
-            // Launch a new coroutine job to update the visibility after the duration
-            jobs[1] = suspended {
-                // Wait for the specified duration
-                delay(Console.DEFAULT_CONTROLLER_VISIBILITY_MILLS)
-                // After the delay, update the visibility to either invisible or locked
-                _visibility = Console.VISIBILITY_HIDDEN
+            suspended {
+                // Delay setting of value as it is causing a glitch when locking visibility.
+                if (value == Console.VISIBILITY_LOCKED)
+                    delay(50L)
+                _visibility = value
+                // Cancel the previous job if any, to avoid conflicting updates
+                jobs[1]?.cancel()
+                // Return if the current visibility is not 'visible'
+                // Only in this case, automation for hiding is needed.
+                if (_visibility != Console.VISIBILITY_VISIBLE)
+                    return@suspended
+                // Launch a new coroutine job to update the visibility after the duration
+                jobs[1] = suspended {
+                    // Wait for the specified duration
+                    delay(Console.DEFAULT_CONTROLLER_VISIBILITY_MILLS)
+                    // After the delay, update the visibility to either invisible or locked
+                    _visibility = Console.VISIBILITY_HIDDEN
+                }
             }
         }
 

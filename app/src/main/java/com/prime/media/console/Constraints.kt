@@ -22,36 +22,6 @@ import com.prime.media.core.compose.WindowSize
 
 private const val TAG = "ConstraintSets"
 
-private const val ID_SIGNATURE = "_signature"
-private const val ID_CLOSE_BTN = "_close"
-private const val ID_ARTWORK = "_artwork"
-private const val ID_TITLE = "_title"
-private const val ID_POSITION = "_position"
-private const val ID_SUBTITLE = "_subtitle"
-private const val ID_CONTROLS = "_controls"
-private const val ID_TIME_BAR = "_time_bar"
-private const val ID_OPTIONS = "_options"
-private const val ID_VIDEO_SURFACE = "_video_surface"
-private const val ID_MESSAGE = "_message"
-private const val ID_BACKGROUND = "_background"
-private const val ID_SCRIM = "_scrim"
-
-// These are required so that other can use these as ids.
-val Console.Companion.ID_SIGNATURE get() = com.prime.media.console.ID_SIGNATURE
-val Console.Companion.ID_CLOSE_BTN get() = com.prime.media.console.ID_CLOSE_BTN
-val Console.Companion.ID_ARTWORK get() = com.prime.media.console.ID_ARTWORK
-val Console.Companion.ID_TITLE get() = com.prime.media.console.ID_TITLE
-val Console.Companion.ID_POSITION get() = com.prime.media.console.ID_POSITION
-val Console.Companion.ID_SUBTITLE get() = com.prime.media.console.ID_SUBTITLE
-val Console.Companion.ID_CONTROLS get() = com.prime.media.console.ID_CONTROLS
-val Console.Companion.ID_TIME_BAR get() = com.prime.media.console.ID_TIME_BAR
-val Console.Companion.ID_OPTIONS get() = com.prime.media.console.ID_OPTIONS
-val Console.Companion.ID_VIDEO_SURFACE get() = com.prime.media.console.ID_VIDEO_SURFACE
-val Console.Companion.ID_MESSAGE get() = com.prime.media.console.ID_MESSAGE
-val Console.Companion.ID_BACKGROUND get() = com.prime.media.console.ID_BACKGROUND
-val Console.Companion.ID_SCRIM get() = com.prime.media.console.ID_SCRIM
-
-
 /**
  * Represents a new ConstraintSet until Compose ConstraintLayout adds the ability to support custom properties
  * directly in [ConstraintSet]. Some properties are private to the constraint configuration and
@@ -64,24 +34,40 @@ val Console.Companion.ID_SCRIM get() = com.prime.media.console.ID_SCRIM
  */
 // TODO - Remove [NewConstraintSet] and return only [ConstraintSet] once custom property support is added.
 @Stable
-interface NewConstraintSet {
+interface Constraints {
     val titleTextSize: TextUnit
     val value: ConstraintSet
+
+    companion object {
+        const val ID_SIGNATURE = "_signature"
+        const val ID_CLOSE_BTN = "_close"
+        const val ID_ARTWORK = "_artwork"
+        const val ID_TITLE = "_title"
+        const val ID_POSITION = "_position"
+        const val ID_SUBTITLE = "_subtitle"
+        const val ID_CONTROLS = "_controls"
+        const val ID_TIME_BAR = "_time_bar"
+        const val ID_OPTIONS = "_options"
+        const val ID_VIDEO_SURFACE = "_video_surface"
+        const val ID_MESSAGE = "_message"
+        const val ID_BACKGROUND = "_background"
+        const val ID_SCRIM = "_scrim"
+    }
 }
 
-private val REF_SIGNATURE = ConstrainedLayoutReference(ID_SIGNATURE)
-private val REF_CLOSE_BTN = ConstrainedLayoutReference(ID_CLOSE_BTN)
-private val REF_ARTWORK = ConstrainedLayoutReference(ID_ARTWORK)
-private val REF_TITLE = ConstrainedLayoutReference(ID_TITLE)
-private val REF_POSITION = ConstrainedLayoutReference(ID_POSITION)
-private val REF_SUBTITLE = ConstrainedLayoutReference(ID_SUBTITLE)
-private val REF_CONTROLS = ConstrainedLayoutReference(ID_CONTROLS)
-private val REF_TIME_BAR = ConstrainedLayoutReference(ID_TIME_BAR)
-private val REF_OPTIONS = ConstrainedLayoutReference(ID_OPTIONS)
-private val REF_MESSAGE = ConstrainedLayoutReference(ID_MESSAGE)
-private val REF_VIDEO_SURFACE = ConstrainedLayoutReference(ID_VIDEO_SURFACE)
-private val REF_BACKGROUND = ConstrainedLayoutReference(ID_BACKGROUND)
-private val REF_SCRIM = ConstrainedLayoutReference(ID_SCRIM)
+private val REF_SIGNATURE = ConstrainedLayoutReference(Constraints.ID_SIGNATURE)
+private val REF_CLOSE_BTN = ConstrainedLayoutReference(Constraints.ID_CLOSE_BTN)
+private val REF_ARTWORK = ConstrainedLayoutReference(Constraints.ID_ARTWORK)
+private val REF_TITLE = ConstrainedLayoutReference(Constraints.ID_TITLE)
+private val REF_POSITION = ConstrainedLayoutReference(Constraints.ID_POSITION)
+private val REF_SUBTITLE = ConstrainedLayoutReference(Constraints.ID_SUBTITLE)
+private val REF_CONTROLS = ConstrainedLayoutReference(Constraints.ID_CONTROLS)
+private val REF_TIME_BAR = ConstrainedLayoutReference(Constraints.ID_TIME_BAR)
+private val REF_OPTIONS = ConstrainedLayoutReference(Constraints.ID_OPTIONS)
+private val REF_MESSAGE = ConstrainedLayoutReference(Constraints.ID_MESSAGE)
+private val REF_VIDEO_SURFACE = ConstrainedLayoutReference(Constraints.ID_VIDEO_SURFACE)
+private val REF_BACKGROUND = ConstrainedLayoutReference(Constraints.ID_BACKGROUND)
+private val REF_SCRIM = ConstrainedLayoutReference(Constraints.ID_SCRIM)
 
 
 /**
@@ -121,18 +107,18 @@ private fun ConstraintSetScope.hide(
 }
 
 /**
- * Creates a new [NewConstraintSet] with custom properties, including the title text size,
+ * Creates a new [Constraints] with custom properties, including the title text size,
  * and original constraints defined in the [description] block.
  *
  * @param titleTextSize The size of the title in the layout.
  * @param description A lambda block to define constraints using [ConstraintSetScope].
  *
- * @return A new [NewConstraintSet] instance.
+ * @return A new [Constraints] instance.
  */
 private fun ConstraintSet(
     titleTextSize: TextUnit,
     description: ConstraintSetScope.() -> Unit
-) = object : NewConstraintSet {
+) = object : Constraints {
     override val titleTextSize: TextUnit
         get() = titleTextSize
     override val value: ConstraintSet = ConstraintSet(description)
@@ -161,6 +147,10 @@ private val onlySurface =
             REF_TIME_BAR
         )
 
+        constrain(REF_MESSAGE){
+            linkTo(parent.start, parent.top, parent.end, parent.bottom)
+        }
+
         constrain(REF_BACKGROUND) {
             linkTo(parent.start, parent.top, parent.end, parent.bottom)
             width = Dimension.fillToConstraints
@@ -187,6 +177,12 @@ private fun Compact(
 ) = ConstraintSet(if (compact) TITLE_TEXT_SIZE_NORMAL else TITLE_TEXT_SIZE_LARGE) {
     // De-structure insets
     val (left, up, right, down) = insets
+
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        bottom.linkTo(parent.bottom, ContentPadding.medium)
+    }
+
     // Set the visibility of Sg=ignature to gone.
     constrain(REF_SIGNATURE) {
         visibility = Visibility.Gone
@@ -297,13 +293,18 @@ private fun Compact(
  *
  * TODO: Maybe implement scaling up for larger screens.
  *
- * @return A [NewConstraintSet] instance representing the portrait layout constraints.
+ * @return A [Constraints] instance representing the portrait layout constraints.
  */
 private fun Portrait(
     insets: DpRect,
     compact: Boolean
 ) = ConstraintSet(TITLE_TEXT_SIZE_LARGE) {
     val (left, up, right, down) = insets
+
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        top.linkTo(REF_TIME_BAR.bottom, ContentPadding.medium)
+    }
 
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
@@ -422,6 +423,11 @@ private fun Landscape(
 
     val (left, up, right, down) = insets
 
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        top.linkTo(REF_TIME_BAR.bottom, ContentPadding.medium)
+    }
+
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
         width = Dimension.fillToConstraints
@@ -528,12 +534,17 @@ private fun Landscape(
  *
  * @param insets System window insets to account for padding around the medium layout.
  *
- * @return A [NewConstraintSet] instance representing the constraints for the medium-sized window layout.
+ * @return A [Constraints] instance representing the constraints for the medium-sized window layout.
  */
 private fun Medium(
     insets: DpRect
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
     val (left, up, right, down) = insets
+
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        top.linkTo(REF_TIME_BAR.bottom, ContentPadding.medium)
+    }
 
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
@@ -630,6 +641,11 @@ private fun Large(
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
     val (left, up, right, down) = insets
 
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        top.linkTo(REF_TIME_BAR.bottom, ContentPadding.medium)
+    }
+
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
         width = Dimension.fillToConstraints
@@ -723,12 +739,13 @@ private fun Large(
  *
  * @param insets System window insets to account for padding around the video portrait layout.
  *
- * @return A [NewConstraintSet] instance representing the constraints for the video portrait layout.
+ * @return A [Constraints] instance representing the constraints for the video portrait layout.
  */
 private fun VideoPortrait(
     insets: DpRect
-): NewConstraintSet = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
+): Constraints = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
     val (left, up, right, down) = insets
+
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
         width = Dimension.fillToConstraints
@@ -788,6 +805,11 @@ private fun VideoPortrait(
         start.linkTo(REF_TIME_BAR.start, ContentPadding.normal)
         bottom.linkTo(parent.bottom, ContentPadding.normal + down)
     }
+
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.end)
+        top.linkTo(parent.top, 150.dp)
+    }
 }
 
 /**
@@ -796,6 +818,10 @@ private fun VideoPortrait(
 private fun VideoLandscape(
     insets: DpRect
 ) = ConstraintSet(TITLE_TEXT_SIZE_NORMAL) {
+
+    constrain(REF_MESSAGE){
+        linkTo(parent.start, parent.top, parent.end, parent.bottom, topMargin = -130.dp)
+    }
 
     constrain(REF_SCRIM) {
         linkTo(parent.start, parent.top, parent.end, parent.bottom)
@@ -893,7 +919,7 @@ fun calculateConstraintSet(
     insets: DpRect,
     isVideo: Boolean,
     forceOnlyController: Boolean,
-): NewConstraintSet {
+): Constraints {
 
     // Destructure the width and height from the WindowSize object
     val (wReach, hReach) = windowSize

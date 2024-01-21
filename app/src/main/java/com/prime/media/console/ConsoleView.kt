@@ -25,8 +25,10 @@ import android.text.format.DateUtils.formatElapsedTime
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.IntDef
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
@@ -63,6 +65,7 @@ import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.ScreenLockLandscape
@@ -151,6 +154,7 @@ import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
+import com.prime.media.core.util.DateUtils
 import com.prime.media.darkShadowColor
 import com.prime.media.effects.AudioFx
 import com.prime.media.isAppearanceLightSystemBars
@@ -253,6 +257,21 @@ private const val REQUEST_REQUIRES_LIGHT_SYSTEM_BARS = 4
 /** @see */
 private const val REQUEST_REQUIRES_DARK_SYSTEM_BARS = 5
 
+/**
+ * Request to toggle the [Console] visibility between [Console.VISIBILITY_LOCKED] and [Console.VISIBILITY_VISIBLE]
+ */
+private const val REQUEST_TOOGLE_LOCK = 6
+
+/**
+ * @see REQUEST_TOOGLE_LOCK
+ */
+private const val REQUEST_TOGGLE_VISIBILITY = 7
+
+
+/**
+ * Toggles [toggleRotationLock] between locked and unlocked.
+ */
+private const val REQUEST_TOGGLE_ROTATION_LOCK = 8
 
 /**
  * Annotation to restrict valid values for request types.
@@ -274,7 +293,10 @@ private const val REQUEST_REQUIRES_DARK_SYSTEM_BARS = 5
     REQUEST_SHOW_PLAYING_QUEUE,
     REQUEST_SHOW_PROPERTIES,
     REQUEST_REQUIRES_LIGHT_SYSTEM_BARS,
-    REQUEST_REQUIRES_DARK_SYSTEM_BARS
+    REQUEST_REQUIRES_DARK_SYSTEM_BARS,
+    REQUEST_TOOGLE_LOCK,
+    REQUEST_TOGGLE_VISIBILITY,
+    REQUEST_TOGGLE_ROTATION_LOCK
 )
 @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.PROPERTY, AnnotationTarget.TYPE)
 @Retention(AnnotationRetention.SOURCE)
@@ -416,32 +438,6 @@ private fun Console.ensureAlwaysVisible(enabled: Boolean) {
         !isVideo -> return // because in this case it will always be visible.
         visibility == Console.VISIBILITY_ALWAYS && !enabled -> Console.VISIBILITY_VISIBLE
         else -> Console.VISIBILITY_ALWAYS
-    }
-}
-
-/**
- * Toggles the lock state of the console's visibility. If the current visibility is
- * [Console.VISIBILITY_LOCKED], it sets the visibility to [Console.VISIBILITY_VISIBLE];
- * otherwise, it sets the visibility to [Console.VISIBILITY_LOCKED].
- */
-private fun Console.toggleLock() {
-    visibility = when (visibility) {
-        Console.VISIBILITY_LOCKED -> Console.VISIBILITY_VISIBLE
-        else -> Console.VISIBILITY_LOCKED
-    }
-}
-
-/**
- * Toggles the visibility state of the console. If the current visibility is
- * [Console.VISIBILITY_LOCKED], [Console.VISIBILITY_ALWAYS] the visibility remains unchanged. If the visibility is
- * [Console.VISIBILITY_VISIBLE] it sets the visibility to [Console.VISIBILITY_VISIBLE]. Otherwise,
- * it sets the visibility to [Console.VISIBILITY_HIDDEN].
- */
-private fun Console.toggleVisibility() {
-    visibility = when (visibility) {
-        Console.VISIBILITY_LOCKED, Console.VISIBILITY_ALWAYS -> return
-        Console.VISIBILITY_VISIBLE -> Console.VISIBILITY_HIDDEN
-        else -> Console.VISIBILITY_VISIBLE
     }
 }
 
@@ -625,9 +621,10 @@ private inline fun Controls(
  * @param state The current state of the console.
  */
 @Composable
-private inline fun TimeBar(
+private fun TimeBar(
     state: Console,
     modifier: Modifier = Modifier,
+    onRequest: (request: @Request Int) -> Boolean,
     @Seekbar style: Int = SEEKBAR_STYLE_WAVY,
     accent: Color = Material.colors.primary,
 ) = Row(
@@ -656,7 +653,7 @@ private inline fun TimeBar(
             LocalInspectionMode.current || context.activity.isOrientationLocked -> Icons.Outlined.ScreenLockLandscape
             else -> Icons.Outlined.ScreenRotation
         },
-        onClick = context.activity::toggleRotationLock
+        onClick = { onRequest(REQUEST_TOGGLE_ROTATION_LOCK) }
     )
 }
 
@@ -720,6 +717,7 @@ private inline fun MenuItem(
 @Composable
 private fun More(
     state: Console,
+    onRequest: (request: @Request Int) -> Boolean,
     modifier: Modifier = Modifier
 ) {
     // If the 'More' is compact, it includes options as well.
@@ -834,24 +832,17 @@ private fun More(
                     MenuItem(
                         title = "Lock",
                         subtitle = "Lock/Hide controller",
-                        onClick = state::toggleLock,
-                        icon = Icons.Outlined.Share,
-                        enabled = isVideo
+                        icon = Icons.Outlined.Lock,
+                        enabled = isVideo,
+                        onClick = {
+                            // handle lock toggle request
+                            onRequest(REQUEST_TOOGLE_LOCK)
+                            expanded = 0
+                        }
                     )
 
                     // Share
-                    MenuItem(
-                        title = "Share",
-                        onClick = { /*TODO: Not Implemented yet*/ },
-                        icon = Icons.Outlined.Share,
-                    )
-
                     // Properties
-                    MenuItem(
-                        title = "Properties",
-                        onClick = { /*TODO: Not Implemented yet*/ },
-                        icon = Icons.Outlined.Info,
-                    )
                 }
             )
         }
@@ -865,9 +856,9 @@ private fun More(
  * @param state The current state of the console.
  */
 @Composable
-private inline fun Options(
+private fun Options(
     state: Console,
-    crossinline onRequest: (request: @Request Int) -> Boolean,
+    onRequest: (request: @Request Int) -> Boolean,
     modifier: Modifier = Modifier,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -970,7 +961,7 @@ private inline fun Options(
     )
 
     // More
-    More(state = state)
+    More(state = state, onRequest)
 }
 
 /**
@@ -1002,13 +993,30 @@ private fun Background(
     }
 }
 
+
+@Composable
+private fun Message(
+    message: CharSequence?,
+    modifier: Modifier = Modifier
+) {
+    // Early return when message is empty
+    if (message == null) return Unit
+    Label(
+        text = message,
+        modifier = modifier
+            .shadow(ContentElevation.medium, Material.shapes.small2, true)
+            .background(Color.Black)
+            .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
+    )
+}
+
 /**
  * Composable function that renders the main content of the console, managing layout, media
  * playback, and user interactions.
  *
  * @param state The current state of the console, providing access to playback information, UI
  *              configuration, and content metadata.
- * @param constraints A [NewConstraintSet] that defines the layout constraints for the content,
+ * @param constraints A [Constraints] that defines the layout constraints for the content,
  *                    ensuring proper positioning and adaptability.
  * @param onRequest A callback function that handles requests from the main content, such as showing
  *                  dialogs or handling back button presses.
@@ -1018,7 +1026,7 @@ private fun Background(
 @Composable
 private fun MainContent(
     state: Console,
-    constraints: NewConstraintSet,
+    constraints: Constraints,
     onRequest: (request: @Request Int) -> Boolean,
     modifier: Modifier = Modifier
 ) = ConstraintLayout(
@@ -1087,7 +1095,7 @@ private fun MainContent(
         // The Background of this component.
         Background(
             style = background,
-            modifier = Modifier.layoutId(Console.ID_BACKGROUND)
+            modifier = Modifier.layoutId(Constraints.ID_BACKGROUND)
         )
 
         // VideoSurface
@@ -1097,19 +1105,55 @@ private fun MainContent(
                 player = state.player,
                 resizeMode = state.resizeMode,
                 modifier = Modifier
-                    .layoutId(Console.ID_VIDEO_SURFACE)
-                    // Toggle the visibility of the player view when tapped
+                    .layoutId(Constraints.ID_VIDEO_SURFACE)
+                    // TODO - Find Proper Place to store this logic.
                     // TODO - Add support for other gestures like seek, volume +/-, Brightness +/-
-                    .pointerInput("") {
-                        detectTapGestures {
-                            state.toggleVisibility()
-                        }
+                    .pointerInput("tapGesture") {
+                        var lastTapTime = -1L; var tapCount = 1 // Track double tap timing and count
+                        detectTapGestures(
+                            // Reset onTap
+                            onTap = { tapCount = 1; lastTapTime = -1L; onRequest(REQUEST_TOGGLE_VISIBILITY) },
+                            onLongPress = { onRequest(REQUEST_TOOGLE_LOCK) },
+                            onDoubleTap = { offset ->
+                                val visibility = state.visibility
+                                val isLocked = visibility == Console.VISIBILITY_LOCKED
+                                if (isLocked) {
+                                    // Show message and return on lock
+                                    onRequest(REQUEST_TOGGLE_VISIBILITY)
+                                    return@detectTapGestures
+                                }
+                                // Ensure controller is hidden while tapping.
+                                val visible = state.visibility == Console.VISIBILITY_VISIBLE
+                                if (visible)
+                                    state.visibility = Console.VISIBILITY_HIDDEN
+                                val current = System.currentTimeMillis()
+                                // Check if it is a continuous fast tap.
+                                val isFastTap = current - lastTapTime < 600 // 600ms double tap window
+                                if (isFastTap) tapCount++ else tapCount = 1
+                                lastTapTime = current
+                                val (width, _) = size
+                                val (x, _) = offset // Extract tap position
+                                // Maybe check if the device is in ltr/rtl
+                                val isLeftTap = x < width / 2 // Determine tap side
+
+                                // Calculate seek increment based on side
+                                val increment = if (isLeftTap) -10_000L else +10_000L
+                                Log.d(TAG, "onDoubleTap: width: $width, x: $x, isLeft: $isLeftTap, multiplier: $tapCount, visible: $visible")
+                                state.seek(increment) // Perform seek
+                                // Update message with multiplied seek time
+                                state.message = "${if(isLeftTap) "-" else "+" }${tapCount * 10}s"
+                            }
+                        )
                     }
             )
 
         // Scrim; when current item is a video
         if (isVideo)
-            Spacer(modifier = Modifier.background(Color.Black.copy(0.35f)).layoutId(Console.ID_SCRIM))
+            Spacer(
+                modifier = Modifier
+                    .background(Color.Black.copy(0.35f))
+                    .layoutId(Constraints.ID_SCRIM)
+            )
 
         // Signature
         Text(
@@ -1117,7 +1161,7 @@ private fun MainContent(
             fontFamily = Settings.DancingScriptFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
-            modifier = Modifier.layoutId(Console.ID_SIGNATURE),
+            modifier = Modifier.layoutId(Constraints.ID_SIGNATURE),
             color = contentColor,
             maxLines = 1
         )
@@ -1127,7 +1171,7 @@ private fun MainContent(
             onClick = onNavigateBack,
             modifier = Modifier
                 .scale(0.8f)
-                .layoutId(Console.ID_CLOSE_BTN),
+                .layoutId(Constraints.ID_CLOSE_BTN),
             colors = ButtonDefaults.outlinedButtonColors(
                 backgroundColor = Color.Transparent,
                 accent
@@ -1147,7 +1191,7 @@ private fun MainContent(
         com.prime.media.core.compose.Artwork(
             data = state.artworkUri,
             modifier = Modifier
-                .layoutId(Console.ID_ARTWORK)
+                .layoutId(Constraints.ID_ARTWORK)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
                 .background(Material.colors.surface),
         )
@@ -1155,7 +1199,7 @@ private fun MainContent(
         // Timer
         Label(
             text = state.position(LocalContentColor.current.copy(ContentAlpha.disabled)),
-            modifier = Modifier.layoutId(Console.ID_POSITION),
+            modifier = Modifier.layoutId(Constraints.ID_POSITION),
             style = Material.typography.caption2,
             fontWeight = FontWeight.Bold
         )
@@ -1164,7 +1208,7 @@ private fun MainContent(
         Label(
             text = state.subtitle ?: stringResource(id = R.string.unknown),
             style = Material.typography.caption2,
-            modifier = Modifier.layoutId(Console.ID_SUBTITLE),
+            modifier = Modifier.layoutId(Constraints.ID_SUBTITLE),
             color = contentColor
         )
 
@@ -1175,7 +1219,7 @@ private fun MainContent(
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .marque(Int.MAX_VALUE)
-                .layoutId(Console.ID_TITLE),
+                .layoutId(Constraints.ID_TITLE),
             color = contentColor
         )
 
@@ -1184,25 +1228,29 @@ private fun MainContent(
             state = state,
             accent = accent,
             style = if (background == BACKGROUND_VIDEO_SURFACE) SEEKBAR_STYLE_SIMPLE else SEEKBAR_STYLE_WAVY,
-            modifier = Modifier.layoutId(Console.ID_TIME_BAR)
+            onRequest = onRequest,
+            modifier = Modifier.layoutId(Constraints.ID_TIME_BAR)
         )
 
         // Controls
         Controls(
             state = state,
             style = if (background == BACKGROUND_VIDEO_SURFACE) PLAY_BUTTON_STYLE_SIMPLE else PLAY_BUTTON_STYLE_NEUMORPHIC,
-            modifier = Modifier.layoutId(Console.ID_CONTROLS)
+            modifier = Modifier.layoutId(Constraints.ID_CONTROLS)
         )
 
         // Options
         Options(
             state = state,
-            modifier = Modifier.layoutId(Console.ID_OPTIONS),
+            modifier = Modifier.layoutId(Constraints.ID_OPTIONS),
             onRequest = onRequest
         )
 
         // Message
-        // TODO - Add Support for showing simple messages like onVolumeChange, onSeek, onBrightnessChange etc.
+        Message(
+            message = state.message,
+            modifier = Modifier.layoutId(Constraints.ID_MESSAGE)
+        )
     }
 }
 
@@ -1240,7 +1288,7 @@ private fun TwoPaneStrategy(
             // The content pane height is 45% of the window height by default, but it is
             // constrained to be between 270.dp and 350.dp
             // If restrinct is specified, it overrides the default value.
-            val splitFromTop = restrinct.takeOrElse { (height * 0.45f).coerceIn(270.dp, 400.dp)  }
+            val splitFromTop = restrinct.takeOrElse { (height * 0.45f).coerceIn(270.dp, 400.dp) }
             VerticalTwoPaneStrategy(splitFromTop, !restrinct.isSpecified, gapWidth)
         }
 
@@ -1249,7 +1297,8 @@ private fun TwoPaneStrategy(
             // The content pane width is 60% of the window width by default, but it is constrained
             // to be between 320.dp and 500.dp
             // If restrinct is specified, it overrides the default value.
-            val slitFromStart = restrinct.takeOrElse { width - (0.40f * width).coerceIn(320.dp, 500.dp) }
+            val slitFromStart =
+                restrinct.takeOrElse { width - (0.40f * width).coerceIn(320.dp, 500.dp) }
             HorizontalTwoPaneStrategy(slitFromStart, !restrinct.isSpecified, gapWidth)
         }
     }
@@ -1292,7 +1341,7 @@ fun Console(state: Console) {
         null
     // Declare a function to handle incoming requests from the UI,
     // such as showing or hiding the details pane.
-    val onRequest = onRequest@{ request: @Request Int ->
+    val onRequest = onRequest@{ request:  Int ->
         // Log the incoming request value for debugging purposes
         Log.d(TAG, "onRequest code: $request")
 
@@ -1315,6 +1364,11 @@ fun Console(state: Console) {
         // Handle specific request types:
         when (request) {
             REQUEST_HANDLE_BACK_PRESS -> {
+                // Consume request if locked.
+                if (state.visibility == Console.VISIBILITY_LOCKED) {
+                    state.message = "\uD83D\uDD12 Long click to unlock."
+                    return@onRequest true
+                }
                 // Back press handling: check the current value of detailsOf
                 // If no details are showing, do nothing and return false to indicate that the
                 // request has not been handled by this function
@@ -1327,6 +1381,7 @@ fun Console(state: Console) {
                 }
             }
 
+            // Toggle Show/Hide Playng Queue
             REQUEST_SHOW_PLAYING_QUEUE -> {
                 // Show the playing queue in the details pane
                 detailsOf = request
@@ -1339,13 +1394,46 @@ fun Console(state: Console) {
                 controller?.isAppearanceLightNavigationBars = isAppearanceLightStatusBars
                 return@onRequest true
             }
-
+            REQUEST_TOOGLE_LOCK -> {
+                val isLocked = state.visibility == Console.VISIBILITY_LOCKED
+                state.message = if (isLocked)  "\uD83D\uDD13 Unlocked" else  "\uD83D\uDD12 Locked"
+                state.visibility = if (isLocked) Console.VISIBILITY_VISIBLE else Console.VISIBILITY_LOCKED
+                // return consumed
+                true
+            }
+            REQUEST_TOGGLE_VISIBILITY -> {
+                val visibility = state.visibility
+                val isLocked = visibility == Console.VISIBILITY_LOCKED
+                if (isLocked){
+                    state.message = "\uD83D\uDD12 Long click to Unlock"
+                    return@onRequest true
+                }
+                // Don't entertain if it is exclusively set to always visible.
+                if (visibility == Console.VISIBILITY_ALWAYS)
+                    return@onRequest false
+                val visible = visibility == Console.VISIBILITY_VISIBLE
+                // Toggle Visibility
+                if (visible)
+                    state.visibility = Console.VISIBILITY_HIDDEN
+                else
+                    state.visibility = Console.VISIBILITY_VISIBLE
+                // Return cosnumed.
+                true
+            }
+            REQUEST_TOGGLE_ROTATION_LOCK -> {
+                val activity = view.context.activity
+                state.message = if (activity.isOrientationLocked)  "\uD83D\uDD13 Rotation" else  "\uD83D\uDD12 Rotation"
+                activity.toggleRotationLock()
+            }
             else -> error("Unsupported request: $request")  // Throw an error for unsupported requests
         }
     }
     //
     val isInTwoPaneMode = detailsOf != DETAILS_OF_NONE
-    val radius by animateIntAsState(targetValue = if (isInTwoPaneMode) TWO_PANE_RADIUS_PCT else 0, label = "")
+    val radius by animateIntAsState(
+        targetValue = if (isInTwoPaneMode) TWO_PANE_RADIUS_PCT else 0,
+        label = ""
+    )
     // The main content of the UI,
     // which can be moved around based on details being shown
     val content = remember {
@@ -1411,6 +1499,14 @@ fun Console(state: Console) {
             controller?.isAppearanceLightStatusBars = isAppearanceLightSystemBars
             controller?.isAppearanceLightNavigationBars = isAppearanceLightSystemBars
         }
+    }
+
+    // FixMe - This causes a little glitch.
+    SideEffect {
+        // Remove details if windowSize Changed and it doesn't respect minimumWindowSizeForDetails
+        // constraint.
+        if (isInTwoPaneMode && minimumWindowSizeForDetails.contains(windowSize.value))
+            detailsOf = DETAILS_OF_NONE
     }
 
     // Check the value of detailsOf to determine whether to
