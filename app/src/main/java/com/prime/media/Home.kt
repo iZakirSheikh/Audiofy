@@ -98,6 +98,8 @@ import com.prime.media.core.compose.Reach
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.colorsNavigationItem2
 import com.prime.media.core.compose.current
+import com.prime.media.core.compose.modifiers.ImageBrush
+import com.prime.media.core.compose.modifiers.visualEffect
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.directory.playlists.Members
@@ -127,8 +129,10 @@ import com.primex.core.Amber
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
 import com.primex.core.Magenta
+import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.RedViolet
+import com.primex.core.Rose
 import com.primex.core.SignalWhite
 import com.primex.core.SkyBlue
 import com.primex.core.TrafficBlack
@@ -305,11 +309,11 @@ private fun Permission() {
     }
 }
 
-private val LightPrimaryColor = Color.Black
+private val LightPrimaryColor = Color.Rose
 private val LightPrimaryVariantColor = LightPrimaryColor.hsl(lightness = 0.25f)
 private val LightSecondaryColor = Color.BlueLilac
 private val LightSecondaryVariantColor = LightSecondaryColor.hsl(lightness = 0.2f)
-private val DarkPrimaryColor = /*Color(0xFFff8f00)*/ Color(0xFFFF3D00)
+private val DarkPrimaryColor = /*Color(0xFFff8f00)*/ /*Color(0xFFFF3D00)*/ Color.MetroGreen
 private val DarkPrimaryVariantColor = /*Color.Amber*/ DarkPrimaryColor.hsl(lightness = 0.6f)
 private val DarkSecondaryColor = Color.DahliaYellow
 private val DarkSecondaryVariantColor = Color(0xFFf57d00)
@@ -588,10 +592,11 @@ private fun NavBar(
             // Get the current navigation destination from NavController
             val current by navController.currentBackStackEntryAsState()
             val colors = ChipDefaults.colorsNavigationItem2(
-                leadingIconColor = LocalContentColor.current,
-                selectedBackgroundColor = Material.colors.backgroundColorAtElevation(4.dp),
-                selectedLeadingIconColor = Material.colors.primary,
-                selectedContentColor = MaterialTheme.colors.primary,
+                leadingIconColor = Material.colors.onPrimary,
+                selectedBackgroundColor = Material.colors.onPrimary.copy(0.35f),
+                selectedLeadingIconColor = Material.colors.onPrimary,
+                selectedContentColor = Material.colors.onPrimary,
+                contentColor = Material.colors.onPrimary
             )
             // Home
             Route(
@@ -723,9 +728,17 @@ fun Home(channel: Channel) {
                 channel = channel,
                 hideNavigationBar = hideNavigationBar,
                 progress = facade.inAppUpdateProgress,
-                background = Material.colors.overlay.compositeOver(Material.colors.background),
+                background = Material.colors.primary,
                 // Set up the navigation bar using the NavBar composable
-                navBar = { NavBar(isNavRail = !vertical, navController = navController) },
+                navBar = {
+                    NavBar(
+                        isNavRail = !vertical,
+                        navController = navController,
+                        modifier = Modifier.visualEffect(
+                            ImageBrush.NoiseBrush, 0.5f
+                        )
+                    )
+                },
                 // Display the main content of the app using the NavGraph composable
                 content = {
                     NavGraph(

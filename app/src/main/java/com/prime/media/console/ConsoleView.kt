@@ -150,6 +150,8 @@ import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.menu.DropdownMenu2
 import com.prime.media.core.compose.menu.DropdownMenuItem2
+import com.prime.media.core.compose.modifiers.ImageBrush
+import com.prime.media.core.compose.modifiers.visualEffect
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
@@ -478,7 +480,7 @@ private fun SeekBar(
             // idp because 0 dp is not supported.
             waveLength = if (style == SEEKBAR_STYLE_SIMPLE) 0.dp else 20.dp,
             waveHeight = if (style == SEEKBAR_STYLE_SIMPLE) 0.dp else 7.dp,
-            shouldFlatten = true,
+            incremental = true,
             colors = SliderDefaults.colors(activeTrackColor = accent, thumbColor = accent)
         )
     }
@@ -1192,6 +1194,7 @@ private fun MainContent(
             data = state.artworkUri,
             modifier = Modifier
                 .layoutId(Constraints.ID_ARTWORK)
+                .visualEffect(ImageBrush.NoiseBrush, 1.0f, true)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
                 .background(Material.colors.surface),
         )

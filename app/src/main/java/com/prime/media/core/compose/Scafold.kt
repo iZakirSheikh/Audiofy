@@ -212,7 +212,7 @@ private inline fun Horizontal(
             val placeableNavRail = measurables.getOrNull(if (measurable == null) 2 else 3)
                 ?.measure(constraints.copy(minWidth = 0))
             var w = width - (placeableNavRail?.width ?: 0)
-            val modified = constraints.copy(minWidth = w, maxWidth = w)
+            val modified = constraints.copy(minWidth = w, maxWidth = w, minHeight = 0)
             val placeableProgressBar = measurable?.measure(modified)
             val placeableContent = measurables[0].measure(modified)
             w = (placeableContent.width * 0.8f).roundToInt()

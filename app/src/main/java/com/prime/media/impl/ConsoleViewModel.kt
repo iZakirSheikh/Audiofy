@@ -5,6 +5,7 @@ package com.prime.media.impl
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -561,13 +562,15 @@ class ConsoleViewModel @Inject constructor(
             }
             // Called whenever some state change takes place
             Player.EVENT_IS_PLAYING_CHANGED -> {
-                isVideo = remote.isCurrentMediaItemVideo
-                // FixMe: Here I need to think clearly.
-                //  It seems that I don't understand this part perfectly. Here are some questions:
-                //  1. What happens if the visibility is set to 'locked' or 'always' and this event occurs?
-
-                // For video scenarios, set the visibility to 'visible'; otherwise, set it to 'always'
-                visibility = if (isVideo) Console.VISIBILITY_VISIBLE else Console.VISIBILITY_ALWAYS
+                // Store the current media's video state for later comparison
+                val isNowVideo = remote.isCurrentMediaItemVideo
+                // Check if the current media is a video AND the previous media was not a video
+                // If it's a new video, set the visibility to 'visible'
+                if (isNowVideo && !isVideo) visibility = Console.VISIBILITY_VISIBLE
+                // Otherwise (not a new video or not a video at all), keep it always visible
+                if (!isNowVideo) visibility = Console.VISIBILITY_ALWAYS
+                // Update the stored video state for the next comparison
+                isVideo = isNowVideo  // Store the current state for future checks
             }
         }
     }
