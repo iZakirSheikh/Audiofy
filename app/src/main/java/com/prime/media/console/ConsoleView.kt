@@ -1194,7 +1194,7 @@ private fun MainContent(
             data = state.artworkUri,
             modifier = Modifier
                 .layoutId(Constraints.ID_ARTWORK)
-                .visualEffect(ImageBrush.NoiseBrush, 1.0f, true)
+                .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
                 .background(Material.colors.surface),
         )
@@ -1534,7 +1534,7 @@ fun Console(state: Console) {
                 return@TwoPane
             // Get the system bars insets as a padding values
             val padding = if (windowSize.isMobilePortrait)
-                WindowInsets.navigationBars.asPaddingValues() + PaddingValues(horizontal = ContentPadding.large)
+                WindowInsets.navigationBars.asPaddingValues() + PaddingValues(horizontal = ContentPadding.normal)
             else
                 WindowInsets.systemBars.asPaddingValues()
             // Use a Surface to display the playing queue

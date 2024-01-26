@@ -309,17 +309,17 @@ private fun Permission() {
     }
 }
 
-private val LightPrimaryColor = Color.Rose
+private val LightPrimaryColor = Color.Black
 private val LightPrimaryVariantColor = LightPrimaryColor.hsl(lightness = 0.25f)
 private val LightSecondaryColor = Color.BlueLilac
 private val LightSecondaryVariantColor = LightSecondaryColor.hsl(lightness = 0.2f)
-private val DarkPrimaryColor = /*Color(0xFFff8f00)*/ /*Color(0xFFFF3D00)*/ Color.MetroGreen
+private val DarkPrimaryColor = Color(0xFFFF3D00)
 private val DarkPrimaryVariantColor = /*Color.Amber*/ DarkPrimaryColor.hsl(lightness = 0.6f)
 private val DarkSecondaryColor = Color.DahliaYellow
 private val DarkSecondaryVariantColor = Color(0xFFf57d00)
 
-private val LightSystemBarsColor = /*Color(0x10000000)*/ Color.Transparent
-private val DarkSystemBarsColor = /*Color(0x11FFFFFF)*/ Color.Transparent
+private val LightSystemBarsColor = Color(0x10000000)
+private val DarkSystemBarsColor = Color(0x11FFFFFF)
 
 @Composable
 private fun Material(
@@ -370,7 +370,7 @@ private fun Material(
     val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
     val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
     val color = when {
-        colorSystemBars -> Material.colors.primary
+        !colorSystemBars -> Color.Transparent
         darkTheme -> DarkSystemBarsColor
         else -> LightSystemBarsColor
     }
@@ -592,11 +592,11 @@ private fun NavBar(
             // Get the current navigation destination from NavController
             val current by navController.currentBackStackEntryAsState()
             val colors = ChipDefaults.colorsNavigationItem2(
-                leadingIconColor = Material.colors.onPrimary,
-                selectedBackgroundColor = Material.colors.onPrimary.copy(0.35f),
-                selectedLeadingIconColor = Material.colors.onPrimary,
-                selectedContentColor = Material.colors.onPrimary,
-                contentColor = Material.colors.onPrimary
+                leadingIconColor = LocalContentColor.current,
+                selectedBackgroundColor = Material.colors.primary.copy(0.15f),
+                selectedLeadingIconColor = Material.colors.primary,
+                selectedContentColor = MaterialTheme.colors.primary,
+                contentColor = LocalContentColor.current
             )
             // Home
             Route(
@@ -728,7 +728,7 @@ fun Home(channel: Channel) {
                 channel = channel,
                 hideNavigationBar = hideNavigationBar,
                 progress = facade.inAppUpdateProgress,
-                background = Material.colors.primary,
+                background = Material.colors.overlay.compositeOver(Material.colors.background),
                 // Set up the navigation bar using the NavBar composable
                 navBar = {
                     NavBar(
