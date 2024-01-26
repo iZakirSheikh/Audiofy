@@ -60,10 +60,18 @@ inline fun Artwork(
     contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
     fadeMills: Int = AnimationConstants.DefaultDurationMillis,
+    transformers: List<coil.transform.Transformation>? = null,
 ) {
     val context = LocalContext.current
     val request = remember(data) {
-        ImageRequest.Builder(context).data(data).crossfade(fadeMills).build()
+        ImageRequest
+            .Builder(context).apply {
+                data(data)
+                if (transformers != null)
+                    transformations(transformers)
+                crossfade(fadeMills)
+            }
+            .build()
     }
 
     AsyncImage(
@@ -97,13 +105,8 @@ inline fun Placeholder(
         title = { Label(text = title.ifEmpty { " " }, maxLines = 2) },
 
         icon = {
-            val composition by rememberLottieComposition(
-                spec = LottieCompositionSpec.RawRes(
-                    iconResId
-                )
-            )
             LottieAnimation(
-                composition = composition, iterations = Int.MAX_VALUE
+                id = iconResId, iterations = Int.MAX_VALUE
             )
         },
         action = action,
@@ -226,8 +229,8 @@ inline fun LottieAnimation(
         alignment,
         contentScale,
         clipToCompositionBounds,
-        fontMap,
-        asyncUpdates
+        fontMap = fontMap,
+        asyncUpdates = asyncUpdates
     )
 }
 
@@ -301,7 +304,7 @@ inline fun AnimatedIconButton(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     tint: Color = Color.Unspecified
 ) {
-    IconButton(onClick = onClick, modifier = modifier, enabled, interactionSource, ) {
+    IconButton(onClick = onClick, modifier = modifier, enabled, interactionSource) {
         Icon(
             painter = rememberAnimatedVectorResource(id = id, atEnd = atEnd),
             modifier = Modifier.scale(scale),

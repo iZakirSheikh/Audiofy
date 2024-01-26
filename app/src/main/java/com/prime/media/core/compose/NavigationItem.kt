@@ -1,4 +1,3 @@
-
 package com.prime.media.core.compose
 
 import androidx.compose.animation.animateContentSize
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomNavigationDefaults
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
@@ -34,17 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.primex.material2.Label
 
 private const val TAG = "NavigationItem"
 
-/**
- * The color opacity used for a selected chip's leading icon overlay.
- */
-private const val SelectedOverlayOpacity = 0.16f
+private val isLight
+    @Composable
+    inline get() = MaterialTheme.colors.isLight
 
 /**
  * A utility function for defining colors used by both [NavigationRailItem2] and [BottomNavItem2].
@@ -60,27 +56,25 @@ private const val SelectedOverlayOpacity = 0.16f
 @Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-internal inline fun BottomNavigationDefaults.navigationItem2Colors(
-    contentColor: Color = MaterialTheme.colors.onSurface.copy(ChipDefaults.ContentOpacity),
-    leadingIconColor: Color = contentColor.copy(ChipDefaults.LeadingIconOpacity),
+inline fun ChipDefaults.colorsNavigationItem2(
+    contentColor: Color = MaterialTheme.colors.onSurface.copy(if (isLight) 1.0f else ChipDefaults.ContentOpacity),
+    leadingIconColor: Color = contentColor.copy(if (isLight) 1.0f else ChipDefaults.LeadingIconOpacity),
     disabledLeadingIconColor: Color = leadingIconColor.copy(alpha = ContentAlpha.disabled * ChipDefaults.LeadingIconOpacity),
-    selectedContentColor: Color = MaterialTheme.colors.onSurface.copy(alpha = SelectedOverlayOpacity).compositeOver(contentColor),
-    selectedLeadingIconColor: Color = MaterialTheme.colors.onSurface.copy(alpha = SelectedOverlayOpacity).compositeOver(leadingIconColor)
+    selectedContentColor: Color = MaterialTheme.colors.onPrimary,
+    selectedLeadingIconColor: Color = MaterialTheme.colors.onPrimary,
+    backgroundColor: Color = Color.Transparent,
+    selectedBackgroundColor: Color = MaterialTheme.colors.primary,
+    disabledBackgroundColor: Color = Color.Transparent,
 ): SelectableChipColors = ChipDefaults.outlinedFilterChipColors(
     contentColor = contentColor,
     disabledLeadingIconColor = disabledLeadingIconColor,
     selectedContentColor = selectedContentColor,
     selectedLeadingIconColor = selectedLeadingIconColor,
-    backgroundColor = Color.Transparent,
-    selectedBackgroundColor = Color.Transparent,
-    disabledBackgroundColor = Color.Transparent,
+    backgroundColor = backgroundColor,
+    selectedBackgroundColor = selectedBackgroundColor,
+    disabledBackgroundColor = disabledBackgroundColor,
 )
 
-/**
- * The outline border that is to be used with the [BottomNavigationItem2]
- */
-@OptIn(ExperimentalMaterialApi::class)
-inline val BottomNavigationDefaults.outlinedBorder @Composable get() = ChipDefaults.outlinedBorder
 
 /**
  * The content padding used by a Item.
@@ -91,8 +85,8 @@ private val CheckedPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
 private val UnCheckedPadding = PaddingValues(10.dp)
 
 /**
-* The size of the spacing between the leading icon and a text inside a chip.
-*/
+ * The size of the spacing between the leading icon and a text inside a chip.
+ */
 private val LeadingIconSpacing = 10.dp
 
 /**
@@ -118,8 +112,8 @@ fun BottomNavigationItem2(
     checked: Boolean = false,
     enabled: Boolean = true,
     shape: Shape = CircleShape,
-    border: BorderStroke = ChipDefaults.outlinedBorder,
-    colors: SelectableChipColors = ChipDefaults.outlinedFilterChipColors(backgroundColor = Color.Transparent)
+    border: BorderStroke? = null,
+    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
 ) {
     // This item necessitates the presence of both an icon and a label.
     // When selected, both the icon and label are displayed; otherwise, only the icon is shown.
@@ -127,12 +121,13 @@ fun BottomNavigationItem2(
     // The background color of this item is set to Color.Transparent.
     // TODO(b/113855296): Animate transition between unselected and selected
     val contentColor by colors.contentColor(enabled, checked)
+    val backgroundColor by colors.backgroundColor(enabled = enabled, selected = checked)
     Surface(
         selected = checked,
         onClick = onClick,
         shape = shape,
         modifier = modifier.scale(0.87f),
-        color = Color.Transparent,
+        color = backgroundColor,
         contentColor = contentColor,
         border = if (checked) border else null,
     ) {
@@ -176,9 +171,9 @@ inline fun BottomNavigationItem2(
     checked: Boolean = false,
     enabled: Boolean = true,
     shape: Shape = CircleShape,
-    border: BorderStroke = ChipDefaults.outlinedBorder,
-    colors: SelectableChipColors = ChipDefaults.outlinedFilterChipColors(backgroundColor = Color.Transparent)
-)= BottomNavigationItem2(
+    border: BorderStroke? = null,
+    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
+) = BottomNavigationItem2(
     onClick = onClick,
     icon = {
         Icon(
@@ -195,7 +190,6 @@ inline fun BottomNavigationItem2(
     colors = colors
 )
 
-
 /**
  * The default shape of the [NavigationRailItem2]
  */
@@ -206,7 +200,7 @@ private val DefaultNavRailItemShape = RoundedCornerShape(20)
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NavigationRailItem2 (
+fun NavigationRailItem2(
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
     label: @Composable (() -> Unit),
@@ -214,8 +208,8 @@ fun NavigationRailItem2 (
     checked: Boolean = false,
     enabled: Boolean = true,
     shape: Shape = DefaultNavRailItemShape,
-    border: BorderStroke = ChipDefaults.outlinedBorder,
-    colors: SelectableChipColors = ChipDefaults.outlinedFilterChipColors(backgroundColor = Color.Transparent)
+    border: BorderStroke? = null,
+    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
 ) {
     // This item necessitates the presence of both an icon and a label.
     // When selected, both the icon and label are displayed; otherwise, only the icon is shown.
@@ -223,12 +217,15 @@ fun NavigationRailItem2 (
     // The background color of this item is set to Color.Transparent.
     // TODO(b/113855296): Animate transition between unselected and selected
     val contentColor by colors.contentColor(enabled, checked)
+    val backgroundColor by colors.backgroundColor(enabled = enabled, selected = checked)
     Surface(
         selected = checked,
         onClick = onClick,
         shape = if (checked) shape else CircleShape,
-        modifier = modifier.scale(0.87f).animateContentSize(),
-        color = Color.Transparent,
+        modifier = modifier
+            .scale(0.87f)
+            .animateContentSize(),
+        color = backgroundColor,
         contentColor = contentColor,
         border = if (checked) border else null,
     ) {
@@ -265,7 +262,7 @@ fun NavigationRailItem2 (
 @Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-inline fun NavigationRailItem2 (
+inline fun NavigationRailItem2(
     noinline onClick: () -> Unit,
     icon: ImageVector,
     label: CharSequence,
@@ -273,9 +270,9 @@ inline fun NavigationRailItem2 (
     checked: Boolean = false,
     enabled: Boolean = true,
     shape: Shape = DefaultNavRailItemShape,
-    border: BorderStroke = ChipDefaults.outlinedBorder,
-    colors: SelectableChipColors = ChipDefaults.outlinedFilterChipColors(backgroundColor = Color.Transparent)
-)= NavigationRailItem2(
+    border: BorderStroke? = null,
+    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
+) = NavigationRailItem2(
     onClick = onClick,
     icon = {
         Icon(

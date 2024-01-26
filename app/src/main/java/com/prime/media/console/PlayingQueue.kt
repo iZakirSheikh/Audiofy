@@ -1,35 +1,48 @@
-@file:Suppress("CrossfadeLabel")
+/*
+ * Copyright 2024 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 17-01-2024.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-package com.prime.media.dialog
+package com.prime.media.console
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.NavigationRail
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -38,13 +51,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -53,7 +66,6 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LocalWindowSizeClass
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.playback.artworkUri
@@ -62,7 +74,6 @@ import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.prime.media.small2
 import com.prime.media.surfaceColorAtElevation
-import com.primex.core.rotateTransform
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -70,6 +81,9 @@ import com.primex.material2.ListTile
 
 private const val TAG = "PlayingQueue"
 
+/**
+ * The Shape of the dialog track artwork
+ */
 private val ArtworkShape = RoundedCornerShape(25)
 
 @Composable
@@ -145,8 +159,14 @@ private fun TopAppBar(
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
-        title = { Label(text = stringResource(R.string.playing_queue), style =  Material.typography.body2, fontWeight = FontWeight.Bold) },
-        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
+        title = {
+            Label(
+                text = stringResource(R.string.playing_queue),
+                style = Material.typography.body2,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        backgroundColor = Material.colors.surfaceColorAtElevation(5.dp),
         contentColor = Material.colors.onSurface,
         elevation = 0.dp,
         modifier = modifier,
@@ -163,7 +183,7 @@ private fun TopAppBar(
 
             val ctx = LocalContext.current
             IconButton(
-                onClick = { state.clear(ctx)},
+                onClick = { state.clear(ctx) },
                 imageVector = Icons.Outlined.ClearAll,
                 contentDescription = null,
             )
@@ -171,7 +191,7 @@ private fun TopAppBar(
             val shuffle = state.shuffle
             LottieAnimButton(
                 id = R.raw.lt_shuffle_on_off,
-                onClick = { state.toggleShuffle()},
+                onClick = { state.toggleShuffle() },
                 atEnd = !shuffle,
                 progressRange = 0f..0.8f,
                 scale = 1.5f
@@ -184,58 +204,6 @@ private fun TopAppBar(
             )
         }
     )
-}
-
-@Composable
-fun SideBar(
-    state: PlayingQueue,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    NavigationRail(
-        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
-        contentColor = Material.colors.onSurface,
-        elevation = 0.dp,
-        modifier = modifier
-    ){
-        IconButton(
-            onClick = onDismissRequest,
-            imageVector = Icons.AutoMirrored.Outlined.ReplyAll,
-            contentDescription = null
-        )
-
-        Label(
-            text = stringResource(R.string.playing_queue),
-            style = Material.typography.body2,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(vertical = ContentPadding.small)
-                .rotateTransform(false)
-                .weight(1f)
-        )
-
-        val ctx = LocalContext.current
-        IconButton(
-            onClick = { state.clear(ctx)},
-            imageVector = Icons.Outlined.ClearAll,
-            contentDescription = null,
-        )
-
-        val shuffle = state.shuffle
-        LottieAnimButton(
-            id = R.raw.lt_shuffle_on_off,
-            onClick = { state.toggleShuffle()},
-            atEnd = !shuffle,
-            progressRange = 0f..0.8f,
-            scale = 1.5f
-        )
-
-        Icon(
-            imageVector = Icons.Outlined.Queue,
-            contentDescription = null,
-            modifier = Modifier
-        )
-    }
 }
 
 context(LazyListScope)
@@ -312,7 +280,7 @@ fun Content(
         }
     }
     // Show different screen; according to listState.
-    Crossfade(targetState = listState, modifier = modifier) {
+    Crossfade(targetState = listState, modifier = modifier, label = TAG + "_dialog_state") {
         when (it) {
             // loading
             0 -> Placeholder(title = "Loading", iconResId = R.raw.lt_loading_bubbles)
@@ -337,59 +305,85 @@ fun Content(
     }
 }
 
-@Composable
-private fun Portrait(
-    state: PlayingQueue,
-    onDismissRequest: () -> Unit
-) {
-    Scaffold(
-        topBar = { TopAppBar(state = state, onDismissRequest = onDismissRequest) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.60f) // different when width > height
-            .clip(Material.shapes.small2),
-        // content.
-        content = {
-            Content(
-                resolver = state,
-                modifier = Modifier.padding(it)
-            )
-        },
-        backgroundColor = Material.colors.surface,
-    )
-}
 
-@Composable
-fun Landscape(
-    state: PlayingQueue,
-    onDismissRequest: () -> Unit
-) {
-    Surface(shape = Material.shapes.small2) {
-        Row() {
-            SideBar(state = state, onDismissRequest = onDismissRequest)
-            Content(
-                resolver = state,
-            )
-        }
-    }
-}
-
+/**
+ * ## Composable for displaying the playing queue dialog
+ *
+ * Displays the current playing queue within a dialog-like layout.
+ *
+ * ### Key points
+ *
+ * - **Requires wrapping:** Must be used within a `Surface` composable to handle
+ *   elevation and shadow effects appropriately.
+ *
+ * ### Parameters
+ *
+ * - **state: PlayingQueue**
+ *   - The current state of the playing queue, providing essential data for rendering.
+ * - **onDismissRequest: () -> Unit**
+ *   - A callback function invoked when the dialog should be dismissed.
+ * - **modifier: Modifier = Modifier**
+ *   - Optional modifier for customizing layout, styling, and behavior.
+ *
+ * ### Usage
+ *
+ * ```kotlin
+ * Surface {
+ *     PlayingQueue(
+ *         state = playingQueueState,
+ *         onDismissRequest = { /* Handle dismissal logic */ }
+ *     )
+ * }
+ * ```
+ */
 @Composable
 @NonRestartableComposable
 fun PlayingQueue(
     state: PlayingQueue,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        TopAppBar(state = state, onDismissRequest = onDismissRequest)
+        Content(resolver = state)
+    }
+}
+
+
+/**
+ * Hosts a customizable dialog that displays the current playing queue.
+ *
+ * This composable function simplifies managing the dialog's state and interactions,
+ * allowing you to focus on the content and user experience.
+ *
+ * @param state The state of the dialog.
+ * @param expanded A boolean flag indicating whether the dialog should be
+ *                  displayed or not.
+ * @param onDismissRequest A callback function invoked when the user requests
+ *                         to dismiss the dialog.
+ *
+ * @see [PlayingQueue]
+ */
+@Composable
+inline fun PlayingQueue(
+    state: PlayingQueue,
     expanded: Boolean,
-    onDismissRequest: () -> Unit
+    noinline onDismissRequest: () -> Unit
 ) {
     Dialog(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
         content = {
-            val size = LocalWindowSizeClass.current
-            if (size.widthSizeClass == WindowWidthSizeClass.Compact)
-                Portrait(state = state, onDismissRequest)
-            else
-                Landscape(state = state, onDismissRequest)
+            Surface(
+                color = Material.colors.surface,
+                shape = Material.shapes.small2,
+                content = { PlayingQueue(state = state, onDismissRequest = onDismissRequest) },
+                modifier = Modifier
+                    .sizeIn(maxWidth = 500.dp, maxHeight = 700.dp)
+                    .padding(ContentPadding.xLarge)
+                    .animateContentSize(),
+            )
         }
     )
 }

@@ -8,8 +8,6 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -49,24 +47,6 @@ val ProvidableCompositionLocal<Context>.resources: Resources
  */
 val LocalNavController = staticCompositionLocalOf<NavHostController> {
     error("no local nav host controller found")
-}
-
-/**
- * [CompositionLocal] containing the [WindowSizeClass].
- *
- * This [CompositionLocal] is used to access the current [WindowSizeClass] within a composition.
- * If no [WindowSizeClass] is found in the composition hierarchy, a error will be thorn.
- *
- * Usage:
- * ```
- * val windowSizeClass = LocalWindowSizeClass.current
- * // Use the windowSizeClass value within the composition
- * ```
- * @optIn ExperimentalMaterial3WindowSizeClassApi
- */
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-val LocalWindowSizeClass = staticCompositionLocalOf<WindowSizeClass> {
-    error("no local WindowSizeClass defined.")
 }
 
 /**

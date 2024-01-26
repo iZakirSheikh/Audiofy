@@ -9,13 +9,10 @@ import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.core.animation.doOnEnd
@@ -38,8 +35,9 @@ import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSizeClass
+import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.SystemFacade
+import com.prime.media.core.compose.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
@@ -318,7 +316,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         }
     }
 
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
@@ -358,7 +356,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
-                LocalWindowSizeClass provides windowSizeClass,
+                LocalWindowSize provides windowSizeClass,
                 content = { Home(channel = channel) }
             )
         }

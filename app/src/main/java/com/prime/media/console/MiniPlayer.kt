@@ -162,7 +162,6 @@ private fun Layout(
                     onClick = { remote.skipToPrev() },
                     imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                     contentDescription = null,
-                    modifier = Modifier.layoutId(R.id.np_seek_forward_30),
                     tint = color
                 )
 
@@ -182,7 +181,6 @@ private fun Layout(
                     onClick = { remote.skipToNext() },
                     imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                     contentDescription = null,
-                    modifier = Modifier.layoutId(R.id.np_seek_forward_30),
                     tint = color
                 )
             }
@@ -193,7 +191,7 @@ private fun Layout(
                 progress = progress,
                 modifier = Modifier
                     .height(3.dp)
-                    .offset(y = 10.dp)
+                    .offset(y = 11.dp)
                     .fillMaxWidth()
             )
         },

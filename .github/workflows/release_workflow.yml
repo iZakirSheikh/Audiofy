@@ -2,7 +2,7 @@ name: Build, Sign, Upload, and Release Workflow
 on:
   push:
     branches: # Change this to master once everything is setup.
-      - 'master'
+      - 'beta'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
@@ -42,6 +42,12 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleRelease
           ./gradlew bundleRelease
+      - name: Setup build tool version variable
+        shell: bash
+        run: |
+         BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
+         echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
+         echo Last build tool version is: $BUILD_TOOL_VERSION
       - name: Signing APK
         uses: r0adkll/sign-android-release@v1
         id: signed_apk
@@ -51,6 +57,8 @@ jobs:
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        env:
+         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       - name: Sign AAB
         uses: r0adkll/sign-android-release@v1
         id: signed_aab
@@ -60,6 +68,8 @@ jobs:
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        env:
+         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       # Uploading Signed AAB to internal track of PlayConsole
       - name: Publish Signed AAB to Play Store Internal Track
         uses: r0adkll/upload-google-play@v1

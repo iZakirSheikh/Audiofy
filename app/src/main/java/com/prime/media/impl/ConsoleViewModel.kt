@@ -5,6 +5,7 @@ package com.prime.media.impl
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -252,8 +253,9 @@ class ConsoleViewModel @Inject constructor(
     private var _repeatMode by mutableIntStateOf(remote.repeatMode)
     private var _shuffle by mutableStateOf(remote.shuffle)
     override var isVideo: Boolean by mutableStateOf(remote.isCurrentMediaItemVideo)
-    override var resizeMode: Int by mutableStateOf(Console.RESIZE_MORE_FIT)
-    private var _visibility: Visibility by mutableStateOf(Visibility.Visible)
+    override var resizeMode: Int by mutableIntStateOf(Console.RESIZE_MORE_FIT)
+    private var _visibility: Int by mutableIntStateOf(Console.VISIBILITY_ALWAYS)
+    private var _message: CharSequence? by mutableStateOf(null)
 
     // simple properties
     override var artwork: ImageBitmap? by mutableStateOf(null)
@@ -278,33 +280,35 @@ class ConsoleViewModel @Inject constructor(
      * - **Job 1:** The job at index 1 defines tasks related to showing and hiding the controller.
      *              It is active when the [visibility] is [Visibility.Limited] or [Visibility.Locked].
      *
+     * - **Job 3:** Controls the message lifetime by resetting it to null if the user sets it to a non-null value.
      * @property jobs An array of coroutine jobs associated with the ViewModel.
      *               Index 0 corresponds to the periodic update job, and index 1 corresponds to the controller visibility job.
      *               Initialized with null values.
      */
-    private var jobs: Array<Job?> = Array(2){ null }
+    private var jobs: Array<Job?> = Array(3){ null }
 
     // getter setters.
-    override var visibility: Visibility
+    override var visibility: Int
         get() = _visibility
         set(value) {
-            _visibility = value
-            // Cancel the previous job if any, to avoid conflicting updates
-            jobs[1]?.cancel()
-            // Obtain the duration in milliseconds from the value
-            val mills = when (value) {
-                // If the value is a Limited or Locked state, get the mills property
-                is Visibility.Limited -> value.mills
-                is Visibility.Locked -> value.mills
-                // If the value is a Full state, do nothing and return
-                else -> return
-            }
-            // Launch a new coroutine job to update the visibility after the duration
-            jobs[1] = suspended {
-                // Wait for the specified duration
-                delay(mills)
-                // After the delay, update the visibility to either invisible or locked
-                _visibility = if (value is Visibility.Limited) Visibility.Limited(0) else Visibility.Locked(0)
+            suspended {
+                // Delay setting of value as it is causing a glitch when locking visibility.
+                if (value == Console.VISIBILITY_LOCKED)
+                    delay(50L)
+                _visibility = value
+                // Cancel the previous job if any, to avoid conflicting updates
+                jobs[1]?.cancel()
+                // Return if the current visibility is not 'visible'
+                // Only in this case, automation for hiding is needed.
+                if (_visibility != Console.VISIBILITY_VISIBLE)
+                    return@suspended
+                // Launch a new coroutine job to update the visibility after the duration
+                jobs[1] = suspended {
+                    // Wait for the specified duration
+                    delay(Console.DEFAULT_CONTROLLER_VISIBILITY_MILLS)
+                    // After the delay, update the visibility to either invisible or locked
+                    _visibility = Console.VISIBILITY_HIDDEN
+                }
             }
         }
 
@@ -417,6 +421,30 @@ class ConsoleViewModel @Inject constructor(
         get() = player?.getSelectedTrack(trackNameProvider, C.TRACK_TYPE_TEXT)
         set(value) = player.select(value, C.TRACK_TYPE_TEXT)
 
+    override var message: CharSequence?
+        get() = _message
+        set(value) {
+            // Set the value to the message property
+            _message = value
+
+            // Return if the user has explicitly set the message to null
+            // Cancel the previous job if any, to avoid conflicting updates
+            jobs[2]?.cancel()
+
+            // If the new message is null, no further action is needed
+            if (value == null) return
+
+            // Launch a new coroutine job to reset the message to null after a specified timeout
+            jobs[2] = suspended {
+                // Delay execution for the duration specified by DEFAULT_MESSAGE_TIME_OUT
+                delay(Console.DEFAULT_MESSAGE_TIME_OUT)
+
+                // After the delay, reset the message to null
+                _message = null
+            }
+        }
+
+
     override fun cycleRepeatMode(): Int = remote.cycleRepeatMode()
     override fun playTrack(uri: Uri) = remote.playTrack(uri)
     override fun playTrackAt(position: Int) = seek(position = position)
@@ -446,6 +474,7 @@ class ConsoleViewModel @Inject constructor(
             withSpanStyle(color) {
                 append(android.text.format.DateUtils.formatElapsedTime(remote.duration / 1000))
             }
+            append(" (${getText(R.string.playback_speed_dialog_x_f, playbackSpeed)})")
         }
     }
 
@@ -507,7 +536,7 @@ class ConsoleViewModel @Inject constructor(
                         _sleepAfterMills =
                             if (scheduled == UNINITIALIZED_SLEEP_TIME_MILLIS) scheduled else scheduled - System.currentTimeMillis()
                         _progress = remote.progress
-                        // delay for 1 sec and then reupdate.
+                        // delay for 1 sec and then re-update.
                         delay(1000)
                     }
                 }
@@ -533,8 +562,15 @@ class ConsoleViewModel @Inject constructor(
             }
             // Called whenever some state change takes place
             Player.EVENT_IS_PLAYING_CHANGED -> {
-                isVideo = remote.isCurrentMediaItemVideo
-                visibility = if (isVideo) Visibility.Limited()  else Visibility.Visible
+                // Store the current media's video state for later comparison
+                val isNowVideo = remote.isCurrentMediaItemVideo
+                // Check if the current media is a video AND the previous media was not a video
+                // If it's a new video, set the visibility to 'visible'
+                if (isNowVideo && !isVideo) visibility = Console.VISIBILITY_VISIBLE
+                // Otherwise (not a new video or not a video at all), keep it always visible
+                if (!isNowVideo) visibility = Console.VISIBILITY_ALWAYS
+                // Update the stored video state for the next comparison
+                isVideo = isNowVideo  // Store the current state for future checks
             }
         }
     }
