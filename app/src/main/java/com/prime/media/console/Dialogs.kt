@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.menu.Popup2
 import com.prime.media.small2
 import com.prime.media.surfaceColorAtElevation
 import com.primex.core.MetroGreen
@@ -44,6 +43,7 @@ import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.TextButton
+import com.primex.material2.menu.DropDownMenu
 import kotlin.math.roundToInt
 
 private const val TAG = "ConsoleDialogs"
@@ -163,7 +163,7 @@ fun PlaybackSpeed(
     @FloatRange(0.25, 2.0) value: Float,
     onValueChange: (value: Float) -> Unit
 ) {
-    Popup2(
+    DropDownMenu(
         expanded = expanded,
         onDismissRequest = { onValueChange(-1f) },
         shape = Material.shapes.small2,

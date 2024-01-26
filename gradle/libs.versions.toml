@@ -3,7 +3,7 @@
 #--------
 agp = "8.2.2"  # Android Gradle Plugin for building Android apps
 koltin-version = "1.9.22"  # Kotlin language version for code compilation
-compose-compiler = "1.5.8"  # Compiler for Jetpack Compose UI framework
+compose-compiler = "1.5.9"  # Compiler for Jetpack Compose UI framework
 firebase = "4.4.0"  # Firebase core library for integrating Firebase services
 crashlytics = "2.9.9"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.50"  # Hilt for dependency injection in Android apps
@@ -11,9 +11,9 @@ hilt-android = "2.50"  # Hilt for dependency injection in Android apps
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.2.1"  # Media playback, including audio and video
-compose = "1.6.0-rc01"  # Core foundation for building declarative UI with Compose
-toolkit = "1.1.1"  # Collection of UI utilities and extensions
-accompanist = "0.32.0" # Accompanist is a labs like environment for new Compose APIs.
+compose = "1.7.0-alpha02"  # Core foundation for building declarative UI with Compose
+toolkit = "2.0.2-beta01"  # Collection of UI utilities and extensions
+accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
 
 [plugins]
 # Android Gradle Plugin (AGP): Essential for building Android apps,
@@ -82,12 +82,12 @@ accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive",
 #------------------
 # Navigation framework for Compose, enabling seamless navigation between screens and managing
 # complex navigation flows.
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.6" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.7.7" }
 # UI Text Google Fonts
 #---------------------
 # Integration of Google Fonts directly into Compose UIs, offering a wide
 # range of fonts for enhanced typography.
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.5.4" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.0" }
 # Window
 # -----
 # Handling of multiple windows and activity states for multi-window app experiences.
@@ -116,7 +116,7 @@ kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 # --------------------------------------------------------------------------------------------------
 # Custom slider with a wavy wave-like design, offering a unique and visually appealing way for users to
 # make selections or adjustments within the app.
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "0.8.0" }
+wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "0.10.0" }
 #Splashscreen
 # --------------------------------------------------------------------------------------------------
 splashscreen = {module = "androidx.core:core-splashscreen", version = "1.0.1"}

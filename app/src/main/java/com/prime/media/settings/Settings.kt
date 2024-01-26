@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -56,6 +57,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.Material
@@ -70,7 +72,6 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.Reach
-import com.prime.media.core.compose.SliderPreference2
 import com.prime.media.core.compose.purchase
 import com.prime.media.darkShadowColor
 import com.prime.media.lightShadowColor
@@ -85,6 +86,7 @@ import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.primex.material2.Preference
+import com.primex.material2.SliderPreference
 import com.primex.material2.SwitchPreference
 import com.primex.material2.Text
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
@@ -287,7 +289,7 @@ private inline fun General(
     )
 
     val excludeTrackDuration = state.minTrackLength
-    SliderPreference2(
+    SliderPreference(
         title = stringResource(value = excludeTrackDuration.title),
         defaultValue = excludeTrackDuration.value.toFloat(),
         summery = stringResource(value = excludeTrackDuration.summery),
@@ -296,8 +298,19 @@ private inline fun General(
         },
         valueRange = 0f..100f,
         steps = 5,
-        preview = "${excludeTrackDuration.value}s",
         icon = Icons.Outlined.Straighten,
+        preview = {
+            com.primex.material2.Text(
+                text = "${excludeTrackDuration.value}s",
+                style = MaterialTheme.typography.body2,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .size(60.dp)
+                    .wrapContentSize(Alignment.Center),
+                textAlign = TextAlign.Center
+            )
+        }
+
     )
 
     val list = state.excludedFiles
@@ -319,7 +332,7 @@ private inline fun General(
     )
 
     val maxRecentSize = state.recentPlaylistLimit
-    SliderPreference2(
+    SliderPreference(
         title = stringResource(value = maxRecentSize.title),
         defaultValue = maxRecentSize.value.toFloat(),
         summery = stringResource(value = maxRecentSize.summery),
@@ -328,8 +341,18 @@ private inline fun General(
         },
         icon = Icons.Outlined.Straighten,
         valueRange = 50f..200f,
-        preview = "${maxRecentSize.value} files",
-        steps = 5
+        steps = 5,
+        preview = {
+            com.primex.material2.Text(
+                text = "${maxRecentSize.value} files",
+                style = MaterialTheme.typography.body2,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .size(60.dp)
+                    .wrapContentSize(Alignment.Center),
+                textAlign = TextAlign.Center
+            )
+        }
     )
 
     val useInbuiltAudioFx = state.useInbuiltAudioFx
@@ -388,7 +411,10 @@ private fun GetToKnowUs(modifier: Modifier = Modifier) {
         },
         headline = {
             Text(
-                text = textResource(R.string.pref_get_to_know_us_subttile_s, BuildConfig.VERSION_NAME),
+                text = textResource(
+                    R.string.pref_get_to_know_us_subttile_s,
+                    BuildConfig.VERSION_NAME
+                ),
                 style = Material.typography.caption
             )
         },

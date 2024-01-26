@@ -271,6 +271,7 @@ private fun Search(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private inline fun Shortcut(
     icon: ImageVector,

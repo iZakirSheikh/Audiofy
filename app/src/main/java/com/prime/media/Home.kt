@@ -98,8 +98,6 @@ import com.prime.media.core.compose.Reach
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.colorsNavigationItem2
 import com.prime.media.core.compose.current
-import com.prime.media.core.compose.modifiers.ImageBrush
-import com.prime.media.core.compose.modifiers.visualEffect
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.directory.playlists.Members
@@ -128,16 +126,13 @@ import com.prime.media.settings.Settings
 import com.primex.core.Amber
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
-import com.primex.core.Magenta
-import com.primex.core.MetroGreen
+import com.primex.core.ImageBrush
 import com.primex.core.OrientRed
-import com.primex.core.RedViolet
-import com.primex.core.Rose
 import com.primex.core.SignalWhite
-import com.primex.core.SkyBlue
 import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.hsl
+import com.primex.core.visualEffect
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -309,11 +304,11 @@ private fun Permission() {
     }
 }
 
-private val LightPrimaryColor = Color.Black
+private val LightPrimaryColor = Color.BlueLilac
 private val LightPrimaryVariantColor = LightPrimaryColor.hsl(lightness = 0.25f)
-private val LightSecondaryColor = Color.BlueLilac
+private val LightSecondaryColor = Color(0xFF008000)
 private val LightSecondaryVariantColor = LightSecondaryColor.hsl(lightness = 0.2f)
-private val DarkPrimaryColor = Color(0xFFFF3D00)
+private val DarkPrimaryColor = Color.Amber
 private val DarkPrimaryVariantColor = /*Color.Amber*/ DarkPrimaryColor.hsl(lightness = 0.6f)
 private val DarkSecondaryColor = Color.DahliaYellow
 private val DarkSecondaryVariantColor = Color(0xFFf57d00)

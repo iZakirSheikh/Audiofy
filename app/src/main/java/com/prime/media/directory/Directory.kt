@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -87,7 +88,7 @@ private fun Action(
         DropDownMenuItem(
             title = stringResource(value = value.title),
             onClick = onAction,
-            leading = rememberVectorPainter(value.icon),
+            icon = rememberVectorPainter(value.icon),
             enabled = enabled,
             modifier = Modifier
                 .sizeIn(minWidth = 180.dp)
@@ -212,7 +213,8 @@ private fun <T : Any> Toolbar(
                 val actions = resolver.orders
                 DropdownMenu(
                     expanded = showOrderMenu,
-                    onDismissRequest = { showOrderMenu = false }
+                    onDismissRequest = { showOrderMenu = false },
+                    properties = PopupProperties(focusable = true)
                 ) {
                     // ascending descending logic
                     val ascending = filter.third
@@ -224,7 +226,7 @@ private fun <T : Any> Toolbar(
                             onClick = {
                                 resolver.filter(ascending = !ascending); showOrderMenu = false
                             },
-                            leading = rememberVectorPainter(
+                            icon = rememberVectorPainter(
                                 image = if (ascending) Icons.Outlined.RadioButtonChecked else Icons.Outlined.RadioButtonUnchecked
                             ),
                         )
@@ -257,7 +259,8 @@ private fun <T : Any> Toolbar(
                     // else the selected ones.
                     DropdownMenu(
                         expanded = showActionMenu,
-                        onDismissRequest = { showActionMenu = false }
+                        onDismissRequest = { showActionMenu = false },
+                        properties = PopupProperties(focusable = true)
                     ) {
                         for (i in from until actions.size) {
                             val action = actions[i]
@@ -359,7 +362,8 @@ private fun <T : Any> ActionBar(
                     // else the selected ones.
                     DropdownMenu(
                         expanded = showActionMenu,
-                        onDismissRequest = { showActionMenu = false }
+                        onDismissRequest = { showActionMenu = false },
+                        properties = PopupProperties(focusable = true)
                     ) {
                         for (i in 2 until actions.size) {
                             val action = actions[i]
@@ -602,7 +606,7 @@ private fun <T : Any> Metadata(
             OutlinedButton(
                 label = stringResource(value = second.title),
                 onClick = { onPerformAction(second) },
-                leading = rememberVectorPainter(image = second.icon),
+                icon = rememberVectorPainter(image = second.icon),
                 colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                 border = ButtonDefaults.outlinedBorder,
                 modifier = Modifier.constrainAs(Action2) {
@@ -620,7 +624,7 @@ private fun <T : Any> Metadata(
             Button(
                 label = stringResource(value = first.title),
                 onClick = { onPerformAction(first) },
-                leading = rememberVectorPainter(image = first.icon),
+                icon = rememberVectorPainter(image = first.icon),
                 modifier = Modifier
                     .padding(top = ContentPadding.xLarge)
                     .constrainAs(Action1) {

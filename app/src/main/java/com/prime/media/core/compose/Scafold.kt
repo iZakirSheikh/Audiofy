@@ -144,7 +144,8 @@ private inline fun Vertical(
     Layout(
         content = content,
         modifier = modifier
-            .nestedScroll(connection)
+            // TODO: Find new way to allow collapsable navBar; because this is casing some major issues.
+            //.nestedScroll(connection)
             .fillMaxSize(),
     ) { measurables, constraints ->
         val width = constraints.maxWidth

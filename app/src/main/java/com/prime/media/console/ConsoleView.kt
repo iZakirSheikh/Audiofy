@@ -25,10 +25,8 @@ import android.text.format.DateUtils.formatElapsedTime
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.IntDef
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
@@ -50,6 +48,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
@@ -62,7 +61,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.Lock
@@ -70,7 +68,6 @@ import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.ScreenLockLandscape
 import androidx.compose.material.icons.outlined.ScreenRotation
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Speaker
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
@@ -95,7 +92,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -107,7 +103,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -148,15 +143,10 @@ import com.prime.media.core.compose.PlayerView
 import com.prime.media.core.compose.Reach
 import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.menu.DropdownMenu2
-import com.prime.media.core.compose.menu.DropdownMenuItem2
-import com.prime.media.core.compose.modifiers.ImageBrush
-import com.prime.media.core.compose.modifiers.visualEffect
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
-import com.prime.media.core.util.DateUtils
 import com.prime.media.darkShadowColor
 import com.prime.media.effects.AudioFx
 import com.prime.media.isAppearanceLightSystemBars
@@ -164,13 +154,16 @@ import com.prime.media.lightShadowColor
 import com.prime.media.outline
 import com.prime.media.settings.Settings
 import com.prime.media.small2
+import com.primex.core.ImageBrush
 import com.primex.core.SignalWhite
 import com.primex.core.activity
 import com.primex.core.plus
-import com.primex.core.withSpanStyle
+import com.primex.core.visualEffect
+import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton2
+import com.primex.material2.menu.DropDownMenu2
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -659,55 +652,6 @@ private fun TimeBar(
     )
 }
 
-/**
- * A composable function for creating a menu item with optional title, subtitle, icon, and click action.
- *
- * @param title The main text content of the menu item.
- * @param onClick The callback to be invoked when the menu item is clicked.
- * @param modifier Optional [Modifier] to apply to the menu item.
- * @param subtitle Optional secondary text content of the menu item.
- * @param icon Optional [ImageVector] icon to be displayed alongside the menu item.
- * @param enabled Whether the menu item is interactive and can be clicked.
- *
- * @sample MenuItem(
- *     title = "Settings",
- *     onClick = { /* Handle click action */ },
- *     modifier = Modifier.padding(8.dp),
- *     subtitle = "Configure app preferences",
- *     icon = Icons.Default.Settings,
- *     enabled = true
- * )
- *
- * @see Composable
- */
-//TODO: Maybe make parent only accept subtitle.
-@Composable
-private inline fun MenuItem(
-    title: CharSequence,
-    noinline onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    subtitle: CharSequence? = null,
-    icon: ImageVector? = null,
-    enabled: Boolean = true
-) {
-    DropdownMenuItem2(
-        onClick = onClick,
-        modifier = modifier,
-        enabled = enabled,
-        leading = if (icon == null) null else rememberVectorPainter(image = icon),
-        title = buildAnnotatedString {
-            append(title)
-            if (subtitle == null) return@buildAnnotatedString
-            withSpanStyle(
-                color = LocalContentColor.current.copy(ContentAlpha.disabled),
-                fontSize = 11.sp,
-                block = {
-                    append("\n" + subtitle)
-                }
-            )
-        },
-    )
-}
 
 /**
  * Composable function representing additional options available in a popup menu.
@@ -743,18 +687,18 @@ private fun More(
             )
 
             // Audio Menu
-            DropdownMenu2(
+            DropDownMenu2(
                 expanded = expanded == 2,
                 onDismissRequest = { expanded = 1 },
                 shape = Material.shapes.small2,
                 content = {
-                    MenuItem(
+                    DropDownMenuItem(
                         title = "Auto",
                         onClick = { state.currAudioTrack = null; expanded = 1 }
                     )
                     // Others
                     state.audios.forEach { track ->
-                        MenuItem(
+                        DropDownMenuItem(
                             title = track.name,
                             onClick = { state.currAudioTrack = track; expanded = 1 })
                     }
@@ -762,20 +706,20 @@ private fun More(
             )
 
             // Subtitle Menu
-            DropdownMenu2(
+            DropDownMenu2(
                 expanded = expanded == 3,
                 onDismissRequest = { expanded = 1; },
                 shape = Material.shapes.small2,
 
                 // TODO - Add one option for enabling/adding custom subtitle track.
                 content = {
-                    MenuItem(
+                    DropDownMenuItem(
                         title = "Off",
                         onClick = { state.currSubtitleTrack = null; expanded = 1 }
                     )
                     // Others
                     state.subtiles.forEach { track ->
-                        MenuItem(
+                        DropDownMenuItem(
                             title = track.name,
                             onClick = { state.currSubtitleTrack = track; expanded = 1 })
                     }
@@ -783,7 +727,7 @@ private fun More(
             )
 
             // Main Menu
-            DropdownMenu2(
+            DropDownMenu2(
                 expanded = expanded == 1,
                 onDismissRequest = { expanded = 0; state.ensureAlwaysVisible(false) },
                 shape = Material.shapes.small2,
@@ -813,28 +757,28 @@ private fun More(
                     Divider()
                     // Audio
                     val isVideo = state.isVideo
-                    MenuItem(
+                    DropDownMenuItem(
                         title = "Audio",
                         subtitle = state.currAudioTrack?.name ?: "Auto",
                         onClick = { expanded = 2 },
-                        icon = Icons.Outlined.Speaker,
+                        icon = rememberVectorPainter(image = Icons.Outlined.Speaker),
                         enabled = isVideo
                     )
 
                     // Subtitle
-                    MenuItem(
+                    DropDownMenuItem(
                         title = "Subtitle",
                         subtitle = state.currSubtitleTrack?.name ?: "Off",
                         onClick = { expanded = 3 },
-                        icon = Icons.Outlined.ClosedCaption,
+                        icon = rememberVectorPainter(Icons.Outlined.ClosedCaption),
                         enabled = isVideo
                     )
 
                     // Lock
-                    MenuItem(
+                    DropDownMenuItem(
                         title = "Lock",
                         subtitle = "Lock/Hide controller",
-                        icon = Icons.Outlined.Lock,
+                        icon = rememberVectorPainter(Icons.Outlined.Lock),
                         enabled = isVideo,
                         onClick = {
                             // handle lock toggle request
@@ -1025,6 +969,7 @@ private fun Message(
  * @param modifier [Modifier] to apply to the main content element.
  *
  */
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MainContent(
     state: Console,
@@ -1111,10 +1056,15 @@ private fun MainContent(
                     // TODO - Find Proper Place to store this logic.
                     // TODO - Add support for other gestures like seek, volume +/-, Brightness +/-
                     .pointerInput("tapGesture") {
-                        var lastTapTime = -1L; var tapCount = 1 // Track double tap timing and count
+                        var lastTapTime = -1L;
+                        var tapCount = 1 // Track double tap timing and count
                         detectTapGestures(
                             // Reset onTap
-                            onTap = { tapCount = 1; lastTapTime = -1L; onRequest(REQUEST_TOGGLE_VISIBILITY) },
+                            onTap = {
+                                tapCount = 1; lastTapTime = -1L; onRequest(
+                                REQUEST_TOGGLE_VISIBILITY
+                            )
+                            },
                             onLongPress = { onRequest(REQUEST_TOOGLE_LOCK) },
                             onDoubleTap = { offset ->
                                 val visibility = state.visibility
@@ -1130,7 +1080,8 @@ private fun MainContent(
                                     state.visibility = Console.VISIBILITY_HIDDEN
                                 val current = System.currentTimeMillis()
                                 // Check if it is a continuous fast tap.
-                                val isFastTap = current - lastTapTime < 600 // 600ms double tap window
+                                val isFastTap =
+                                    current - lastTapTime < 600 // 600ms double tap window
                                 if (isFastTap) tapCount++ else tapCount = 1
                                 lastTapTime = current
                                 val (width, _) = size
@@ -1140,10 +1091,13 @@ private fun MainContent(
 
                                 // Calculate seek increment based on side
                                 val increment = if (isLeftTap) -10_000L else +10_000L
-                                Log.d(TAG, "onDoubleTap: width: $width, x: $x, isLeft: $isLeftTap, multiplier: $tapCount, visible: $visible")
+                                Log.d(
+                                    TAG,
+                                    "onDoubleTap: width: $width, x: $x, isLeft: $isLeftTap, multiplier: $tapCount, visible: $visible"
+                                )
                                 state.seek(increment) // Perform seek
                                 // Update message with multiplied seek time
-                                state.message = "${if(isLeftTap) "-" else "+" }${tapCount * 10}s"
+                                state.message = "${if (isLeftTap) "-" else "+"}${tapCount * 10}s"
                             }
                         )
                     }
