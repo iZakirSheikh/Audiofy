@@ -140,7 +140,7 @@ import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.PlayerView
-import com.prime.media.core.compose.Reach
+import com.prime.media.core.compose.Range
 import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.preference
@@ -1216,7 +1216,7 @@ private fun MainContent(
  * @property isMobilePortrait a boolean value that indicates if the window is portrait or not
  */
 private val WindowSize.isMobilePortrait
-    get() = widthReach == Reach.Compact && widthReach < heightReach
+    get() = widthRange == Range.Compact && widthRange < heightRange
 
 /**
  * Constructs a two-pane strategy based on the window size and the gap width.

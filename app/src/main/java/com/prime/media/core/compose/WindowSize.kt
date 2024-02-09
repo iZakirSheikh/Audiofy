@@ -15,10 +15,12 @@ import androidx.window.layout.WindowMetricsCalculator
 
 private const val TAG = "WindowSize"
 
+// TODO: Maybe add the special window sizes to this like Small, Mobile, Large.
+
 /**
  * Represents different reach categories based on screen width or height.
  */
-enum class Reach {
+enum class Range {
     /**
      * Indicates a compact screen size, typically for smaller devices like phones.
      *
@@ -54,13 +56,13 @@ enum class Reach {
  * @param width The width of the window in Dp.
  * @return The corresponding reach category.
  */
-private fun fromWidth(width: Dp): Reach {
+private fun fromWidth(width: Dp): Range {
     require(width >= 0.dp) { "Width must not be negative" }
     return when {
-        width <= 500.dp -> Reach.Compact
-        width <= 700.dp -> Reach.Medium
-        width <= 900.dp -> Reach.Large
-        else -> Reach.xLarge
+        width <= 500.dp -> Range.Compact
+        width <= 700.dp -> Range.Medium
+        width <= 900.dp -> Range.Large
+        else -> Range.xLarge
     }
 }
 
@@ -70,13 +72,13 @@ private fun fromWidth(width: Dp): Reach {
  * @param height The height of the window in Dp.
  * @return The corresponding reach category.
  */
-private fun fromHeight(height: Dp): Reach {
+private fun fromHeight(height: Dp): Range {
     require(height >= 0.dp) { "Height must not be negative" }
     return when {
-        height <= 500.dp -> Reach.Compact
-        height <= 700.dp -> Reach.Medium
-        height <= 900.dp -> Reach.Large
-        else -> Reach.xLarge
+        height <= 500.dp -> Range.Compact
+        height <= 700.dp -> Range.Medium
+        height <= 900.dp -> Range.Large
+        else -> Range.xLarge
     }
 }
 
@@ -87,14 +89,34 @@ private fun fromHeight(height: Dp): Reach {
  */
 @Immutable
 @JvmInline
-final value class WindowSize(val value: DpSize) {
-    val widthReach: Reach get() = fromWidth(value.width)
-    val heightReach: Reach get() = fromHeight(value.height)
+value class WindowSize(val value: DpSize) {
 
-    operator fun component1() = widthReach
-    operator fun component2() = heightReach
+    /**
+     * @see Range
+     */
+    val widthRange: Range get() = fromWidth(value.width)
+    /**
+     * @see Range
+     */
+    val heightRange: Range get() = fromHeight(value.height)
 
-    override fun toString() = "WindowSize($widthReach, $heightReach)"
+    operator fun component1() = widthRange
+    operator fun component2() = heightRange
+
+    /**
+     * Consumes a specified amount of width and/or height from the current [WindowSize] and returns a new [WindowSize] with the adjusted dimensions.
+     *
+     * @param amount The [DpSize] to consume, representing the amount to subtract from both width and height.
+     * @return A new [WindowSize] with the consumed amount subtracted from the original [value].
+     */
+    fun consume(amount: DpSize): WindowSize = WindowSize(value - amount)
+
+    /**
+     * @see consume
+     */
+    fun consume(width: Dp = 0.dp, height: Dp = 0.dp) = consume(DpSize(width, height))
+
+    override fun toString() = "WindowSize($widthRange, $heightRange)"
 }
 
 /**

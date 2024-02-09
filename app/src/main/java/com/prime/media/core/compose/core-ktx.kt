@@ -8,6 +8,7 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -111,3 +112,9 @@ fun Modifier.marque(iterations: Int) =
             iterations = iterations,
         )
         .then(this)
+
+private val NoneWindowInsets = WindowInsets(0)
+/**
+ * Represents empty window insets with all values set to 0.
+ */
+val WindowInsets.Companion.None get() =  NoneWindowInsets

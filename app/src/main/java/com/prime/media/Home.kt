@@ -94,7 +94,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.NavigationRailItem2
 import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.Reach
+import com.prime.media.core.compose.Range
 import com.prime.media.core.compose.Scaffold2
 import com.prime.media.core.compose.colorsNavigationItem2
 import com.prime.media.core.compose.current
@@ -290,7 +290,7 @@ private fun Permission() {
         iconResId = R.raw.lt_permission,
         title = stringResource(R.string.permission_screen_title),
         message = stringResource(R.string.permission_screen_desc),
-        vertical = LocalWindowSize.current.widthReach == Reach.Compact
+        vertical = LocalWindowSize.current.widthRange == Range.Compact
     ) {
         OutlinedButton(
             onClick = { permission.launchPermissionRequest() },
@@ -422,7 +422,7 @@ private fun NavGraph(
             }
             composable(Library.route) {
                 val viewModel = hiltViewModel<LibraryViewModel>()
-                Library(viewModel = viewModel)
+                Library(viewModel)
             }
             composable(Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
@@ -712,10 +712,10 @@ fun Home(channel: Channel) {
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
             // Determine the window size class and access the system facade
-            val clazz = LocalWindowSize.current.widthReach
+            val clazz = LocalWindowSize.current.widthRange
             val facade = LocalSystemFacade.current
             // Check if the layout should be vertical based on the window size class
-            val vertical = clazz < Reach.Medium
+            val vertical = clazz < Range.Medium
             // Determine whether to hide the navigation bar based on the current destination
             val hideNavigationBar = navController.current in HIDDEN_DEST_ROUTES
             Scaffold2(

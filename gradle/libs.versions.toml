@@ -1,7 +1,7 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.2.2"  # Android Gradle Plugin for building Android apps
+agp = "8.3.0-rc01"  # Android Gradle Plugin for building Android apps
 koltin-version = "1.9.22"  # Kotlin language version for code compilation
 compose-compiler = "1.5.9"  # Compiler for Jetpack Compose UI framework
 firebase = "4.4.0"  # Firebase core library for integrating Firebase services

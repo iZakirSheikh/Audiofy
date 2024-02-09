@@ -4,6 +4,7 @@ package com.prime.media.core.compose
 
 import android.graphics.Typeface
 import androidx.annotation.DrawableRes
+import androidx.annotation.FloatRange
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -34,8 +35,10 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -50,6 +53,7 @@ import com.prime.media.R
 import com.prime.media.core.LongDurationMills
 import com.primex.material2.Label
 import com.primex.material2.Placeholder
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 @Composable
@@ -313,3 +317,63 @@ inline fun AnimatedIconButton(
         )
     }
 }
+
+
+/**
+ * Scales a composable by the specified factor while maintaining its aspect ratio.
+ * This is useful for maintaining consistency in UI elements across different screen sizes
+ * and resolutions.
+ *
+ * @param scale The scaling factor (0.0 to 1.0 for shrinking, > 1.0 for enlarging).
+ * @param alignment The alignment of the scaled composable within its layout bounds.
+ *                 Defaults to `Alignment.Center`.
+ *
+ * @return A modified composable with the specified scaling behavior.
+ *
+ * ### Why use this instead of directly creating a new layout?
+ *
+ * 1. **Consistent scaling:** This modifier ensures that all elements within the
+ *    composable, including text, images, and other components, are scaled proportionally.
+ *    This avoids issues like distorted text or uneven spacing that can occur when
+ *    scaling individual elements manually.
+ *
+ * 2. **Ease of use:** This modifier provides a single point of control for
+ *    scaling, making it easier to manage consistent scaling across your UI.
+ *
+ * 3. **Figma-like behavior:** This modifier mimics the scaling behavior in design tools
+ *    like Figma, where elements maintain their aspect ratio when scaled.
+
+ **Limitations:**
+
+ * This modifier may not be suitable when you need to apply non-uniform scaling or
+ *   specific layout adjustments beyond basic alignment.
+ *
+ * **Handling overflow:**
+
+ * Currently, this modifier does not handle situations where the scaled content exceeds
+ *   the available space.
+
+ */
+fun Modifier.size(
+    @FloatRange(0.0) scale: Float,
+    alignment: Alignment = Alignment.Center
+) = if (scale == 1.0f) this else
+    this then Modifier
+        .layout { measurable, constraints ->
+            // Measure the composable with the provided constraints.
+            val placeable = measurable.measure(constraints)
+            // Calculate the scaled width and height based on the original size and the scale factor.
+            val sWidth = (placeable.width * scale).roundToInt()
+            val sHeight = (placeable.height * scale).roundToInt()
+            // Layout the composable with the scaled dimensions.
+            layout(sWidth, sHeight) {
+                val offset = alignment.align(
+                    IntSize(placeable.width, placeable.height),
+                    IntSize(sWidth, sHeight),
+                    layoutDirection
+                )
+                // Position the scaled composable.
+                placeable.place(offset)
+            }
+        }
+        .scale(scale)

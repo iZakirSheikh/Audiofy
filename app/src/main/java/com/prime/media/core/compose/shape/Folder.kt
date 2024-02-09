@@ -4,13 +4,12 @@ import androidx.compose.foundation.shape.GenericShape
 
 private const val TAG = "Folder"
 
-
 /**
  * Defines a [GenericShape] simpler to [Icons.Rounded.Folder]
  */
 val FolderShape = GenericShape { (x, y), _ ->
-    val radius = 0.1f * x
-    val stepAt = 0.3f * x
+    val radius = 0.18f * x
+    val stepAt = 0.40f * x
     moveTo(radius, 0f)
     lineTo(stepAt, 0f)
     lineTo(stepAt + radius, radius)

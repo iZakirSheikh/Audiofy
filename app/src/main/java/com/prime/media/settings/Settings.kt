@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.HideSource
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Recycling
 import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Share
@@ -71,7 +72,7 @@ import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
 import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.Reach
+import com.prime.media.core.compose.Range
 import com.prime.media.core.compose.purchase
 import com.prime.media.darkShadowColor
 import com.prime.media.lightShadowColor
@@ -252,6 +253,15 @@ private inline fun ColumnScope.AboutUs() {
     )
 
     // The app version and check for updates.
+    val ctx = LocalContext.current
+    Preference(
+        title = "Privacy Policy",
+        summery = "Click here to view the privacy policy.",
+        icon = Icons.Outlined.PrivacyTip,
+        modifier = Modifier.clickable { ctx.startActivity(PrivacyPolicyIntent) }
+    )
+
+    // The app version and check for updates.
     val version = BuildConfig.VERSION_NAME
     Preference(
         title = stringResource(R.string.app_version),
@@ -383,6 +393,10 @@ private val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
     putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
 }
 
+private val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
+    data = Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
+}
+
 private val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
     data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
 }
@@ -503,9 +517,9 @@ private fun Compact(state: Settings) {
 @Composable
 @NonRestartableComposable
 fun Settings(state: Settings) {
-    val reach = LocalWindowSize.current.widthReach
+    val reach = LocalWindowSize.current.widthRange
     when (reach) {
-        Reach.Compact -> Compact(state = state)
+        Range.Compact -> Compact(state = state)
         else -> Compact(state = state) // for every one currently
     }
 }
