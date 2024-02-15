@@ -53,7 +53,7 @@ typealias Playlists = PlaylistsViewModel.Companion
 private val Playlist.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
 
-private val VALID_NAME_REGEX = Regex("^[a-zA-Z0-9]+$")
+private val VALID_NAME_REGEX = Regex("^[\\p{L}\\p{N}]+$")
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(

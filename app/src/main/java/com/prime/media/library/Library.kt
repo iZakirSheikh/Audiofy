@@ -3,10 +3,7 @@
 
 package com.prime.media.library
 
-import android.content.Context
 import android.net.Uri
-import android.util.Log
-import android.widget.ImageView
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -14,7 +11,26 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -25,7 +41,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
@@ -41,56 +57,40 @@ import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.lerp
-import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.center
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import coil.load
 import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
-import com.google.common.io.Files.append
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
@@ -100,20 +100,13 @@ import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.KenBurns
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.None
 import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.PreviewTheme
-import com.prime.media.core.compose.Range
 import com.prime.media.core.compose.purchase
-import com.prime.media.core.compose.shape.CompactDisk
 import com.prime.media.core.compose.shape.FolderShape
-import com.prime.media.core.compose.size
-import com.prime.media.core.db.Audio
-import com.prime.media.core.db.Playlist
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
@@ -123,15 +116,12 @@ import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
-import com.prime.media.overlay
 import com.prime.media.settings.Settings
-import com.prime.media.surfaceColorAtElevation
+import com.prime.media.small2
 import com.primex.core.blend
 import com.primex.core.foreground
 import com.primex.core.lerp
-import com.primex.core.rotateTransform
 import com.primex.core.textResource
-import com.primex.core.withSpanStyle
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
@@ -139,11 +129,6 @@ import com.primex.material2.Text
 import com.primex.material2.appbar.CollapsableTopBarLayout
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlin.math.roundToInt
 
 private const val TAG = "Library"
 
@@ -158,6 +143,12 @@ private val LargeTopBarTitle
  */
 private val NormalTopBarTitle
     @Composable inline get() = Material.typography.body1
+
+private val Colors.topBar
+    @Composable inline get() = primary.blend(background, 0.96f)
+
+private val Colors.border
+    @Composable inline get() = BorderStroke(0.2.dp, primary.copy(0.3f))
 
 /**
  * Composable function to display the app bar for the library screen.
@@ -179,34 +170,40 @@ private fun CarousalAppBar(
         maxHeight = 220.dp,
         insets = insets,
         scrollBehavior = behaviour,
-        modifier = modifier
+        modifier = modifier.clipToBounds()
     ) {
         // Background with image representation and gradient
         val id by state.carousel.collectAsState()
         val colors = Material.colors
         val gradient =
             Brush.verticalGradient(colors = listOf(Color.Transparent, colors.background))
-
         // Background
+        val curtain =
+            lerp(colors.topBar, Color.Transparent, fraction)
         Crossfade(
             targetState = Repository.toAlbumArtUri(id ?: 0),
             animationSpec = tween(4_000),
             modifier = Modifier
-                .fillMaxSize()
-                .foreground(lerp(colors.surfaceColorAtElevation(2.dp), Color.Transparent, fraction))
-                .foreground(gradient)
-                .layoutId(TopAppBarDefaults.LayoutIdBackground),
+                .foreground(curtain)
+                .parallax(0.3f)
+                .layoutId(TopAppBarDefaults.LayoutIdBackground)
+                .fillMaxSize(),
             content = { value ->
-                KenBurns(
-                    modifier = Modifier,
-                    view = {
-                        load(value)
-                        // Pause/resume animation based on collapse/expand state
-                        if (fraction < 1.0) this.pause() else this.resume()
-                        scaleType = ImageView.ScaleType.CENTER_CROP
-                    }
+                Artwork(
+                    modifier = Modifier
+                        .foreground(Color.Black.copy(0.2f))
+                        .fillMaxSize(),
+                    data = value,
                 )
             }
+        )
+
+        // FixMe - The gradient is also enlarged by parallax and hence this.
+        Box(
+            modifier = Modifier
+                .alpha(lerp(0f, 1f, fraction))
+                .foreground(gradient)
+                .fillMaxSize()
         )
 
         // Navigation Icon.
@@ -260,9 +257,13 @@ private fun CarousalAppBar(
     }
 }
 
+/**
+ * Padding values with all sides set to 0.
+ */
 private val ZeroPadding = PaddingValues(0.dp)
 
-private val DefaultListItemArrangement = Arrangement.spacedBy(ContentPadding.medium)
+private val LargeListItemArrangement = Arrangement.spacedBy(16.dp)
+private val NormalRecentItemArrangement = Arrangement.spacedBy(8.dp)
 
 /**
  * Composable function displaying a lazily loaded list of items with loading and empty states.
@@ -279,7 +280,7 @@ private inline fun <T> StatefulLazyList(
     modifier: Modifier = Modifier,
     noinline key: ((item: T) -> Any)? = null,
     contentPadding: PaddingValues = ZeroPadding,
-    horizontalArrangement: Arrangement.Horizontal = DefaultListItemArrangement,
+    horizontalArrangement: Arrangement.Horizontal = NormalRecentItemArrangement,
     listState: LazyListState = rememberLazyListState(),
     crossinline itemContent: @Composable LazyItemScope.(item: T) -> Unit
 ) {
@@ -300,13 +301,13 @@ private inline fun <T> StatefulLazyList(
             0 -> Placeholder(
                 iconResId = R.raw.lt_loading_bubbles,
                 title = "",
-                message = "Loading"
+                message = stringResource(id = R.string.loading)
             )
             // Empty state
             1 -> Placeholder(
                 iconResId = R.raw.lt_empty_box,
                 title = "",
-                message = "Oops!! empty."
+                message = stringResource(id = R.string.empty)
             )
             // Show list content
             else -> {
@@ -350,10 +351,14 @@ private fun Shortcut(
     modifier: Modifier = Modifier,
 ) {
     // Base container for the shortcut with styling and click handling
+    val colors = Material.colors
+    val color =
+        if (!Material.colors.isLight) colors.onBackground.copy(0.50f) else colors.primary.copy(0.5f)
     Box(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
-            .border(1.dp, Material.colors.onBackground.copy(0.50f), FolderShape) // Light border
+            .background(colors.primary.copy(0.035f), FolderShape)
+            .border(1.dp, color, FolderShape) // Light border
             .clickable(
                 null,
                 ripple(true, color = Material.colors.primary), // Ripple effect on click
@@ -390,8 +395,8 @@ private fun Shortcuts(
     // FlowRow to arrange shortcuts horizontally with spacing
     FlowRow(
         modifier = modifier/*.scaledLayout(1.3f)*/,
-        horizontalArrangement = DefaultListItemArrangement,
-        verticalArrangement = DefaultListItemArrangement,
+        horizontalArrangement = NormalRecentItemArrangement,
+        verticalArrangement = NormalRecentItemArrangement,
         content = {
             val navigator = LocalNavController.current
 
@@ -437,6 +442,12 @@ private fun Shortcuts(
 }
 
 /**
+ * The shape of the recent icon.
+ */
+private val RECENT_ICON_SHAPE = RoundedCornerShape(30)
+
+
+/**
  * Composable function to create a clickable recent item with artwork and label.
  *
  * @param label: The CharSequence representing the item's label.
@@ -451,7 +462,6 @@ private fun RecentItem(
     modifier: Modifier = Modifier,
     artworkUri: String? = null
 ) {
-    // Column container for the recent item with styling and click handling
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -465,19 +475,20 @@ private fun RecentItem(
             data = artworkUri,
             modifier = Modifier
                 .size(60.dp) // Adjust size if needed
-                .border(2.5.dp, Color.White, CompactDisk) // Add white border
-                .shadow(ContentElevation.low, CompactDisk) // Add subtle shadow
+                .border(2.dp, Color.White, RECENT_ICON_SHAPE) // Add white border
+                .shadow(ContentElevation.low, RECENT_ICON_SHAPE) // Add subtle shadow
         )
 
         // Label below the artwork with padding and styling
-        Label(
+        Text(
             text = label,
             modifier = Modifier
                 .padding(top = ContentPadding.medium)
                 .width(75.dp),
             style = Material.typography.caption2,
             maxLines = 2, // Allow at most 2 lines for label
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            minLines = 2
         )
     }
 }
@@ -497,13 +508,12 @@ private fun RecentlyPlayedList(
 ) {
     // Collect recently played items from the Library state
     val recents by state.recent.collectAsState(initial = null)
-
     // Display the list with loading, empty, and content states
     StatefulLazyList(
         items = recents,      // Provide the list of recent items
         key = { it.uri },    // Unique key for each item based on its URI
         modifier = modifier,  // Apply optional modifiers
-        horizontalArrangement = DefaultListItemArrangement,
+        horizontalArrangement = NormalRecentItemArrangement,
         contentPadding = contentPadding,
         itemContent = {      // Define how to display each item
             RecentItem(
@@ -584,6 +594,13 @@ private fun NewlyAddedItem(
     }
 }
 
+/**
+ * A Composable function that displays a list of newly added items.
+ *
+ * @param state The state of the library.
+ * @param modifier The modifier to be applied to the list.
+ * @param contentPadding The padding to be applied to the list.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NewlyAddedList(
@@ -598,7 +615,7 @@ fun NewlyAddedList(
         items = audios,
         key = { it.id },
         modifier = modifier,
-        horizontalArrangement = DefaultListItemArrangement,
+        horizontalArrangement = LargeListItemArrangement,
         contentPadding = contentPadding
     ) { item ->
         // Create newly added item with parallax-adjusted image alignment
@@ -624,9 +641,8 @@ fun NewlyAddedList(
  */
 @Composable
 private fun Header(
-    title: String,
+    text: CharSequence,
     modifier: Modifier = Modifier,
-    subtitle: String? = null,
     style: TextStyle = Material.typography.h5,
     onMoreClick: (() -> Unit)? = null,
     contentPadding: PaddingValues = ZeroPadding
@@ -641,43 +657,36 @@ private fun Header(
         Text(
             style = style,
             //fontSize = 28.sp, // Not recommended; use style instead
-            text = buildAnnotatedString {
-                append(title)
-                if (subtitle == null) return@buildAnnotatedString
-
-                // Subtitle
-                withSpanStyle(
-                    color = color.copy(ContentAlpha.disabled),
-                    fontSize = 11.sp,
-                    baselineShift = BaselineShift(0.3f),
-                ) {
-                    append("\n$subtitle")
-                }
-            }
+            text = text
         )
 
         // More button (conditionally displayed)
         if (onMoreClick != null) {
             OutlinedButton(
-                label = "More",
+                label = textResource(id = R.string.more),
                 onClick = onMoreClick,
                 shape = CircleShape,
-                modifier = Modifier.scale(0.8f),
+                modifier = Modifier.scale(0.93f),
                 colors = ButtonDefaults.outlinedButtonColors(
                     backgroundColor = Color.Transparent
                 ),
-                contentPadding = PaddingValues(0.dp),
-                border = ButtonDefaults.outlinedBorder
+                border = Material.colors.border
             )
         }
     }
 }
 
-private val DefaultContentPadding = PaddingValues(
-    horizontal = ContentPadding.large,
-    vertical = ContentPadding.medium
-)
 
+/**
+ * A Composable function that lays out a screen with a top bar, content, and details section.
+ *
+ * @param topBar A Composable function that represents the top bar.
+ * @param content A Composable function that represents the main content of the screen.
+ * @param details A Composable function that represents the details section of the screen.
+ * @param modifier The modifier to be applied to the layout.
+ * @param offset The offset of the content from the top of the screen.
+ */
+// TODO - Here Scaffold is movable; consider find ways to animate its change
 @Composable
 private inline fun Layout(
     noinline topBar: @Composable () -> Unit,
@@ -708,7 +717,8 @@ private inline fun Layout(
 
         else -> TwoPane(
             second = { details() },
-            strategy = HorizontalTwoPaneStrategy(offset, false),
+            // TODO - think about the gapWidth here.
+            strategy = HorizontalTwoPaneStrategy(offset, false, ContentPadding.medium),
             displayFeatures = emptyList(),
             modifier = modifier,
             first = {
@@ -726,142 +736,138 @@ private inline fun Layout(
                         )
                     }
                 )
-            }
-        )
+            },
+
+            )
     }
 }
 
-private val StandardDensity = 2.7875001f
+private val DefaultContentPadding =
+    PaddingValues(ContentPadding.normal, ContentPadding.medium, ContentPadding.normal)
+
+
+//private val StandardDensity = 2.7875001f
 @Composable
 fun Library(
     state: Library
 ) {
-    val windowSize = LocalWindowSize.current
-    val (wRange, hRange) = windowSize
-    val (width, height) = windowSize.value
-    val padding = DefaultContentPadding
+    val (width, height) = LocalWindowSize.current.value
     val isTwoPane = width > 700.dp
-    val immersive = width < 500.dp
-    val local = LocalDensity.current
-    val density = when{
-        // Big screen
-        wRange > Range.xLarge && hRange > Range.Large -> local.density * 1.4f
-        wRange > Range.Medium && hRange > Range.Medium -> local.density * 1.2f
-        else -> local.density
-    }
-    //val new = lerp(density, density )
-    Log.d(TAG, "Library: w:$width h:$height")
+    // Define the scrollBehaviour to be used in topAppBar.
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    CompositionLocalProvider(
-        LocalDensity provides Density(local.density, local.fontScale)
-    ) {
-        Layout(
-            topBar = {
-                CarousalAppBar(
-                    state = state,
-                    behaviour = topAppBarScrollBehavior,
-                    modifier = if (immersive) Modifier
-                    else Modifier
-                        .padding(padding)
-                        .statusBarsPadding()
-                        .clip(RoundedCornerShape(15)),
-                    insets = if (immersive) WindowInsets.statusBars else WindowInsets.None
-                )
-            },
-            content = {
-                // Resents.
-                val navigator = LocalNavController.current
-                Header(
-                    modifier = Modifier.fillMaxWidth(),
-                    title = /*res.getString(R.string.library_recent)*/ "History",
-                    subtitle = stringResource(R.string.library_recent_tag_line),
-                    onMoreClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) },
-                    contentPadding = padding
-                )
-                RecentlyPlayedList(
-                    state,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = padding
+    Layout(
+        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+        // if this is a two-pane layout, the details will take 25% of total width (360dp - 500dp)
+        offset = if (!isTwoPane) Dp.Unspecified else (width * 0.25f).coerceIn(360.dp, 500.dp),
+        topBar = {
+            // means the top_bar will fill entire width when small width display
+            val immersive = width < 500.dp
+            CarousalAppBar(
+                state = state,
+                behaviour = topAppBarScrollBehavior,
+                modifier = if (immersive) Modifier
+                else Modifier
+                    .padding(DefaultContentPadding)
+                    .statusBarsPadding()
+                    .clip(RoundedCornerShape(15)),
+                insets = if (immersive) WindowInsets.statusBars else WindowInsets.None
+            )
+        },
+        content = {
+            // Resents.
+            val navigator = LocalNavController.current
+            Header(
+                modifier = Modifier.fillMaxWidth(),
+                text = textResource(R.string.library_history),
+                onMoreClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) },
+                contentPadding = DefaultContentPadding
+            )
+            // FixMe -  Can't use indented padding here because the anchor (i.e ZeroWidthSpace) in
+            //  StateFulLazyList is casing issues
+            RecentlyPlayedList(
+                state,
+                modifier = Modifier.fillMaxWidth(),
+                // As spacing will be suffice for start padding.
+                contentPadding = DefaultContentPadding
+            )
+
+            // Show Banner if not AdFree.
+            val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
+            if (!purchase.purchased)
+                Banner(
+                    placementID = BuildConfig.PLACEMENT_BANNER_1,
+                    modifier = Modifier.padding(DefaultContentPadding)
                 )
 
-                // Show Banner if not AdFree.
-                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
-                if (!purchase.purchased)
-                    Banner(
-                        placementID = BuildConfig.PLACEMENT_BANNER_1,
-                        modifier = Modifier.padding(padding)
-                    )
-
-                Header(
-                    modifier = Modifier.fillMaxWidth(),
-                    title = "Fresh Arrivals",
-                    subtitle = stringResource(R.string.library_recently_added_tag_line),
-                    onMoreClick = {
-                        navigator.navigate(
-                            Audios.direction(
-                                Audios.GET_EVERY,
-                                order = GroupBy.DateModified,
-                                ascending = false
-                            )
+            // Newly Added
+            Header(
+                modifier = Modifier.fillMaxWidth(),
+                text = textResource(id = R.string.library_recently_added),
+                onMoreClick = {
+                    navigator.navigate(
+                        Audios.direction(
+                            Audios.GET_EVERY,
+                            order = GroupBy.DateModified,
+                            ascending = false
                         )
+                    )
+                },
+                contentPadding = DefaultContentPadding
+            )
+            NewlyAddedList(
+                state,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = DefaultContentPadding
+            )
+        },
+        details = {
+            val content = remember {
+                movableContentOf {
+                    Header(
+                        modifier = Modifier.takeIf { !isTwoPane }
+                            ?: Modifier
+                                .background(Material.colors.topBar)
+                                .fillMaxWidth(),
+                        text = textResource(R.string.library_shortcuts),
+                        style = if (isTwoPane) Material.typography.subtitle1 else Material.typography.h5,
+                        contentPadding = if (isTwoPane) PaddingValues(
+                            horizontal = ContentPadding.normal,
+                            vertical = ContentPadding.small
+                        ) else DefaultContentPadding
+                    )
+                    Shortcuts(
+                        Modifier
+                            .padding(horizontal = 28.dp, vertical = ContentPadding.medium)
+                            .fillMaxWidth(),
+                    )
+                }
+            }
+            when (isTwoPane) {
+                // Why?
+                //  Because it will be placed inside the column of main content.
+                false -> content()
+
+                else -> Surface(
+                    modifier = Modifier
+                        .systemBarsPadding()
+                        .padding(top = ContentPadding.medium, end = ContentPadding.normal),
+                    // Use the outline color as the border stroke or null based on the lightness
+                    // of the material colors
+                    border = Material.colors.border,
+                    // Use the overlay color or the background color based on the lightness of
+                    // the material colors
+                    color = Color.Transparent,
+                    // Use the ContentShape as the shape of the surface
+                    shape = Material.shapes.small2,
+                    contentColor = Material.colors.onBackground,
+                    content = {
+                        Column(content = { content() })
                     },
-                    contentPadding = padding
                 )
-
-                NewlyAddedList(
-                    state,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = padding
-                )
-            },
-            details = {
-                val movable = remember {
-                    movableContentOf {
-                        // Shortcuts.
-                        val background = if (isTwoPane) Modifier
-                            .background(Material.colors.overlay.compositeOver(Material.colors.background))
-                        else
-                            Modifier
-                        Header(
-                            modifier = Modifier
-                                .then(background)
-                                .fillMaxWidth(),
-                            title = stringResource(R.string.library_shortcuts),
-                            subtitle = stringResource(R.string.library_shortcuts_tag_line),
-                            style = if (isTwoPane) Material.typography.body1 else Material.typography.h5,
-                            contentPadding = if (isTwoPane) PaddingValues(horizontal = ContentPadding.normal) else DefaultContentPadding
-                        )
-                        Shortcuts(
-                            Modifier
-                                .padding(ContentPadding.normal)
-                                .fillMaxWidth(),
-                        )
-                    }
-                }
-                when (isTwoPane) {
-                    false -> movable()
-                    else -> Surface(
-                        modifier = Modifier
-                            .systemBarsPadding()
-                            .padding(DefaultContentPadding),
-                        // Use the outline color as the border stroke or null based on the lightness
-                        // of the material colors
-                        border = BorderStroke(0.2.dp, Material.colors.onBackground.copy(0.5f)),
-                        // Use the overlay color or the background color based on the lightness of
-                        // the material colors
-                        color = Color.Transparent,
-                        // Use the ContentShape as the shape of the surface
-                        shape = RoundedCornerShape(7),
-                        contentColor = Material.colors.onBackground,
-                        content = {
-                            Column(content = { movable() })
-                        },
-                    )
-                }
-            },
-            modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
-            offset = if (!isTwoPane) Dp.Unspecified else (width * 0.25f).coerceIn(360.dp, 500.dp),
-        )
-    }
+            }
+        }
+    )
 }
+
+
 

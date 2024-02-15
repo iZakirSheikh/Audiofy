@@ -1,10 +1,10 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.3.0-rc01"  # Android Gradle Plugin for building Android apps
+agp = "8.4.0-alpha09"  # Android Gradle Plugin for building Android apps
 koltin-version = "1.9.22"  # Kotlin language version for code compilation
 compose-compiler = "1.5.9"  # Compiler for Jetpack Compose UI framework
-firebase = "4.4.0"  # Firebase core library for integrating Firebase services
+firebase = "4.4.1"  # Firebase core library for integrating Firebase services
 crashlytics = "2.9.9"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.50"  # Hilt for dependency injection in Android apps
 
@@ -12,7 +12,7 @@ hilt-android = "2.50"  # Hilt for dependency injection in Android apps
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.2.1"  # Media playback, including audio and video
 compose = "1.7.0-alpha02"  # Core foundation for building declarative UI with Compose
-toolkit = "2.0.2-beta01"  # Collection of UI utilities and extensions
+toolkit = "2.0.2-beta02"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
 
 [plugins]
@@ -87,7 +87,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 #---------------------
 # Integration of Google Fonts directly into Compose UIs, offering a wide
 # range of fonts for enhanced typography.
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.0" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.1" }
 # Window
 # -----
 # Handling of multiple windows and activity states for multi-window app experiences.
@@ -116,7 +116,7 @@ kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 # --------------------------------------------------------------------------------------------------
 # Custom slider with a wavy wave-like design, offering a unique and visually appealing way for users to
 # make selections or adjustments within the app.
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "0.10.0" }
+wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.0.0" }
 #Splashscreen
 # --------------------------------------------------------------------------------------------------
 splashscreen = {module = "androidx.core:core-splashscreen", version = "1.0.1"}
@@ -214,12 +214,12 @@ toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.
 # --------------------------------------------------------------------------------------------------
 # Kotlin extensions for Firebase Analytics, providing a concise and idiomatic way to collect
 # user behavior and app events, track screen views, user interactions, and other custom events.
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "21.5.0" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "21.5.1" }
 # Firebase Crashlytics KTX
 # Kotlin extensions for Firebase Crashlytics, offering real-time crash reporting and
 # --------------------------------------------------------------------------------------------------
 # insights into app stability issues, enabling developers to identify, prioritize, and fix crashes efficiently.
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "18.6.1" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "18.6.2" }
 
 
 # Google Play In-App Update:

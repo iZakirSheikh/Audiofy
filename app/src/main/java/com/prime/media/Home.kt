@@ -127,6 +127,7 @@ import com.primex.core.Amber
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
 import com.primex.core.ImageBrush
+import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
@@ -185,7 +186,7 @@ val Shapes.small2 get() = com.prime.media.small2
  * The color is black with alpha 0.04 on light themes and white with alpha 0.04 on dark themes.
  */
 val Colors.overlay
-    @Composable inline get() = (if (isLight) Color.Black else Color.White).copy(0.04f)
+    @Composable inline get() = if (isLight) Color.Black.copy(0.04f) else Color.White.copy(0.01f)
 
 /**
  * The outline color used in the light/dark theme.
@@ -588,7 +589,7 @@ private fun NavBar(
             val current by navController.currentBackStackEntryAsState()
             val colors = ChipDefaults.colorsNavigationItem2(
                 leadingIconColor = LocalContentColor.current,
-                selectedBackgroundColor = Material.colors.primary.copy(0.15f),
+                selectedBackgroundColor = Material.colors.primary.copy(0.04f),
                 selectedLeadingIconColor = Material.colors.primary,
                 selectedContentColor = MaterialTheme.colors.primary,
                 contentColor = LocalContentColor.current
