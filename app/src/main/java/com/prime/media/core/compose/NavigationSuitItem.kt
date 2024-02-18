@@ -4,20 +4,18 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
@@ -29,82 +27,56 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.primex.material2.Label
 
 private const val TAG = "NavigationItem"
 
-private val isLight
+object NavigationItemDefaults {
+
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    inline get() = MaterialTheme.colors.isLight
+    fun navigationItemColors(
+        backgroundColor: Color = Color.Transparent,
+        contentColor: Color = LocalContentColor.current,
+        selectedBackgroundColor: Color = MaterialTheme.colors.primary.copy(0.08f),
+        selectedContentColor: Color = MaterialTheme.colors.primary,
+        disabledBackgroundColor: Color = Color.Transparent,
+        disabledContentColor: Color = contentColor.copy(ContentAlpha.disabled),
+    ) = ChipDefaults.outlinedFilterChipColors(
+        backgroundColor = backgroundColor,
+        leadingIconColor = contentColor,
+        disabledContentColor = disabledContentColor,
+        disabledBackgroundColor = disabledBackgroundColor,
+        disabledLeadingIconColor = disabledContentColor,
+        selectedBackgroundColor = selectedBackgroundColor,
+        selectedContentColor = selectedContentColor,
+        selectedLeadingIconColor = selectedContentColor
+    )
+}
 
 /**
- * A utility function for defining colors used by both [NavigationRailItem2] and [BottomNavItem2].
- *
- * @param contentColor The color for the content of the item when unselected.
- * @param leadingIconColor The color for the leading icon of the item when unselected.
- * @param disabledLeadingIconColor The color for the leading icon when the item is disabled.
- * @param selectedContentColor The color for the content of the item when selected.
- * @param selectedLeadingIconColor The color for the leading icon of the item when selected.
- *
- * @return [SelectableChipColors] object with the specified color configurations.
- */
-@Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-inline fun ChipDefaults.colorsNavigationItem2(
-    contentColor: Color = MaterialTheme.colors.onSurface.copy(if (isLight) 1.0f else ChipDefaults.ContentOpacity),
-    leadingIconColor: Color = contentColor.copy(if (isLight) 1.0f else ChipDefaults.LeadingIconOpacity),
-    disabledLeadingIconColor: Color = leadingIconColor.copy(alpha = ContentAlpha.disabled * ChipDefaults.LeadingIconOpacity),
-    selectedContentColor: Color = MaterialTheme.colors.onPrimary,
-    selectedLeadingIconColor: Color = MaterialTheme.colors.onPrimary,
-    backgroundColor: Color = Color.Transparent,
-    selectedBackgroundColor: Color = MaterialTheme.colors.primary,
-    disabledBackgroundColor: Color = Color.Transparent,
-): SelectableChipColors = ChipDefaults.outlinedFilterChipColors(
-    contentColor = contentColor,
-    disabledLeadingIconColor = disabledLeadingIconColor,
-    selectedContentColor = selectedContentColor,
-    selectedLeadingIconColor = selectedLeadingIconColor,
-    backgroundColor = backgroundColor,
-    selectedBackgroundColor = selectedBackgroundColor,
-    disabledBackgroundColor = disabledBackgroundColor,
-)
-
-
-/**
- * The content padding used by a Item.
- * Used as start padding when there's leading icon, used as eng padding when there's no
- * trailing icon.
+ * A padding value used for checked components.
  */
 private val CheckedPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-private val UnCheckedPadding = PaddingValues(10.dp)
 
 /**
  * The size of the spacing between the leading icon and a text inside a chip.
  */
-private val LeadingIconSpacing = 10.dp
+private val LeadingIconSpacing = 7.dp
 
 /**
- * Represents a different style of BottomNavigationItem. This behaves similarly to the Material2 [FilterChip].
- *
- * @param onClick Callback to be invoked when the item is clicked.
- * @param icon Composable function to define the icon displayed in the item.
- * @param label Composable function to define the label displayed in the item.
- * @param modifier Modifier for styling and positioning the item.
- * @param checked Whether the item is currently selected or not.
- * @param enabled Whether the item is interactable or not.
- * @param shape The shape of the item.
- * @param border The border configuration for the item, visible only when checked.
- * @param colors Customizable colors for the item, including background and content colors.
+ * The content padding used by a Item when it's unchecked.
  */
+private val UnCheckedPadding = PaddingValues(10.dp)
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun BottomNavigationItem2(
+fun NavigationBarItem(
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
     label: @Composable (() -> Unit),
@@ -113,7 +85,7 @@ fun BottomNavigationItem2(
     enabled: Boolean = true,
     shape: Shape = CircleShape,
     border: BorderStroke? = null,
-    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
+    colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors()
 ) {
     // This item necessitates the presence of both an icon and a label.
     // When selected, both the icon and label are displayed; otherwise, only the icon is shown.
@@ -126,18 +98,18 @@ fun BottomNavigationItem2(
         selected = checked,
         onClick = onClick,
         shape = shape,
-        modifier = modifier.scale(0.87f),
+        modifier = modifier,
         color = backgroundColor,
         contentColor = contentColor,
         border = if (checked) border else null,
     ) {
         Row(
             Modifier
-                .width(IntrinsicSize.Max)
                 .defaultMinSize(minHeight = ChipDefaults.MinHeight)
+                .wrapContentSize()
                 .padding(if (checked) CheckedPadding else UnCheckedPadding)
                 .animateContentSize(),
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = if (checked) Arrangement.spacedBy(LeadingIconSpacing) else Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             val leadingIconColor = colors.leadingIconColor(enabled, checked)
@@ -146,8 +118,8 @@ fun BottomNavigationItem2(
                 LocalContentAlpha provides leadingIconColor.value.alpha,
                 content = icon
             )
+            // if not checked return else show label.
             if (!checked) return@Row
-            Spacer(Modifier.width(LeadingIconSpacing))
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
                     value = MaterialTheme.typography.caption,
@@ -159,48 +131,25 @@ fun BottomNavigationItem2(
 }
 
 /**
- * @see BottomNavigationItem2
- */
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-inline fun BottomNavigationItem2(
-    noinline onClick: () -> Unit,
-    icon: ImageVector,
-    label: CharSequence,
-    modifier: Modifier = Modifier,
-    checked: Boolean = false,
-    enabled: Boolean = true,
-    shape: Shape = CircleShape,
-    border: BorderStroke? = null,
-    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
-) = BottomNavigationItem2(
-    onClick = onClick,
-    icon = {
-        Icon(
-            imageVector = icon,
-            contentDescription = null
-        )
-    },
-    label = { Label(text = label) },
-    modifier = modifier,
-    checked = checked,
-    enabled = enabled,
-    shape = shape,
-    border = border,
-    colors = colors
-)
-
-/**
  * The default shape of the [NavigationRailItem2]
  */
 private val DefaultNavRailItemShape = RoundedCornerShape(20)
 
 /**
- * @see BottomNavigationItem2
+ * A Composable function that represents a navigation rail item.
+ *
+ * @param onClick The callback to be invoked when the item is clicked.
+ * @param icon The icon to be displayed for the item.
+ * @param label The label to be displayed for the item.
+ * @param modifier The modifier to be applied to the item.
+ * @param checked Whether the item is currently checked.
+ * @param enabled Whether the item is currently enabled.
+ * @param shape The shape of the item.
+ * @param border The border of the item.
  */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NavigationRailItem2(
+fun NavigationRailItem(
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
     label: @Composable (() -> Unit),
@@ -209,7 +158,7 @@ fun NavigationRailItem2(
     enabled: Boolean = true,
     shape: Shape = DefaultNavRailItemShape,
     border: BorderStroke? = null,
-    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
+    colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors()
 ) {
     // This item necessitates the presence of both an icon and a label.
     // When selected, both the icon and label are displayed; otherwise, only the icon is shown.
@@ -222,21 +171,20 @@ fun NavigationRailItem2(
         selected = checked,
         onClick = onClick,
         shape = if (checked) shape else CircleShape,
-        modifier = modifier
-            .scale(0.87f)
-            .animateContentSize(),
+        modifier = modifier.animateContentSize(),
         color = backgroundColor,
         contentColor = contentColor,
         border = if (checked) border else null,
     ) {
         Column(
             Modifier
-                .height(IntrinsicSize.Max)
-                .defaultMinSize(minHeight = ChipDefaults.MinHeight)
-                .padding(if (checked) CheckedPadding else UnCheckedPadding)
-                .animateContentSize(),
+                .defaultMinSize(
+                    minHeight = ChipDefaults.MinHeight,
+                    minWidth = ChipDefaults.MinHeight
+                )
+                .padding(if (checked) CheckedPadding else UnCheckedPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = if (checked) Arrangement.spacedBy(LeadingIconSpacing) else Arrangement.Center,
         ) {
             val leadingIconColor = colors.leadingIconColor(enabled, checked)
             CompositionLocalProvider(
@@ -244,8 +192,9 @@ fun NavigationRailItem2(
                 LocalContentAlpha provides leadingIconColor.value.alpha,
                 content = icon
             )
+            // Label is only shown when checked.
+            // return from here if not checked.
             if (!checked) return@Column
-            Spacer(Modifier.height(LeadingIconSpacing))
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
                     value = MaterialTheme.typography.caption,
@@ -256,35 +205,54 @@ fun NavigationRailItem2(
     }
 }
 
-/**
- * @see BottomNavigationItem2
- */
-@Suppress("NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+private val ActiveIndicatorHeight = 48.dp
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-inline fun NavigationRailItem2(
-    noinline onClick: () -> Unit,
-    icon: ImageVector,
-    label: CharSequence,
+fun NavigationDrawerItem(
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    label: @Composable (() -> Unit),
     modifier: Modifier = Modifier,
     checked: Boolean = false,
     enabled: Boolean = true,
-    shape: Shape = DefaultNavRailItemShape,
-    border: BorderStroke? = null,
-    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
-) = NavigationRailItem2(
-    onClick = onClick,
-    icon = {
-        Icon(
-            imageVector = icon,
-            contentDescription = null
-        )
-    },
-    label = { Label(text = label) },
-    modifier = modifier,
-    checked = checked,
-    enabled = enabled,
-    shape = shape,
-    border = border,
-    colors = colors
-)
+    shape: Shape = MaterialTheme.shapes.small,
+    colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors()
+) {
+    // This item necessitates the presence of both an icon and a label.
+    // When selected, both the icon and label are displayed; otherwise, only the icon is shown.
+    // The border is visible only when the item is selected; otherwise, it remains hidden.
+    // The background color of this item is set to Color.Transparent.
+    // TODO(b/113855296): Animate transition between unselected and selected
+    val contentColor by colors.contentColor(enabled, checked)
+    val backgroundColor by colors.backgroundColor(enabled = enabled, selected = checked)
+    Surface(
+        selected = checked,
+        onClick = onClick,
+        modifier = modifier
+            .semantics { role = Role.Tab }
+            .height(ActiveIndicatorHeight)
+            .fillMaxWidth(),
+        shape = shape,
+        color = backgroundColor,
+    ) {
+        Row(
+            Modifier.padding(start = 16.dp, end = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LeadingIconSpacing),
+        ) {
+            val leadingIconColor = colors.leadingIconColor(enabled, checked)
+            CompositionLocalProvider(
+                LocalContentColor provides leadingIconColor.value,
+                LocalContentAlpha provides leadingIconColor.value.alpha,
+                content = icon
+            )
+            CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
+                ProvideTextStyle(
+                    value = MaterialTheme.typography.body2,
+                    label
+                )
+            }
+        }
+    }
+}

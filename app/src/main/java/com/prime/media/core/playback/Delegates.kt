@@ -285,31 +285,29 @@ private fun Context.fileName(uri: Uri): String? {
  * @return A [MediaItem] object representing the media item.
  */
 fun MediaItem(context: Context, uri: Uri): MediaItem {
-    val retriever = MediaMetadataRetriever().also {
-        it.setDataSource(context, uri)
+    // Create a MediaMetadataRetriever object and set the data source.
+    // maybe it might cause crash; android is stupid.
+    val retriever = com.primex.core.runCatching(TAG) {
+        MediaMetadataRetriever().also { it.setDataSource(context, uri) }
     }
-    // Obtain the URI of the image obtained from the data in the above intent
-    // and save it in the cache.
+
+    // Get the URI of the embedded image and cache it.
     val imageUri = com.primex.core.runCatching(TAG) {
-        val cacheFile = File(context.cacheDir, "tmp_artwork.png")
-        // This action will delete the old file, if it exists.
-        // It's safe to perform this operation even if the file doesn't exist.
-        // This step is necessary because occasionally, a track may lack album art,
-        // and the system may load previously cached art, leading to the need for an update.
-        cacheFile.delete()
-        val bytes = retriever.embeddedPicture ?: return@runCatching null
-        val fos = FileOutputStream(cacheFile)
+        val file = File(context.cacheDir, "tmp_artwork.png")
+        // Delete the old cached artwork file, if it exists.
+        // This ensures that the latest album artwork is used, even if the track previously lacked artwork.
+        file.delete()
+        val bytes = retriever?.embeddedPicture ?: return@runCatching null
+        val fos = FileOutputStream(file)
         fos.write(bytes)
         fos.close()
-        Uri.fromFile(cacheFile)
+        Uri.fromFile(file)
     }
-
     // Obtain title and subtitle
-    val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+    val title = retriever?.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
         ?: context.fileName(uri) ?: context.getString(R.string.unknown)
-    val subtitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+    val subtitle = retriever?.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
         ?: context.getString(R.string.unknown)
-
     // Construct a MediaItem using the obtained parameters.
     // (Currently, details about playback queue setup are missing.)
     return MediaItem(uri, title, subtitle, artwork = imageUri)

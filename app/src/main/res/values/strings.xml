@@ -300,9 +300,9 @@
         Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
     </string>
 
-    <string name="library_shortcuts">Shortcuts\n<font size="11" color = 'grey'><sup><sup>The faster way to get things done</sup></sup></font> </string>
-    <string name="library_history">History\n<font size="11" color = 'grey'><sup><sup>Where Memories are Made.</sup></sup></font> </string>
-    <string name="library_recently_added">Fresh Arrivals\n<font size="11" color = 'grey'><sup><sup>New Tracks to Discover.</sup></sup></font></string>
+    <string name="library_shortcuts">Shortcuts\n<font size="11" color = 'grey'><sup>The faster way to get things done</sup></font> </string>
+    <string name="library_history">History\n<font size="11" color = 'grey'><sup>Where Memories are Made.</sup></font> </string>
+    <string name="library_recently_added">Fresh Arrivals\n<font size="11" color = 'grey'><sup>New Tracks to Discover.</sup></font></string>
 
     <!--==================              Audios                   ================================-->
     <string name="audios_scr_less_then_2_mins">Less 2 Min</string>

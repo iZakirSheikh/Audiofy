@@ -65,7 +65,7 @@ private const val LAYOUT_ID_PROGRESS_BAR = "_layout_id_progress_bar"
  * @param hideNavBar Optional value to force hiding the navigation bar.
  */
 @Composable
-fun Scaffold2(
+fun NavigationSuiteScaffold(
     vertical: Boolean,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,

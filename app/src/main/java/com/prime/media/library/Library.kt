@@ -3,6 +3,7 @@
 
 package com.prime.media.library
 
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -47,12 +48,15 @@ import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material.ripple
@@ -75,6 +79,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -118,10 +123,12 @@ import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
 import com.prime.media.small2
+import com.primex.core.ImageBrush
 import com.primex.core.blend
 import com.primex.core.foreground
 import com.primex.core.lerp
 import com.primex.core.textResource
+import com.primex.core.visualEffect
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
@@ -149,6 +156,10 @@ private val Colors.topBar
 
 private val Colors.border
     @Composable inline get() = BorderStroke(0.2.dp, primary.copy(0.3f))
+
+private val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
+    data = Uri.parse("https://t.me/audiofy_support")
+}
 
 /**
  * Composable function to display the app bar for the library screen.
@@ -184,8 +195,9 @@ private fun CarousalAppBar(
             targetState = Repository.toAlbumArtUri(id ?: 0),
             animationSpec = tween(4_000),
             modifier = Modifier
+                .visualEffect(ImageBrush.NoiseBrush, alpha = 0.35f, true)
                 .foreground(curtain)
-                .parallax(0.3f)
+                .parallax(0.2f)
                 .layoutId(TopAppBarDefaults.LayoutIdBackground)
                 .fillMaxSize(),
             content = { value ->
@@ -208,11 +220,13 @@ private fun CarousalAppBar(
 
         // Navigation Icon.
         val provider = LocalSystemFacade.current
+        val contentColor = lerp(LocalContentColor.current, Color.White, fraction)
         IconButton(
             onClick = { provider.launchAppStore() },
             painter = rememberVectorPainter(image = Icons.Outlined.Info),
             contentDescription = "about us",
-            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon)
+            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon),
+            tint = contentColor
         )
 
         // Actions  (Buy and settings)
@@ -223,21 +237,26 @@ private fun CarousalAppBar(
                 // Buy full version button.
                 val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
                 if (!purchase.purchased)
-                    IconButton(
-                        painter = painterResource(id = R.drawable.ic_remove_ads),
-                        contentDescription = null,
-                        onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) }
+                    OutlinedButton(
+                        label = "ADS",
+                        onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) },
+                        icon = painterResource(id = R.drawable.ic_remove_ads),
+                        modifier = Modifier.scale(0.75f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = contentColor.copy(0.12f),
+                            contentColor = contentColor
+                        ),
+                        shape = CircleShape
                     )
-                // settings navigation button.
-                val navigator = LocalNavController.current
+                // Support
+                val ctx = LocalContext.current
                 IconButton(
-                    imageVector = Icons.TwoTone.Settings,
-                    contentDescription = null,
-                    onClick = {
-                        val direction = Settings.route
-                        navigator.navigate(direction)
-                    }
+                    imageVector = Icons.Outlined.SupportAgent,
+                    onClick = { ctx.startActivity(TelegramIntent) },
+                    modifier = Modifier,
+                    tint = contentColor
                 )
+
             }
         )
 
@@ -357,7 +376,7 @@ private fun Shortcut(
     Box(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
-            .background(colors.primary.copy(0.035f), FolderShape)
+           // .background(colors.primary.copy(0.035f), FolderShape)
             .border(1.dp, color, FolderShape) // Light border
             .clickable(
                 null,
@@ -474,7 +493,7 @@ private fun RecentItem(
         Artwork(
             data = artworkUri,
             modifier = Modifier
-                .size(60.dp) // Adjust size if needed
+                .size(66.dp) // Adjust size if needed
                 .border(2.dp, Color.White, RECENT_ICON_SHAPE) // Add white border
                 .shadow(ContentElevation.low, RECENT_ICON_SHAPE) // Add subtle shadow
         )
@@ -484,7 +503,7 @@ private fun RecentItem(
             text = label,
             modifier = Modifier
                 .padding(top = ContentPadding.medium)
-                .width(75.dp),
+                .width(80.dp),
             style = Material.typography.caption2,
             maxLines = 2, // Allow at most 2 lines for label
             textAlign = TextAlign.Center,
@@ -546,16 +565,14 @@ private fun NewlyAddedItem(
 ) {
     Box(
         modifier = modifier
-            //.scale(0.96f) // Subtle zoom-in effect
-            .shadow(ContentElevation.low, RoundedCornerShape(7)) // Light shadow
+            .shadow(ContentElevation.low, Material.shapes.small2) // Light shadow
             .clickable(onClick = onClick) // Enable clicking
-            .size(204.dp, 120.dp), // Set minimum size
-        // .then(modifier), // Apply additional modifiers
+            .size(224.dp, 132.dp), // Set minimum size
         contentAlignment = Alignment.Center // Center content within the box
     ) {
         val colors = listOf(
-            Material.colors.primary.blend(Color.Black, 0.5f), // Gradient start: transparent primary
-            Color.Transparent, // Gradient middle: transparent
+            Material.colors.primary.blend(Color.Black, 0.3f), // Gradient start: transparent primary
+         //   Color.Transparent, // Gradient middle: transparent
             Color.Transparent, // Gradient end: transparent
         )
 
@@ -564,6 +581,7 @@ private fun NewlyAddedItem(
             data = imageUri,
             alignment = alignment,
             modifier = Modifier
+                .visualEffect(ImageBrush.NoiseBrush, 0.3f, true)
                 .foreground(Brush.horizontalGradient(colors)) // Apply transparent-to-primary gradient
                 .matchParentSize() // Fill available space
         )
@@ -653,24 +671,20 @@ private fun Header(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Title
-        val color = LocalContentColor.current
         Text(
             style = style,
-            //fontSize = 28.sp, // Not recommended; use style instead
             text = text
         )
 
         // More button (conditionally displayed)
         if (onMoreClick != null) {
-            OutlinedButton(
-                label = textResource(id = R.string.more),
+            IconButton(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                 onClick = onMoreClick,
-                shape = CircleShape,
-                modifier = Modifier.scale(0.93f),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = Color.Transparent
-                ),
-                border = Material.colors.border
+                modifier = Modifier
+                    .scale(0.80f)
+                    .border(Material.colors.border, shape = CircleShape),
+                tint = Material.colors.primary
             )
         }
     }
