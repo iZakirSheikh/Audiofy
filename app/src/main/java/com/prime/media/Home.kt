@@ -5,6 +5,7 @@ package com.prime.media
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -76,6 +77,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavController.OnDestinationChangedListener
+import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -84,6 +87,9 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
 import com.prime.media.console.Console
 import com.prime.media.console.PopupMedia
 import com.prime.media.core.Anim
@@ -136,6 +142,7 @@ import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.blend
 import com.primex.core.hsl
+import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.delay
@@ -299,7 +306,7 @@ private fun Permission() {
             onClick = { permission.launchPermissionRequest() },
             modifier = Modifier.size(width = 200.dp, height = 46.dp),
             elevation = null,
-            label = "ALLOW",
+            label = stringResource(R.string.allow),
             border = ButtonDefaults.outlinedBorder,
             shape = CircleShape,
             colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
@@ -625,15 +632,17 @@ private fun NavBar(
     type: Int,
     navController: NavController,
     modifier: Modifier = Modifier,
-    colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors()
 ) {
     val routes = remember {
         movableContentOf {
             // Get the current navigation destination from NavController
             val current by navController.currentBackStackEntryAsState()
+            val colors = NavigationItemDefaults.navigationItemColors(
+                contentColor = Material.colors.onSurface,
+            )
             // Home
             NavigationItem(
-                label = "    Home   ",
+                label = textResource(R.string.home),
                 icon = Icons.Outlined.Home,
                 checked = current?.destination?.route == Library.route,
                 onClick = { navController.toRoute(Library.direction()) },
@@ -643,7 +652,7 @@ private fun NavBar(
 
             // Audios
             NavigationItem(
-                label = "  Folders ",
+                label = textResource(id = R.string.folders),
                 icon = Icons.Outlined.FolderCopy,
                 checked = current?.destination?.route == Folders.route,
                 onClick = { navController.toRoute(Folders.direction()) },
@@ -663,7 +672,7 @@ private fun NavBar(
                     context.startActivity(intnet)
                 }
             NavigationItem(
-                label = "  Videos ",
+                label = textResource(id = R.string.videos),
                 icon = Icons.Outlined.VideoLibrary,
                 checked = false,
                 onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) },
@@ -673,7 +682,7 @@ private fun NavBar(
 
             // Playlists
             NavigationItem(
-                label = "Playlists",
+                label = textResource(id = R.string.playlists),
                 icon = Icons.Outlined.PlaylistPlay,
                 checked = current?.destination?.route == Playlists.route,
                 onClick = { navController.toRoute(Playlists.direction()) },
@@ -683,7 +692,7 @@ private fun NavBar(
 
             // Settings
             NavigationItem(
-                label = "Settings",
+                label = textResource(id = R.string.settings),
                 icon = Icons.Outlined.Settings,
                 checked = current?.destination?.route == Settings.route,
                 onClick = { navController.toRoute(Settings.route) },
@@ -773,8 +782,7 @@ fun Home(channel: Channel) {
                     navBar = {
                         NavBar(
                             type = clazz.navType,
-                            navController = navController,
-                            colors = NavigationItemDefaults.navigationItemColors()
+                            navController = navController
                         )
                     },
                     // Display the main content of the app using the NavGraph composable
@@ -822,10 +830,26 @@ fun Home(channel: Channel) {
             // If the intent is related to video content, navigate to the video player screen.
             navController.navigate(Console.direction())
         }
+        val firebase = Firebase.analytics
+        // Listen for navDest and log in firebase.
+        val navDestChangeListener =
+            { _: NavController, destination: NavDestination, _: Bundle? ->
+                // create params for the event.
+            val params = Bundle().apply {
+                putString(FirebaseAnalytics.Param.SCREEN_NAME, destination.route as String?)
+                //putString(FirebaseAnalytics.Param.SCREEN_CLASS, destination.label as String?)
+            }
+            // Log the event.
+            firebase.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, params)
+        }
         // Register the intent listener with the activity.
         activity.addOnNewIntentListener(listener)
+        navController.addOnDestinationChangedListener(navDestChangeListener)
         // Unregister the intent listener when this composable is disposed.
-        onDispose { activity.removeOnNewIntentListener(listener) }
+        onDispose {
+            activity.removeOnNewIntentListener(listener)
+            navController.removeOnDestinationChangedListener(navDestChangeListener)
+        }
     }
 }
 

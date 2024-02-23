@@ -238,7 +238,7 @@ private fun CarousalAppBar(
                 val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
                 if (!purchase.purchased)
                     OutlinedButton(
-                        label = "ADS",
+                        label = textResource(R.string.library_ads),
                         onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) },
                         icon = painterResource(id = R.drawable.ic_remove_ads),
                         modifier = Modifier.scale(0.75f),
@@ -376,7 +376,7 @@ private fun Shortcut(
     Box(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
-           // .background(colors.primary.copy(0.035f), FolderShape)
+            // .background(colors.primary.copy(0.035f), FolderShape)
             .border(1.dp, color, FolderShape) // Light border
             .clickable(
                 null,
