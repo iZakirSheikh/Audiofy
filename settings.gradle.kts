@@ -18,3 +18,4 @@ include(":app")
 
 
 
+include(":app:codex")

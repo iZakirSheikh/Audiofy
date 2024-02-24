@@ -14,6 +14,10 @@ media3 = "1.2.1"  # Media playback, including audio and video
 compose = "1.7.0-alpha02"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-beta02"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
+junit = "4.13.2"
+junit-version = "1.1.5"
+espresso-core = "3.5.1"
+codex_extensions = "0.6.0"
 
 [plugins]
 # Android Gradle Plugin (AGP): Essential for building Android apps,
@@ -34,6 +38,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
 # crash reporting and analytics tool, for tracking and diagnosing app
 # crashes, enhancing app stability and user experience.
 crashanlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
+android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 
 
 [libraries]
@@ -247,3 +252,9 @@ google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
 unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.9.2" }
+
+# Codex extensions
+# --------------------------------------------------------------------------------------------------
+# An extesnion for playing unsupported media items using the app. this is provided as dnamic-feature
+# module and will not contribute in increasing the size of the app.
+codex_extensions = {module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version.ref = "codex_extensions"}

@@ -1,5 +1,7 @@
 package com.prime.media.core.playback
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
@@ -14,6 +16,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.*
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.prime.media.R
@@ -311,4 +314,23 @@ fun MediaItem(context: Context, uri: Uri): MediaItem {
     // Construct a MediaItem using the obtained parameters.
     // (Currently, details about playback queue setup are missing.)
     return MediaItem(uri, title, subtitle, artwork = imageUri)
+}
+
+/**
+ * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
+ *
+ * @param context The application context.
+ * @return A new instance of [DefaultRenderersFactory], or `null` if an error occurs.
+ */
+@SuppressLint("UnsafeOptInUsageError")
+fun DynamicRendererFactory(context: Context): DefaultRenderersFactory? {
+    return com.primex.core.runCatching(TAG) {
+        // Load the NextRenderersFactory class from the dynamic feature module
+        val clazz =
+            Class.forName("io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory")
+        // Get the constructor of the NextRenderersFactory class
+        val constructor = clazz.getDeclaredConstructor(Context::class.java)
+        // Create an instance of the NextRenderersFactory object
+        constructor.newInstance(context) as? DefaultRenderersFactory
+    }
 }

@@ -118,3 +118,6 @@ LineNumberTable, *Annotation*, EnclosingMethod
     public static int d(...);
 #    public static int e(...);
 }
+
+## Don't remove classes from feature modules
+-keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
