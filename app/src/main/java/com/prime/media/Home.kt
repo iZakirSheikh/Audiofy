@@ -5,11 +5,11 @@ package com.prime.media
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -27,11 +28,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ChipDefaults
 import androidx.compose.material.Colors
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.NavigationRail
 import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
@@ -52,10 +53,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -75,6 +77,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavController.OnDestinationChangedListener
+import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -83,23 +87,27 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
 import com.prime.media.console.Console
 import com.prime.media.console.PopupMedia
+import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
-import com.prime.media.core.compose.BottomNavigationItem2
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.NavigationRailItem2
+import com.prime.media.core.compose.NavigationBarItem
+import com.prime.media.core.compose.NavigationDrawerItem
+import com.prime.media.core.compose.NavigationItemDefaults
+import com.prime.media.core.compose.NavigationRailItem
+import com.prime.media.core.compose.NavigationSuiteScaffold
 import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.Reach
-import com.prime.media.core.compose.Scaffold2
-import com.prime.media.core.compose.colorsNavigationItem2
+import com.prime.media.core.compose.Range
+import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.current
-import com.prime.media.core.compose.modifiers.ImageBrush
-import com.prime.media.core.compose.modifiers.visualEffect
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.directory.playlists.Members
@@ -128,16 +136,14 @@ import com.prime.media.settings.Settings
 import com.primex.core.Amber
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
-import com.primex.core.Magenta
-import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
-import com.primex.core.RedViolet
-import com.primex.core.Rose
 import com.primex.core.SignalWhite
-import com.primex.core.SkyBlue
 import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
+import com.primex.core.blend
 import com.primex.core.hsl
+import com.primex.core.textResource
+import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -190,7 +196,7 @@ val Shapes.small2 get() = com.prime.media.small2
  * The color is black with alpha 0.04 on light themes and white with alpha 0.04 on dark themes.
  */
 val Colors.overlay
-    @Composable inline get() = (if (isLight) Color.Black else Color.White).copy(0.04f)
+    @Composable inline get() = if (isLight) Color.Black.copy(0.04f) else Color.White.copy(0.01f)
 
 /**
  * The outline color used in the light/dark theme.
@@ -250,7 +256,6 @@ fun Colors.backgroundColorAtElevation(
 inline val Colors.isAppearanceLightSystemBars
     @Composable inline get() = isLight && !preference(key = Settings.COLOR_STATUS_BAR).value
 
-
 /**
  * A simple composable that helps in resolving the current app theme as suggested by the [Gallery.NIGHT_MODE]
  */
@@ -295,13 +300,13 @@ private fun Permission() {
         iconResId = R.raw.lt_permission,
         title = stringResource(R.string.permission_screen_title),
         message = stringResource(R.string.permission_screen_desc),
-        vertical = LocalWindowSize.current.widthReach == Reach.Compact
+        vertical = LocalWindowSize.current.widthRange == Range.Compact
     ) {
         OutlinedButton(
             onClick = { permission.launchPermissionRequest() },
             modifier = Modifier.size(width = 200.dp, height = 46.dp),
             elevation = null,
-            label = "ALLOW",
+            label = stringResource(R.string.allow),
             border = ButtonDefaults.outlinedBorder,
             shape = CircleShape,
             colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
@@ -309,18 +314,14 @@ private fun Permission() {
     }
 }
 
-private val LightPrimaryColor = Color.Black
-private val LightPrimaryVariantColor = LightPrimaryColor.hsl(lightness = 0.25f)
-private val LightSecondaryColor = Color.BlueLilac
-private val LightSecondaryVariantColor = LightSecondaryColor.hsl(lightness = 0.2f)
-private val DarkPrimaryColor = Color(0xFFFF3D00)
-private val DarkPrimaryVariantColor = /*Color.Amber*/ DarkPrimaryColor.hsl(lightness = 0.6f)
-private val DarkSecondaryColor = Color.DahliaYellow
-private val DarkSecondaryVariantColor = Color(0xFFf57d00)
+private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
 
-private val LightSystemBarsColor = Color(0x10000000)
-private val DarkSystemBarsColor = Color(0x11FFFFFF)
-
+/**
+ * Defines theme for app.
+ *
+ * @param darkTheme Whether to use the dark theme.
+ * @param content The content to be displayed.
+ */
 @Composable
 private fun Material(
     darkTheme: Boolean,
@@ -328,23 +329,22 @@ private fun Material(
 ) {
     val background by animateColorAsState(
         targetValue = if (darkTheme) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
-        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
+        animationSpec = DefaultColorSpec
     )
     val surface by animateColorAsState(
         targetValue = if (darkTheme) Color.TrafficBlack else Color.White,
-        animationSpec = tween(AnimationConstants.DefaultDurationMillis)
+        animationSpec = DefaultColorSpec
     )
-    val primary = if (darkTheme) DarkPrimaryColor else LightPrimaryColor
-    val primaryVariant = if (darkTheme) DarkPrimaryVariantColor else LightPrimaryVariantColor
-    val secondary = if (darkTheme) DarkSecondaryColor else LightSecondaryColor
-    val secondaryVariant = if (darkTheme) DarkSecondaryVariantColor else LightSecondaryVariantColor
+
+    val primary = if (darkTheme) Color.Amber else Color.BlueLilac
+    val secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000)
     val colors = Colors(
-        primary = primary,
-        secondary = secondary,
+        primary = if (darkTheme) Color.Amber else Color.BlueLilac,
+        secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000),
         background = background,
         surface = surface,
-        primaryVariant = primaryVariant,
-        secondaryVariant = secondaryVariant,
+        primaryVariant = primary.hsl(lightness = 0.25f), // make a bit darker.
+        secondaryVariant = secondary.hsl(lightness = 0.25f),
         onPrimary = Color.SignalWhite,
         onSurface = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
         onBackground = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
@@ -353,6 +353,7 @@ private fun Material(
         onError = Color.SignalWhite,
         isLight = !darkTheme
     )
+
     // Actual theme compose; in future handle fonts etc.
     MaterialTheme(
         colors = colors,
@@ -369,10 +370,9 @@ private fun Material(
     var isFirstPass by remember { mutableStateOf(true) }
     val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
     val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
-    val color = when {
-        !colorSystemBars -> Color.Transparent
-        darkTheme -> DarkSystemBarsColor
-        else -> LightSystemBarsColor
+    val color = when (colorSystemBars) {
+        false -> Color.Transparent
+        else -> colors.primaryVariant
     }
     val isAppearanceLightSystemBars = !darkTheme && !colorSystemBars
     LaunchedEffect(isAppearanceLightSystemBars, hideStatusBar) {
@@ -427,7 +427,7 @@ private fun NavGraph(
             }
             composable(Library.route) {
                 val viewModel = hiltViewModel<LibraryViewModel>()
-                Library(viewModel = viewModel)
+                Library(viewModel)
             }
             composable(Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
@@ -522,6 +522,37 @@ private fun NavController.toRoute(route: String) {
 
 private const val MIME_TYPE_VIDEO = "video/*"
 
+// The different NavTypes shown in differnrt screen sizes.
+private val TYPE_RAIL_NAV = 0
+private val TYPE_DRAWER_NAV = 1
+private val TYPE_BOTTOM_NAV = 2
+
+/**
+ * return the navigation type based on the window size.
+ */
+private inline val WindowSize.navType
+    get() = when {
+        widthRange < Range.Medium -> TYPE_BOTTOM_NAV
+        widthRange < Range.xLarge -> TYPE_RAIL_NAV
+        else -> TYPE_DRAWER_NAV
+    }
+
+private val NAV_RAIL_WIDTH = 96.dp
+private val NAV_DRAWER_WIDTH = 256.dp
+
+/**
+ * Calculates an returns newWindowSizeClass after consuming sapce occupied by  [navType].
+ *
+ * @return consumed window class.
+ * @see [navType]
+ */
+private inline val WindowSize.remaining
+    get() = when {
+        widthRange < Range.Medium -> consume(height = 56.dp)
+        widthRange < Range.xLarge -> consume(width = NAV_RAIL_WIDTH)
+        else -> consume(width = NAV_DRAWER_WIDTH)
+    }
+
 /**
  * Represents a navigation item either in a [NavigationRail] (when [isNavRail] is true)
  * or a [BottomNavigation] (when [isNavRail] is false).
@@ -536,45 +567,61 @@ private const val MIME_TYPE_VIDEO = "video/*"
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NonRestartableComposable
-private fun Route(
+private fun NavigationItem(
     label: CharSequence,
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     checked: Boolean = false,
-    isNavRail: Boolean = false,
-    colors: SelectableChipColors = ChipDefaults.colorsNavigationItem2()
+    type: Int = TYPE_BOTTOM_NAV,
+    colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors()
 ) {
-
-    when (isNavRail) {
-        true -> NavigationRailItem2(
+    val icon = @Composable {
+        Icon(
+            imageVector = icon,
+            contentDescription = label.toString()
+        )
+    }
+    val label = @Composable {
+        Label(
+            text = label,
+        )
+    }
+    when (type) {
+        TYPE_RAIL_NAV -> NavigationRailItem(
             onClick = onClick,
             icon = icon,
             label = label,
+            modifier = modifier.scale(0.83f),
             checked = checked,
-            modifier = modifier,
             colors = colors,
-            border = null
         )
 
-        else -> BottomNavigationItem2(
+        TYPE_DRAWER_NAV -> NavigationDrawerItem(
             onClick = onClick,
             icon = icon,
             label = label,
+            modifier = modifier.scale(0.85f),
             checked = checked,
-            modifier = modifier,
             colors = colors,
-            border = null
+            shape = Material.shapes.small2
+        )
+
+        TYPE_BOTTOM_NAV -> NavigationBarItem(
+            onClick = onClick,
+            icon = icon,
+            label = label,
+            modifier = modifier.scale(0.83f),
+            checked = checked,
+            colors = colors
         )
     }
 }
 
-private val NAV_RAIL_WIDTH = 96.dp
-
 /**
  * A composable function that represents a navigation bar, combining both rail and bottom bar elements.
  *
- * @param isNavRail Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
+ * @param type Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
  * @param navController The NavController to manage navigation within the navigation bar.
  * @param modifier The modifier for styling and layout customization of the navigation bar.
  */
@@ -582,39 +629,34 @@ private val NAV_RAIL_WIDTH = 96.dp
 @Composable
 @NonRestartableComposable
 private fun NavBar(
-    isNavRail: Boolean,
+    type: Int,
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
-    // Create a movable content container to define the routes
     val routes = remember {
         movableContentOf {
             // Get the current navigation destination from NavController
             val current by navController.currentBackStackEntryAsState()
-            val colors = ChipDefaults.colorsNavigationItem2(
-                leadingIconColor = LocalContentColor.current,
-                selectedBackgroundColor = Material.colors.primary.copy(0.15f),
-                selectedLeadingIconColor = Material.colors.primary,
-                selectedContentColor = MaterialTheme.colors.primary,
-                contentColor = LocalContentColor.current
+            val colors = NavigationItemDefaults.navigationItemColors(
+                contentColor = Material.colors.onSurface,
             )
             // Home
-            Route(
-                label = "    Home   ",
+            NavigationItem(
+                label = textResource(R.string.home),
                 icon = Icons.Outlined.Home,
                 checked = current?.destination?.route == Library.route,
                 onClick = { navController.toRoute(Library.direction()) },
-                isNavRail = isNavRail,
+                type = type,
                 colors = colors
             )
 
             // Audios
-            Route(
-                label = "  Folders ",
+            NavigationItem(
+                label = textResource(id = R.string.folders),
                 icon = Icons.Outlined.FolderCopy,
                 checked = current?.destination?.route == Folders.route,
                 onClick = { navController.toRoute(Folders.direction()) },
-                isNavRail = isNavRail,
+                type = type,
                 colors = colors
             )
 
@@ -629,163 +671,185 @@ private fun NavBar(
                     }
                     context.startActivity(intnet)
                 }
-            Route(
-                label = "  Videos ",
+            NavigationItem(
+                label = textResource(id = R.string.videos),
                 icon = Icons.Outlined.VideoLibrary,
                 checked = false,
                 onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) },
-                isNavRail = isNavRail,
+                type = type,
                 colors = colors
             )
 
             // Playlists
-            Route(
-                label = "Playlists",
+            NavigationItem(
+                label = textResource(id = R.string.playlists),
                 icon = Icons.Outlined.PlaylistPlay,
                 checked = current?.destination?.route == Playlists.route,
                 onClick = { navController.toRoute(Playlists.direction()) },
-                isNavRail = isNavRail,
+                type = type,
                 colors = colors
             )
 
             // Settings
-            Route(
-                label = "Settings",
+            NavigationItem(
+                label = textResource(id = R.string.settings),
                 icon = Icons.Outlined.Settings,
                 checked = current?.destination?.route == Settings.route,
                 onClick = { navController.toRoute(Settings.route) },
-                isNavRail = isNavRail,
+                type = type,
                 colors = colors
             )
         }
     }
-    // Depending on whether it's a bottom app bar or a navigation rail, apply the appropriate composable
-    when (isNavRail) {
-        false -> BottomAppBar(
+    when (type) {
+        TYPE_BOTTOM_NAV -> BottomAppBar(
             modifier = modifier,
             windowInsets = WindowInsets.navigationBars,
             backgroundColor = Color.Transparent,
-            contentColor = Material.colors.onSurface,
             elevation = 0.dp,
             contentPadding = PaddingValues(
                 horizontal = ContentPadding.normal,
                 vertical = ContentPadding.medium
-            )
-        ) {
-            var expanded by remember { mutableStateOf(false) }
-            PopupMedia(
-                expanded = expanded,
-                onRequestToggle = { expanded = !expanded }
-            )
+            ),
+            content = {
+                var expanded by remember { mutableStateOf(false) }
+                PopupMedia(
+                    expanded = expanded,
+                    onRequestToggle = { expanded = !expanded }
+                )
+                Spacer(Modifier.weight(1f))
+                // Display routes at the contre of available space
+                routes()
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        )
 
-            Spacer(Modifier.weight(1f))
-            // Display routes at the contre of available space
-            routes()
-
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
-        else -> androidx.compose.material.NavigationRail(
-            modifier = modifier.width(NAV_RAIL_WIDTH),
+        else -> NavigationRail(
+            modifier = modifier.width(if (type == TYPE_RAIL_NAV) NAV_RAIL_WIDTH else NAV_DRAWER_WIDTH),
             windowInsets = WindowInsets.systemBars,
             backgroundColor = Color.Transparent,
-            contentColor = Material.colors.onSurface,
             elevation = 0.dp,
-        ) {
-            // Display routes at the top of the navRail.
-            routes()
-            // Some Space between naves and Icon.
-            Spacer(modifier = Modifier.weight(1f))
+            content = {
+                // Display routes at the top of the navRail.
+                routes()
+                // Some Space between naves and Icon.
+                Spacer(modifier = Modifier.weight(1f))
 
-            var expanded by remember { mutableStateOf(false) }
-            PopupMedia(
-                expanded = expanded,
-                onRequestToggle = { expanded = !expanded },
-                offset = DpOffset(30.dp, (-30).dp)
-            )
-        }
+                var expanded by remember { mutableStateOf(false) }
+                PopupMedia(
+                    expanded = expanded,
+                    onRequestToggle = { expanded = !expanded },
+                    offset = DpOffset(30.dp, (-30).dp),
+                    modifier = Modifier
+                        .align(if (type == TYPE_RAIL_NAV) Alignment.CenterHorizontally else Alignment.End)
+                        .padding(horizontal = if (type == TYPE_RAIL_NAV) 0.dp else ContentPadding.normal)
+                )
+            },
+        )
     }
 }
 
-private val CONTENT_SHAPE = RoundedCornerShape(5)
+/**
+ * The shape of the content inside the scaffold.
+ */
+private val CONTENT_SHAPE = RoundedCornerShape(8)
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(channel: Channel) {
     // Determine if the app is in dark mode based on user preferences
     val isDark = isPrefDarkTheme()
+    val navController = rememberNavController()
     Material(isDark) {
-        val navController = rememberNavController()
-        CompositionLocalProvider(LocalNavController provides navController) {
-            // Determine the window size class and access the system facade
-            val clazz = LocalWindowSize.current.widthReach
-            val facade = LocalSystemFacade.current
-            // Check if the layout should be vertical based on the window size class
-            val vertical = clazz < Reach.Medium
-            // Determine whether to hide the navigation bar based on the current destination
-            val hideNavigationBar = navController.current in HIDDEN_DEST_ROUTES
-            Scaffold2(
-                vertical = vertical,
-                channel = channel,
-                hideNavigationBar = hideNavigationBar,
-                progress = facade.inAppUpdateProgress,
-                background = Material.colors.overlay.compositeOver(Material.colors.background),
-                // Set up the navigation bar using the NavBar composable
-                navBar = {
-                    NavBar(
-                        isNavRail = !vertical,
-                        navController = navController,
-                        modifier = Modifier.visualEffect(
-                            ImageBrush.NoiseBrush, 0.5f
+        // Get the window size class
+        val clazz = LocalWindowSize.current
+        // Provide the navController, newWindowClass through LocalComposition.
+        CompositionLocalProvider(
+            LocalNavController provides navController,
+            LocalWindowSize provides clazz.remaining,
+            content = {
+                // Determine the navigation type based on the window size class and access the system facade
+                val facade = LocalSystemFacade.current
+                // Determine whether to hide the navigation bar based on the current destination
+                val hideNavigationBar = navController.current in HIDDEN_DEST_ROUTES
+                NavigationSuiteScaffold(
+                    vertical = clazz.widthRange < Range.Medium,
+                    channel = channel,
+                    hideNavigationBar = hideNavigationBar,
+                    progress = facade.inAppUpdateProgress,
+                    background = Material.colors.primary.blend(Material.colors.background, 0.96f),
+                    // Set up the navigation bar using the NavBar composable
+                    navBar = {
+                        NavBar(
+                            type = clazz.navType,
+                            navController = navController
                         )
-                    )
-                },
-                // Display the main content of the app using the NavGraph composable
-                content = {
-                    NavGraph(
-                        modifier = Modifier
-                            .clip(if (!hideNavigationBar) CONTENT_SHAPE else RectangleShape)
-                            .background(Material.colors.background)
-                            .fillMaxSize()
-                    )
-                }
-            )
-        }
-        // In this section, we handle incoming intents.
-        // Intents can be of two types: video or audio. If it's a video intent,
-        // we navigate to the video screen; otherwise, we play the media item in the MiniPlayer.
-        // In both cases, we trigger a remote action to initiate playback.
-        // Create a coroutine scope to handle asynchronous operations.
-        val scope = rememberCoroutineScope()
-        // Check if the current composition is in inspection mode.
-        // Inspection mode is typically used during UI testing or debugging to isolate and analyze
-        // specific UI components. If in inspection mode, return to avoid executing the rest of the code.
-        if (LocalInspectionMode.current) return@Material
-        val activity = LocalView.current.context as MainActivity
-        // Construct the DisposableEffect and listen for events.
-        DisposableEffect(Unit) {
-            // Create a listener for observing changes in incoming intents.
-            val listener = listener@{ intent: Intent ->
-                // Check if the intent action is not ACTION_VIEW; if so, return.
-                if (intent.action != Intent.ACTION_VIEW)
-                    return@listener
-                // Obtain the URI from the incoming intent data.
-                val data = intent.data ?: return@listener
-                // Use a coroutine to handle the media item construction and playback.
-                scope.launch {
-                    // Construct a MediaItem using the obtained parameters.
-                    // (Currently, details about playback queue setup are missing.)
-                    val item = MediaItem(activity, data)
-                    // Play the media item by replacing the existing queue.
-                    activity.remote.set(listOf(item))
-                    activity.remote.play()
-                }
-                // If the intent is related to video content, navigate to the video player screen.
-                navController.navigate(Console.direction())
+                    },
+                    // Display the main content of the app using the NavGraph composable
+                    content = {
+                        NavGraph(
+                            modifier = Modifier
+                                .clip(CONTENT_SHAPE)
+                                .background(Material.colors.background)
+                                .fillMaxSize()
+                        )
+                    }
+                )
             }
-            // Register the intent listener with the activity.
-            activity.addOnNewIntentListener(listener)
-            // Unregister the intent listener when this composable is disposed.
-            onDispose { activity.removeOnNewIntentListener(listener) }
+        )
+    }
+    // In this section, we handle incoming intents.
+    // Intents can be of two types: video or audio. If it's a video intent,
+    // we navigate to the video screen; otherwise, we play the media item in the MiniPlayer.
+    // In both cases, we trigger a remote action to initiate playback.
+    // Create a coroutine scope to handle asynchronous operations.
+    val scope = rememberCoroutineScope()
+    // Check if the current composition is in inspection mode.
+    // Inspection mode is typically used during UI testing or debugging to isolate and analyze
+    // specific UI components. If in inspection mode, return to avoid executing the rest of the code.
+    if (LocalInspectionMode.current) return
+    val activity = LocalView.current.context as MainActivity
+    // Construct the DisposableEffect and listen for events.
+    DisposableEffect(Unit) {
+        // Create a listener for observing changes in incoming intents.
+        val listener = listener@{ intent: Intent ->
+            // Check if the intent action is not ACTION_VIEW; if so, return.
+            if (intent.action != Intent.ACTION_VIEW)
+                return@listener
+            // Obtain the URI from the incoming intent data.
+            val data = intent.data ?: return@listener
+            // Use a coroutine to handle the media item construction and playback.
+            scope.launch {
+                // Construct a MediaItem using the obtained parameters.
+                // (Currently, details about playback queue setup are missing.)
+                val item = MediaItem(activity, data)
+                // Play the media item by replacing the existing queue.
+                activity.remote.set(listOf(item))
+                activity.remote.play()
+            }
+            // If the intent is related to video content, navigate to the video player screen.
+            navController.navigate(Console.direction())
+        }
+        val firebase = Firebase.analytics
+        // Listen for navDest and log in firebase.
+        val navDestChangeListener =
+            { _: NavController, destination: NavDestination, _: Bundle? ->
+                // create params for the event.
+            val params = Bundle().apply {
+                putString(FirebaseAnalytics.Param.SCREEN_NAME, destination.route as String?)
+                //putString(FirebaseAnalytics.Param.SCREEN_CLASS, destination.label as String?)
+            }
+            // Log the event.
+            firebase.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, params)
+        }
+        // Register the intent listener with the activity.
+        activity.addOnNewIntentListener(listener)
+        navController.addOnDestinationChangedListener(navDestChangeListener)
+        // Unregister the intent listener when this composable is disposed.
+        onDispose {
+            activity.removeOnNewIntentListener(listener)
+            navController.removeOnDestinationChangedListener(navDestChangeListener)
         }
     }
 }
+

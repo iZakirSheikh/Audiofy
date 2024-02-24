@@ -83,50 +83,35 @@ class LibraryViewModel @Inject constructor(
 
     override fun onClickRecentFile(uri: String) {
         viewModelScope.launch {
+            // Check if the media item is already in the playlist.
             val isAlreadyInPlaylist = remote.seekTo(Uri.parse(uri))
-            // since it is already in the playlist seek to it and return; it will start playing
-            // maybe call play
-            if (isAlreadyInPlaylist)
-                return@launch
-            // Since the item is definitely not in the queue, present a message to the user to inquire
-            // about their preference. If the user agrees, the playlist will be reset, and the recent
-            // item will be added to the playlist, initiating playback from this item's index.
-            // If the user decides otherwise, the item will be added to the queue following the current queue order.
-            val res = channel.show(
-                R.string.msg_library_recent_click,
-                action = R.string.reset,
-                leading = Icons.Outlined.Message,
-                accent = Color.MetroGreen
-            )
-            val files = recent.firstOrNull()
-            val file = files?.find { it.uri == uri }
-            if (files == null || file == null) {
-                channel.show(
-                    R.string.msg_unknown_error,
-                    leading = Icons.Outlined.Error,
-                    accent = Color.Rose
-                )
+            // If the media item is already in the playlist, just play it.
+            if (isAlreadyInPlaylist) {
+                remote.play(true)
                 return@launch
             }
-            if (res != Channel.Result.ActionPerformed) {
-                remote.add(file.toMediaItem, index = remote.nextIndex)
-                remote.seekTo(Uri.parse(uri))
+            // Get the history from the recent list, if it exists.
+            val items = recent.firstOrNull()
+            val item = items?.find { it.uri == uri }
+            // If the media item is not found in the recent list, show an error message.
+            if (item == null) {
+                channel.show(R.string.msg_unknown_error, leading = Icons.Outlined.Error, accent = Color.Rose)
                 return@launch
             }
-            remote.clear()
-            val index = files.indexOf(file)
-            remote.set(files.map { it.toMediaItem })
-            remote.seekTo(index.coerceAtLeast(0), C.TIME_UNSET)
+            // Add the media item to the playlist.
+            remote.add(item.toMediaItem, index = remote.nextIndex)
+            // seek to the item
+            remote.seekTo(Uri.parse(uri))
+            // play it
             remote.play(true)
         }
     }
 
     override fun onClickRecentAddedFile(id: Long) {
         viewModelScope.launch {
-            // null case should not happen; bacese that measns some weired error.
-            val files = newlyAdded.firstOrNull()
-            val item = files?.find { it.id == id }
-            if (files == null || item == null) {
+            val items = newlyAdded.firstOrNull()
+            val item = items?.find { it.id == id }
+            if (item == null) {
                 channel.show(
                     R.string.msg_unknown_error,
                     R.string.error,
@@ -136,22 +121,16 @@ class LibraryViewModel @Inject constructor(
                 return@launch
             }
             val isAlreadyInPlaylist = remote.seekTo(item.uri)
-            // since it is already in the playlist seek to it and return; it will start playing
-            // maybe call play
-            if (isAlreadyInPlaylist)
+            // If the media item is already in the playlist, just play it.
+            if (isAlreadyInPlaylist) {
+                remote.play(true)
                 return@launch
-            val res = channel.show(
-                R.string.msg_library_recently_added_click,
-                action = R.string.reset,
-                leading = Icons.Outlined.ClearAll,
-                accent = Color.DahliaYellow
-            )
-            // just return
-            if (res != Channel.Result.ActionPerformed)
-                return@launch
-            val index = files.indexOf(item)
-            remote.set(files.map { it.toMediaItem })
-            remote.seekTo(index.coerceAtLeast(0), C.TIME_UNSET)
+            }
+            // Add the media item to the playlist.
+            remote.add(item.toMediaItem, index = remote.nextIndex)
+            // seek to the item
+            remote.seekTo(item.uri)
+            // play it
             remote.play(true)
         }
     }

@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -661,7 +662,8 @@ private inline fun Actions(
             Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
             DropdownMenu(
                 expanded = showMore,
-                onDismissRequest = { showMore = false }
+                onDismissRequest = { showMore = false },
+                properties = PopupProperties(focusable = true)
             ) {
                 // first 5 as list item
                 repeat(4) {
@@ -669,7 +671,7 @@ private inline fun Actions(
                     DropDownMenuItem(
                         title = it.title.value,
                         onClick = { onAction(it); showMore = false },
-                        leading = rememberVectorPainter(
+                        icon = rememberVectorPainter(
                             image = it.icon
                         )
                     )

@@ -19,6 +19,7 @@ import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
+import com.primex.preferences.floatPreferenceKey
 import com.primex.preferences.intPreferenceKey
 import com.primex.preferences.stringPreferenceKey
 import com.primex.preferences.stringSetPreferenceKey
@@ -107,7 +108,7 @@ interface Settings : Blacklist {
         /**
          * The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
          */
-        val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
+        val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", true)
         val TRASH_CAN_ENABLED =
             booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
 
@@ -131,6 +132,33 @@ interface Settings : Blacklist {
          * If set to false, third-party audio effects may be used, if available.
          */
         val USE_IN_BUILT_AUDIO_FX = booleanPreferenceKey(PREFIX + "_use_in_built_audio_fx", true)
+
+        /**
+         * Grid Size Multiplier.
+         *
+         * This constant represents a value between 0.6 and 1.5f that determines the size of items in a grid.
+         * Users can adjust this multiplier to make grid items appear smaller or larger based on their preferences.
+         *
+         * Usage:
+         * ```kotlin
+         * val GRID_ITEM_SIZE_MULTIPLIER = floatPreferenceKey(PREFIX + "_font_scale", defaultValue = 1.0f)
+         * ```
+         */
+        val GRID_ITEM_SIZE_MULTIPLIER = floatPreferenceKey(PREFIX + "_grid_item_size_multiplier", defaultValue = 1.0f)
+
+        /**
+         * Font Scale Preference.
+         *
+         * This constant represents the scaling factor applied to the system font.
+         * Users can adjust this value to control the size of the font, with the default being the system default font size.
+         * The acceptable range is from 1.0f to 2.0f (twice the system default size).
+         *
+         * Usage:
+         * ```kotlin
+         * val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
+         */
+        val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
+
     }
 
     val darkUiMode: Preference<NightMode>

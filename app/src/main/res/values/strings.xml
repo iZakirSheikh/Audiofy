@@ -102,6 +102,10 @@
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
     <string name="start">Start</string>
+    <string name="more">More</string>
+    <string name="home">"Home"</string>
+    <string name="videos">Videos</string>
+    <string name="allow">Allow</string>
 
     <!--The play store add of this app recommended by someone arg: playstore address -->
     <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
@@ -298,14 +302,11 @@
     <string name="library_title">
         Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
     </string>
-    <string name="msg_library_recent_click">Reset queue and play this? Default: add to queue. Auto-cancel.</string>
-    <string name="msg_library_recently_added_click">Clear queue and play from newly added?</string>
-    <string name="library_shortcuts">Shortcuts</string>
-    <string name="library_shortcuts_tag_line">The faster way to get things done.</string>
-    <string name="library_recent">Recent</string>
-    <string name="library_recent_tag_line">The recently played tracks.</string>
-    <string name="library_recently_added">Recently Added</string>
-    <string name="library_recently_added_tag_line">The tracks that have been recently added</string>
+
+    <string name="library_shortcuts">Shortcuts\n<font size="11" color = 'grey'><sup>The faster way to get things done</sup></font> </string>
+    <string name="library_history">History\n<font size="11" color = 'grey'><sup>Where Memories are Made.</sup></font> </string>
+    <string name="library_recently_added">Fresh Arrivals\n<font size="11" color = 'grey'><sup>New Tracks to Discover.</sup></font></string>
+    <string name="library_ads"><strike>ADS</strike></string>
 
     <!--==================              Audios                   ================================-->
     <string name="audios_scr_less_then_2_mins">Less 2 Min</string>
@@ -366,6 +367,9 @@
     <string name="equalizer">Equalizer &beta;</string>
     <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
     <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
+
+
+
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
     <array name="audio_fx_scr_equalizer_presets">
         <item>Custom</item>

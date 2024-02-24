@@ -6,7 +6,7 @@
 <!--Info-->
 [![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://github.com/iZakirSheikh/Audiofy/releases)
 [![Playstore](https://img.shields.io/endpoint?color=crimson&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
-[![GitHub Installs](https://img.shields.io/github/downloads/iZakirSheikh/Audiofy/total?logo=github&cacheSeconds=3600)]
+![GitHub Installs](https://img.shields.io/github/downloads/iZakirSheikh/Audiofy/total?logo=github&cacheSeconds=3600)
 [![Google Play Installs](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
 [![Google Play Rating](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FiZakirSheikh%2FAudiofy&countColor=%23dce775&style=plastic&labelStyle=lower)
@@ -23,9 +23,9 @@
 ![Email Badge](https://badgen.net/badge/email/helpline.prime.zs%40gmail.com/blue?icon=mail)
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40iZakirSheikh)](https://twitter.com/iZakirSheikh)
 
-| Donate | Download |
-| --- | --- |
-|<a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a>
+| Donate                                                                                                                                                                           | Download                                                                                                                                                                                                                                                                                                |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a> |
 
 ## Description
 
@@ -33,13 +33,13 @@
 
 **Audiofy Media Player**  is a mulitmedia app that lets you enjoy various videos and audio formats on your Android device or Android TV. It uses the ffmpeg extension of Media3, a powerful media player library, to support common and special audio formats such as Vorbis, Opus, FLAC, MP3, AAC, DTS, etc. It also supports video formats such as H.264, H.265, VP8, VP9, AV1, etc. You can also sync audio and video tracks when using Bluetooth earphones or speaker, for a smooth viewing experience. It has a simple and minimalistic interface that lets you watch videos without any hassle..
 
-| Category | Supported Formats |
-| --- | --- |
-| Audio formats | Vorbis, Opus, FLAC, ALAC, PCM/WAVE (μ-law, A-law), MP1, MP2, MP3, AMR (NB, WB), AAC (LC, ELD, HE; xHE on Android 9+), AC-3, E-AC-3, DTS, DTS-HD, TrueHD, AC-4 (on devices with system decoder) |
-| Video formats | H.263, H.264 AVC (Baseline Profile; Main Profile on Android 6+), H.265 HEVC, MPEG-4 SP, VP8, VP9, AV1 |
-| Container formats | MP4, MOV, WebM, MKV, Ogg, MPEG-TS, MPEG-PS, FLV, AVI (under development) |
-| Streaming protocols | DASH, HLS, SmoothStreaming, RTSP |
-| HDR video playback | HDR10+ and Dolby Vision (on compatible/supported hardware) |
+| Category            | Supported Formats                                                                                                                                                                              |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Audio formats       | Vorbis, Opus, FLAC, ALAC, PCM/WAVE (μ-law, A-law), MP1, MP2, MP3, AMR (NB, WB), AAC (LC, ELD, HE; xHE on Android 9+), AC-3, E-AC-3, DTS, DTS-HD, TrueHD, AC-4 (on devices with system decoder) |
+| Video formats       | H.263, H.264 AVC (Baseline Profile; Main Profile on Android 6+), H.265 HEVC, MPEG-4 SP, VP8, VP9, AV1                                                                                          |
+| Container formats   | MP4, MOV, WebM, MKV, Ogg, MPEG-TS, MPEG-PS, FLV, AVI (under development)                                                                                                                       |
+| Streaming protocols | DASH, HLS, SmoothStreaming, RTSP                                                                                                                                                               |
+| HDR video playback  | HDR10+ and Dolby Vision (on compatible/supported hardware)                                                                                                                                     |
 
 ## Screenshots
 
@@ -54,35 +54,20 @@
 <img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/cc4a358d-d64d-4ee5-ba67-68fd7c901b74" width="65">
 
 ## Features
-
-| Feature | Description | Roadmap |
-| --- | --- | --- |
-| Light/Dark Mode | Switch between light and dark themes in the app settings | :white_check_mark: |
-| Song, Album, Artist and Playlist Search | Find your favorite songs, albums, artists and playlists | :white_check_mark: |
-| Add Songs to Favorite | Mark your favorite songs with a heart icon | :white_check_mark: |
-| Playlists support | Create, edit, delete and play your own playlists | :white_check_mark: |
-| Import/Export Playlists as JSON File | Import or export your playlists as JSON files | :soon: |
-| Share Playlists | Share your playlists with others via a link or QR code | :soon: |
-| Sleep timer | Set a timer to stop the music after a certain time | :hourglass: |
-| Lyrics Support | View the lyrics of the song you are playing | :soon: |
-| Queue Management | Manage the order of the songs in the queue | :white_check_mark: |
-| Listening history record | View your listening history and statistics | :white_check_mark: |
-| Supports Portrait as well as Landscape mode | Rotate your device and enjoy the app in any orientation | :soon: |
-| Play Offline Media | Play any local audio track on your device | :white_check_mark: |
-| Tag Editing Support | Edit the metadata of your songs, such as title, artist, album, etc. | :soon: |
-| Play videos as audio | Play any video file on your device as audio only | :hourglass: |
-| Auto Song Recommendations | Get personalized song recommendations based on your listening habits | :white_check_mark: |
-| Inbuilt Equalizer | Adjust the sound quality and effects of the songs using an inbuilt equalizer | :soon: |
-| Backup & Restore | Backup and restore your app data, such as playlists, favorites, history, etc. | :white_check_mark: |
-| Auto Update Check | Check for updates automatically and download them if available | :white_check_mark: |
-| Delete Tracks from within the app. | Delete any song from your device storage from within the app.  | :white_check_mark: |
-| Trash tracks (above android 11).  | Move any song to the trash folder instead of deleting it permanently (only for devices running Android 11 or above).  | :white_check_mark: |
-| Hide/show folder/tracks.  | Hide or show any folder or track from the app library.  | :white_check_mark: |
-| Awesome UI.  | Enjoy a simple and intuitive user interface that is easy to use and pleasing to the eye.  | :white_check_mark: |
-| Lottie animations further enhances the view.  | Watch some cool animations that add some flair and fun to the app.  | :white_check_mark: |
-| Shuffle support.  | Shuffle your songs randomly and discover new music.  | :white_check_mark: |
-| Neumorphic design usage in creating the app.  | Appreciate the neumorphic design style that gives a soft and realistic look to the app elements.  | :white_check_mark: |
-| Radio support coming soon.  | Listen to online radio stations from various genres and countries (coming soon).  | :soon: |
+* Audio/subtitle track selection
+* Playback speed control
+* Horizontal swipe and double tap to quickly seek
+* Vertical swipe to change brightness (left) / volume (right)
+* Pinch to zoom (Android 7+)
+* PiP (Picture in Picture) on Android 8+ (resizable on Android 11+) (Comming soon)
+* Resize (fit/crop)
+* Volume boost (Coming soon)
+* Auto frame rate matching on Android TV/boxes (Android 6+)
+* Post-playback actions (delete file/skip to next)
+* Touch lock (long tap)
+* 3rd party equalizer / audio processing support (e.g. [Wavelet](https://github.com/Pittvandewitt/Wavelet))
+* Media Session and Audio Focus support
+* Pause playback when disconnecting headphones
 
 ## 🧰 Build and run the project
 If you are a developer and want to build and run the Audiofy app from the source code, you need to follow these additional steps:

@@ -65,7 +65,7 @@ private const val LAYOUT_ID_PROGRESS_BAR = "_layout_id_progress_bar"
  * @param hideNavBar Optional value to force hiding the navigation bar.
  */
 @Composable
-fun Scaffold2(
+fun NavigationSuiteScaffold(
     vertical: Boolean,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -144,7 +144,8 @@ private inline fun Vertical(
     Layout(
         content = content,
         modifier = modifier
-            .nestedScroll(connection)
+            // TODO: Find new way to allow collapsable navBar; because this is casing some major issues.
+            //.nestedScroll(connection)
             .fillMaxSize(),
     ) { measurables, constraints ->
         val width = constraints.maxWidth

@@ -17,7 +17,7 @@ import androidx.constraintlayout.compose.VerticalChainScope
 import androidx.constraintlayout.compose.Visibility
 import androidx.constraintlayout.compose.atMost
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Reach
+import com.prime.media.core.compose.Range
 import com.prime.media.core.compose.WindowSize
 
 private const val TAG = "ConstraintSets"
@@ -937,12 +937,12 @@ fun calculateConstraintSet(
         }
 
         // Handle audio layouts based on window size
-        wReach == Reach.Compact && hReach == Reach.Compact -> Compact(
+        wReach == Range.Compact && hReach == Range.Compact -> Compact(
             insets,
             height < 300.dp
         )    // Compact audio layout
-        hReach > Reach.Medium && wReach > Reach.Medium -> Large(insets)          // Large audio layout
-        hReach > Reach.Compact && wReach > Reach.Compact -> Medium(insets)        // Medium audio layout
+        hReach > Range.Medium && wReach > Range.Medium -> Large(insets)          // Large audio layout
+        hReach > Range.Compact && wReach > Range.Compact -> Medium(insets)        // Medium audio layout
 
         // Handle portrait and landscape layouts
         wReach < hReach -> Portrait(

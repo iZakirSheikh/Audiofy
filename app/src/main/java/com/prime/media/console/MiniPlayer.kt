@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +56,6 @@ import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LottieAnimButton
-import com.prime.media.core.compose.menu.Popup2
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
@@ -66,6 +64,7 @@ import com.prime.media.outline
 import com.primex.core.SignalWhite
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.primex.material2.menu.DropDownMenu
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -263,7 +262,7 @@ fun PopupMedia(
             isPlaying = isPlaying
         )
 
-        Popup2(
+        DropDownMenu(
             expanded = expanded,
             onDismissRequest = onRequestToggle,
             backgroundColor = Color(0xFF0E0E0F),
@@ -274,7 +273,7 @@ fun PopupMedia(
             content = {
                 val density = LocalDensity.current
                 Layout(
-                    value = item ?: return@Popup2,
+                    value = item ?: return@DropDownMenu,
                     progress = progress,
                     isPlaying = isPlaying,
                     remote = remote,
