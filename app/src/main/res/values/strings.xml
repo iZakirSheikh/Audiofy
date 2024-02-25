@@ -384,4 +384,13 @@
         <item>Rock</item>
     </array>
     <string name="title_codex">Media Codecs Extensions for Audiofy Media Player</string>
+    <string name="msg_library_join_us"><b>Enjoying the app? Join our community on:</b>\n<font color='grey'>Connect with us on GitHub, Reddit, and Telegram for the latest news, tips, and discussions!</font>
+    </string>
+    <string name="msg_library_rate_us"><!--Title--><b>Rate Our App and Help Us Improve</b>\n<!--Message Body--><font color='grey'>We\'d love to hear your feedback! Take a moment to rate our app and share your thoughts. Your feedback helps us make improvements and create a better experience for everyone.
+        </font>
+    </string>
+    <string name="rate_us">Rate Us</string>
+    <string name="msg_ad_free_experience"><b>Elevate Your Experience: Go Ad-Free for Life!</b>\n<font color='grey'>Support us and enjoy an ad-free experience forever! Upgrade to premium for a small one-time payment.</font></string>
+    <string name="library_what_s_new">What\'s new\n<font color='grey' size="11"><sup>Tips, tricks offers and more.</sup></font></string>
+
 </resources>
