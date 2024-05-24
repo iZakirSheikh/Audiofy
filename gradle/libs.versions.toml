@@ -1,17 +1,17 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.4.0"  # Android Gradle Plugin for building Android apps
-koltin-version = "1.9.23"  # Kotlin language version for code compilation
-compose-compiler = "1.5.13"  # Compiler for Jetpack Compose UI framework
+agp = "8.4.1"  # Android Gradle Plugin for building Android apps
+koltin-version = "1.9.24"  # Kotlin language version for code compilation
+compose-compiler = "1.5.14"  # Compiler for Jetpack Compose UI framework
 firebase = "4.4.1"  # Firebase core library for integrating Firebase services
-crashlytics = "2.9.9"  # Crashlytics for crash reporting and analytics
+crashlytics = "3.0.1"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.51.1"  # Hilt for dependency injection in Android apps
 
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.3.1"  # Media playback, including audio and video
-compose = "1.7.0-alpha08"  # Core foundation for building declarative UI with Compose
+compose = "1.7.0-beta01"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
 junit = "4.13.2"
@@ -245,13 +245,13 @@ play-app-review-ktx = { module = "com.google.android.play:review-ktx", version =
 # Enables you to sell digital content and subscriptions within your app,
 # providing a monetization channel and allowing users to access premium features.
 #----------------
-google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "6.2.1" }
+google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.0.0" }
 # Unity Ads
 # --------------------------------------------------------------------------------------------------
 # A cross-platform monetization solution that allows you to integrate ads from various
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.10.0" }
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.11.3" }
 
 # Codex extensions
 # --------------------------------------------------------------------------------------------------

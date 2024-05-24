@@ -20,9 +20,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material.icons.outlined.SupportAgent
@@ -37,10 +39,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.google.android.play.core.splitinstall.SplitInstallManager
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
@@ -50,6 +57,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.purchase
 import com.prime.media.small2
 import com.primex.core.composableOrNull
+import com.primex.core.stringResource
 import com.primex.core.textResource
 import com.primex.material2.IconButton
 import com.primex.material2.ListTile
@@ -176,7 +184,7 @@ private inline fun RateUs(modifier: Modifier = Modifier) {
         icon = Icons.Outlined.RateReview,
         buttons = {
             com.primex.material2.TextButton(
-                label = textResource(id = R.string.rate_us),
+                label = textResource(id = R.string.rate_us).toString().uppercase(),
                 onClick = { ctx.launchAppStore() },
                 colors = ButtonDefaults.textButtonColors()
             )
@@ -212,7 +220,79 @@ private inline fun RemoveAds(
     )
 }
 
-private const val PROMOTIONS_COUNT = 3
+@Composable
+private fun BuyMeACoffee(modifier: Modifier = Modifier) {
+    val facade = LocalSystemFacade.current
+    val purchase by purchase(BuildConfig.IAP_BUY_ME_COFFEE)
+    Promotion(
+        message =  textResource(id = R.string.msg_library_buy_me_a_coffee),
+        icon = Icons.Outlined.Coffee,
+        buttons = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    label = stringResource(id = R.string.buy_me_a_coffee).uppercase(),
+                    onClick = { facade.launchBillingFlow(BuildConfig.IAP_BUY_ME_COFFEE) },
+                    colors = ButtonDefaults.textButtonColors(),
+                    shape = Material.shapes.small2,
+                    // This is always enabled; since a use can buy as many as they want and as many
+                    // times as they want.
+                   // enabled = !purchase.purchased
+                )
+            }
+        },
+        modifier = modifier
+    )
+}
+
+private val ON_DEMAND_MODULE_CODEX = "codex"
+private val CODEX_INSTALL_REQUEST = SplitInstallRequest.newBuilder().addModule(ON_DEMAND_MODULE_CODEX).build()
+@Composable
+private fun InstallCodex(modifier: Modifier = Modifier) {
+    val facade = LocalSystemFacade.current
+    val purchase by purchase(BuildConfig.IAP_CODEX)
+
+    val context = LocalContext.current
+    val manager = remember { SplitInstallManagerFactory.create(context) }
+
+    val installed = remember {
+        manager.installedModules.contains(ON_DEMAND_MODULE_CODEX)
+    }
+
+    val onClick = {
+        // if the user has not purchased the feature; direct him to purchase the package.
+        if (!purchase.purchased)
+            facade.launchBillingFlow(BuildConfig.IAP_CODEX)
+        else
+            // TODO - Add success listener to this.
+            manager.startInstall(CODEX_INSTALL_REQUEST)
+        Unit
+    }
+
+    Promotion(
+        message = textResource(id = R.string.msg_library_install_codex),
+        icon = Icons.Outlined.NewReleases,
+        modifier = modifier,
+        buttons = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    label = stringResource(id = R.string.install).uppercase(),
+                    onClick = onClick,
+                    colors = ButtonDefaults.textButtonColors(),
+                    shape = Material.shapes.small2,
+                    enabled = !purchase.purchased || !installed
+                )
+            }
+        }
+    )
+}
+
+private const val PROMOTIONS_COUNT = 5
 
 @Composable
 fun Promotions(
@@ -226,10 +306,11 @@ fun Promotions(
         pageSpacing = ContentPadding.normal
     ) { number ->
         when (number) {
-            0 -> RateUs()
-            1 -> JoinUs()
-            2 -> RemoveAds()
-            //  3 -> Codex()
+            0 -> InstallCodex()
+            1 -> BuyMeACoffee()
+            2 -> RateUs()
+            3 -> JoinUs()
+            4 -> RemoveAds()
         }
     }
 }
