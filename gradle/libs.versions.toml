@@ -251,7 +251,7 @@ google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version
 # A cross-platform monetization solution that allows you to integrate ads from various
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.11.3" }
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.10.0" }
 
 # Codex extensions
 # --------------------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
     <option name="tabSettings">
       <map>
         <entry key="Android Vitals">
@@ -22,7 +23,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.prime.player.debug" />
+                  <option name="appId" value="com.prime.player" />
                   <option name="mobileSdkAppId" value="1:395273193376:android:d177d81aff07ac610e46c5" />
                   <option name="projectId" value="audiofy-4ce6c" />
                   <option name="projectNumber" value="395273193376" />

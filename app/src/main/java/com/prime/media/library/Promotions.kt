@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +54,7 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
+import com.prime.media.core.compose.HorizontalPagerIndicator
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.purchase
 import com.prime.media.small2
@@ -299,18 +301,26 @@ fun Promotions(
     modifier: Modifier = Modifier,
     padding: PaddingValues
 ) {
-    HorizontalPager(
-        state = rememberPagerState { PROMOTIONS_COUNT },
-        modifier = modifier,
-        contentPadding = padding,
-        pageSpacing = ContentPadding.normal
-    ) { number ->
-        when (number) {
-            0 -> InstallCodex()
-            1 -> BuyMeACoffee()
-            2 -> RateUs()
-            3 -> JoinUs()
-            4 -> RemoveAds()
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        val state =rememberPagerState { PROMOTIONS_COUNT }
+        HorizontalPager(
+            state = state,
+           // modifier = modifier,
+            contentPadding = padding,
+            pageSpacing = ContentPadding.normal
+        ) { number ->
+            when (number) {
+                0 -> InstallCodex()
+                1 -> BuyMeACoffee()
+                2 -> RateUs()
+                3 -> JoinUs()
+                4 -> RemoveAds()
+            }
         }
+
+        HorizontalPagerIndicator(
+            pagerState = state,
+            modifier = Modifier.padding(top = ContentPadding.normal)
+        )
     }
 }
