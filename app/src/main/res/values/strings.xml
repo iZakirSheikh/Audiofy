@@ -303,9 +303,9 @@
         Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
     </string>
 
-    <string name="library_shortcuts">Shortcuts\n<font size="11" color = 'grey'><sup>The faster way to get things done</sup></font> </string>
-    <string name="library_history">History\n<font size="11" color = 'grey'><sup>Where Memories are Made.</sup></font> </string>
-    <string name="library_recently_added">Fresh Arrivals\n<font size="11" color = 'grey'><sup>New Tracks to Discover.</sup></font></string>
+    <string name="library_shortcuts">Shortcuts\n<font color='grey' size="11"><sup>The faster way to get things done</sup></font> </string>
+    <string name="library_history">History\n<font color='grey' size="11"><sup>Where Memories are Made.</sup></font> </string>
+    <string name="library_recently_added">Fresh Arrivals\n<font color='grey' size="11"><sup>New Tracks to Discover.</sup></font></string>
     <string name="library_ads"><strike>ADS</strike></string>
 
     <!--==================              Audios                   ================================-->
@@ -369,7 +369,6 @@
     <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
 
 
-
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
     <array name="audio_fx_scr_equalizer_presets">
         <item>Custom</item>
@@ -384,4 +383,17 @@
         <item>Pop</item>
         <item>Rock</item>
     </array>
+    <string name="title_codex">Media Codecs Extensions for Audiofy Media Player</string>
+    <string name="msg_library_join_us"><b>Enjoying the app? Join our community on:</b>\n<font color='grey'>Connect with us on GitHub, Reddit, and Telegram for the latest news, tips, and discussions!</font>
+    </string>
+    <string name="msg_library_rate_us"><!--Title--><b>Rate Our App and Help Us Improve</b>\n<!--Message Body--><font color='grey'>If you\'re enjoying our app, please consider leaving us a 5-star rating on the Play Store. Your positive feedback helps us grow and improve our app for everyone.
+        </font>
+    </string>
+    <string name="rate_us">Rate Us</string>
+    <string name="msg_ad_free_experience"><b>Elevate Your Experience: Go Ad-Free for Life!</b>\n<font color='grey'>Support us and enjoy an ad-free experience forever! Upgrade to premium for a small one-time payment.</font></string>
+    <string name="library_what_s_new">What\'s new\n<font color='grey' size="11"><sup>Tips, tricks offers and more.</sup></font></string>
+    <string name="msg_library_buy_me_a_coffee"><b>Zakir\'s Coffee Fund</b>\n<font color='grey'>If you like my app and want to say thanks or encourage me to do more, please consider buying me a coffee!\nYour contribution, no matter how small, will help me stay caffeinated and motivated to continue developing and improving the app.\nThank you, Zakir</font></string>
+    <string name="buy_me_a_coffee">Buy me a Coffee</string>
+    <string name="msg_library_install_codex"><b>Elevate Your Media Experience</b>\n<font color='grey'>Enhance Audiofy with Codex!\nAutomatically switch to Codex for formats like <b>H.264, HEVC, VP8, VP9, Vorbis, Opus, and more</b> when hardware support isn\'t available.\nStay future-proof and enjoy seamless playback!</font></string>
+    <string name="install">Install</string>"
 </resources>

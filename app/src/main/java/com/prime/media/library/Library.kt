@@ -788,6 +788,16 @@ fun Library(
             )
         },
         content = {
+            // What's new
+            Header(
+                modifier = Modifier.fillMaxWidth(),
+                text = textResource(R.string.library_what_s_new),
+                contentPadding = DefaultContentPadding
+            )
+
+            Promotions(
+                padding = DefaultContentPadding,
+            )
             // Resents.
             val navigator = LocalNavController.current
             Header(

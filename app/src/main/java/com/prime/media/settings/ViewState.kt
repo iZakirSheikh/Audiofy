@@ -88,7 +88,7 @@ interface Settings : Blacklist {
         val NIGHT_MODE =
             stringPreferenceKey(
                 "${PREFIX}_night_mode",
-                NightMode.FOLLOW_SYSTEM,
+                NightMode.YES,
                 object : StringSaver<NightMode> {
                     override fun save(value: NightMode): String = value.name
                     override fun restore(value: String): NightMode = NightMode.valueOf(value)

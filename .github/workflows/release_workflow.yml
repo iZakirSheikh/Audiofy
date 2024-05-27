@@ -20,6 +20,8 @@ jobs:
           echo "PLACEMENT_INTERSTITIAL=$(echo ${{ secrets.PLACEMENT_INTERSTITIAL }})" >> $GITHUB_ENV
           echo "PLAY_CONSOLE_APP_RSA_KEY=$(echo ${{ secrets.PLAY_CONSOLE_APP_RSA_KEY }})" >> $GITHUB_ENV
           echo "UNITY_APP_ID=$(echo ${{ secrets.UNITY_APP_ID }})" >> $GITHUB_ENV
+          echo "IAP_BUY_ME_COFFEE=$(echo ${{ secrets.IAP_BUY_ME_COFFEE }})" >> $GITHUB_ENV
+          echo "IAP_CODEX=$(echo ${{ secrets.IAP_CODEX }})" >> $GITHUB_ENV
           echo "GIT_TAG=$(grep -E "versionName\s*=?\s*['\"]" "app/build.gradle.kts" | awk -F"['\"]" '{print $2}')" >> $GITHUB_ENV
       - name: Displaying the environment variable to the console for debugging
         run: |
@@ -29,6 +31,8 @@ jobs:
           echo $PLACEMENT_INTERSTITIAL | sed 's/./&‌/g'
           echo $PLAY_CONSOLE_APP_RSA_KEY | sed 's/./&‌/g'
           echo $IAP_NO_ADS | sed 's/./&‌/g'
+          echo $IAP_BUY_ME_COFFEE | sed 's/./&‌/g'
+          echo $IAP_CODEX | sed 's/./&‌/g'
           echo $IAP_TAG_EDITOR_PRO | sed 's/./&‌/g'
           echo $GIT_TAG | sed 's/./&‌/g'
       - name: Configuring Java environment with Zulu JDK 17 and Gradle cache,

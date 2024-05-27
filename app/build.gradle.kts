@@ -18,7 +18,8 @@ val secrets = arrayOf(
     "PLACEMENT_INTERSTITIAL",
     "UNITY_APP_ID",
     "PLAY_CONSOLE_APP_RSA_KEY",
-    "IAP_TAG_EDITOR_PRO"
+    "IAP_TAG_EDITOR_PRO",
+    "IAP_CODEX"
 )
 
 android {
@@ -28,8 +29,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 82
-        versionName = "2.9.1"
+        versionCode = 87
+        versionName = "2.10.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -73,6 +74,7 @@ android {
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get() }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+    dynamicFeatures += setOf(":app:codex")
 }
 
 // Not moving these to libs.version.toml because i think this is redundant.
@@ -115,6 +117,10 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.media3.ui)
     implementation(libs.mp3agic)
+    implementation(libs.play.feature.delivery)
+    //TODO - Updating dependencies caused the app not to compile becasue of some issue with
+    //     internal below dependency and hence this. Remove this in next update.
+    implementation("com.google.j2objc:j2objc-annotations:3.0.0")
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

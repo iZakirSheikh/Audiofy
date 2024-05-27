@@ -1,3 +1,5 @@
+@file:Suppress("UnsafeOptInUsageError")
+
 package com.prime.media.core.playback
 
 import android.annotation.SuppressLint
@@ -15,6 +17,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.*
@@ -270,7 +273,12 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
      * and it automatically handles audio becoming noisy.
      */
     private val player: Player by lazy {
+        val factory = DynamicRendererFactory(applicationContext)
+            ?: DefaultRenderersFactory(applicationContext)
+        factory.setEnableDecoderFallback(true)
+        factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
         ExoPlayer.Builder(this)
+            .setRenderersFactory(factory)
             .setAudioAttributes(PlaybackAudioAttr, true)
             .setHandleAudioBecomingNoisy(true).build()
     }

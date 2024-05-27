@@ -1,19 +1,23 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.4.0-alpha11"  # Android Gradle Plugin for building Android apps
-koltin-version = "1.9.22"  # Kotlin language version for code compilation
-compose-compiler = "1.5.10"  # Compiler for Jetpack Compose UI framework
+agp = "8.4.1"  # Android Gradle Plugin for building Android apps
+koltin-version = "1.9.24"  # Kotlin language version for code compilation
+compose-compiler = "1.5.14"  # Compiler for Jetpack Compose UI framework
 firebase = "4.4.1"  # Firebase core library for integrating Firebase services
-crashlytics = "2.9.9"  # Crashlytics for crash reporting and analytics
-hilt-android = "2.50"  # Hilt for dependency injection in Android apps
+crashlytics = "3.0.1"  # Crashlytics for crash reporting and analytics
+hilt-android = "2.51.1"  # Hilt for dependency injection in Android apps
 
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
-media3 = "1.2.1"  # Media playback, including audio and video
-compose = "1.7.0-alpha02"  # Core foundation for building declarative UI with Compose
-toolkit = "2.0.2-beta02"  # Collection of UI utilities and extensions
+media3 = "1.3.1"  # Media playback, including audio and video
+compose = "1.7.0-beta01"  # Core foundation for building declarative UI with Compose
+toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
+junit = "4.13.2"
+junit-version = "1.1.5"
+espresso-core = "3.5.1"
+codex_extensions = "0.7.1"
 
 [plugins]
 # Android Gradle Plugin (AGP): Essential for building Android apps,
@@ -34,6 +38,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
 # crash reporting and analytics tool, for tracking and diagnosing app
 # crashes, enhancing app stability and user experience.
 crashanlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
+android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 
 
 [libraries]
@@ -45,7 +50,7 @@ compose-foundation = { module = "androidx.compose.foundation:foundation", versio
 # Runtime: Core runtime environment for Compose, managing state, composition, and effects.
 compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
 # Activity: Integration between Compose UI and traditional Android activities.
-compose-activity = { module = "androidx.activity:activity-compose", version = "1.8.2" }
+compose-activity = { module = "androidx.activity:activity-compose", version = "1.9.0" }
 # UI: Fundamental building blocks for creating UI elements like text, buttons, and images.
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 # Animation and Graphics: Tools for creating smooth animations and graphics within Compose.
@@ -67,7 +72,7 @@ material-icons-extended = { module = "androidx.compose.material:material-icons-e
 # Coil:
 #-----------------
 # Image loading library optimized for Compose, handling image loading, displaying, and caching efficiently.
-coil = { module = "io.coil-kt:coil-compose", version = "2.5.0" }
+coil = { module = "io.coil-kt:coil-compose", version = "2.6.0" }
 # Accompanist -
 # Accompanist is a group of libraries that aim to supplement Jetpack Compose with features that are
 # commonly required by developers but not yet available.
@@ -87,7 +92,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 #---------------------
 # Integration of Google Fonts directly into Compose UIs, offering a wide
 # range of fonts for enhanced typography.
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.1" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.7" }
 # Window
 # -----
 # Handling of multiple windows and activity states for multi-window app experiences.
@@ -100,12 +105,12 @@ constraint-layout = { module = "androidx.constraintlayout:constraintlayout-compo
 # --------------
 # A library for rendering After Effects animations natively on Android and iOS,
 # integrated with Jetpack Compose for a seamless development experience.e.
-lottie = { module = "com.airbnb.android:lottie-compose", version = "6.3.0" }
+lottie = { module = "com.airbnb.android:lottie-compose", version = "6.4.0" }
 # Core KTX
 # --------------------------------------------------------------------------------------------------
 # Kotlin extensions for Android, providing a rich set of utility functions and extensions for common
 # tasks, streamlining development and reducing boilerplate code.
-core-ktx = { module = "androidx.core:core-ktx", version = "1.12.0" }
+core-ktx = { module = "androidx.core:core-ktx", version = "1.13.1" }
 
 
 # Ken Burns View: Custom view for Android that animates its drawable using the Ken Burns effect, creating a panning
@@ -116,7 +121,7 @@ kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 # --------------------------------------------------------------------------------------------------
 # Custom slider with a wavy wave-like design, offering a unique and visually appealing way for users to
 # make selections or adjustments within the app.
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.0.0" }
+wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
 #Splashscreen
 # --------------------------------------------------------------------------------------------------
 splashscreen = {module = "androidx.core:core-splashscreen", version = "1.0.1"}
@@ -162,7 +167,7 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
 # Hilt Navigation Compose: Integration of Hilt with Navigation Compose, allowing dependency injection
 # within Navigation components for a seamless experience.
-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.1.0" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
 
 # Data Persistence
 #-----------------
@@ -214,12 +219,12 @@ toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.
 # --------------------------------------------------------------------------------------------------
 # Kotlin extensions for Firebase Analytics, providing a concise and idiomatic way to collect
 # user behavior and app events, track screen views, user interactions, and other custom events.
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "21.5.1" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.0.0" }
 # Firebase Crashlytics KTX
 # Kotlin extensions for Firebase Crashlytics, offering real-time crash reporting and
 # --------------------------------------------------------------------------------------------------
 # insights into app stability issues, enabling developers to identify, prioritize, and fix crashes efficiently.
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "18.6.2" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.0.0" }
 
 
 # Google Play In-App Update:
@@ -240,10 +245,20 @@ play-app-review-ktx = { module = "com.google.android.play:review-ktx", version =
 # Enables you to sell digital content and subscriptions within your app,
 # providing a monetization channel and allowing users to access premium features.
 #----------------
-google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "6.1.0" }
+google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.0.0" }
 # Unity Ads
 # --------------------------------------------------------------------------------------------------
 # A cross-platform monetization solution that allows you to integrate ads from various
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.9.2" }
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.10.0" }
+
+# Codex extensions
+# --------------------------------------------------------------------------------------------------
+# An extesnion for playing unsupported media items using the app. this is provided as dnamic-feature
+# module and will not contribute in increasing the size of the app.
+codex_extensions = {module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version.ref = "codex_extensions"}
+# Play Feature Delivery
+# --------------------------------------------------------------------------------------------------
+# An library that allows the users of the app to request on-demand features like codex.
+play_feature_delivery = { module = "com.google.android.play:feature-delivery-ktx", version = "2.1.0" }

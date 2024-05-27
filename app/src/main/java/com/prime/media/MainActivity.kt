@@ -98,7 +98,12 @@ class MainActivity : ComponentActivity(), SystemFacade {
     private val billingManager by lazy {
         BillingManager(
             this,
-            arrayOf(BuildConfig.IAP_NO_ADS, BuildConfig.IAP_TAG_EDITOR_PRO)
+            arrayOf(
+                BuildConfig.IAP_NO_ADS,
+                BuildConfig.IAP_TAG_EDITOR_PRO,
+                BuildConfig.IAP_BUY_ME_COFFEE,
+                BuildConfig.IAP_CODEX
+            )
         )
     }
 
