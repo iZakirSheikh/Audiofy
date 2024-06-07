@@ -496,6 +496,7 @@ private fun RecentItem(
                 .size(66.dp) // Adjust size if needed
                 .border(2.dp, Color.White, RECENT_ICON_SHAPE) // Add white border
                 .shadow(ContentElevation.low, RECENT_ICON_SHAPE) // Add subtle shadow
+                .background(Material.colors.surface)
         )
 
         // Label below the artwork with padding and styling
@@ -583,6 +584,7 @@ private fun NewlyAddedItem(
             modifier = Modifier
                 .visualEffect(ImageBrush.NoiseBrush, 0.3f, true)
                 .foreground(Brush.horizontalGradient(colors)) // Apply transparent-to-primary gradient
+                .background(Material.colors.surface)
                 .matchParentSize() // Fill available space
         )
 

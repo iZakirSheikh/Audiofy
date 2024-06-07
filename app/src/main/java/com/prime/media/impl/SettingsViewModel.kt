@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -164,6 +165,16 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
+    override val fontScale by with(preferences) {
+        preferences[Settings.FONT_SCALE].map {
+            Preference(
+                title = Text(R.string.pref_font_scale),
+                summery = Text(R.string.pref_font_scale_summery),
+                value = it,
+                vector = Icons.Outlined.ZoomIn
+            )
+        }.asComposeState()
+    }
     override fun <S, O> set(key: Key<S, O>, value: O) {
         viewModelScope.launch {
             preferences[key] = value

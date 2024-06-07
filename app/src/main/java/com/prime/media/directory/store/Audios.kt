@@ -736,6 +736,7 @@ private fun Audio(
                     .border(2.dp, LocalContentColor.current, shape = CircleShape)
                     .scale(0.8f)
                     .shadow(ContentElevation.low, shape = CircleShape)
+                    .background(Material.colors.surface)
                     .size(ARTWORK_SIZE),
             )
         },

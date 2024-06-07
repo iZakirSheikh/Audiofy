@@ -78,6 +78,7 @@ fun SystemDelegate(ctx: Context, channel: SnackbarHostState2) =
         override val resources: Resources
             get() = ctx.resources
 
+        @Deprecated("Try to avoid using this.")
         override val context: Context
             get() = ctx
 

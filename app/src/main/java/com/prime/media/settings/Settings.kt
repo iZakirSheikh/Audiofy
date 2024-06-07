@@ -43,6 +43,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.SupportAgent
+import androidx.compose.material.icons.outlined.TextFormat
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
@@ -176,6 +177,22 @@ private inline fun ColumnScope.Body(
             placementID = BuildConfig.PLACEMENT_BANNER_1,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+
+    // app font scale
+    val scale = state.fontScale
+    SliderPreference(
+        defaultValue = scale.value,
+        title = stringResource(value = scale.title),
+        summery = stringResource(value = scale.summery),
+        valueRange = 0.5f ..2f,
+        steps = 15,
+        icon = scale.vector,
+        iconChange = Icons.Outlined.TextFormat,
+        onValueChange = { value: Float ->
+            state.set(Settings.FONT_SCALE, value)
+            //.showAd(force = true)
+        }
+    )
 
     //Force accent
     val forceAccent = state.forceAccent

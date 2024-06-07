@@ -25,6 +25,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -105,8 +107,8 @@ inline fun Placeholder(
     Placeholder(
         modifier = modifier,
         vertical = vertical,
-        message = { if (message != null) Text(text = message) },
-        title = { Label(text = title.ifEmpty { " " }, maxLines = 2) },
+        message = { if (message != null) Text(text = message, color = MaterialTheme.colors.onSurface) },
+        title = { Label(text = title.ifEmpty { " " }, maxLines = 2, color = MaterialTheme.colors.onSurface) },
 
         icon = {
             LottieAnimation(

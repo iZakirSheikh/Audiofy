@@ -13,8 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.core.animation.doOnEnd
 import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -38,7 +41,9 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.compose.calculateWindowSizeClass
+import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.Remote
+import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.Text
@@ -355,13 +360,19 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Manually handle decor.
         // I think I am handling this in AppTheme Already.
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
         // Set the content.
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
+
+            // Observe font_scale
+            val fontScale by observeAsState(key = Settings.FONT_SCALE)
+            val density = LocalDensity.current
+            val modified = if (fontScale == -1f) density else Density(density.density, fontScale)
+
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
                 LocalWindowSize provides windowSizeClass,
+                LocalDensity provides modified,
                 content = { Home(channel = channel) }
             )
         }

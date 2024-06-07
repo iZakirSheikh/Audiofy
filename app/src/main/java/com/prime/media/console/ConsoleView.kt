@@ -27,6 +27,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.IntDef
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
@@ -1184,7 +1185,10 @@ private fun MainContent(
         TimeBar(
             state = state,
             accent = accent,
-            style = if (background == BACKGROUND_VIDEO_SURFACE) SEEKBAR_STYLE_SIMPLE else SEEKBAR_STYLE_WAVY,
+            style = when {
+                !state.playing || background == BACKGROUND_VIDEO_SURFACE -> SEEKBAR_STYLE_SIMPLE
+                else -> SEEKBAR_STYLE_WAVY
+            },
             onRequest = onRequest,
             modifier = Modifier.layoutId(Constraints.ID_TIME_BAR)
         )
@@ -1426,6 +1430,7 @@ fun Console(state: Console) {
                     modifier = Modifier
                         .clip(RoundedCornerShape(radius))
                         .fillMaxSize()
+                        .animateContentSize()
                 )
             }
         }
