@@ -564,11 +564,10 @@ class ConsoleViewModel @Inject constructor(
             Player.EVENT_IS_PLAYING_CHANGED -> {
                 // Store the current media's video state for later comparison
                 val isNowVideo = remote.isCurrentMediaItemVideo
-                // Check if the current media is a video AND the previous media was not a video
-                // If it's a new video, set the visibility to 'visible'
-                if (isNowVideo && !isVideo) visibility = Console.VISIBILITY_VISIBLE
-                // Otherwise (not a new video or not a video at all), keep it always visible
-                if (!isNowVideo) visibility = Console.VISIBILITY_ALWAYS
+                // FIXME - Since changing isVideo always will result in resetting of animation;
+                //  Hence its value needs to be changed only when some change has actually taken place;
+                //  Otherwise, no change should be triggered on it.
+                visibility = if (!isNowVideo) Console.VISIBILITY_ALWAYS else Console.VISIBILITY_VISIBLE
                 // Update the stored video state for the next comparison
                 isVideo = isNowVideo  // Store the current state for future checks
             }

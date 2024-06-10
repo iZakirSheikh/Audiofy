@@ -178,21 +178,21 @@ private inline fun ColumnScope.Body(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-    // app font scale
-    val scale = state.fontScale
-    SliderPreference(
-        defaultValue = scale.value,
-        title = stringResource(value = scale.title),
-        summery = stringResource(value = scale.summery),
-        valueRange = 0.5f ..2f,
-        steps = 15,
-        icon = scale.vector,
-        iconChange = Icons.Outlined.TextFormat,
-        onValueChange = { value: Float ->
-            state.set(Settings.FONT_SCALE, value)
-            //.showAd(force = true)
-        }
-    )
+//    App font scale
+//    val scale = state.fontScale
+//    SliderPreference(
+//        defaultValue = scale.value,
+//        title = stringResource(value = scale.title),
+//        summery = stringResource(value = scale.summery),
+//        valueRange = 0.5f ..2f,
+//        steps = 15,
+//        icon = scale.vector,
+//        iconChange = Icons.Outlined.TextFormat,
+//        onValueChange = { value: Float ->
+//            state.set(Settings.FONT_SCALE, value)
+//            //.showAd(force = true)
+//        }
+//    )
 
     //Force accent
     val forceAccent = state.forceAccent

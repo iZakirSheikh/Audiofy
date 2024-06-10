@@ -1420,7 +1420,7 @@ fun Console(state: Console) {
                     calculateConstraintSet(newWindowSize, insets, isVideo, !showController)
                 }
                 // Set immersive mode based on the visibility state.
-                SideEffect { controller?.immersiveMode(!showController) }
+                SideEffect { controller?.immersiveMode(/*!showController*/ isVideo) }
                 // Display the main content with the given state, constraints, onRequest function, and
                 // modifier
                 MainContent(
@@ -1458,6 +1458,7 @@ fun Console(state: Console) {
             // Remove the observer from the owner's lifecycle.
             owner.lifecycle.removeObserver(observer)
             // Restore the default color appearance of system bars based on the theme.
+            controller?.immersiveMode(false)
             controller?.isAppearanceLightStatusBars = isAppearanceLightSystemBars
             controller?.isAppearanceLightNavigationBars = isAppearanceLightSystemBars
         }
