@@ -395,5 +395,14 @@
     <string name="msg_library_buy_me_a_coffee"><b>Zakir\'s Coffee Fund</b>\n<font color='grey'>If you like my app and want to say thanks or encourage me to do more, please consider buying me a coffee!\nYour contribution, no matter how small, will help me stay caffeinated and motivated to continue developing and improving the app.\nThank you, Zakir</font></string>
     <string name="buy_me_a_coffee">Buy me a Coffee</string>
     <string name="msg_library_install_codex"><b>Elevate Your Media Experience</b>\n<font color='grey'>Enhance Audiofy with Codex!\nAutomatically switch to Codex for formats like <b>H.264, HEVC, VP8, VP9, Vorbis, Opus, and more</b> when hardware support isn\'t available.\nStay future-proof and enjoy seamless playback!</font></string>
-    <string name="install">Install</string>"
+    <string name="install">Install</string>
+    <string name="pref_font_scale">Font Scale</string>
+    <string name="pref_font_scale_summery">Zoom in or out the text shown on the screen.</string>"
+    <string-array name="playback_speed_dialog_predefined_speeds">
+        <item value="0.8">0.8</item>
+        <item value="1.0">1.0</item>
+        <item value="1.2">1.2</item>
+        <item value="1.5">1.5</item>
+        <item value="2.0">2.0</item>
+    </string-array>
 </resources>

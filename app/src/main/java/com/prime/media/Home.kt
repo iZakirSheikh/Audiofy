@@ -533,7 +533,8 @@ private inline val WindowSize.navType
     get() = when {
         widthRange < Range.Medium -> TYPE_BOTTOM_NAV
         widthRange < Range.xLarge -> TYPE_RAIL_NAV
-        else -> TYPE_DRAWER_NAV
+        // FixME - For now return only rail as drawer looks pretty bad.
+        else -> TYPE_RAIL_NAV //TYPE_DRAWER_NAV
     }
 
 private val NAV_RAIL_WIDTH = 96.dp

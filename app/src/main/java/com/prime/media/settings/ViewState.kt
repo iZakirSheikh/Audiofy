@@ -158,7 +158,6 @@ interface Settings : Blacklist {
          * val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
          */
         val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
-
     }
 
     val darkUiMode: Preference<NightMode>
@@ -174,6 +173,7 @@ interface Settings : Blacklist {
     val crossfadeTime: Preference<Int>
     val closePlaybackWhenTaskRemoved: Preference<Boolean>
     val useInbuiltAudioFx: Preference<Boolean>
+    val fontScale: Preference<Float>
 
     fun <S, O> set(key: Key<S, O>, value: O)
 }

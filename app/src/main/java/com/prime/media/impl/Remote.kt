@@ -242,6 +242,7 @@ private class RemoteImpl(val context: Context) : Remote, MediaBrowser.Listener {
         return browser.repeatMode
     }
 
+    @Deprecated("use the seekTo with suspend")
     override fun seekTo(mills: Long) {
         val browser = browser ?: return
         browser.seekTo(mills)

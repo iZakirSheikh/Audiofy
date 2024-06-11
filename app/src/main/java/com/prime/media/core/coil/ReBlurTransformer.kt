@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.prime.media.core.transformers
+package com.prime.media.core.coil
 
 import android.graphics.Bitmap
 import android.graphics.HardwareRenderer

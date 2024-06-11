@@ -1,9 +1,10 @@
-package com.prime.media.impl
+package com.prime.media.core.coil
 
 import android.content.ContentUris
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import androidx.core.graphics.drawable.toDrawable
 import coil.decode.DataSource
@@ -27,6 +28,14 @@ private const val TAG = "MediaMetaDataArtFetcher"
 
  */
 private var DEFAULT_RESULT: FetchResult? = null
+
+/** [MediaMetadataRetriever] doesn't implement [AutoCloseable] until API 29. */
+private inline fun <T> MediaMetadataRetriever.use(block: (MediaMetadataRetriever) -> T): T {
+    try { return block(this) } finally {
+        // We must call 'close' on API 29+ to avoid a strict mode warning.
+        if (SDK_INT >= 29) close() else release()
+    }
+}
 
 // TODO: Move this class to its proper place.
 /**

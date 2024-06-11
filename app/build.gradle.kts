@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.crashanlytics)
     kotlin("kapt")
+    alias(libs.plugins.compose.compiler)
 }
 
 /**
@@ -29,8 +30,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 87
-        versionName = "2.10.1"
+        versionCode = 90
+        versionName = "2.11.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -72,9 +73,9 @@ android {
         )
     }
     buildFeatures { compose = true }
-    composeOptions { kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get() }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
     dynamicFeatures += setOf(":app:codex")
+    composeCompiler { enableStrongSkippingMode = false }
 }
 
 // Not moving these to libs.version.toml because i think this is redundant.

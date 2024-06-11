@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
@@ -503,6 +504,7 @@ private fun <T : Any> Metadata(
             data = meta.artwork ?: "",
             modifier = Modifier
                 .shadow(ContentElevation.high, HeaderArtWorkShape)
+                .background(Material.colors.surface)
                 .constrainAs(Artwork) {
                     start.linkTo(parent.start, ContentPadding.normal)
                     width = Dimension.value(76.dp)

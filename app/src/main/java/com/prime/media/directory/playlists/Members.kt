@@ -408,6 +408,7 @@ private fun Member(
                 modifier = Modifier
                     .border(2.dp, Color.White, shape = MEMBER_ICON_SHAPE)
                     .shadow(ContentElevation.medium, shape = MEMBER_ICON_SHAPE)
+                    .background(Material.colors.surface)
                     .size(ARTWORK_SIZE),
             )
         },
