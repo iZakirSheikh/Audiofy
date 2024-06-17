@@ -23,6 +23,7 @@ import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
@@ -116,6 +117,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override val inAppUpdateProgress: Float
         get() = _inAppUpdateProgress.floatValue
 
+    override val inAppProductDetails get() = billingManager.details
+
     // injectable code.
     @Inject
     lateinit var preferences: Preferences
@@ -136,6 +139,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
         super.onDestroy()
     }
 
+    override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
+
     override fun showAd(force: Boolean, action: (() -> Unit)?) {
         val isAdFree = billingManager[BuildConfig.IAP_NO_ADS].purchased
         if (isAdFree) return // don't do anything
@@ -148,10 +153,16 @@ class MainActivity : ComponentActivity(), SystemFacade {
         action: Text?,
         icon: Any?,
         accent: Color,
-        duration: Duration
+        duration: Duration,
+        onAction: (() -> Unit)?
     ) {
         lifecycleScope.launch {
-            channel.show(message, title, action, icon, accent, duration)
+            val res = channel.show(message, title, action, icon, accent, duration)
+            if (onAction == null)
+                return@launch
+            // invoke on action.
+            if (res == Channel.Result.ActionPerformed)
+                onAction()
         }
     }
 

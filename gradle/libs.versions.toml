@@ -1,7 +1,7 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.4.1"  # Android Gradle Plugin for building Android apps
+agp = "8.5.0"  # Android Gradle Plugin for building Android apps
 kotlin = "2.0.0"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
 crashlytics = "3.0.1"  # Crashlytics for crash reporting and analytics
@@ -10,7 +10,7 @@ hilt-android = "2.51.1"  # Hilt for dependency injection in Android apps
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.3.1"  # Media playback, including audio and video
-compose = "1.7.0-beta02"  # Core foundation for building declarative UI with Compose
+compose = "1.7.0-beta03"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
 codex_extensions = "0.7.1"

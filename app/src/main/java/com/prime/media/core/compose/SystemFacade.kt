@@ -1,5 +1,7 @@
 package com.prime.media.core.compose
 
+import android.content.Intent
+import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -8,9 +10,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.res.ResourcesCompat
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.primex.core.Text
 import com.primex.preferences.Key
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * An interface defining the methods and properties needed for common app functionality,
@@ -33,6 +37,12 @@ interface SystemFacade {
      */
     val inAppUpdateProgress: Float
 
+
+    /**
+     * @see com.prime.media.core.billing.BillingManager.details
+     */
+    val inAppProductDetails: MutableStateFlow<Map<String, ProductDetails>>
+
     /**
      * A utility extension function for showing interstitial ads.
      * * Note: The ad will not be shown if the app is adFree Version.
@@ -41,6 +51,9 @@ interface SystemFacade {
      * @param action A callback to be executed after the ad is shown.
      */
     fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
+
+
+    fun launch(intent: Intent, options: Bundle? = null)
 
     /**
      * This uses the provider to submit message to [SnackbarProvider]
@@ -53,7 +66,8 @@ interface SystemFacade {
         action: Text? = null,
         icon: Any? = null,
         accent: Color = Color.Unspecified,
-        duration: Channel.Duration = Channel.Duration.Short
+        duration: Channel.Duration = Channel.Duration.Short,
+        onAction: (() -> Unit)? = null
     )
 
     /**
@@ -65,14 +79,16 @@ interface SystemFacade {
         action: CharSequence? = null,
         icon: Any? = null,
         accent: Color = Color.Unspecified,
-        duration: Channel.Duration = Channel.Duration.Short
+        duration: Channel.Duration = Channel.Duration.Short,
+        onAction: (() -> Unit)? = null
     ) = show(
         message = Text(message),
         title = if (title == null) null else Text(title),
         action = if (action == null) null else Text(action),
         icon = icon,
         accent = accent,
-        duration
+        duration,
+        onAction = onAction
     )
 
     /**
@@ -84,14 +100,16 @@ interface SystemFacade {
         @StringRes action: Int = ResourcesCompat.ID_NULL,
         icon: Any? = null,
         accent: Color = Color.Unspecified,
-        duration: Channel.Duration = Channel.Duration.Short
+        duration: Channel.Duration = Channel.Duration.Short,
+        onAction: (() -> Unit)? = null
     ) = show(
         Text(message),
         title = if (title == ResourcesCompat.ID_NULL) null else Text(title),
         action = if (action == ResourcesCompat.ID_NULL) null else Text(action),
         icon = icon,
         accent = accent,
-        duration = duration
+        duration = duration,
+        onAction = onAction
     )
 
     /**

@@ -25,9 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
+import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.compose.Channel.Data
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.Channel.Result
+import com.prime.media.surfaceColorAtElevation
 import com.primex.core.SignalWhite
 import com.primex.core.Text
 import com.primex.core.TrafficBlack
@@ -378,7 +380,7 @@ private fun Snackbar2(
     data: Data,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else Color.TrafficBlack,
+    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else MaterialTheme.colors.surfaceColorAtElevation(1.dp),
     contentColor: Color = Color.SignalWhite,
     actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
     elevation: Dp = 6.dp,

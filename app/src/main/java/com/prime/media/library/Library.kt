@@ -99,6 +99,7 @@ import com.google.accompanist.adaptive.TwoPane
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.about.AboutUs
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
@@ -112,6 +113,7 @@ import com.prime.media.core.compose.None
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shape.FolderShape
+import com.prime.media.core.compose.shimmer.pulsate
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
@@ -219,17 +221,18 @@ private fun CarousalAppBar(
         )
 
         // Navigation Icon.
-        val provider = LocalSystemFacade.current
         val contentColor = lerp(LocalContentColor.current, Color.White, fraction)
+        val navController = LocalNavController.current
         IconButton(
-            onClick = { provider.launchAppStore() },
+            onClick = { navController.navigate(AboutUs.route) },
             painter = rememberVectorPainter(image = Icons.Outlined.Info),
             contentDescription = "about us",
-            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon),
+            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon).pulsate(),
             tint = contentColor
         )
 
         // Actions  (Buy and settings)
+        val provider = LocalSystemFacade.current
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdAction),
