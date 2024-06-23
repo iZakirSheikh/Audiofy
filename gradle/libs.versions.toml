@@ -4,7 +4,7 @@
 agp = "8.5.0"  # Android Gradle Plugin for building Android apps
 kotlin = "2.0.0"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
-crashlytics = "3.0.1"  # Crashlytics for crash reporting and analytics
+crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.51.1"  # Hilt for dependency injection in Android apps
 
 # Library Versions
@@ -249,7 +249,7 @@ google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version
 # A cross-platform monetization solution that allows you to integrate ads from various
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.0" }
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.10.0" }
 
 # Codex extensions
 # --------------------------------------------------------------------------------------------------
