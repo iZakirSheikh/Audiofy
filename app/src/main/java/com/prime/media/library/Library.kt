@@ -49,16 +49,14 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.twotone.PlayCircle
-import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -123,7 +121,6 @@ import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
-import com.prime.media.settings.Settings
 import com.prime.media.small2
 import com.primex.core.ImageBrush
 import com.primex.core.blend
@@ -225,9 +222,11 @@ private fun CarousalAppBar(
         val navController = LocalNavController.current
         IconButton(
             onClick = { navController.navigate(AboutUs.route) },
-            painter = rememberVectorPainter(image = Icons.Outlined.Info),
+            painter = rememberVectorPainter(image = Icons.Filled.Info),
             contentDescription = "about us",
-            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon).pulsate(),
+            modifier = Modifier
+                .layoutId(TopAppBarDefaults.LayoutIdNavIcon)
+                .pulsate(),
             tint = contentColor
         )
 
@@ -576,7 +575,7 @@ private fun NewlyAddedItem(
     ) {
         val colors = listOf(
             Material.colors.primary.blend(Color.Black, 0.3f), // Gradient start: transparent primary
-         //   Color.Transparent, // Gradient middle: transparent
+            //   Color.Transparent, // Gradient middle: transparent
             Color.Transparent, // Gradient end: transparent
         )
 
@@ -793,16 +792,6 @@ fun Library(
             )
         },
         content = {
-            // What's new
-            Header(
-                modifier = Modifier.fillMaxWidth(),
-                text = textResource(R.string.library_what_s_new),
-                contentPadding = DefaultContentPadding
-            )
-
-            Promotions(
-                padding = DefaultContentPadding,
-            )
             // Resents.
             val navigator = LocalNavController.current
             Header(

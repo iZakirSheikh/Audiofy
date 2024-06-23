@@ -18,30 +18,138 @@
 
 package com.prime.media.core.compose.shimmer
 
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.DurationBasedAnimationSpec
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.jetbrains.annotations.ApiStatus.Experimental
+
+private const val TAG = "Shimmer"
+
+private class ShimmerNode(
+    var colors: List<Color>,
+    var width: Dp,
+    var blendMode: BlendMode,
+    var spec: AnimationSpec<Float>
+) : Modifier.Node(), DrawModifierNode {
+
+    val animatable = Animatable(0f)
+
+    // launch the quarantine at the time of the attach.
+    override fun onAttach() {
+        super.onAttach()
+        coroutineScope.launch {
+            animatable.animateTo(1f, spec)
+        }
+    }
+
+    // Draw the effect.
+    override fun ContentDrawScope.draw() {
+        drawContent()
+        val brushWidthPx = width.toPx()
+        // Calculates the start and end positions of the shimmer gradient.
+        // The shimmer effect transitions from the top-left to the bottom-right.
+        // The brushWidthPx value represents the width of the shimmer, causing the gradient to extend
+        // beyond the content's boundaries and create the illusion of movement.
+        // Conceptual Enhancement: In the future, consider allowing the shimmer direction to be
+        // customized (e.g., by specifying an angle)  to enable movement in various directions.
+        // This could be visualized as the shimmer moving from one end to the other of a circle
+        // that circumscribes the content rectangle plus the width of the brush.
+        // TODO: Allow customization of shimmer direction (e.g., with something like angle) to
+        //  support movement in different directions.
+        // Calculates the start and end positions of the shimmer gradient.
+        val progress = animatable.value
+        val (widthPx, heightPx) = size
+        val startX = -brushWidthPx
+        val startY = -brushWidthPx
+        val endX = widthPx + brushWidthPx
+        val endY = heightPx + brushWidthPx
+
+        // Factor in the progress to get the current position
+        val currentX = startX + (endX - startX) * progress
+        val currentY = startY + (endY - startY) * progress
+
+        Log.d(TAG, "draw: $currentX, $currentY")
+        // Draws a rectangle with the shimmer gradient.
+        drawRect(
+            brush = Brush.linearGradient(
+                colors = colors,
+                // Use current position
+                start = Offset(currentX, currentY),
+                // Adjust end based on brush width
+                end = Offset(currentX + brushWidthPx, currentY + brushWidthPx)
+            ),
+            blendMode = blendMode,
+            size = size
+        )
+    }
+}
+
+private class ShimmerNodeElement(
+    var colors: List<Color>,
+    var width: Dp,
+    var blendMode: BlendMode,
+    var spec: AnimationSpec<Float>
+) : ModifierNodeElement<ShimmerNode>() {
+    override fun create(): ShimmerNode = ShimmerNode(colors, width, blendMode, spec)
+
+    override fun update(node: ShimmerNode) {
+        node.colors = colors
+        node.spec = spec
+        node.width = width
+        node.blendMode = blendMode
+        Log.d(TAG, "update: colors: $colors, spec:$spec, width: $width, blendMode: $blendMode")
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ShimmerNodeElement
+
+        if (colors != other.colors) return false
+        if (width != other.width) return false
+        if (blendMode != other.blendMode) return false
+        if (spec != other.spec) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = colors.hashCode()
+        result = 31 * result + width.hashCode()
+        result = 31 * result + blendMode.hashCode()
+        result = 31 * result + spec.hashCode()
+        return result
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = TAG
+        properties["colors"] = colors
+        properties["width"] = width
+        properties["bendsMode"] = blendMode
+        properties["spec"] = spec
+    }
+}
 
 private val DefaultShimmerColor = Color.Gray
 private val DefaultShimmerColors = listOf(Color.Transparent, DefaultShimmerColor, Color.Transparent)
 private val DefaultShimmerWidth = 30.dp
-private val DefaultShimmerAnimationSpec = tween<Float>(1000, 2000, LinearEasing)
-
-private const val TAG = "Shimmer"
+private val DefaultShimmerAnimationSpec = infiniteRepeatable(tween<Float>(1000, 2000))
 
 /**
  * Applies a shimmer effect to this Modifier. The shimmer effect is a gradient that
@@ -63,75 +171,20 @@ fun Modifier.shimmer(
     colors: List<Color> = DefaultShimmerColors,
     width: Dp = DefaultShimmerWidth,
     blendMode: BlendMode = BlendMode.Hardlight,
-    animationSpec: DurationBasedAnimationSpec<Float> = DefaultShimmerAnimationSpec
-) = this then Modifier.composed {
-    // Creates an infinite animation loop for the shimmer effect.
-    val transition = rememberInfiniteTransition(label = "shimmer")
+    animationSpec: AnimationSpec<Float> = DefaultShimmerAnimationSpec
+) = this then ShimmerNodeElement(colors, width, blendMode, animationSpec)
 
-    // Animates the shimmer progress.
-    // Feature Request: Allow users to manipulate animationSpec, delay, and repeatMode for greater
-    // customization.
-    // TODO: The progress value appears to range from above 0 to below 1 in logs; this  behavior
-    //  requires further investigation.
-    // TODO: Migrate from `Modifier.composed` to `Modifier.Node` in the future.
-    // TODO: Implement using `Animatable` API and allow customization of animationSpec, delay, and repeatMode.
-    // TODO: Investigate how to support shimmer based on state change and single execution.
-    val progress by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            // Defines the animation for the shimmer, including duration, delay, and easing.
-            animation = animationSpec,
-            repeatMode = androidx.compose.animation.core.RepeatMode.Restart
-        ),
-        label = "shimmer progress"
-    )
-
-    // Draws the shimmer effect on the content.
-    drawWithContent {
-        drawContent()
-        val brushWidthPx = width.toPx()
-        // Calculates the start and end positions of the shimmer gradient.
-        // The shimmer effect transitions from the top-left to the bottom-right.
-        // The brushWidthPx value represents the width of the shimmer, causing the gradient to extend
-        // beyond the content's boundaries and create the illusion of movement.
-        // Conceptual Enhancement: In the future, consider allowing the shimmer direction to be
-        // customized (e.g., by specifying an angle)  to enable movement in various directions.
-        // This could be visualized as the shimmer moving from one end to the other of a circle
-        // that circumscribes the content rectangle plus the width of the brush.
-        // TODO: Allow customization of shimmer direction (e.g., with something like angle) to
-        //  support movement in different directions.
-        // Calculates the start and end positions of the shimmer gradient.
-        val (widthPx, heightPx) = size
-        val startX = -brushWidthPx
-        val startY = -brushWidthPx
-        val endX = widthPx + brushWidthPx
-        val endY = heightPx + brushWidthPx
-
-        // Factor in the progress to get the current position
-        val currentX = startX + (endX - startX) * progress
-        val currentY = startY + (endY - startY) * progress
-
-
-        // Draws a rectangle with the shimmer gradient.
-        drawRect(
-            brush = Brush.linearGradient(
-                colors = colors,
-                // Use current position
-                start = Offset(currentX, currentY),
-                // Adjust end based on brush width
-                end = Offset(currentX + brushWidthPx, currentY + brushWidthPx)
-            ),
-            blendMode = blendMode,
-            size = size
-        )
-    }
-}
-
+/**
+ * @see shimmer
+ */
 fun Modifier.shimmer(
     color: Color = DefaultShimmerColor,
     width: Dp = DefaultShimmerWidth,
     blendMode: BlendMode = BlendMode.Hardlight,
-    animationSpec: DurationBasedAnimationSpec<Float> = DefaultShimmerAnimationSpec
-) = shimmer(listOf(Color.Transparent, color, Color.Transparent), width, blendMode, animationSpec)
-
+    animationSpec: AnimationSpec<Float> = DefaultShimmerAnimationSpec
+) = this then ShimmerNodeElement(
+    listOf(Color.Transparent, color, Color.Transparent),
+    width,
+    blendMode,
+    animationSpec
+)

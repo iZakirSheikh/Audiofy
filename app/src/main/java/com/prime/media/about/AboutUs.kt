@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,6 +35,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -44,11 +46,13 @@ import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.DataObject
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.ReplyAll
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -57,7 +61,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.prime.media.Audiofy
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
@@ -69,9 +72,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.settings.Settings
 import com.prime.media.surfaceColorAtElevation
 import com.primex.core.drawHorizontalDivider
-import com.primex.core.rememberVectorPainter
 import com.primex.core.textResource
-import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
@@ -86,7 +87,6 @@ object AboutUs {
     val route = "route_about_us"
     fun direction() = route
 }
-
 
 private val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
     data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
@@ -133,7 +133,7 @@ private fun TopAppBar(
                 onClick = {
                     facade.show(
                         message = "Something not working as expected? Share your feedback to help us improve.",
-                        action = "Launch",
+                        action = "Proceed",
                         onAction = { facade.launch(FeedbackIntent) }
                     )
                 },
@@ -174,7 +174,7 @@ private fun TopAppBar(
                     )
                 },
             )
-        },
+        }
     )
 }
 
@@ -222,64 +222,65 @@ private fun AppInfoBanner(
             Row(
                 modifier = Modifier.padding(top = ContentPadding.large),
                 horizontalArrangement = Arrangement.spacedBy(ContentPadding.normal),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                val facade = LocalSystemFacade.current
-                Button(
-                    label = "Donate",
-                    icon = rememberVectorPainter(
-                        image = Icons.Outlined.Coffee
-                    ),
-                    //  border = ButtonDefaults.outlinedBorder,
-                    shape = RoundedCornerShape(20),
-                    elevation = null,
-                    modifier = Modifier
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    val facade = LocalSystemFacade.current
+                    val buttonModifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
-                    /*.padding(top = ContentPadding.normal)
-                    .offset(x = -ContentPadding.normal)
-                    .scale(0.85f)*/
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Material.colors.backgroundColorAtElevation(
-                            1.dp
-                        )
-                    ),
-                    onClick = {
-                        facade.show(
-                            message = "Thank you for considering a donation! Your support makes a difference.",
-                            action = "Contribute",
-                            icon = Icons.Outlined.Coffee,
-                            onAction = { facade.launchBillingFlow(BuildConfig.IAP_BUY_ME_COFFEE)}
-                        )
-                    },
-                )
+                        .height(56.dp)
+                    val buttonColors = ButtonDefaults.buttonColors(
+                        backgroundColor = Material.colors.backgroundColorAtElevation(1.dp)
+                    )
+                    val buttonShape = RoundedCornerShape(20)
+                    val padding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
 
-                Button(
-                    label = "Rate on Playstore",
-                    icon = rememberVectorPainter(
-                        image = Icons.Outlined.StarOutline
-                    ),
-                    // border = ButtonDefaults.outlinedBorder,
-                    shape = RoundedCornerShape(20),
-                    elevation = null,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Material.colors.backgroundColorAtElevation(
-                            1.dp
-                        )
-                    ),
-                    onClick = {
-                        facade.show(
-                            message = "Your 5-star ratings help us reach more users and make Audiofy even better!",
-                            action = "Proceed",
-                            onAction = facade::launchAppStore
-                        )
-                    },
-                )
-            }
+                    // Donate
+                    Button(
+                        onClick = { facade.launchBillingFlow(BuildConfig.IAP_BUY_ME_COFFEE) },
+                        modifier = buttonModifier,
+                        colors = buttonColors,
+                        shape = buttonShape,
+                        contentPadding = padding,
+                        content = {
+                            Label(text = "Donate")
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                imageVector = Icons.Outlined.Lightbulb,
+                                onClick = {
+                                    facade.show(
+                                        message = R.string.msg_library_buy_me_a_coffee,
+                                        icon = Icons.Outlined.Coffee
+                                    )
+                                }
+                            )
+                        }
+                    )
+
+                    Button(
+                        onClick = facade::launchAppStore,
+                        modifier = buttonModifier,
+                        colors = buttonColors,
+                        shape = buttonShape,
+                        contentPadding = padding,
+                        content = {
+                            Label(
+                                text = textResource(id = R.string.rate_us),
+                                style = Material.typography.body2
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                imageVector = Icons.Outlined.Lightbulb,
+                                onClick = {
+                                    facade.show(
+                                        message = R.string.pref_rate_us,
+                                        icon = Icons.Outlined.Coffee
+                                    )
+                                }
+                            )
+                        }
+                    )
+                }
+            )
         }
     )
 }
@@ -317,41 +318,43 @@ fun AboutUs() {
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars,
         topBar = { TopAppBar(behaviour = topAppBarScrollBehavior) },
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-    ) { padding ->
-        val verticalScrollState = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .verticalScroll(verticalScrollState)
-        ) {
-            // The app banner for compact form for devices like phones in portrait mode.
-            AppInfoBanner(
-                Modifier
-                    .padding(horizontal = ContentPadding.normal)
-                    .padding(top = ContentPadding.medium)
-            )
+        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+        content = { padding ->
+            val verticalScrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .verticalScroll(verticalScrollState)
+            ) {
+                // The app banner for compact form for devices like phones in portrait mode.
+                AppInfoBanner(
+                    Modifier
+                        .padding(horizontal = ContentPadding.normal)
+                        .padding(top = ContentPadding.medium)
+                )
+                // Upgrades
+                val facade = LocalSystemFacade.current
+                val products by facade.inAppProductDetails.collectAsState()
+                if (products.isNotEmpty()) {
+                    Header(text = "Upgrades")
+                    Upgrades(
+                        products,
+                        Modifier
+                            .padding(horizontal = ContentPadding.large)
+                            .padding(top = ContentPadding.medium)
+                    )
+                }
+                // App List showcasing my apps.
+                Header(text = "Discover More")
 
-            // Upgrades
-            Header(text = "Upgrades")
+                MyApps(
+                    Modifier
+                        .padding(horizontal = ContentPadding.large)
+                        .padding(top = ContentPadding.medium)
+                )
 
-            Upgrades(
-                Modifier
-                    .padding(horizontal = ContentPadding.large)
-                    .padding(top = ContentPadding.medium)
-            )
-
-            // App List showcasing my apps.
-            Header(text = "Discover More")
-
-            MyApps(
-                Modifier
-                    .padding(horizontal = ContentPadding.large)
-                    .padding(top = ContentPadding.medium)
-            )
-
-            // Header(text = "More")
+                // Header(text = "More")
+            }
         }
-    }
+    )
 }
-

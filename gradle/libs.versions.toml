@@ -90,7 +90,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 #---------------------
 # Integration of Google Fonts directly into Compose UIs, offering a wide
 # range of fonts for enhanced typography.
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.7" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.6.8" }
 # Window
 # -----
 # Handling of multiple windows and activity states for multi-window app experiences.
@@ -217,12 +217,12 @@ toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.
 # --------------------------------------------------------------------------------------------------
 # Kotlin extensions for Firebase Analytics, providing a concise and idiomatic way to collect
 # user behavior and app events, track screen views, user interactions, and other custom events.
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.0.1" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.0.2" }
 # Firebase Crashlytics KTX
 # Kotlin extensions for Firebase Crashlytics, offering real-time crash reporting and
 # --------------------------------------------------------------------------------------------------
 # insights into app stability issues, enabling developers to identify, prioritize, and fix crashes efficiently.
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.0.1" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.0.2" }
 
 
 # Google Play In-App Update:
@@ -249,7 +249,7 @@ google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version
 # A cross-platform monetization solution that allows you to integrate ads from various
 # networks into your app, providing revenue opportunities while maintaining user experience.
 #----------------
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.10.0" }
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.0" }
 
 # Codex extensions
 # --------------------------------------------------------------------------------------------------

@@ -87,7 +87,7 @@ jobs:
         with:
           tag_name: v${{ env.GIT_TAG }}
           generate_release_notes: true
-          prerelease: false
+          prerelease: true
           files: |
             ${{steps.signed_aab.outputs.signedReleaseFile}}
             ${{steps.signed_apk.outputs.signedReleaseFile}}
