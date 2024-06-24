@@ -115,7 +115,7 @@ private class PulsateNodeElement(
 
 private val DEFAULT_PULSATE_ANIM_SPEC = infiniteRepeatable<Float>(tween(750, 2000))
 private val DEFAULT_PULSATE_STROKE_WIDTH = 3.dp
-private val DEFAULT_PULSATE_STROKE_COLOR = Color.Gray
+private val DEFAULT_PULSATE_STROKE_COLOR = Color.White
 
 /**
  * A Modifier that provides a visual highlight effect by animating a circular

@@ -241,6 +241,7 @@ private fun AppInfoBanner(
                         colors = buttonColors,
                         shape = buttonShape,
                         contentPadding = padding,
+                        elevation = null,
                         content = {
                             Label(text = "Donate")
                             Spacer(modifier = Modifier.weight(1f))
@@ -261,6 +262,7 @@ private fun AppInfoBanner(
                         modifier = buttonModifier,
                         colors = buttonColors,
                         shape = buttonShape,
+                        elevation = null,
                         contentPadding = padding,
                         content = {
                             Label(
@@ -272,7 +274,7 @@ private fun AppInfoBanner(
                                 imageVector = Icons.Outlined.Lightbulb,
                                 onClick = {
                                     facade.show(
-                                        message = R.string.pref_rate_us,
+                                        message = R.string.msg_library_rate_us,
                                         icon = Icons.Outlined.Coffee
                                     )
                                 }

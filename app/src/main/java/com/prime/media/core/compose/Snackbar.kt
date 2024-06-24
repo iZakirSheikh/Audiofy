@@ -3,8 +3,12 @@ package com.prime.media.core.compose
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -388,7 +392,8 @@ private fun Snackbar2(
     Surface(
         // fill whole width and add some padding.
         modifier = modifier
-            .padding(12.dp)
+            .padding(WindowInsets.navigationBars.asPaddingValues())
+            .padding(horizontal = 16.dp)
             .sizeIn(minHeight = 56.dp),
         shape = shape,
         elevation = elevation,
@@ -397,7 +402,7 @@ private fun Snackbar2(
     ) {
         ListTile(
             // draw the indicator.
-            modifier = Indicatior(actionColor), centreVertically = true,
+            modifier = Indicatior(actionColor), centerAlign = false,
             leading = composableOrNull(data.leading != null) {
                 // TODO: It might casue the problems.
                 val icon = data.leading
@@ -410,7 +415,7 @@ private fun Snackbar2(
                 )
             },
             // the title
-            text = {
+            headline = {
                 Label(
                     text = data.message.value,
                     color = LocalContentColor.current,
@@ -418,7 +423,7 @@ private fun Snackbar2(
                     maxLines = 5,
                 )
             },
-            overlineText = composableOrNull(data.title != null) {
+            overline = composableOrNull(data.title != null) {
                 Label(
                     text = data.title!!.get,
                     color = LocalContentColor.current.copy(ContentAlpha.high),
@@ -441,7 +446,8 @@ private fun Snackbar2(
                         imageVector = Icons.Outlined.Close,
                         contentDescription = null
                     )
-            }
+            },
+            color = Color.Transparent
         )
     }
 }

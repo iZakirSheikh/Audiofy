@@ -70,6 +70,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.LocalNavController
@@ -291,7 +292,7 @@ private inline fun BuyMe() {
                     label = textResource(id = R.string.tag_editor_screen_buy_now_action),
                     onClick = { facade.launchBillingFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
             },
-            color = Material.colors.overlay,
+            color = Material.colors.backgroundColorAtElevation(1.dp),
             onColor = Material.colors.onBackground,
             shape = Material.shapes.small2,
             leading = {
@@ -446,6 +447,10 @@ private fun Layout(
             placeholder = R.string.tag_editor_property_placeholder,
             keyboardOptions = KeyboardTypeNumber
         )
+
+        // FixMe - Removing Affix Visual Transformer from this as this is casing crash due to
+        //  offset mismatch
+        // TODO - Suggestion: Instead attach http only if there isn't any and apply green color to it.
         // Url
         Property(
             title = R.string.url,
@@ -453,7 +458,7 @@ private fun Layout(
             onValueChange = { state.url = it },
             placeholder = R.string.tag_editor_property_placeholder,
             span = fullLineSpan,
-            visualTransformation = AffixVisualTransformation(ctx.resources.getText2(R.string.tag_editor_web_address_prefix))
+         //   visualTransformation = AffixVisualTransformation(ctx.resources.getText2(R.string.tag_editor_web_address_prefix))
         )
         // Disk Number
         Property(

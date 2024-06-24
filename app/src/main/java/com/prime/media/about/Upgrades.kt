@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -232,7 +233,7 @@ fun Upgrades(
         details.forEach { (id, details) ->
             // continue
             if (id !in SUPPORTED_PRODUCTS) return@forEach
-            // FixMe- provide a non-observable check in SystemFacade.
+            // FixMe - provide a non-observable check in SystemFacade.
             val state by purchase(id = id)
             Product(
                 details = details,
@@ -245,11 +246,16 @@ fun Upgrades(
                             details.dynamicFeatureRequest
                         )
                         else -> facade.show(
-                            "You already ${details.name}! Thanks for your support \uD83D\uDE0A"
+                            "You already own ${details.name}! \nThanks for your support \uD83D\uDE0A"
                         )
                     }
-                }
+                },
+                modifier = Modifier.weight(1f)
             )
         }
+        // If there are odd no. of items in details
+        // emit a spacer; so that a even no. of items are in FlowRow
+        // which will make sure that 2 items are in each row.
+        if (details.size % 2 != 0) Spacer(modifier = Modifier.weight(1f))
     }
 }
