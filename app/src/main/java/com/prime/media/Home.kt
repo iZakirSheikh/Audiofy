@@ -89,6 +89,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
+import com.prime.media.about.AboutUs
 import com.prime.media.console.Console
 import com.prime.media.console.PopupMedia
 import com.prime.media.core.Anim
@@ -244,8 +245,8 @@ fun Colors.surfaceColorAtElevation(
 fun Colors.backgroundColorAtElevation(
     elevation: Dp,
 ): Color {
-    if (elevation == 0.dp) return surface
-    return applyTonalElevation(surface, elevation)
+    if (elevation == 0.dp) return background
+    return applyTonalElevation(background, elevation)
 }
 
 /**
@@ -420,6 +421,10 @@ private fun NavGraph(
         enterTransition = { EnterTransition },
         exitTransition = { ExitTransition },
         builder = {
+            //AboutUs
+            composable(AboutUs.route){
+                AboutUs()
+            }
             //Permission
             composable(PERMISSION_ROUTE) {
                 Permission()
@@ -490,7 +495,7 @@ private fun NavGraph(
  * The array of routes that are required to hide the miniplayer.
  */
 private val HIDDEN_DEST_ROUTES =
-    arrayOf(Console.route, PERMISSION_ROUTE, AudioFx.route)
+    arrayOf(Console.route, PERMISSION_ROUTE, AudioFx.route, AboutUs.route)
 
 /**
  * Extension function for the NavController that facilitates navigation to a specified destination route.

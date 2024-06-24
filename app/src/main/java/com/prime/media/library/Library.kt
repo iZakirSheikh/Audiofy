@@ -49,16 +49,14 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.twotone.PlayCircle
-import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -99,6 +97,7 @@ import com.google.accompanist.adaptive.TwoPane
 import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.about.AboutUs
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
@@ -112,6 +111,7 @@ import com.prime.media.core.compose.None
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shape.FolderShape
+import com.prime.media.core.compose.shimmer.pulsate
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
@@ -121,7 +121,6 @@ import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Genres
 import com.prime.media.impl.Repository
-import com.prime.media.settings.Settings
 import com.prime.media.small2
 import com.primex.core.ImageBrush
 import com.primex.core.blend
@@ -219,17 +218,20 @@ private fun CarousalAppBar(
         )
 
         // Navigation Icon.
-        val provider = LocalSystemFacade.current
         val contentColor = lerp(LocalContentColor.current, Color.White, fraction)
+        val navController = LocalNavController.current
         IconButton(
-            onClick = { provider.launchAppStore() },
-            painter = rememberVectorPainter(image = Icons.Outlined.Info),
+            onClick = { navController.navigate(AboutUs.route) },
+            painter = rememberVectorPainter(image = Icons.Filled.Info),
             contentDescription = "about us",
-            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdNavIcon),
+            modifier = Modifier
+                .layoutId(TopAppBarDefaults.LayoutIdNavIcon)
+                .pulsate(),
             tint = contentColor
         )
 
         // Actions  (Buy and settings)
+        val provider = LocalSystemFacade.current
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdAction),
@@ -573,7 +575,7 @@ private fun NewlyAddedItem(
     ) {
         val colors = listOf(
             Material.colors.primary.blend(Color.Black, 0.3f), // Gradient start: transparent primary
-         //   Color.Transparent, // Gradient middle: transparent
+            //   Color.Transparent, // Gradient middle: transparent
             Color.Transparent, // Gradient end: transparent
         )
 
@@ -790,16 +792,6 @@ fun Library(
             )
         },
         content = {
-            // What's new
-            Header(
-                modifier = Modifier.fillMaxWidth(),
-                text = textResource(R.string.library_what_s_new),
-                contentPadding = DefaultContentPadding
-            )
-
-            Promotions(
-                padding = DefaultContentPadding,
-            )
             // Resents.
             val navigator = LocalNavController.current
             Header(

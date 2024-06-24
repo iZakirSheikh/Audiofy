@@ -18,6 +18,8 @@
 
 package com.prime.media.core.compose
 
+import android.content.Intent
+import android.os.Bundle
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.tween
@@ -35,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.DpSize
 import androidx.navigation.compose.rememberNavController
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.prime.media.settings.Settings
 import com.primex.core.BlueLilac
@@ -48,6 +51,7 @@ import com.primex.core.hsl
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.observeAsState
+import kotlinx.coroutines.flow.MutableStateFlow
 
 private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
     override val inAppUpdateProgress: Float = Float.NaN
@@ -56,13 +60,21 @@ private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
         error("showAd Not Supported")
     }
 
+    override fun launch(intent: Intent, options: Bundle?) {
+        error("showAd Not Supported")
+    }
+
+    override val inAppProductDetails: MutableStateFlow<Map<String, ProductDetails>>
+        = MutableStateFlow(emptyMap())
+
     override fun show(
         message: Text,
         title: Text?,
         action: Text?,
         icon: Any?,
         accent: Color,
-        duration: Channel.Duration
+        duration: Channel.Duration,
+        onAction: (() -> Unit)?
     ) {
         error("show Not Supported")
     }
