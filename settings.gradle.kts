@@ -11,6 +11,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven(url = "https://jitpack.io")
+        maven(url  ="https://android-sdk.is.com/")
     }
 }
 rootProject.name = "Audiofy"
@@ -19,3 +20,4 @@ include(":app")
 
 
 include(":app:codex")
+include(":app:ads")

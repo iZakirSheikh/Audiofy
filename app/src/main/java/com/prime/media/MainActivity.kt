@@ -31,7 +31,10 @@ import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.prime.media.core.billing.Advertiser
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 import com.prime.media.core.billing.BillingManager
 import com.prime.media.core.billing.get
 import com.prime.media.core.billing.observeAsState
@@ -53,6 +56,7 @@ import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
+import com.zs.ads.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -100,7 +104,20 @@ private fun initSplashScreen(isColdStart: Boolean) {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), SystemFacade {
 
-    private val advertiser by lazy { Advertiser(this) }
+    private val advertiser = AdManager().apply {
+        iListener = {info ->
+            // Log ad impression event to Firebase Analytics
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
+                param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+                param(FirebaseAnalytics.Param.AD_UNIT_NAME, info.country)
+                param(FirebaseAnalytics.Param.AD_FORMAT, info.format)
+                param(FirebaseAnalytics.Param.AD_SOURCE, info.network)
+                param(FirebaseAnalytics.Param.VALUE, info.revenue)
+                // All IronSource revenue is sent in USD
+                param(FirebaseAnalytics.Param.CURRENCY, "USD")
+            }
+        }
+    }
     private val billingManager by lazy {
         BillingManager(
             this,
@@ -111,6 +128,11 @@ class MainActivity : ComponentActivity(), SystemFacade {
                 BuildConfig.IAP_CODEX
             )
         )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        advertiser.onPause(this)
     }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
@@ -132,6 +154,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun onResume() {
         super.onResume()
         billingManager.refresh()
+        advertiser.onResume(this)
     }
 
     override fun onDestroy() {
@@ -141,10 +164,10 @@ class MainActivity : ComponentActivity(), SystemFacade {
 
     override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
 
-    override fun showAd(force: Boolean, action: (() -> Unit)?) {
+    override fun showAd(force: Boolean) {
         val isAdFree = billingManager[BuildConfig.IAP_NO_ADS].purchased
         if (isAdFree) return // don't do anything
-        advertiser.show(this, force, action)
+        advertiser.show(force)
     }
 
     override fun show(

@@ -101,9 +101,9 @@ import com.prime.media.about.AboutUs
 import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Artwork
+import com.prime.media.core.compose.Banner
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
@@ -813,7 +813,6 @@ fun Library(
             val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
             if (!purchase.purchased)
                 Banner(
-                    placementID = BuildConfig.PLACEMENT_BANNER_1,
                     modifier = Modifier.padding(DefaultContentPadding)
                 )
 

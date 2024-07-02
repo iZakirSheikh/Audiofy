@@ -48,9 +48,8 @@ interface SystemFacade {
      * * Note: The ad will not be shown if the app is adFree Version.
      *
      * @param force If `true`, the ad will be shown regardless of the AdFree status.
-     * @param action A callback to be executed after the ad is shown.
      */
-    fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
+    fun showAd(force: Boolean = false)
 
 
     fun launch(intent: Intent, options: Bundle? = null)
