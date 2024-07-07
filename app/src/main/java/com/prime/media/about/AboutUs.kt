@@ -67,8 +67,11 @@ import com.prime.media.R
 import com.prime.media.backgroundColorAtElevation
 import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
+import com.prime.media.core.billing.purchased
+import com.prime.media.core.compose.Banner
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
+import com.prime.media.core.compose.purchase
 import com.prime.media.settings.Settings
 import com.prime.media.surfaceColorAtElevation
 import com.primex.core.drawHorizontalDivider
@@ -80,30 +83,13 @@ import com.primex.material2.Text
 import com.primex.material2.appbar.LargeTopAppBar
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
+import com.zs.ads.AdSize
 
 private const val TAG = "AboutUs"
 
 object AboutUs {
     val route = "route_about_us"
     fun direction() = route
-}
-
-private val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
-    data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
-    putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
-}
-private val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
-    data =
-        Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
-}
-private val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
-}
-private val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://t.me/audiofy_support")
-}
-private val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
 }
 
 @Composable
@@ -134,7 +120,7 @@ private fun TopAppBar(
                     facade.show(
                         message = "Something not working as expected? Share your feedback to help us improve.",
                         action = "Proceed",
-                        onAction = { facade.launch(FeedbackIntent) }
+                        onAction = { facade.launch(Settings.FeedbackIntent) }
                     )
                 },
             )
@@ -146,7 +132,7 @@ private fun TopAppBar(
                     facade.show(
                         message = "Curious about the code? Check out our GitHub repository and don't forget to star us if you like it!",
                         action = "View",
-                        onAction = { facade.launch(GithubIntent) }
+                        onAction = { facade.launch(Settings.GithubIntent) }
                     )
                 },
             )
@@ -158,7 +144,7 @@ private fun TopAppBar(
                     facade.show(
                         message = "Spot a bug, typo, or have a feature request? Let us know on GitHub!",
                         action = "Proceed",
-                        onAction = { facade.launch(GitHubIssuesPage) }
+                        onAction = { facade.launch(Settings.GitHubIssuesPage) }
                     )
                 },
             )
@@ -170,7 +156,7 @@ private fun TopAppBar(
                     facade.show(
                         message = "Join our Telegram community for support, discussions, and updates!",
                         action = "Join",
-                        onAction = { facade.launch(TelegramIntent) }
+                        onAction = { facade.launch(Settings.TelegramIntent) }
                     )
                 },
             )
@@ -334,6 +320,17 @@ fun AboutUs() {
                         .padding(horizontal = ContentPadding.normal)
                         .padding(top = ContentPadding.medium)
                 )
+
+                // Show Banner if not AdFree.
+                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
+                if (!purchase.purchased)
+                    Banner(
+                        Modifier
+                            .padding(horizontal = ContentPadding.large)
+                            .padding(top = ContentPadding.medium),
+                        size = AdSize.MEDIUM_RECTANGLE
+                    )
+
                 // Upgrades
                 val facade = LocalSystemFacade.current
                 val products by facade.inAppProductDetails.collectAsState()

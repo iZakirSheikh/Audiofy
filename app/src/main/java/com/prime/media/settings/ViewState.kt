@@ -1,6 +1,8 @@
 package com.prime.media.settings
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Stable
@@ -71,6 +73,24 @@ interface Settings : Blacklist {
         override val route = "settings"
         override val title: Text get() = Text("Settings")
         override val icon: ImageVector get() = Icons.Outlined.Settings
+
+        val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
+            putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
+        }
+        val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
+            data =
+                Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
+        }
+        val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
+        }
+        val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://t.me/audiofy_support")
+        }
+        val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
+        }
 
         private const val PREFIX = "Audiofy"
 

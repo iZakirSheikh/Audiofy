@@ -27,8 +27,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 95
-        versionName = "2.13-beta01"
+        versionCode = 96
+        versionName = "2.13-beta02"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -106,10 +106,11 @@ dependencies {
     implementation(libs.kenburnsview)
     implementation(libs.wavy.slider)
     implementation(libs.constraint.layout)
+    implementation(libs.androidx.palette.ktx)
 
-    // TODO - Cnsider using this as Dynamic Feature Module in future.
+    // TODO - Consider using this as Dynamic Feature Module in future.
     implementation(project(":app:ads"))
-    //TODO - Updating dependencies caused the app not to compile becasue of some issue with
+    //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
     implementation("com.google.j2objc:j2objc-annotations:3.0.0")
 }

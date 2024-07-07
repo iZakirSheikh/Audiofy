@@ -38,7 +38,7 @@ import kotlin.time.Duration.Companion.seconds
 private const val TAG = "Banner"
 
 
-private val DELAY = 2.seconds
+private val DELAY = 3.seconds
 
 /**
  * A Composable function that displays a banner ad using the Ad SDK.
@@ -59,7 +59,7 @@ fun Banner(
             // Create an AdView instance and configure its layout parameters
             AdView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT
+                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
                 )
                 // Initially hide the ad view
                 visibility = View.GONE

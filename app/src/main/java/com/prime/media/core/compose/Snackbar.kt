@@ -2,10 +2,13 @@ package com.prime.media.core.compose
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
@@ -13,8 +16,10 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -384,7 +389,9 @@ private fun Snackbar2(
     data: Data,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else MaterialTheme.colors.surfaceColorAtElevation(1.dp),
+    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else MaterialTheme.colors.surfaceColorAtElevation(
+        1.dp
+    ),
     contentColor: Color = Color.SignalWhite,
     actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
     elevation: Dp = 6.dp,
@@ -432,20 +439,28 @@ private fun Snackbar2(
                 )
             },
             trailing = {
-                if (data.action != null)
-                    TextButton(
-                        label = data.action!!.get,
-                        onClick = { data.action() },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = actionColor
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.offset(x = (16).dp)
+                ) {
+                    if (data.duration != Duration.Indefinite)
+                        IconButton(
+                            onClick = data::dismiss,
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = null,
+                            modifier = Modifier.scale(0.85f)
                         )
-                    )
-                else
-                    IconButton(
-                        onClick = { data.dismiss() },
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = null
-                    )
+
+                    if (data.action != null)
+                        TextButton(
+                            label = data.action!!.get,
+                            onClick = data::action,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = actionColor
+                            )
+                        )
+                }
             },
             color = Color.Transparent
         )

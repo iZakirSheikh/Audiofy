@@ -43,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter.State
 import coil.request.ImageRequest
 import com.airbnb.lottie.AsyncUpdates
 import com.airbnb.lottie.RenderMode
@@ -65,6 +66,7 @@ inline fun Artwork(
     fallback: Painter? = painterResource(id = R.drawable.default_art),
     contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
+    noinline onSuccess: ((State.Success) -> Unit)? = null,
     fadeMills: Int = AnimationConstants.DefaultDurationMillis,
     transformers: List<coil.transform.Transformation>? = null,
 ) {
@@ -85,6 +87,7 @@ inline fun Artwork(
         contentDescription = null,
         error = fallback,
         modifier = modifier,
+        onSuccess = onSuccess,
         contentScale = contentScale,
         alignment = alignment,
     )

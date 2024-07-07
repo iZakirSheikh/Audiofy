@@ -10,4 +10,6 @@
         </dist:delivery>
         <dist:fusing dist:include="false" />
     </dist:module>
+    <!--This is required if the module has no code-->
+    <application android:hasCode="false"/>
 </manifest>

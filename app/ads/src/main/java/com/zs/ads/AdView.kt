@@ -103,6 +103,12 @@ class AdView : FrameLayout {
             adLayout.levelPlayBannerListener = if (value == null) null else _listener
         }
 
+    private fun loadAd(placement: String?){
+        if (adLayout.isDestroyed)
+            return
+        IronSource.loadBanner(adLayout, placement)
+    }
+
     /**
      * Loads a banner ad with an optional placement ID and delay.
      *
@@ -110,13 +116,15 @@ class AdView : FrameLayout {
      * @param delay The duration to wait before loading the ad. Defaults to no delay.
      */
     fun loadAd(placement: String? = null, delay: Duration = Duration.ZERO) {
+        if (adLayout.isDestroyed)
+            return
         if (delay == Duration.ZERO)
-        // Loadthe banner ad immediately
-            IronSource.loadBanner(adLayout, placement)
+        // Load the banner ad immediately
+            loadAd(placement)
         else
         // Load the banner ad after the specified delay
             postDelayed(delay.inWholeMilliseconds) {
-                IronSource.loadBanner(adLayout, placement)
+                loadAd(placement)
             }
     }
 
