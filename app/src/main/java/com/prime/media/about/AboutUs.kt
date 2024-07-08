@@ -328,7 +328,8 @@ fun AboutUs() {
                         Modifier
                             .padding(horizontal = ContentPadding.large)
                             .padding(top = ContentPadding.medium),
-                        size = AdSize.MEDIUM_RECTANGLE
+                        size = AdSize.MEDIUM_RECTANGLE,
+                        key = "Banner2"
                     )
 
                 // Upgrades

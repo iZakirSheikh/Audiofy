@@ -212,7 +212,8 @@ private inline fun ColumnScope.Body(
     if (!purchase.purchased)
         Banner(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            AdSize.LARGE_BANNER
+            AdSize.LARGE_BANNER,
+            key = "Banner2"
         )
 }
 

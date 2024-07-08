@@ -21,6 +21,7 @@ package com.prime.media.library
 import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.runtime.Composable
@@ -37,12 +39,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -53,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.prime.media.Material
 import com.prime.media.R
@@ -67,6 +72,8 @@ import com.primex.core.blend
 import com.primex.core.foreground
 import com.primex.core.visualEffect
 import com.primex.material2.Label
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Composable function to create a clickable newly added item with image, label, and play icon.
@@ -92,30 +99,46 @@ private fun NewlyAddedItem(
             .size(224.dp, 132.dp), // Set minimum size
         contentAlignment = Alignment.Center // Center content within the box
     ) {
-        val primary = Material.colors.primary
+
         var accent by remember { mutableStateOf(Color.Unspecified) }
-        val colors = listOf(
-            accent.takeOrElse { primary } .blend(Color.Black, 0.3f), // Gradient start: transparent primary
-            //   Color.Transparent, // Gradient middle: transparent
-            Color.Transparent, // Gradient end: transparent
-        )
-        val isLight = Material.colors.isLight
-        // Image with horizontal gradient overlay
-        Artwork(
-            data = imageUri,
-            alignment = alignment,
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val primary = MaterialTheme.colors.primary
+        Image(
+            contentDescription = null,
             modifier = Modifier
                 .visualEffect(ImageBrush.NoiseBrush, 0.3f, true)
-                .foreground(Brush.horizontalGradient(colors)) // Apply transparent-to-primary gradient
+                .foreground(
+                    Brush.horizontalGradient(
+                        listOf(
+                            accent.takeOrElse { primary },
+                            Color.Black.copy(0.2f),
+                        )
+                    )
+                ) // Apply transparent-to-primary gradient
+                .foreground(Color.Black.copy(0.2f))
                 .background(Material.colors.surface)
                 .matchParentSize(), // Fill available space,
-            onSuccess = {
-                val image = it.result.drawable.toBitmap()
-                val value = Palette.from(image).generate().let {
-                    if (isLight) it.getDarkVibrantColor(primary.toArgb()) else it.getLightVibrantColor(primary.toArgb())
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.Center,
+            painter = rememberAsyncImagePainter(
+                fallback = painterResource(id = R.drawable.default_art),
+                model = ImageRequest
+                    .Builder(context).apply {
+                        data(imageUri)
+                        allowHardware(false)
+                        crossfade(Anim.DefaultDurationMillis)
+                    }
+                    .build(),
+                onSuccess = {
+                    scope.launch(Dispatchers.IO) {
+                        val image = it.result.drawable.toBitmap()
+                        val value =
+                            Palette.from(image).generate().getDominantColor(primary.toArgb())
+                        accent = Color(value)
+                    }
                 }
-                accent = Color(value)
-            }
+            ),
         )
 
         // Label aligned to the left with padding and styling

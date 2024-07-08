@@ -127,7 +127,7 @@ fun RecentlyPlayedList(
             RecentItem(
                 it.title,             // Use the item's title
                 onClick = { state.onClickRecentFile(it.uri) },  // Trigger click action
-                modifier = Modifier.animateItem(),      // Animate item placement
+                modifier = Modifier.animateItem(null, fadeOutSpec = null),      // Animate item placement
                 artworkUri = it.artwork,// Display artwork if available
             )
         }

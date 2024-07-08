@@ -300,7 +300,8 @@ fun Library(state: Library) {
             val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
             if (!purchase.purchased)
                 Banner(
-                    modifier = Modifier.padding(DefaultContentPadding)
+                    modifier = Modifier.padding(DefaultContentPadding),
+                    key = "Banner_1"
                 )
 
             // Newly Added
