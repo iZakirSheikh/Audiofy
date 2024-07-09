@@ -5,6 +5,7 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
@@ -23,7 +24,6 @@ import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
@@ -45,12 +45,12 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.compose.calculateWindowSizeClass
-import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.Text
+import com.primex.core.getText2
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
@@ -101,13 +101,23 @@ private fun initSplashScreen(isColdStart: Boolean) {
     }
 }
 
+/**
+ * The number of messages available to be displayed to the user.
+ *
+ * Each number from 0 until [MESSAGE_COUNT] represents a unique message ID. This can be used
+ * to randomly select a message after a fresh start (or a multiple of 3 fresh starts)
+ * and display an indefinite message to the user, such as prompting them to purchase
+ * a feature like an ad-free experience.
+ */
+private const val MESSAGE_COUNT = 4
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), SystemFacade {
 
     private val advertiser = AdManager().apply {
-        iListener = {info ->
+        iListener = { info ->
             // Log ad impression event to Firebase Analytics
-            Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
                 param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
                 param(FirebaseAnalytics.Param.AD_UNIT_NAME, info.country)
                 param(FirebaseAnalytics.Param.AD_FORMAT, info.format)
@@ -133,6 +143,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun onPause() {
         super.onPause()
         advertiser.onPause(this)
+        Log.d(TAG, "onPause: ")
     }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
@@ -155,11 +166,13 @@ class MainActivity : ComponentActivity(), SystemFacade {
         super.onResume()
         billingManager.refresh()
         advertiser.onResume(this)
+        Log.d(TAG, "onResume: ")
     }
 
     override fun onDestroy() {
         billingManager.release()
         super.onDestroy()
+        Log.d(TAG, "onDestroy: ")
     }
 
     override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
@@ -360,6 +373,92 @@ class MainActivity : ComponentActivity(), SystemFacade {
         }
     }
 
+    private suspend fun showPromotionalMessage(id: Int) {
+        when (id) {
+            0 -> {
+                val productId = BuildConfig.IAP_NO_ADS
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_ad_free_experience_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            1 -> {
+                val productId = BuildConfig.IAP_CODEX
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_unlock_codex_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            2 -> {
+                val productId = BuildConfig.IAP_BUY_ME_COFFEE
+                //val product = billingManager.details.value[productId]
+                //val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    R.string.msg_library_buy_me_a_coffee,
+                    action = R.string.thanks,
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            3 -> {
+                val productId = BuildConfig.IAP_TAG_EDITOR_PRO
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_unlock_tag_editor_pro_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+        }
+    }
+
+    /**
+     * Initializes the app after a cold start. This includes incrementing the launch counter,
+     * checking for updates, and handling any pending intents. It also triggers the display
+     * of promotional messages at specific intervals.
+     */
+    private fun initialize() {
+        val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
+        // Increment launch counter for cold starts
+        preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
+        // Check for updates silently on startup
+        launchUpdateFlow()
+        // Handle pending intents after a brief delay to ensure UI readiness
+        lifecycleScope.launch {
+            // Introducing a delay of 1000 milliseconds (1 second) here is essential
+            // to ensure that the UI is fully prepared to receive the intent.
+            // This delay gives the UI components time to initialize and be ready
+            // to handle the incoming intent without any potential issues.
+            delay(1000)
+            onNewIntent(intent)
+        }
+        // Display promotional messages on every third cold start
+        lifecycleScope.launch {
+            delay(3000)
+            // Select and display a promotional message based on launch count
+            val id = counter % MESSAGE_COUNT
+            // Display the selected promotional message.
+            Log.d(TAG, "onCreate: id: $id counter: $counter")
+            showPromotionalMessage(id)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -368,29 +467,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // show splash screen
         initSplashScreen(isColdStart)
         // only run this piece of code if cold start.
-        if (isColdStart) {
-            val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
-            // update launch counter if
-            // cold start.
-            preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
-            // check for updates on startup
-            // don't report
-            // check silently
-            launchUpdateFlow()
-            // TODO: Try to reconcile if it is any good to ask for reviews here.
-            // launchReviewFlow()
-
-            // pass intent to onNewIntent; but only when cold start; so that it is not called
-            // multiple times
-            lifecycleScope.launch {
-                // Introducing a delay of 1000 milliseconds (1 second) here is essential
-                // to ensure that the UI is fully prepared to receive the intent.
-                // This delay gives the UI components time to initialize and be ready
-                // to handle the incoming intent without any potential issues.
-                delay(1000)
-                onNewIntent(intent)
-            }
-        }
+        if (isColdStart) initialize()
         // Manually handle decor.
         // I think I am handling this in AppTheme Already.
         WindowCompat.setDecorFitsSystemWindows(window, false)

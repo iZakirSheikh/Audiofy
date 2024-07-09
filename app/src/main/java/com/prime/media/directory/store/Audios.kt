@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
@@ -459,15 +460,6 @@ class AudiosViewModel @Inject constructor(
                 }
                 // consume selected
                 clear()
-                // show warning
-                show(
-                    R.string.msg_queue_add_experimental_warning,
-                    R.string.warning,
-                    ResourcesCompat.ID_NULL,
-                    Icons.Outlined.Warning,
-                    Color.DahliaYellow,
-                    Channel.Duration.Short
-                )
                 // map keys to media item
                 val audios = list.mapNotNull {
                     repository.findAudio(it.toLongOrNull() ?: 0)?.toMediaItem
@@ -479,13 +471,14 @@ class AudiosViewModel @Inject constructor(
                 val count = remote.add(*audios.toTypedArray(), index = index)
                 show(
                     buildPluralResource(id = R.plurals.msg_queue_updated_dd, count, count, audios.size),
-                    buildTextResource(if (count == 0) R.string.msg_error_status_uncertain else R.string.success),
+                    title = null,
                     null,
                     Icons.Outlined.Queue,
                     if (count == 0) Color.RedViolet else Color.MetroGreen
                 )
             }
         }
+
     }
 
 
@@ -505,19 +498,6 @@ class AudiosViewModel @Inject constructor(
                 }
                 // consume selected
                 clear()
-                val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
-                val res = show(
-                    buildTextResource(if (isTrashEnabled) R.string.msg_trash_files_warning_d else R.string.msg_delete_files_warning_d, list.size),
-                    null,
-                    buildTextResource(if (isTrashEnabled) R.string.trash else R.string.delete),
-                    Icons.Outlined.WarningAmber,
-                    accent = Color.Rose,
-                    Channel.Duration.Long
-                )
-                // check if user is interested in deleting the files or not.
-                if (res == Channel.Result.Dismissed)
-                    return@launch
-                // else proceed with the deletion
                 // obtain the uri associated with the ids
                 val uris =
                     list.map {
@@ -526,7 +506,28 @@ class AudiosViewModel @Inject constructor(
                             it.toLongOrNull() ?: 0
                         )
                     }
-                val result = repository.delete(activity, *uris.toTypedArray(), trash = isTrashEnabled)
+                // Check if trash is enabled in settings.val
+                val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
+                // Handle deletion differently based on Android version.
+                val result = when(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    true -> repository.delete(activity, *uris.toTypedArray(), trash = isTrashEnabled)
+                    else -> {
+                        // trash isn't supported below this version.
+                        val res = show(
+                            buildTextResource(R.string.msg_delete_files_warning_d, list.size),
+                            null,
+                            buildTextResource(R.string.delete),
+                            Icons.Outlined.WarningAmber,
+                            accent = Color.Rose,
+                            Channel.Duration.Long
+                        )
+                        // check if user is interested in deleting the files or not.
+                        if (res == Channel.Result.Dismissed)
+                            return@launch
+                        // return
+                        repository.delete(activity, *uris.toTypedArray(), trash = false)
+                    }
+                }
                 // handle error code
                 // show appropriate message
                 when (result) {
@@ -552,7 +553,7 @@ class AudiosViewModel @Inject constructor(
 
                     else -> show(
                         buildTextResource(id = R.string.msg_delete_success_ss, result, uris.size),
-                       null,
+                        null,
                         null,
                         Icons.Outlined.Delete,
                         Color.MetroGreen

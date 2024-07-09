@@ -112,7 +112,8 @@ private fun NewlyAddedItem(
                     Brush.horizontalGradient(
                         listOf(
                             accent.takeOrElse { primary },
-                            Color.Black.copy(0.2f),
+                            accent.takeOrElse { primary }.copy(0.5f),
+                            Color.Transparent,
                         )
                     )
                 ) // Apply transparent-to-primary gradient

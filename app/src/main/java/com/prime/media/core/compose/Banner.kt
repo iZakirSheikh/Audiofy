@@ -38,7 +38,7 @@ import kotlin.time.Duration.Companion.seconds
 private const val TAG = "Banner"
 
 
-private val DELAY = 3.seconds
+private val DELAY = 2.seconds
 
 /**
  * A Composable function that displays a banner ad using the Ad SDK.
@@ -85,7 +85,7 @@ fun Banner(
                     override fun onAdFailedToLoad(error: AdError?) {
                         Log.d(TAG, "onAdFailedToLoad: $error")
                         visibility = View.GONE // Hide the ad view if loading failed
-                        loadAd(key) //Retry loading the ad with the provided key
+                        loadAd(key, DELAY) //Retry loading the ad with the provided key
                     }
                 }
             }
