@@ -40,18 +40,15 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.billingclient.api.ProductDetails
 import com.google.android.play.core.splitinstall.SplitInstallManager
-import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.prime.media.Material
@@ -226,10 +223,6 @@ fun Upgrades(
         modifier = modifier
     ) {
         val facade = LocalSystemFacade.current
-        // These are required to install the dynamic feature
-        val context = LocalContext.current
-        val manager = remember { SplitInstallManagerFactory.create(context) }
-
         details.forEach { (id, details) ->
             // continue
             if (id !in SUPPORTED_PRODUCTS) return@forEach
@@ -242,9 +235,6 @@ fun Upgrades(
                     val isDynamicFeature = details.isDynamicFeature
                     when {
                         !state.purchased -> facade.launchBillingFlow(id)
-                        isDynamicFeature && !manager.isInstalled(details.dynamicModuleName) -> manager.startInstall(
-                            details.dynamicFeatureRequest
-                        )
                         else -> facade.show(
                             "You already own ${details.name}! \nThanks for your support \uD83D\uDE0A"
                         )

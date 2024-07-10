@@ -24,6 +24,7 @@ import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
@@ -31,6 +32,9 @@ import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallManager
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
@@ -74,6 +78,50 @@ private val KEY_LAST_REVIEW_TIME =
 
 private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
 private const val RESULT_CODE_APP_UPDATE = 1000
+
+/**
+ * @return the purchase associated with the [id]
+ */
+// TODO - Why Purchase has list of products.
+private fun BillingManager.getPurchase(id: String) =
+    purchases.value.find { it.products.contains(id) }
+
+/**
+ * Checks if the product represents a dynamic feature.
+ */
+private val ProductDetails.isDynamicFeature
+    inline get() = this.productId == BuildConfig.IAP_CODEX
+
+/**
+ * The name of the on-demand module for the Codex feature.
+ */
+private const val ON_DEMAND_MODULE_CODEX = "codex"
+
+/**
+ * Returns the name of the dynamic module associated with the product.
+ *
+ * @throws IllegalStateException if the product is not a dynamic module.
+ */
+private val ProductDetails.dynamicModuleName
+    inline get() = when (productId) {
+        BuildConfig.IAP_CODEX -> ON_DEMAND_MODULE_CODEX
+        else -> error("$productId is not a dynamic module.")
+    }
+
+/**
+ * Checks if a dynamic module with the given name is installed.
+ *
+ * @param id The name of the dynamic module.
+ * @return True if the module is installed, false otherwise.
+ */
+private fun SplitInstallManager.isInstalled(id: String): Boolean =
+    installedModules.contains(id)
+
+/**
+ * Creates a SplitInstallRequest for the dynamic feature associated with the product.
+ */
+private val ProductDetails.dynamicFeatureRequest
+    inline get() = SplitInstallRequest.newBuilder().addModule(dynamicModuleName).build()
 
 /**
  * Manages SplashScreen
@@ -377,6 +425,9 @@ class MainActivity : ComponentActivity(), SystemFacade {
         when (id) {
             0 -> {
                 val productId = BuildConfig.IAP_NO_ADS
+                val purchase = billingManager.getPurchase(productId)
+                // skip this and move to next.
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
                 val result = channel.show(
@@ -390,6 +441,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
 
             1 -> {
                 val productId = BuildConfig.IAP_CODEX
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
                 val result = channel.show(
@@ -403,6 +456,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
 
             2 -> {
                 val productId = BuildConfig.IAP_BUY_ME_COFFEE
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 //val product = billingManager.details.value[productId]
                 //val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
                 val result = channel.show(
@@ -416,6 +471,8 @@ class MainActivity : ComponentActivity(), SystemFacade {
 
             3 -> {
                 val productId = BuildConfig.IAP_TAG_EDITOR_PRO
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
                 val result = channel.show(
@@ -457,6 +514,41 @@ class MainActivity : ComponentActivity(), SystemFacade {
             // Display the selected promotional message.
             Log.d(TAG, "onCreate: id: $id counter: $counter")
             showPromotionalMessage(id)
+        }
+        // Observe active purchases and prompt the user to install any purchased dynamic features.
+        val manager = SplitInstallManagerFactory.create(this@MainActivity)
+        // Observe active purchases and prompt the user to install any purchased dynamic features.
+        lifecycleScope.launch {
+            billingManager.purchases.collect() { purchases ->
+                purchases.forEach { purchase ->
+                    // Skip if the purchase is not completed
+                    if (!purchase.purchased) return@forEach
+
+                    val productId = purchase.products.first()
+                    val details = billingManager.details.value[productId]
+                    // Skip if product details are unavailable or the
+                    // product is not a dynamic feature
+                    if (details == null || !details.isDynamicFeature)
+                        return@forEach
+                    val dynamicModuleName = details.dynamicModuleName
+                    // Skip if the dynamic feature is already installed
+                    if (manager.isInstalled(dynamicModuleName))
+                        return@forEach
+                    // Prompt the user to install the dynamic feature
+                    val response = channel.show(
+                        resources.getText2(
+                            id = R.string.msg_install_dynamic_module_ss,
+                            details.name
+                        ),
+                        duration = Duration.Indefinite,
+                        action = resources.getText2(R.string.install)
+                    )
+                    // Initiate the installation if the user chooses to install
+                    if (response != Channel.Result.ActionPerformed)
+                        return@forEach
+                    manager.startInstall(details.dynamicFeatureRequest)
+                }
+            }
         }
     }
 
