@@ -21,7 +21,9 @@ package com.prime.media.core.compose
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
+import androidx.compose.animation.animateContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -37,15 +39,16 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "Banner"
 
-
-private val DELAY = 2.seconds
-
 /**
  * A Composable function that displays a banner ad using the Ad SDK.
+ * It uses an [AndroidView] to display an[AdView] within the Composable hierarchy.
+ * The AdView is managed by a [LocalSystemFacade] to ensure proper handling
+ * across different composables.
  *
- * @param modifier Modifiers to beapplied to the AdView.
+ * @param modifier Modifiers to be applied to the AdView.
  * @param size The desired size of the banner ad. Defaults to [AdSize.SMART].
- * @param key An optional key to identify the ad placement.
+ * @param key An optional key to identify the ad placement. This is typically
+ * used to differentiate between different ad units in your app.
  */
 @Suppress("UNRESOLVED_REFERENCE")
 @Composable
@@ -54,53 +57,38 @@ fun Banner(
     size: AdSize = AdSize.SMART,
     key: String? = null,
 ) {
+    val facade = LocalSystemFacade.current
+    val view = facade.bannerAd as? AdView
+    val id = remember { View.generateViewId()}
+    // Check if the current AdView is either null or has a different ID
+    // than the one generated for this composable. This indicates that
+    // either it's the first time the Banner composable is being used or
+    // the previous AdView is still attached and needs to be detached first.
+    if (view == null || view.id != View.NO_ID && view.id != id) {
+        Log.d(TAG, "Banner: $view with id: $id ; either it is still attached; wait for it to get detached.")
+        return
+    }
+
     AndroidView(
-        factory = { context ->
-            // Create an AdView instance and configure its layout parameters
-            AdView(context).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
-                )
-                // Initially hide the ad view
-                visibility = View.GONE
-
-                // Set up the AdListener to handle ad events
-                val fAnalytics = Firebase.analytics
-                listener = object : AdListener {
-                    override fun onAdLoaded(info: AdInfo?) {
-                        Log.d(TAG, "onAdLoaded: $info")
-                        visibility = View.VISIBLE // Show the ad view when loaded
-                        // Log ad impression event to Firebase Analytics
-                        fAnalytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
-                            param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
-                            param(FirebaseAnalytics.Param.AD_UNIT_NAME, info?.country ?: "")
-                            param(FirebaseAnalytics.Param.AD_FORMAT, info?.format ?: "")
-                            param(FirebaseAnalytics.Param.AD_SOURCE, info?.network ?: "")
-                            param(FirebaseAnalytics.Param.VALUE, info?.revenue ?: 0.0)
-                            // All IronSource revenue is sent in USD
-                            param(FirebaseAnalytics.Param.CURRENCY, "USD")
-                        }
-                    }
-
-                    override fun onAdFailedToLoad(error: AdError?) {
-                        Log.d(TAG, "onAdFailedToLoad: $error")
-                        visibility = View.GONE // Hide the ad view if loading failed
-                        loadAd(key, DELAY) //Retry loading the ad with the provided key
-                    }
-                }
-            }
+        factory = {
+            Log.d(TAG, "Banner: attaching to AndroidView")
+            // Assign the generated ID to the AdView
+            view.id = id
+            view
         },
-        modifier = modifier, // Apply modifiers to the AndroidView
-        update = { view ->
-            view.size = size // Update the ad size
+        modifier = modifier.animateContentSize(), // Apply modifiers to the AndroidView
+        update = { layout ->
+            layout.size = size // Update the ad size
             Log.d(TAG, "onUpdate Banner : $key $size ")
-            // Load the ad with a 1-second delay to avoid potential issues
-            view.loadAd(key, DELAY)
+            // Load the ad using the provided key
+            layout.loadAd(key)
         },
-        onRelease = { layout ->
+        onRelease = {
             Log.d(TAG, "onRelease Banner : $key $size ")
-            layout.listener = null // Clear the listener to prevent leaks
-            layout.release() // Release resources associated with the ad
+            // Reset the AdView's ID to indicate it's no longer attached
+            view.id = View.NO_ID
+            // Clear the reference to the AdView in the facade
+            facade.bannerAd = null
         }
     )
 }

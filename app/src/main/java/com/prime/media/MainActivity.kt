@@ -7,7 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnticipateInterpolator
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -16,6 +18,8 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -60,7 +64,11 @@ import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
+import com.zs.ads.AdError
+import com.zs.ads.AdInfo
+import com.zs.ads.AdListener
 import com.zs.ads.AdManager
+import com.zs.ads.AdView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -188,6 +196,63 @@ class MainActivity : ComponentActivity(), SystemFacade {
         )
     }
 
+    // Cache the banner in main activity.
+    private val _cachedBannerView by lazy {
+        AdView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            // Initially hide the ad view
+            visibility = View.GONE
+
+            // Set up the AdListener to handle ad events
+            val fAnalytics = Firebase.analytics
+            listener = object : AdListener {
+                override fun onAdLoaded(info: AdInfo?) {
+                    Log.d(TAG, "onAdLoaded: $info")
+                    visibility = View.VISIBLE // Show the ad view when loaded
+                    // Log ad impression event to Firebase Analytics
+                    fAnalytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
+                        param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+                        param(FirebaseAnalytics.Param.AD_UNIT_NAME, info?.country ?: "")
+                        param(FirebaseAnalytics.Param.AD_FORMAT, info?.format ?: "")
+                        param(FirebaseAnalytics.Param.AD_SOURCE, info?.network ?: "")
+                        param(FirebaseAnalytics.Param.VALUE, info?.revenue ?: 0.0)
+                        // All IronSource revenue is sent in USD
+                        param(FirebaseAnalytics.Param.CURRENCY, "USD")
+                    }
+                }
+
+                override fun onAdFailedToLoad(error: AdError?) {
+                    Log.d(TAG, "onAdFailedToLoad: $error")
+                    visibility = View.GONE // Hide the ad view if loading failed
+                    loadAd() //Retry loading the ad with the provided key
+                }
+            }
+        }
+    }
+    private var _bannerViewBackingField: View? by mutableStateOf(null)
+
+    override var bannerAd: View?
+        get() {
+            // If the BannerView has not been attached to a parent yet...
+            return if (_cachedBannerView.parent == null) {
+                _bannerViewBackingField = _cachedBannerView
+                _bannerViewBackingField
+            }
+            else _bannerViewBackingField
+        }
+        set(value) {
+            if (value != null)
+                error("Setting a non-null ($value) to bannerAd is not supported. Use null to release the banner.")
+            // Release the cached bannerView and detach it from its parent
+            _bannerViewBackingField = null
+            (_cachedBannerView.parent as? ViewGroup)?.removeView(_cachedBannerView)
+            // Reset the backing field to trigger recomposition and indicate banner availability
+            _bannerViewBackingField = _cachedBannerView
+        }
+
+
     override fun onPause() {
         super.onPause()
         advertiser.onPause(this)
@@ -220,6 +285,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun onDestroy() {
         billingManager.release()
         super.onDestroy()
+        _cachedBannerView.release()
         Log.d(TAG, "onDestroy: ")
     }
 
