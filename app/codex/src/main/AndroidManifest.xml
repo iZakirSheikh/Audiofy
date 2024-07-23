@@ -4,7 +4,6 @@
 
     <dist:module
         dist:instant="false"
-        dist:onDemand = "true"
         dist:title="@string/title_codex">
         <dist:delivery>
             <dist:on-demand />
