@@ -1119,7 +1119,7 @@ private fun MainContent(
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
             modifier = Modifier.layoutId(Constraints.ID_SIGNATURE),
-            color = contentColor,
+            color = /*contentColor*/ Color.Transparent,
             maxLines = 1
         )
 

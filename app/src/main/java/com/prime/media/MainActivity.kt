@@ -74,6 +74,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "MainActivity"
 
@@ -574,7 +575,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         }
         // Display promotional messages on every third cold start
         lifecycleScope.launch {
-            delay(3000)
+            delay(10.seconds.inWholeMilliseconds)
             // Select and display a promotional message based on launch count
             val id = counter % MESSAGE_COUNT
             // Display the selected promotional message.

@@ -19,6 +19,8 @@
 package com.zs.ads
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.ironsource.mediationsdk.IronSource
 import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo
@@ -26,16 +28,24 @@ import com.ironsource.mediationsdk.impressionData.ImpressionData
 import com.ironsource.mediationsdk.impressionData.ImpressionDataListener
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.ironsource.mediationsdk.sdk.LevelPlayInterstitialListener
+import java.lang.Long.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "AdManagerImpl"
+
+private const val DELAY_LOAD_AD_START_MILLISECONDS = 10L * 1000L // 10 sec.
+private const val DELAY_LOAD_AD_MAX_TIME_MILLISECONDS = 1000L * 60L * 1L // 5 minutes
 
 internal class AdManagerImpl(
     private val iDelay: Duration,
     private val delay: Duration,
     private val forceDelay: Duration
 ) : AdManager, LevelPlayInterstitialListener {
+
+    var delayLoadAd = DELAY_LOAD_AD_START_MILLISECONDS
+
     /**
      * The time this object was created; since this a global variable and hence this represents the
      * time of app first loaded.
@@ -47,6 +57,12 @@ internal class AdManagerImpl(
      * *null* value represents, the ad was never showed.
      */
     var timeMillsWhenAdShowed: Long? = null
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    val loadAdRunnable = {
+        IronSource.loadInterstitial()
+    }
 
     init {
         // Set listener and load first Ad.
@@ -85,7 +101,11 @@ internal class AdManagerImpl(
     override fun onAdLoadFailed(p0: IronSourceError?) {
         Log.d(TAG, "onAdLoadFailed: Error: $p0")
         // start a new load.
-        IronSource.loadInterstitial()
+        val delay = delayLoadAd
+        // calculate next delay
+        delayLoadAd =
+            min(delayLoadAd * 2, DELAY_LOAD_AD_MAX_TIME_MILLISECONDS)
+        handler.postDelayed(loadAdRunnable, delay)
     }
 
     override fun onAdOpened(p0: AdInfo?) {
