@@ -325,12 +325,8 @@ fun MediaItem(context: Context, uri: Uri): MediaItem {
 @SuppressLint("UnsafeOptInUsageError")
 fun DynamicRendererFactory(context: Context): DefaultRenderersFactory? {
     return com.primex.core.runCatching(TAG) {
-        // Load the NextRenderersFactory class from the dynamic feature module
-        val clazz =
-            Class.forName("io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory")
-        // Get the constructor of the NextRenderersFactory class
-        val constructor = clazz.getDeclaredConstructor(Context::class.java)
-        // Create an instance of the NextRenderersFactory object
-        constructor.newInstance(context) as? DefaultRenderersFactory
+        val codexClass = Class.forName("com.prime.codex.CodexKt") // Assuming the functionis in a Kotlin file named Codex.kt
+        val codexMethod = codexClass.getDeclaredMethod("Codex", Context::class.java)
+        codexMethod.invoke(null, context) as? DefaultRenderersFactory // Static method, so first argument is null
     }
 }
