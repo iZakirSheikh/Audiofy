@@ -2,6 +2,7 @@ package com.prime.media.core.compose
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -37,6 +38,20 @@ interface SystemFacade {
      */
     val inAppUpdateProgress: Float
 
+    /**
+     * Provides access to the currently available banner ad view.
+     *
+     * **Getter:** Returns the cached banner ad view,if available.
+     *
+     * **Setter:** Setting this property to `null` will release the currently cached
+     * banner ad view and detach it from its parent. Any attempt to set a non-null
+     * value will result in an error, as this property is intended for releasing
+     *the banner ad, not for setting a new one.
+     *
+     * @throws IllegalStateException if the setter is called with a non-null value.
+     */
+    var bannerAd: View? get() = null
+        set(value) {/* no-op */ }
 
     /**
      * @see com.prime.media.core.billing.BillingManager.details
@@ -48,9 +63,8 @@ interface SystemFacade {
      * * Note: The ad will not be shown if the app is adFree Version.
      *
      * @param force If `true`, the ad will be shown regardless of the AdFree status.
-     * @param action A callback to be executed after the ad is shown.
      */
-    fun showAd(force: Boolean = false, action: (() -> Unit)? = null)
+    fun showAd(force: Boolean = false)
 
 
     fun launch(intent: Intent, options: Bundle? = null)

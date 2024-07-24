@@ -2,19 +2,28 @@ package com.prime.media.core.compose
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -33,17 +42,13 @@ import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.compose.Channel.Data
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.Channel.Result
-import com.prime.media.surfaceColorAtElevation
+import com.prime.media.small2
 import com.primex.core.SignalWhite
 import com.primex.core.Text
-import com.primex.core.TrafficBlack
-import com.primex.core.composableOrNull
 import com.primex.core.get
 import com.primex.core.value
 import com.primex.material2.IconButton
 import com.primex.material2.Label
-import com.primex.material2.ListTile
-import com.primex.material2.TextButton
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -375,7 +380,7 @@ private const val ToastFadeInMillis = 150
 private const val ToastFadeOutMillis = 75
 private const val ToastInBetweenDelayMillis = 0
 
-private inline fun Indicatior(color: Color) = Modifier.drawBehind {
+private fun Modifier.indicator(color: Color) = this then Modifier.drawBehind {
     drawRect(color = color, size = size.copy(width = 4.dp.toPx()))
 }
 
@@ -384,7 +389,10 @@ private fun Snackbar2(
     data: Data,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = if (MaterialTheme.colors.isLight) Color(0xFF0E0E0F) else MaterialTheme.colors.surfaceColorAtElevation(1.dp),
+    backgroundColor: Color = if (MaterialTheme.colors.isLight)
+        Color(0xFF0E0E0F)
+    else
+        MaterialTheme.colors.backgroundColorAtElevation(1.dp),
     contentColor: Color = Color.SignalWhite,
     actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
     elevation: Dp = 6.dp,
@@ -399,57 +407,80 @@ private fun Snackbar2(
         elevation = elevation,
         color = backgroundColor,
         contentColor = contentColor,
-    ) {
-        ListTile(
-            // draw the indicator.
-            modifier = Indicatior(actionColor), centerAlign = false,
-            leading = composableOrNull(data.leading != null) {
-                // TODO: It might casue the problems.
+        content = {
+            Row(
+                Modifier
+                    .indicator(actionColor)
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // FixMe: It might cause the problems.
                 val icon = data.leading
-                Icon(
-                    painter = when (icon) {
-                        is ImageVector -> rememberVectorPainter(image = icon)
-                        is Int -> painterResource(id = icon)
-                        else -> error("$icon is neither resource nor ImageVector.")
-                    }, contentDescription = null, tint = actionColor
-                )
-            },
-            // the title
-            headline = {
-                Label(
-                    text = data.message.value,
-                    color = LocalContentColor.current,
-                    style = MaterialTheme.typography.body2,
-                    maxLines = 5,
-                )
-            },
-            overline = composableOrNull(data.title != null) {
-                Label(
-                    text = data.title!!.get,
-                    color = LocalContentColor.current.copy(ContentAlpha.high),
-                    style = MaterialTheme.typography.body2,
-                    fontWeight = FontWeight.SemiBold
-                )
-            },
-            trailing = {
-                if (data.action != null)
-                    TextButton(
-                        label = data.action!!.get,
-                        onClick = { data.action() },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = actionColor
-                        )
+                if (icon != null)
+                    Icon(
+                        painter = when (icon) {
+                            is ImageVector -> rememberVectorPainter(image = icon)
+                            is Int -> painterResource(id = icon)
+                            else -> error("$icon is neither resource nor ImageVector.")
+                        }, contentDescription = null, tint = actionColor,
+                        modifier = Modifier.scale(0.8f)
                     )
                 else
-                    IconButton(
-                        onClick = { data.dismiss() },
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = null
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                Column(modifier = Modifier.weight(0.8f)) {
+                    val title = data.title
+                    if (title != null)
+                        Label(
+                            text = title.get,
+                            color = LocalContentColor.current.copy(ContentAlpha.high),
+                            style = MaterialTheme.typography.body2,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                    Label(
+                        text = data.message.value,
+                        color = LocalContentColor.current,
+                        style = MaterialTheme.typography.body2,
+                        maxLines = 5,
                     )
-            },
-            color = Color.Transparent
-        )
-    }
+
+
+                }
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.scale(0.80f)
+                ) {
+                    IconButton(
+                        onClick = data::dismiss,
+                        imageVector = Icons.Outlined.Cancel,
+                        contentDescription = null,
+                        modifier = Modifier.offset(x = 8.dp, y = -16.dp)
+                    )
+
+                    if (data.action != null)
+                        com.primex.material2.OutlinedButton(
+                            label = data.action!!.get,
+                            onClick = data::action,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = actionColor,
+                                backgroundColor = Color.Transparent
+                            ),
+                            border = BorderStroke(
+                                ButtonDefaults.OutlinedBorderSize,
+                                Color.SignalWhite.copy(alpha = ButtonDefaults.OutlinedBorderOpacity)
+                            ),
+                            shape = MaterialTheme.shapes.small2,
+                            modifier = Modifier.offset(x = 8.dp, y = 16.dp)
+                        )
+
+                }
+            }
+        },
+    )
 }
 
 /**

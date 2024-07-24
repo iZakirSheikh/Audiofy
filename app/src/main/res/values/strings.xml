@@ -198,9 +198,9 @@
 
     <!-- Message shown after added queue added/total-->
     <plurals name="msg_queue_updated_dd">
-        <item quantity="zero">The items are either in the queue already or some error has occurred while adding.</item>
-        <item quantity="one">%d/%d item has been successfully added to the playlist. Enjoy your music!</item>
-        <item quantity="other">%d/%d items have been successfully added to the playlist. Enjoy your music!</item>
+        <item quantity="zero"><b>Add to queue</b>\n<font color='grey'>The items are either in the queue already or some error has occurred while adding.</font></item>
+        <item quantity="one"><b>Add to queue</b>\n<font color='grey'>%d/%d item has been successfully added to the playlist. Enjoy your music!</font></item>
+        <item quantity="other"><b>Add to queue</b>\n<font color='grey'>%d/%d items have been successfully added to the playlist. Enjoy your music!</font></item>
     </plurals>
     <string name="msg_new_update_downloaded"><b>Alert\n</b> An update has just been downloaded.</string>
     <string name="msg_no_new_update_available">The app is already updated to the latest version.</string>
@@ -386,15 +386,13 @@
     <string name="title_codex">Media Codecs Extensions for Audiofy Media Player</string>
     <string name="msg_library_join_us"><b>Enjoying the app? Join our community on:</b>\n<font color='grey'>Connect with us on GitHub, Reddit, and Telegram for the latest news, tips, and discussions!</font>
     </string>
-    <string name="msg_library_rate_us"><!--Title--><b>Rate Our App and Help Us Improve</b>\n<!--Message Body--><font color='grey'>If you\'re enjoying our app, please consider leaving us a 5-star rating on the Play Store. Your positive feedback helps us grow and improve our app for everyone.
+    <string name="msg_library_rate_us"><!--Title-->
+        <b>Rate Our App and Help Us Improve</b>\n<!--Message Body-->
+        <font color='grey'>If you\'re enjoying our app, please consider leaving us a 5-star rating on the Play Store. Your positive feedback helps us grow and improve our app for everyone.
         </font>
     </string>
     <string name="rate_us">Rate Us</string>
-    <string name="msg_ad_free_experience"><b>Elevate Your Experience: Go Ad-Free for Life!</b>\n<font color='grey'>Support us and enjoy an ad-free experience forever! Upgrade to premium for a small one-time payment.</font></string>
-    <string name="library_what_s_new">What\'s new\n<font color='grey' size="11"><sup>Tips, tricks offers and more.</sup></font></string>
-    <string name="msg_library_buy_me_a_coffee"><b>Zakir\'s Coffee Fund</b>\n<font color='grey'>If you like my app and want to say thanks or encourage me to do more, please consider buying me a coffee!\nYour contribution, no matter how small, will help me stay caffeinated and motivated to continue developing and improving the app.\nThank you, Zakir</font></string>
     <string name="buy_me_a_coffee">Buy me a Coffee</string>
-    <string name="msg_library_install_codex"><b>Elevate Your Media Experience</b>\n<font color='grey'>Enhance Audiofy with Codex!\nAutomatically switch to Codex for formats like <b>H.264, HEVC, VP8, VP9, Vorbis, Opus, and more</b> when hardware support isn\'t available.\nStay future-proof and enjoy seamless playback!</font></string>
     <string name="install">Install</string>
     <string name="pref_font_scale">Font Scale</string>
     <string name="pref_font_scale_summery">Zoom in or out the text shown on the screen.</string>"
@@ -405,4 +403,13 @@
         <item value="1.5">1.5</item>
         <item value="2.0">2.0</item>
     </string-array>
+
+    <string name="unlock">Unlock</string>
+    <string name="msg_ad_free_experience_ss"><b>Limited Time Offer: Go Ad-Free for just %1$s!\n</b><font color='grey' size="11">Upgrade now and enjoy a premium,ad-free experience forever.</font></string>
+    <string name="msg_library_buy_me_a_coffee"><b>Like the app?\n</b><font color="grey" size="11">Buy me a coffee to help keep it awesome! Your support fuels development and is greatly appreciated. ☕ Thank you!</font></string>
+    <string name="thanks">Thanks</string>
+    <string name="msg_unlock_codex_ss"><b>Limited Time Offer: Get Codex for just %1$s!\n</b><font color="grey" size="11">Unlock seamless playback for H.264, HEVC, VP8, VP9 and more with Codex!</font></string>
+    <string name="msg_unlock_tag_editor_pro_ss"><b>Edit Lyrics &amp; Album Art with Ease!\n</b><font color='grey' size="11">Get Tag Editor Pro for only %1$s and enhance your music experience.</font></string>
+    <string name="upgrade">Upgrade</string>
+    <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font size = "11" color = 'grey'>A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
 </resources>

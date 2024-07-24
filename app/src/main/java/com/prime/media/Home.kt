@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -89,6 +90,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
+import com.google.firebase.analytics.logEvent
 import com.prime.media.about.AboutUs
 import com.prime.media.console.Console
 import com.prime.media.console.PopupMedia
@@ -422,7 +424,7 @@ private fun NavGraph(
         exitTransition = { ExitTransition },
         builder = {
             //AboutUs
-            composable(AboutUs.route){
+            composable(AboutUs.route) {
                 AboutUs()
             }
             //Permission
@@ -754,6 +756,7 @@ private fun NavBar(
     }
 }
 
+
 /**
  * The shape of the content inside the scaffold.
  */
@@ -839,14 +842,16 @@ fun Home(channel: Channel) {
         // Listen for navDest and log in firebase.
         val navDestChangeListener =
             { _: NavController, destination: NavDestination, _: Bundle? ->
-                // create params for the event.
-            val params = Bundle().apply {
-                putString(FirebaseAnalytics.Param.SCREEN_NAME, destination.route as String?)
-                //putString(FirebaseAnalytics.Param.SCREEN_CLASS, destination.label as String?)
+                // Log the event.
+                firebase.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+                    // create params for the event.
+                    val route = destination.route ?: "unknown"
+                    val index = route.indexOf('/')
+                    val name = if (index == -1) route else route.substring(0, index)
+                    Log.d(TAG, "onNavDestChanged: $name")
+                    param(FirebaseAnalytics.Param.SCREEN_NAME, name)
+                }
             }
-            // Log the event.
-            firebase.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, params)
-        }
         // Register the intent listener with the activity.
         activity.addOnNewIntentListener(listener)
         navController.addOnDestinationChangedListener(navDestChangeListener)

@@ -18,6 +18,7 @@ import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.intPreferenceKey
 import com.primex.preferences.value
+import com.zs.ads.AdManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -76,7 +77,6 @@ class Audiofy : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var preferences: Preferences
-
     private fun MediaMetaDataArtFactory() = object : Factory<Uri> {
         override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
             // Check if the provided Uri corresponds to an album art Uri within the MediaStore.
@@ -95,7 +95,6 @@ class Audiofy : Application(), ImageLoaderFactory {
             return MediaMetaDataArtFetcher(data, options)
         }
     }
-
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
@@ -116,6 +115,13 @@ class Audiofy : Application(), ImageLoaderFactory {
             }
             .diskCachePolicy(CachePolicy.ENABLED)
             .build()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        // Init the AdManager;
+        // TODO - Pass through BuildConfig
+        AdManager.initialize(this, BuildConfig.ADS_APP_ID)
     }
 }
 

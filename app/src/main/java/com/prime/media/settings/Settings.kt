@@ -2,18 +2,13 @@
 
 package com.prime.media.settings
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,19 +16,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.AudioFile
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Camera
-import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.HideSource
 import androidx.compose.material.icons.outlined.PrivacyTip
@@ -42,8 +32,6 @@ import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Straighten
-import androidx.compose.material.icons.outlined.SupportAgent
-import androidx.compose.material.icons.outlined.TextFormat
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
@@ -52,10 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
@@ -67,8 +52,8 @@ import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
-import com.prime.media.core.billing.Banner
 import com.prime.media.core.billing.purchased
+import com.prime.media.core.compose.Banner
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowPadding
@@ -86,12 +71,11 @@ import com.primex.core.value
 import com.primex.material2.DropDownPreference
 import com.primex.material2.IconButton
 import com.primex.material2.Label
-import com.primex.material2.ListTile
 import com.primex.material2.Preference
 import com.primex.material2.SliderPreference
 import com.primex.material2.SwitchPreference
-import com.primex.material2.Text
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
+import com.zs.ads.AdSize
 
 private const val TAG = "Settings"
 
@@ -152,7 +136,6 @@ private inline fun ColumnScope.Body(
     state: Settings
 ) {
     PrefHeader(text = stringResource(R.string.appearance))
-
     //Dark mode
     val provider = LocalSystemFacade.current
     val darkTheme = state.darkUiMode
@@ -171,12 +154,6 @@ private inline fun ColumnScope.Body(
         }
     )
 
-    val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
-    if (!purchase.purchased)
-        Banner(
-            placementID = BuildConfig.PLACEMENT_BANNER_1,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
 
 //    App font scale
 //    val scale = state.fontScale
@@ -230,6 +207,14 @@ private inline fun ColumnScope.Body(
             state.set(Settings.HIDE_STATUS_BAR, should)
         }
     )
+
+    val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
+    if (!purchase.purchased)
+        Banner(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            AdSize.LARGE_BANNER,
+            key = "Banner2"
+        )
 }
 
 @Composable
@@ -275,7 +260,7 @@ private inline fun ColumnScope.AboutUs() {
         title = "Privacy Policy",
         summery = "Click here to view the privacy policy.",
         icon = Icons.Outlined.PrivacyTip,
-        modifier = Modifier.clickable { ctx.startActivity(PrivacyPolicyIntent) }
+        modifier = Modifier.clickable { ctx.startActivity(Settings.PrivacyPolicyIntent) }
     )
 
     // The app version and check for updates.
@@ -405,103 +390,6 @@ private inline fun General(
     )
 }
 
-private val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
-    data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
-    putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
-}
-
-private val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
-}
-
-private val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
-}
-
-private val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://t.me/audiofy_support")
-}
-
-private val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
-    data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
-}
-
-
-@Composable
-private fun GetToKnowUs(modifier: Modifier = Modifier) {
-    ListTile(
-        modifier = modifier.offset(x = ContentPadding.normal),
-        color = Color.Transparent,
-        overline = {
-            Text(
-                text = textResource(id = R.string.app_name),
-                style = Material.typography.h3,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Settings.DancingScriptFontFamily
-            )
-        },
-        headline = {
-            Text(
-                text = textResource(
-                    R.string.pref_get_to_know_us_subttile_s,
-                    BuildConfig.VERSION_NAME
-                ),
-                style = Material.typography.caption
-            )
-        },
-        centerAlign = true,
-        leading = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = null,
-                tint = Material.colors.primary,
-                modifier = Modifier
-                    .scale(2f)
-                    .size(56.dp)
-                    .offset(x = -ContentPadding.medium)
-            )
-        },
-        subtitle = {
-            Row(
-                modifier = Modifier
-                    .padding(top = ContentPadding.medium)
-                    .offset(x = -ContentPadding.medium)
-            ) {
-                val ctx = LocalContext.current
-                IconButton(
-                    imageVector = Icons.Outlined.AlternateEmail,
-                    onClick = { ctx.startActivity(FeedbackIntent) },
-                    modifier = Modifier
-                        .scale(0.85f)
-                        .border(ButtonDefaults.outlinedBorder, CircleShape)
-                )
-                IconButton(
-                    imageVector = Icons.Outlined.DataObject,
-                    onClick = { ctx.startActivity(GithubIntent) },
-                    modifier = Modifier
-                        .scale(0.85f)
-                        .border(ButtonDefaults.outlinedBorder, CircleShape)
-                )
-                IconButton(
-                    imageVector = Icons.Outlined.BugReport,
-                    onClick = { ctx.startActivity(GitHubIssuesPage) },
-                    modifier = Modifier
-                        .scale(0.85f)
-                        .border(ButtonDefaults.outlinedBorder, CircleShape)
-                )
-                IconButton(
-                    imageVector = Icons.Outlined.SupportAgent,
-                    onClick = { ctx.startActivity(TelegramIntent) },
-                    modifier = Modifier
-                        .scale(0.85f)
-                        .border(ButtonDefaults.outlinedBorder, CircleShape)
-                )
-            }
-        }
-    )
-}
-
-
 @Composable
 private fun Compact(state: Settings) {
     Scaffold(topBar = { TopAppBar(Modifier.statusBarsPadding()) }) {
@@ -510,8 +398,6 @@ private fun Compact(state: Settings) {
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            PrefHeader(text = textResource(R.string.pref_get_to_know_us))
-            GetToKnowUs(modifier = Modifier.padding(start = ContentPadding.normal))
             Body(state)
             PrefHeader(text = textResource(R.string.general))
             General(state = state)

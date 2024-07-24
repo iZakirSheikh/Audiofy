@@ -5,8 +5,11 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnticipateInterpolator
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -15,6 +18,8 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -31,7 +36,13 @@ import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.prime.media.core.billing.Advertiser
+import com.google.android.play.core.splitinstall.SplitInstallManager
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 import com.prime.media.core.billing.BillingManager
 import com.prime.media.core.billing.get
 import com.prime.media.core.billing.observeAsState
@@ -42,22 +53,28 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.compose.calculateWindowSizeClass
-import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.OrientRed
 import com.primex.core.Text
+import com.primex.core.getText2
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
+import com.zs.ads.AdError
+import com.zs.ads.AdInfo
+import com.zs.ads.AdListener
+import com.zs.ads.AdManager
+import com.zs.ads.AdView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "MainActivity"
 
@@ -70,6 +87,50 @@ private val KEY_LAST_REVIEW_TIME =
 
 private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
 private const val RESULT_CODE_APP_UPDATE = 1000
+
+/**
+ * @return the purchase associated with the [id]
+ */
+// TODO - Why Purchase has list of products.
+private fun BillingManager.getPurchase(id: String) =
+    purchases.value.find { it.products.contains(id) }
+
+/**
+ * Checks if the product represents a dynamic feature.
+ */
+private val ProductDetails.isDynamicFeature
+    inline get() = this.productId == BuildConfig.IAP_CODEX
+
+/**
+ * The name of the on-demand module for the Codex feature.
+ */
+private const val ON_DEMAND_MODULE_CODEX = "codex"
+
+/**
+ * Returns the name of the dynamic module associated with the product.
+ *
+ * @throws IllegalStateException if the product is not a dynamic module.
+ */
+private val ProductDetails.dynamicModuleName
+    inline get() = when (productId) {
+        BuildConfig.IAP_CODEX -> ON_DEMAND_MODULE_CODEX
+        else -> error("$productId is not a dynamic module.")
+    }
+
+/**
+ * Checks if a dynamic module with the given name is installed.
+ *
+ * @param id The name of the dynamic module.
+ * @return True if the module is installed, false otherwise.
+ */
+private fun SplitInstallManager.isInstalled(id: String): Boolean =
+    installedModules.contains(id)
+
+/**
+ * Creates a SplitInstallRequest for the dynamic feature associated with the product.
+ */
+private val ProductDetails.dynamicFeatureRequest
+    inline get() = SplitInstallRequest.newBuilder().addModule(dynamicModuleName).build()
 
 /**
  * Manages SplashScreen
@@ -88,7 +149,7 @@ private fun initSplashScreen(isColdStart: Boolean) {
                 splashScreenView, View.ALPHA, 1f, 0f
             )
             alpha.interpolator = AnticipateInterpolator()
-            alpha.duration = 700L
+            alpha.duration = 300L
             // Call SplashScreenView.remove at the end of your custom animation.
             alpha.doOnEnd { provider.remove() }
             // Run your animation.
@@ -97,10 +158,33 @@ private fun initSplashScreen(isColdStart: Boolean) {
     }
 }
 
+/**
+ * The number of messages available to be displayed to the user.
+ *
+ * Each number from 0 until [MESSAGE_COUNT] represents a unique message ID. This can be used
+ * to randomly select a message after a fresh start (or a multiple of 3 fresh starts)
+ * and display an indefinite message to the user, such as prompting them to purchase
+ * a feature like an ad-free experience.
+ */
+private const val MESSAGE_COUNT = 4
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), SystemFacade {
 
-    private val advertiser by lazy { Advertiser(this) }
+    private val advertiser = AdManager().apply {
+        iListener = { info ->
+            // Log ad impression event to Firebase Analytics
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
+                param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+                param(FirebaseAnalytics.Param.AD_UNIT_NAME, info.country)
+                param(FirebaseAnalytics.Param.AD_FORMAT, info.format)
+                param(FirebaseAnalytics.Param.AD_SOURCE, info.network)
+                param(FirebaseAnalytics.Param.VALUE, info.revenue)
+                // All IronSource revenue is sent in USD
+                param(FirebaseAnalytics.Param.CURRENCY, "USD")
+            }
+        }
+    }
     private val billingManager by lazy {
         BillingManager(
             this,
@@ -111,6 +195,69 @@ class MainActivity : ComponentActivity(), SystemFacade {
                 BuildConfig.IAP_CODEX
             )
         )
+    }
+
+    // Cache the banner in main activity.
+    private val _cachedBannerView by lazy {
+        AdView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            // Initially hide the ad view
+            visibility = View.GONE
+
+            // Set up the AdListener to handle ad events
+            val fAnalytics = Firebase.analytics
+            listener = object : AdListener {
+                override fun onAdLoaded(info: AdInfo?) {
+                    Log.d(TAG, "onAdLoaded: $info")
+                    visibility = View.VISIBLE // Show the ad view when loaded
+                    // Log ad impression event to Firebase Analytics
+                    fAnalytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
+                        param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+                        param(FirebaseAnalytics.Param.AD_UNIT_NAME, info?.country ?: "")
+                        param(FirebaseAnalytics.Param.AD_FORMAT, info?.format ?: "")
+                        param(FirebaseAnalytics.Param.AD_SOURCE, info?.network ?: "")
+                        param(FirebaseAnalytics.Param.VALUE, info?.revenue ?: 0.0)
+                        // All IronSource revenue is sent in USD
+                        param(FirebaseAnalytics.Param.CURRENCY, "USD")
+                    }
+                }
+
+                override fun onAdFailedToLoad(error: AdError?) {
+                    Log.d(TAG, "onAdFailedToLoad: $error")
+                    visibility = View.GONE // Hide the ad view if loading failed
+                    loadAd() //Retry loading the ad with the provided key
+                }
+            }
+        }
+    }
+    private var _bannerViewBackingField: View? by mutableStateOf(null)
+
+    override var bannerAd: View?
+        get() {
+            // If the BannerView has not been attached to a parent yet...
+            return if (_cachedBannerView.parent == null) {
+                _bannerViewBackingField = _cachedBannerView
+                _bannerViewBackingField
+            }
+            else _bannerViewBackingField
+        }
+        set(value) {
+            if (value != null)
+                error("Setting a non-null ($value) to bannerAd is not supported. Use null to release the banner.")
+            // Release the cached bannerView and detach it from its parent
+            _bannerViewBackingField = null
+            (_cachedBannerView.parent as? ViewGroup)?.removeView(_cachedBannerView)
+            // Reset the backing field to trigger recomposition and indicate banner availability
+            _bannerViewBackingField = _cachedBannerView
+        }
+
+
+    override fun onPause() {
+        super.onPause()
+        advertiser.onPause(this)
+        Log.d(TAG, "onPause: ")
     }
 
     private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
@@ -132,19 +279,23 @@ class MainActivity : ComponentActivity(), SystemFacade {
     override fun onResume() {
         super.onResume()
         billingManager.refresh()
+        advertiser.onResume(this)
+        Log.d(TAG, "onResume: ")
     }
 
     override fun onDestroy() {
         billingManager.release()
         super.onDestroy()
+        _cachedBannerView.release()
+        Log.d(TAG, "onDestroy: ")
     }
 
     override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
 
-    override fun showAd(force: Boolean, action: (() -> Unit)?) {
+    override fun showAd(force: Boolean) {
         val isAdFree = billingManager[BuildConfig.IAP_NO_ADS].purchased
         if (isAdFree) return // don't do anything
-        advertiser.show(this, force, action)
+        advertiser.show(force)
     }
 
     override fun show(
@@ -337,6 +488,136 @@ class MainActivity : ComponentActivity(), SystemFacade {
         }
     }
 
+    private suspend fun showPromotionalMessage(id: Int) {
+        when (id) {
+            0 -> {
+                val productId = BuildConfig.IAP_NO_ADS
+                val purchase = billingManager.getPurchase(productId)
+                // skip this and move to next.
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_ad_free_experience_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            1 -> {
+                val productId = BuildConfig.IAP_CODEX
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_unlock_codex_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            2 -> {
+                val productId = BuildConfig.IAP_BUY_ME_COFFEE
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
+                //val product = billingManager.details.value[productId]
+                //val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    R.string.msg_library_buy_me_a_coffee,
+                    action = R.string.thanks,
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+
+            3 -> {
+                val productId = BuildConfig.IAP_TAG_EDITOR_PRO
+                val purchase = billingManager.getPurchase(productId)
+                if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
+                val product = billingManager.details.value[productId]
+                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val result = channel.show(
+                    resources.getText2(id = R.string.msg_unlock_tag_editor_pro_ss, price),
+                    action = resources.getText2(id = R.string.unlock),
+                    duration = Duration.Indefinite
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launchBillingFlow(productId)
+            }
+        }
+    }
+
+    /**
+     * Initializes the app after a cold start. This includes incrementing the launch counter,
+     * checking for updates, and handling any pending intents. It also triggers the display
+     * of promotional messages at specific intervals.
+     */
+    private fun initialize() {
+        val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
+        // Increment launch counter for cold starts
+        preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
+        // Check for updates silently on startup
+        launchUpdateFlow()
+        // Handle pending intents after a brief delay to ensure UI readiness
+        lifecycleScope.launch {
+            // Introducing a delay of 1000 milliseconds (1 second) here is essential
+            // to ensure that the UI is fully prepared to receive the intent.
+            // This delay gives the UI components time to initialize and be ready
+            // to handle the incoming intent without any potential issues.
+            delay(1000)
+            onNewIntent(intent)
+        }
+        // Display promotional messages on every third cold start
+        lifecycleScope.launch {
+            delay(10.seconds.inWholeMilliseconds)
+            // Select and display a promotional message based on launch count
+            val id = counter % MESSAGE_COUNT
+            // Display the selected promotional message.
+            Log.d(TAG, "onCreate: id: $id counter: $counter")
+            showPromotionalMessage(id)
+        }
+        // Observe active purchases and prompt the user to install any purchased dynamic features.
+        val manager = SplitInstallManagerFactory.create(this@MainActivity)
+        // Observe active purchases and prompt the user to install any purchased dynamic features.
+        lifecycleScope.launch {
+            billingManager.purchases.collect() { purchases ->
+                purchases.forEach { purchase ->
+                    // Skip if the purchase is not completed
+                    if (!purchase.purchased) return@forEach
+
+                    val productId = purchase.products.first()
+                    val details = billingManager.details.value[productId]
+                    // Skip if product details are unavailable or the
+                    // product is not a dynamic feature
+                    if (details == null || !details.isDynamicFeature)
+                        return@forEach
+                    val dynamicModuleName = details.dynamicModuleName
+                    // Skip if the dynamic feature is already installed
+                    if (manager.isInstalled(dynamicModuleName))
+                        return@forEach
+                    // Prompt the user to install the dynamic feature
+                    val response = channel.show(
+                        resources.getText2(
+                            id = R.string.msg_install_dynamic_module_ss,
+                            details.name
+                        ),
+                        duration = Duration.Indefinite,
+                        action = resources.getText2(R.string.install)
+                    )
+                    // Initiate the installation if the user chooses to install
+                    if (response != Channel.Result.ActionPerformed)
+                        return@forEach
+                    manager.startInstall(details.dynamicFeatureRequest)
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -345,29 +626,7 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // show splash screen
         initSplashScreen(isColdStart)
         // only run this piece of code if cold start.
-        if (isColdStart) {
-            val counter = preferences.value(Audiofy.KEY_LAUNCH_COUNTER) ?: 0
-            // update launch counter if
-            // cold start.
-            preferences[Audiofy.KEY_LAUNCH_COUNTER] = counter + 1
-            // check for updates on startup
-            // don't report
-            // check silently
-            launchUpdateFlow()
-            // TODO: Try to reconcile if it is any good to ask for reviews here.
-            // launchReviewFlow()
-
-            // pass intent to onNewIntent; but only when cold start; so that it is not called
-            // multiple times
-            lifecycleScope.launch {
-                // Introducing a delay of 1000 milliseconds (1 second) here is essential
-                // to ensure that the UI is fully prepared to receive the intent.
-                // This delay gives the UI components time to initialize and be ready
-                // to handle the incoming intent without any potential issues.
-                delay(1000)
-                onNewIntent(intent)
-            }
-        }
+        if (isColdStart) initialize()
         // Manually handle decor.
         // I think I am handling this in AppTheme Already.
         WindowCompat.setDecorFitsSystemWindows(window, false)

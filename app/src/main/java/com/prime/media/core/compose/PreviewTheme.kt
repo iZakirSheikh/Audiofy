@@ -56,7 +56,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
     override val inAppUpdateProgress: Float = Float.NaN
 
-    override fun showAd(force: Boolean, action: (() -> Unit)?) {
+    override fun showAd(force: Boolean) {
         error("showAd Not Supported")
     }
 

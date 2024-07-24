@@ -19,6 +19,7 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Slider
 import androidx.compose.material.Switch
@@ -112,48 +113,50 @@ private fun Equalizer(
             .sizeIn(maxHeight = 220.dp)
             .horizontalScroll(rememberScrollState()),
     ) {
-        // y - axis
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            CompositionLocalProvider(LocalTextStyle provides Material.typography.caption) {
-                Label(
-                    text = stringResource(
-                        id = R.string.audio_fx_scr_abbr_db_suffix_d,
-                        fx.eqBandLevelRange.endInclusive / 1000
+        CompositionLocalProvider(value = LocalContentColor provides  Material.colors.onSurface) {
+            // y - axis
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                CompositionLocalProvider(LocalTextStyle provides Material.typography.caption) {
+                    Label(
+                        text = stringResource(
+                            id = R.string.audio_fx_scr_abbr_db_suffix_d,
+                            fx.eqBandLevelRange.endInclusive / 1000
+                        )
                     )
-                )
-                Label(text = stringResource(id = R.string.audio_fx_scr_abbr_db_suffix_d, 0))
-                Label(
-                    text = stringResource(
-                        id = R.string.audio_fx_scr_abbr_db_suffix_d,
-                        fx.eqBandLevelRange.start / 1000
+                    Label(text = stringResource(id = R.string.audio_fx_scr_abbr_db_suffix_d, 0))
+                    Label(
+                        text = stringResource(
+                            id = R.string.audio_fx_scr_abbr_db_suffix_d,
+                            fx.eqBandLevelRange.start / 1000
+                        )
                     )
-                )
+                }
             }
-        }
 
-        // bars
-        repeat(fx.eqNumberOfBands) { band ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Slider(
-                    value = fx.eqBandLevels[band],
-                    onValueChange = { fx.setBandLevel(band, it) },
-                    modifier = Modifier
-                        .padding(bottom = ContentPadding.medium)
-                        .weight(1f)
-                        .rotateTransform(false),
-                    valueRange = fx.eqBandLevelRange
-                )
+            // bars
+            repeat(fx.eqNumberOfBands) { band ->
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Slider(
+                        value = fx.eqBandLevels[band],
+                        onValueChange = { fx.setBandLevel(band, it) },
+                        modifier = Modifier
+                            .padding(bottom = ContentPadding.medium)
+                            .weight(1f)
+                            .rotateTransform(false),
+                        valueRange = fx.eqBandLevelRange
+                    )
 
-                Label(
-                    text = stringResource(
-                        id = R.string.audio_fx_scr_abbr_hz_suffix_d,
-                        fx.getBandCenterFreq(band) / 1000
-                    ),
-                    style = Material.typography.caption2
-                )
+                    Label(
+                        text = stringResource(
+                            id = R.string.audio_fx_scr_abbr_hz_suffix_d,
+                            fx.getBandCenterFreq(band) / 1000
+                        ),
+                        style = Material.typography.caption2
+                    )
+                }
             }
         }
     }

@@ -199,13 +199,13 @@ private fun <T : Any> Toolbar(
             // viewType
             // toggle between the different viewTypes.
             // maybe show message in toggleViewType corresponding messages.
-            val viewType = resolver.viewType
+            /*val viewType = resolver.viewType
             IconButton(
                 onClick = { resolver.toggleViewType() },
                 imageVector = viewType.icon,
                 contentDescription = null,
                 enabled = true
-            )
+            )*/
 
             // SortBy
             var showOrderMenu by rememberState(initial = false)
