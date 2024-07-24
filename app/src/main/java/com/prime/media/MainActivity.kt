@@ -149,7 +149,7 @@ private fun initSplashScreen(isColdStart: Boolean) {
                 splashScreenView, View.ALPHA, 1f, 0f
             )
             alpha.interpolator = AnticipateInterpolator()
-            alpha.duration = 700L
+            alpha.duration = 300L
             // Call SplashScreenView.remove at the end of your custom animation.
             alpha.doOnEnd { provider.remove() }
             // Run your animation.

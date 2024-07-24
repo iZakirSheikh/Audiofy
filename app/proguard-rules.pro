@@ -35,4 +35,19 @@
 #    public static int e(...);
 }
 
+# Media3 ShuffleOrder; Dont rename
+# Media3 ShuffleOrder; Dont rename
+
+-keepnames class androidx.media3.exoplayer.ExoPlayerImpl {
+    private androidx.media3.exoplayer.source.ShuffleOrder shuffleOrder;
+}
+
+-keepnames class androidx.media3.exoplayer.source.ShuffleOrder$DefaultShuffleOrder {
+    private int[] shuffled;
+}
+
 ## Don't remove classes from feature modules
+-keepclassmembers class com.prime.codex.** {
+    public static * Codex(android.content.Context);
+}
+-keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
