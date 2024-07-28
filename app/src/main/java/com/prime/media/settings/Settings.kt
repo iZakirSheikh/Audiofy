@@ -208,8 +208,8 @@ private inline fun ColumnScope.Body(
         }
     )
 
-    val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
-    if (!purchase.purchased)
+    val facade = LocalSystemFacade.current
+    if (!facade.isAdFree)
         Banner(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             AdSize.LARGE_BANNER,

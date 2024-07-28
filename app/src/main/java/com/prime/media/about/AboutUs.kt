@@ -322,8 +322,8 @@ fun AboutUs() {
                 )
 
                 // Show Banner if not AdFree.
-                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
-                if (!purchase.purchased)
+                val facade = LocalSystemFacade.current
+                if (!facade.isAdFree)
                     Banner(
                         Modifier
                             .padding(horizontal = ContentPadding.large)
@@ -333,7 +333,6 @@ fun AboutUs() {
                     )
 
                 // Upgrades
-                val facade = LocalSystemFacade.current
                 val products by facade.inAppProductDetails.collectAsState()
                 if (products.isNotEmpty()) {
                     Header(text = "Upgrades")

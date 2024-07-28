@@ -27,8 +27,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 104
-        versionName = "2.13.1"
+        versionCode = 105
+        versionName = "2.14.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -119,7 +119,5 @@ dependencies {
 //       Please investigate if this issue is related to the Wavy Slider and resolve it. Once the main issue is fixed,
 //       consider removing this block of code.
 configurations {
-    all {
-        exclude(group = "androidx.compose.material3", module = "material3")
-    }
+    all { exclude(group = "androidx.compose.material3", module = "material3") }
 }

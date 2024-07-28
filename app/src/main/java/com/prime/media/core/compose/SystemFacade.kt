@@ -15,6 +15,7 @@ import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.primex.core.Text
 import com.primex.preferences.Key
+import com.zs.ads.AdSize
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -59,6 +60,41 @@ interface SystemFacade {
     val inAppProductDetails: MutableStateFlow<Map<String, ProductDetails>>
 
     /**
+     * This represents the time in milliseconds since the epoch when the ad-free period ends.
+     * A value less than or equalto 0 indicates that the reward has expired.
+     */
+    val adFreePeriodEndTimeMillis: Long
+
+    /**
+     * Indicates whether the app is currently in an ad-free state, either due to a rewarded ad or
+     * a purchased ad-free version.
+     */
+    val isAdFree: Boolean
+
+    /**
+     * Indicates whether the app is currently in an ad-free state due to watching a rewarded video.
+     */
+    val isAdFreeRewarded: Boolean
+
+    /**
+     * Indicates whether the app is currently in an ad-free state due to a one-time purchase of the
+     * ad-free version.
+     */
+    val isAdFreeVersion: Boolean
+
+    /**
+     * Indicates whether a rewarded video ad is currently available to be shown.
+     */
+    val isRewardedVideoAvailable: Boolean
+
+
+    /**
+     * Shows a rewarded video ad to the user.
+     */
+    fun showRewardedVideo()
+
+
+    /**
      * A utility extension function for showing interstitial ads.
      * * Note: The ad will not be shown if the app is adFree Version.
      *
@@ -66,7 +102,9 @@ interface SystemFacade {
      */
     fun showAd(force: Boolean = false)
 
-
+    /**
+     * Launches the provided [intent] with the specified [options].
+     */
     fun launch(intent: Intent, options: Bundle? = null)
 
     /**
@@ -198,6 +236,11 @@ interface SystemFacade {
      * Creates a share intent for the app.
      */
     fun shareApp()
+
+    /**
+     * Causes the banner ad to load with the provided [size].
+     */
+    fun loadBannerAd(size: AdSize)
 }
 
 /**

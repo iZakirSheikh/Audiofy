@@ -51,10 +51,24 @@ import com.primex.core.hsl
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.observeAsState
+import com.zs.ads.AdSize
 import kotlinx.coroutines.flow.MutableStateFlow
 
 private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
     override val inAppUpdateProgress: Float = Float.NaN
+    override val adFreePeriodEndTimeMillis: Long
+        get() = TODO("Not yet implemented")
+    override val isAdFree: Boolean
+        get() = TODO("Not yet implemented")
+    override val isAdFreeRewarded: Boolean
+        get() = TODO("Not yet implemented")
+    override val isAdFreeVersion: Boolean
+        get() = TODO("Not yet implemented")
+    override val isRewardedVideoAvailable: Boolean
+        get() = TODO("Not yet implemented")
+    override fun showRewardedVideo() {
+        TODO("Not yet implemented")
+    }
 
     override fun showAd(force: Boolean) {
         error("showAd Not Supported")
@@ -115,6 +129,10 @@ private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
 
     override fun shareApp() {
         error("shareApp Not Supported")
+    }
+
+    override fun loadBannerAd(size: AdSize) {
+        error("loadBannerAd Not Supported")
     }
 }
 

@@ -1,29 +1,86 @@
+/*
+ * Copyright 2024 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 29-07-2024.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zs.ads
 
 import android.app.Activity
 import android.content.Context
+import android.view.View
+import android.widget.FrameLayout
 import com.ironsource.mediationsdk.IronSource
-import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo
-import com.ironsource.mediationsdk.impressionData.ImpressionData
-import com.ironsource.mediationsdk.impressionData.ImpressionDataListener
-import com.ironsource.mediationsdk.sdk.LevelPlayBannerListener
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 
-/**
- * Manages the display and lifecycle of interstitial and rewarded ads within the application,
- * ensuring a minimum delay between ad presentations.*
- * Currently, only the [iListener] is available for tracking ad impressions.
- *
- * **Future Enhancements:**
- * * Action callbacks to streamline ad integration.
- * * Dynamic module support for optional uninstallation in paid app versions.
- */
 interface AdManager {
 
     companion object {
+        /**
+         * Triggered when an ad is successfully loaded.
+         *
+         *   **Note:** For banner ads, this event signifies both the successful load and the recording
+         *   of an ad impression. For other ad formats like interstitial and rewarded ads, it simply
+         *   indicates that the ad  is ready to be displayed.
+         */
+        const val AD_EVENT_LOADED = "ad_event_loaded"
+
+        /**
+         * Triggered when an ad fails to load. For rewarded videos, this typically means that an ad
+         * is simply not available.
+         */
+        const val AD_EVENT_FAILED_TO_LOAD = "ad_event_failed_to_load"
+
+        /**
+         * Triggered when an ad impression is recorded. For banner ads this event will be triggered
+         * instead of [AD_EVENT_LOADED].
+         */
+        const val AD_EVENT_IMPRESSION = "ad_event_impression"
+
+        /**
+         * Triggered when an ad is clicked by the user. In the case of rewarded videos, this event
+         * might not be supported by all ad networks.
+         */
+        const val AD_EVENT_CLICKED = "ad_event_clicked"
+
+        /**
+         * Triggered when an ad is presented as a full-screen overlay to the user.
+         */
+        const val AD_EVENT_PRESENTED = "ad_event_presented"
+
+        /**
+         * Invoked when the user is about to return to the app after interacting with an ad. The
+         * presented full-screen ad view is about to be closed, and your activity will regain its focus.
+         */
+        const val AD_EVENT_CLOSED = "ad_event_closed"
+
+        /**
+         * Triggered when the application loses focus, typically when the user clicks on an ad.
+         */
+        const val AD_EVENT_APPLICATION_LOST_FOCUS = "ad_event_application_lost_focus"
+
+        /**
+         * Triggered when the user completes watching a rewarded video and
+         *      * should be rewarded. The placement parameter will include the reward data. When
+         *      using server-to-server callbacks, you may ignore this event and wait for the ironSource server callback instead.
+         */
+        const val AD_EVENT_REWARDED = "ad_event_rewarded"
+
         /**
          * Initial delay (2 minutes) before the first interstitial ad is shown after app launch.
          */
@@ -46,19 +103,14 @@ interface AdManager {
          * @param id The unique application ID for the ad SDK.
          */
         fun initialize(context: Context, id: String) {
-            IronSource.init(context, id)
+            IronSource.init(context, id,)
         }
     }
 
     /**
-     * Callback invoked when an ad impression is successfully recorded.
-     *
-     * For rewarded video and interstitial ads, this callback is triggered when the ad is opened.
-     * For banner ads, the impression is reported upon successful load.
-     *
-     * @param data An [AdImpression] object containing information about the recorded impression.
+     * Registers an [AdEventListener] to receive ad events.
      */
-    var iListener: ((data: AdImpression) -> Unit)?
+    var listener: AdEventListener?
 
     /**
      * Pauses the ad manager when the hosting activity is paused.
@@ -88,6 +140,39 @@ interface AdManager {
      * @param delay The time to wait before showing the ad. Defaults to [INTERSTITIAL_AD_STANDARD_DELAY].
      */
     fun show(delay: Duration = INTERSTITIAL_AD_STANDARD_DELAY)
+
+    /**
+     * Shows a rewarded ad.
+     *
+     * The `onAdEvent` callback in the registered [AdEventListener] will be invoked with the
+     * [AD_EVENT_REWARDED] event when the user completes watching the ad and is eligible for a reward.
+     */
+    fun showRewardedAd()
+
+    /**
+     * Provides the banner layout managed by the ad manager.
+     *
+     * @return The [FrameLayout] that contains the banner adview.
+     */
+    fun banner(context: Context): View
+
+    /**
+     * Loads an ad of the specified [size] in the banner.
+     */
+    fun load(size: AdSize)
+
+    /**
+     * Releases the resources associated with the ad manager.
+     *
+     * Call this method when you no longer need to display ads to clean up resources and prevent
+     * potential leaks.
+     */
+    fun release()
+
+    /**
+     *  Checks weather rewarded video ad is loaded/avaailable.
+     */
+    val isRewardedVideoAvailable: Boolean
 }
 
 /**

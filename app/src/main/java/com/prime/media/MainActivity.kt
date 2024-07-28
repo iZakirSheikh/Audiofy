@@ -1,6 +1,5 @@
 package com.prime.media
 
-import android.animation.ObjectAnimator
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
@@ -8,22 +7,21 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnticipateInterpolator
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.core.animation.doOnEnd
 import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
@@ -44,7 +42,6 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
 import com.prime.media.core.billing.BillingManager
-import com.prime.media.core.billing.get
 import com.prime.media.core.billing.observeAsState
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Channel
@@ -64,16 +61,18 @@ import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
-import com.zs.ads.AdError
-import com.zs.ads.AdInfo
-import com.zs.ads.AdListener
+import com.zs.ads.AdData
+import com.zs.ads.AdEventListener
 import com.zs.ads.AdManager
-import com.zs.ads.AdView
+import com.zs.ads.AdSize
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "MainActivity"
@@ -142,19 +141,6 @@ private fun initSplashScreen(isColdStart: Boolean) {
         // Animate entry of content
         if (!isColdStart)
             return@let
-        screen.setOnExitAnimationListener { provider ->
-            val splashScreenView = provider.view
-            // Create your custom animation.
-            val alpha = ObjectAnimator.ofFloat(
-                splashScreenView, View.ALPHA, 1f, 0f
-            )
-            alpha.interpolator = AnticipateInterpolator()
-            alpha.duration = 300L
-            // Call SplashScreenView.remove at the end of your custom animation.
-            alpha.doOnEnd { provider.remove() }
-            // Run your animation.
-            alpha.start()
-        }
     }
 }
 
@@ -168,75 +154,38 @@ private fun initSplashScreen(isColdStart: Boolean) {
  */
 private const val MESSAGE_COUNT = 4
 
-@AndroidEntryPoint
-class MainActivity : ComponentActivity(), SystemFacade {
+private val IAP_ARRAY = arrayOf(
+    BuildConfig.IAP_NO_ADS,
+    BuildConfig.IAP_TAG_EDITOR_PRO,
+    BuildConfig.IAP_BUY_ME_COFFEE,
+    BuildConfig.IAP_CODEX
+)
 
-    private val advertiser = AdManager().apply {
-        iListener = { info ->
-            // Log ad impression event to Firebase Analytics
-            Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
-                param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
-                param(FirebaseAnalytics.Param.AD_UNIT_NAME, info.country)
-                param(FirebaseAnalytics.Param.AD_FORMAT, info.format)
-                param(FirebaseAnalytics.Param.AD_SOURCE, info.network)
-                param(FirebaseAnalytics.Param.VALUE, info.revenue)
-                // All IronSource revenue is sent in USD
-                param(FirebaseAnalytics.Param.CURRENCY, "USD")
-            }
-        }
+/**
+ * The amount of mills that are rewarded to user once they watch an ad.
+ */
+private val KEY_AD_FREE_REWARD_MILLS =
+    longPreferenceKey("ad_free_reward_millis", 0L)
+private val AD_FREE_TIME_REWARD = 1.days
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
+
+    private val advertiser by lazy {
+        AdManager().apply { listener  = this@MainActivity }
     }
     private val billingManager by lazy {
-        BillingManager(
-            this,
-            arrayOf(
-                BuildConfig.IAP_NO_ADS,
-                BuildConfig.IAP_TAG_EDITOR_PRO,
-                BuildConfig.IAP_BUY_ME_COFFEE,
-                BuildConfig.IAP_CODEX
-            )
-        )
+        BillingManager(this, products = IAP_ARRAY)
     }
 
     // Cache the banner in main activity.
-    private val _cachedBannerView by lazy {
-        AdView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-            // Initially hide the ad view
-            visibility = View.GONE
-
-            // Set up the AdListener to handle ad events
-            val fAnalytics = Firebase.analytics
-            listener = object : AdListener {
-                override fun onAdLoaded(info: AdInfo?) {
-                    Log.d(TAG, "onAdLoaded: $info")
-                    visibility = View.VISIBLE // Show the ad view when loaded
-                    // Log ad impression event to Firebase Analytics
-                    fAnalytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION){
-                        param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
-                        param(FirebaseAnalytics.Param.AD_UNIT_NAME, info?.country ?: "")
-                        param(FirebaseAnalytics.Param.AD_FORMAT, info?.format ?: "")
-                        param(FirebaseAnalytics.Param.AD_SOURCE, info?.network ?: "")
-                        param(FirebaseAnalytics.Param.VALUE, info?.revenue ?: 0.0)
-                        // All IronSource revenue is sent in USD
-                        param(FirebaseAnalytics.Param.CURRENCY, "USD")
-                    }
-                }
-
-                override fun onAdFailedToLoad(error: AdError?) {
-                    Log.d(TAG, "onAdFailedToLoad: $error")
-                    visibility = View.GONE // Hide the ad view if loading failed
-                    loadAd() //Retry loading the ad with the provided key
-                }
-            }
-        }
-    }
     private var _bannerViewBackingField: View? by mutableStateOf(null)
-
+    // The states the reflect the change in the dependent variables
+    override var isRewardedVideoAvailable: Boolean by mutableStateOf(false)
     override var bannerAd: View?
         get() {
             // If the BannerView has not been attached to a parent yet...
+            val _cachedBannerView =  advertiser.banner(this)
             return if (_cachedBannerView.parent == null) {
                 _bannerViewBackingField = _cachedBannerView
                 _bannerViewBackingField
@@ -248,11 +197,37 @@ class MainActivity : ComponentActivity(), SystemFacade {
                 error("Setting a non-null ($value) to bannerAd is not supported. Use null to release the banner.")
             // Release the cached bannerView and detach it from its parent
             _bannerViewBackingField = null
+            val _cachedBannerView =  advertiser.banner(this)
             (_cachedBannerView.parent as? ViewGroup)?.removeView(_cachedBannerView)
             // Reset the backing field to trigger recomposition and indicate banner availability
             _bannerViewBackingField = _cachedBannerView
         }
 
+    override var adFreePeriodEndTimeMillis: Long by mutableLongStateOf(0)
+    override var isAdFreeVersion: Boolean by mutableStateOf(false)
+
+    override val isAdFree: Boolean by derivedStateOf {
+        isAdFreeVersion || isAdFreeRewarded
+    }
+    override val isAdFreeRewarded: Boolean by derivedStateOf {
+        adFreePeriodEndTimeMillis - System.currentTimeMillis() > 0f
+    }
+
+    override fun showRewardedVideo() {
+        lifecycleScope.launch {
+            val timeTobeAdded = AD_FREE_TIME_REWARD.inWholeDays
+            val result = channel.show(
+                message = resources.getText2(R.string.msg_claim_ad_free_reward_d, timeTobeAdded),
+                title = null,
+                leading = R.drawable.ic_remove_ads,
+                action = getString(R.string.claim),
+                duration = Duration.Indefinite,
+                accent = Color.MetroGreen
+            )
+            if (result == Channel.Result.ActionPerformed)
+                advertiser.showRewardedAd()
+        }
+    }
 
     override fun onPause() {
         super.onPause()
@@ -260,11 +235,13 @@ class MainActivity : ComponentActivity(), SystemFacade {
         Log.d(TAG, "onPause: ")
     }
 
-    private val _inAppUpdateProgress = mutableFloatStateOf(Float.NaN)
+    private val _inAppUpdateProgress =
+        mutableFloatStateOf(Float.NaN)
     override val inAppUpdateProgress: Float
         get() = _inAppUpdateProgress.floatValue
 
-    override val inAppProductDetails get() = billingManager.details
+    override val inAppProductDetails
+        get() = billingManager.details
 
     // injectable code.
     @Inject
@@ -276,6 +253,63 @@ class MainActivity : ComponentActivity(), SystemFacade {
     @Inject
     lateinit var remote: Remote
 
+    override fun loadBannerAd(size: AdSize) =
+        advertiser.load(size)
+
+    override fun onAdEvent(event: String, data: AdData?) {
+        Log.d(TAG, "onAdEvent: $event, $data")
+        // Update if rewarded video is available
+        if (event == AdManager.AD_EVENT_LOADED) {
+            isRewardedVideoAvailable = advertiser.isRewardedVideoAvailable
+            return
+        }
+
+        // on reward confirmed; reward the user
+        if (event == AdManager.AD_EVENT_REWARDED) {
+            // User has watched a rewarded ad, grant ad-free time
+            // Calculate the new end time of the ad-free period
+            val old = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
+                // If no previous reward, startnow
+                if (it == 0L) System.currentTimeMillis() else it
+            }
+            val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
+
+            // Store the new end time
+            preferences[KEY_AD_FREE_REWARD_MILLS] = new
+            // Calculate remaining ad-free days for display
+            val days = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
+            // Show a celebratory message to the user
+            // Exit the function as the reward has been processed
+            show(
+                message = getString(
+                    R.string.msg_ad_free_time_rewarded_dd,
+                    AD_FREE_TIME_REWARD.inWholeDays,
+                    days
+                ),
+                icon = R.drawable.ic_remove_ads,
+                duration = Duration.Indefinite,
+                accent = Color.MetroGreen,
+            )
+            return
+        }
+
+        // Only process impression events
+        if (event != AdManager.AD_EVENT_IMPRESSION)
+            return
+        // Safely cast to AdImpression, return if null// Log ad impression event to Firebase Analytics
+        val value = data as? AdData.AdImpression ?: return
+        // Log ad impression event to Firebase Analytics
+        Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
+            param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+            param(FirebaseAnalytics.Param.AD_UNIT_NAME, value.name)
+            param(FirebaseAnalytics.Param.AD_FORMAT, value.format)
+            param(FirebaseAnalytics.Param.AD_SOURCE, value.network)
+            param(FirebaseAnalytics.Param.VALUE, value.revenue)
+            // All IronSource revenue is sent in USD
+            param(FirebaseAnalytics.Param.CURRENCY, "USD")
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         billingManager.refresh()
@@ -285,15 +319,19 @@ class MainActivity : ComponentActivity(), SystemFacade {
 
     override fun onDestroy() {
         billingManager.release()
+        // FIXME - What if no-one called get on advertiser; in this case releaseing it actually
+        //  caused it to load ads. but since app is closing this might not be the issue
+        advertiser.release()
         super.onDestroy()
-        _cachedBannerView.release()
         Log.d(TAG, "onDestroy: ")
     }
 
-    override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
+    override fun launch(
+        intent: Intent,
+        options: Bundle?
+    ) = startActivity(intent, options)
 
     override fun showAd(force: Boolean) {
-        val isAdFree = billingManager[BuildConfig.IAP_NO_ADS].purchased
         if (isAdFree) return // don't do anything
         advertiser.show(force)
     }
@@ -589,9 +627,11 @@ class MainActivity : ComponentActivity(), SystemFacade {
             billingManager.purchases.collect() { purchases ->
                 purchases.forEach { purchase ->
                     // Skip if the purchase is not completed
-                    if (!purchase.purchased) return@forEach
-
                     val productId = purchase.products.first()
+                    // Update the isAdFreeVersion flag
+                    if (productId == BuildConfig.IAP_NO_ADS && purchase.purchased)
+                        isAdFreeVersion = true
+                    if (!purchase.purchased) return@forEach
                     val details = billingManager.details.value[productId]
                     // Skip if product details are unavailable or the
                     // product is not a dynamic feature
@@ -617,6 +657,10 @@ class MainActivity : ComponentActivity(), SystemFacade {
                 }
             }
         }
+        // Observe Reward adFree
+        preferences[KEY_AD_FREE_REWARD_MILLS].onEach {
+            adFreePeriodEndTimeMillis = it
+        }.launchIn(lifecycleScope)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -633,12 +677,11 @@ class MainActivity : ComponentActivity(), SystemFacade {
         // Set the content.
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
-
             // Observe font_scale
             val fontScale by observeAsState(key = Settings.FONT_SCALE)
             val density = LocalDensity.current
             val modified = if (fontScale == -1f) density else Density(density.density, fontScale)
-
+            // Set the content.
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
                 LocalWindowSize provides windowSizeClass,
