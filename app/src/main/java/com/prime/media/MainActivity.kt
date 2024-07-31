@@ -640,8 +640,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     // Skip if the purchase is not completed
                     val productId = purchase.products.first()
                     // Update the isAdFreeVersion flag
-//                    if (productId == BuildConfig.IAP_NO_ADS)
-//                        isAdFreeVersion = purchase.purchased
+                    if (productId == BuildConfig.IAP_NO_ADS)
+                        isAdFreeVersion = purchase.purchased
                     // Skip if the purchase is not purchased
                     if (!purchase.purchased) return@forEach
                     val details = billingManager.details.value[productId]
@@ -693,9 +693,6 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             val fontScale by observeAsState(key = Settings.FONT_SCALE)
             val density = LocalDensity.current
             val modified = if (fontScale == -1f) density else Density(density.density, fontScale)
-            // FixMe - Tis property doesnt get updated in initialize and hence this.
-            val isProVersion by observeAsState(product = BuildConfig.IAP_NO_ADS)
-            isAdFreeVersion = isProVersion.purchased
             // Set the content.
             CompositionLocalProvider(
                 LocalSystemFacade provides this,

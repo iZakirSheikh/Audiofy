@@ -9,7 +9,7 @@ hilt-android = "2.51.1"  # Hilt for dependency injection in Android apps
 
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
-media3 = "1.4.0"  # Media playback, including audio and video
+media3 = "1.3.1"  # Media playback, including audio and video
 compose = "1.7.0-beta06"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
