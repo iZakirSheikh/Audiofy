@@ -18,6 +18,9 @@
 
 package com.prime.media.library
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,14 +36,17 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.prime.media.MainActivity
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.compose.LocalNavController
@@ -145,10 +151,20 @@ fun Shortcuts(
             )
 
             // Shortcut for Albums navigation
+            val context = LocalContext.current as MainActivity
+            val launcher =
+                rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+                    if (it == null) return@rememberLauncherForActivityResult
+                    val intnet = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(it, "video/*")
+                        this.`package` = context.packageName
+                    }
+                    context.startActivity(intnet)
+                }
             Shortcut(
-                onAction = { navigator.navigate(Albums.direction()) },
-                icon = Icons.Outlined.Album,
-                label = textResource(id = R.string.albums),
+                onAction = { launcher.launch(arrayOf("video/*")) },
+                icon = Icons.Outlined.VideoLibrary,
+                label = textResource(id = R.string.videos),
             )
 
             // Shortcut for Favourite playlist navigation

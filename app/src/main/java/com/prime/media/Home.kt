@@ -38,6 +38,7 @@ import androidx.compose.material.SelectableChipColors
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.PlaylistPlay
@@ -112,6 +113,7 @@ import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
+import com.prime.media.core.playback.Playback
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -497,8 +499,8 @@ private fun NavGraph(
 /**
  * The array of routes that are required to hide the miniplayer.
  */
-private val HIDDEN_DEST_ROUTES =
-    arrayOf(Console.route, PERMISSION_ROUTE, AudioFx.route, AboutUs.route)
+private val DOMAINS_REQUIRING_NAV_BAR =
+    arrayOf(Settings.route, Folders.route, Albums.route, Playlists.route, Library.route)
 
 /**
  * Extension function for the NavController that facilitates navigation to a specified destination route.
@@ -658,7 +660,7 @@ private fun NavBar(
                 colors = colors
             )
 
-            // Audios
+            // Folders
             NavigationItem(
                 label = textResource(id = R.string.folders),
                 icon = Icons.Outlined.FolderCopy,
@@ -668,22 +670,12 @@ private fun NavBar(
                 colors = colors
             )
 
-            // Videos
-            val context = LocalContext.current as MainActivity
-            val launcher =
-                rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-                    if (it == null) return@rememberLauncherForActivityResult
-                    val intnet = Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(it, MIME_TYPE_VIDEO)
-                        this.`package` = context.packageName
-                    }
-                    context.startActivity(intnet)
-                }
+            // albums
             NavigationItem(
-                label = textResource(id = R.string.videos),
-                icon = Icons.Outlined.VideoLibrary,
-                checked = false,
-                onClick = { launcher.launch(arrayOf(MIME_TYPE_VIDEO)) },
+                label = textResource(id = R.string.albums),
+                icon = Icons.Outlined.Album,
+                checked = current?.destination?.route == Albums.route,
+                onClick = { navController.toRoute(Albums.direction()) },
                 type = type,
                 colors = colors
             )
@@ -780,7 +772,7 @@ fun Home(channel: Channel) {
                 // Determine the navigation type based on the window size class and access the system facade
                 val facade = LocalSystemFacade.current
                 // Determine whether to hide the navigation bar based on the current destination
-                val hideNavigationBar = navController.current in HIDDEN_DEST_ROUTES
+                val hideNavigationBar = navController.current !in DOMAINS_REQUIRING_NAV_BAR
                 NavigationSuiteScaffold(
                     vertical = clazz.widthRange < Range.Medium,
                     channel = channel,

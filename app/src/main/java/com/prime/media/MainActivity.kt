@@ -4,6 +4,7 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -75,6 +76,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "MainActivity"
@@ -222,12 +225,15 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             val saved = preferences.value(KEY_AD_FREE_REWARD_MILLS)
                 .coerceAtLeast(System.currentTimeMillis())
             // Calculate remaining ad-free days for display
-            val remaining = TimeUnit.MILLISECONDS.toDays(
-                (saved - System.currentTimeMillis())
-            )
+            val remaining = (saved - System.currentTimeMillis()).milliseconds.toString()
+            // log to firebase
+            Firebase.analytics.logEvent("click_claim_reward"){
+                param(FirebaseAnalytics.Param.ITEM_NAME, "claim_reward")
+                param("reward_type", "24hrs_ad_free")
+            }
             val result = channel.show(
                 message = resources.getText2(
-                    R.string.msg_claim_ad_free_reward_dd,
+                    R.string.msg_claim_ad_free_reward_ds,
                     timeTobeAdded,
                     remaining
                 ),
@@ -237,8 +243,13 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 duration = Duration.Indefinite,
                 accent = Color.MetroGreen2
             )
-            if (result == Channel.Result.ActionPerformed)
+            if (result == Channel.Result.ActionPerformed) {
                 advertiser.showRewardedAd()
+                // Log the ad_claiming_reward event to Firebase
+                Firebase.analytics.logEvent("ad_claiming_reward"){
+                    param("remaining_days", remaining)
+                }
+            }
         }
     }
 
