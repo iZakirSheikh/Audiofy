@@ -36,8 +36,6 @@
 }
 
 # Media3 ShuffleOrder; Dont rename
-# Media3 ShuffleOrder; Dont rename
-
 -keepnames class androidx.media3.exoplayer.ExoPlayerImpl {
     private androidx.media3.exoplayer.source.ShuffleOrder shuffleOrder;
 }

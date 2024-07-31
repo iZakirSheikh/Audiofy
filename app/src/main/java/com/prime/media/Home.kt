@@ -136,6 +136,7 @@ import com.prime.media.impl.TagEditorViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
+import com.primex.core.AzureBlue
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
 import com.primex.core.OrientRed
@@ -341,7 +342,7 @@ private fun Material(
     val primary = if (darkTheme) Color.Amber else Color.BlueLilac
     val secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000)
     val colors = Colors(
-        primary = if (darkTheme) Color.Amber else Color.BlueLilac,
+        primary = if (darkTheme) Color.Amber else Color.AzureBlue,
         secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000),
         background = background,
         surface = surface,
@@ -528,7 +529,7 @@ private fun NavController.toRoute(route: String) {
 
 private const val MIME_TYPE_VIDEO = "video/*"
 
-// The different NavTypes shown in differnrt screen sizes.
+// The different NavTypes shown in different screen sizes.
 private val TYPE_RAIL_NAV = 0
 private val TYPE_DRAWER_NAV = 1
 private val TYPE_BOTTOM_NAV = 2

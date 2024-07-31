@@ -47,12 +47,6 @@ interface AdManager {
         const val AD_EVENT_FAILED_TO_LOAD = "ad_event_failed_to_load"
 
         /**
-         * Triggered when an ad impression is recorded. For banner ads this event will be triggered
-         * instead of [AD_EVENT_LOADED].
-         */
-        const val AD_EVENT_IMPRESSION = "ad_event_impression"
-
-        /**
          * Triggered when an ad is clicked by the user. In the case of rewarded videos, this event
          * might not be supported by all ad networks.
          */
@@ -73,13 +67,6 @@ interface AdManager {
          * Triggered when the application loses focus, typically when the user clicks on an ad.
          */
         const val AD_EVENT_APPLICATION_LOST_FOCUS = "ad_event_application_lost_focus"
-
-        /**
-         * Triggered when the user completes watching a rewarded video and
-         *      * should be rewarded. The placement parameter will include the reward data. When
-         *      using server-to-server callbacks, you may ignore this event and wait for the ironSource server callback instead.
-         */
-        const val AD_EVENT_REWARDED = "ad_event_rewarded"
 
         /**
          * Initial delay (2 minutes) before the first interstitial ad is shown after app launch.

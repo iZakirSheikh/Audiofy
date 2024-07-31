@@ -405,22 +405,29 @@
     </string-array>
 
     <string name="unlock">Unlock</string>
-    <string name="msg_ad_free_experience_ss"><b>Limited Time Offer: Go Ad-Free for just %1$s!\n</b><font color='grey' size="11">Upgrade now and enjoy a premium,ad-free experience forever.</font></string>
-    <string name="msg_library_buy_me_a_coffee"><b>Like the app?\n</b><font color="grey" size="11">Buy me a coffee to help keep it awesome! Your support fuels development and is greatly appreciated. ☕ Thank you!</font></string>
+    <string name="msg_ad_free_experience_ss"><b>Limited Time Offer: Go Ad-Free for just %1$s!</b>
+        <font color='grey' size="11">
+            \nUpgrade now and enjoy a premium, <b>ad-free</b> experience <b>forever</b>.
+        </font></string>
+    <string name="msg_library_buy_me_a_coffee"><b>Like the app?</b>
+        <font size = "11" color = 'grey'>
+            \nBuy me a <b>coffee</b> to help keep it awesome! Your <b>support fuels development</b> and is greatly appreciated. ☕ Thank you!
+        </font></string>
     <string name="thanks">Thanks</string>
     <string name="msg_unlock_codex_ss"><b>Limited Time Offer: Get Codex for just %1$s!\n</b><font color="grey" size="11">Unlock seamless playback for H.264, HEVC, VP8, VP9 and more with Codex!</font></string>
     <string name="msg_unlock_tag_editor_pro_ss"><b>Edit Lyrics &amp; Album Art with Ease!\n</b><font color='grey' size="11">Get Tag Editor Pro for only %1$s and enhance your music experience.</font></string>
     <string name="upgrade">Upgrade</string>
     <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font size = "11" color = 'grey'>A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
-    <string name="msg_claim_ad_free_reward_d"><b>Tap to Go Ad-Free</b>
+    <string name="msg_claim_ad_free_reward_dd"><b>%2$d Day(s) Ad-Free Left! Extend Now</b>
         <font size = "11" color = 'grey'>
-            \nEnjoy more <b>ad-free</b> time! Watch a video to extend your current period by <b>%1$d</b> day(s).
+            \nWatch a rewarded ad now to add <b>%1$d more day(s)</b> and keep enjoying the premium experience.
         </font>
     </string>
     <string name="claim">Claim</string>
-    <string name="msg_ad_free_time_rewarded_dd"><b>Woohoo! Ad-free bliss extended! </b>
-       <font size = "11" color ='grey'>
-           \nYou earned it! Enjoy %2$d days without ads (that\'s %1$d more!).
+    <string name="msg_ad_free_time_rewarded_dd"><b>Keep the Rewards Coming!</b>
+        <font size = "11" color = 'grey'>
+           \n<b>Congrats!</b> You\'ve earned %1$d more ad-free day(s).
+            \nTotal premium days: %2$d. <b>Enjoy!</b>
        </font>
     </string>
 </resources>

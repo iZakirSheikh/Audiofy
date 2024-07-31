@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.Density
 import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -53,6 +54,7 @@ import com.prime.media.core.compose.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
+import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
 import com.primex.core.Text
 import com.primex.core.getText2
@@ -65,6 +67,7 @@ import com.zs.ads.AdData
 import com.zs.ads.AdEventListener
 import com.zs.ads.AdManager
 import com.zs.ads.AdSize
+import com.zs.ads.Reward
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -216,13 +219,23 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     override fun showRewardedVideo() {
         lifecycleScope.launch {
             val timeTobeAdded = AD_FREE_TIME_REWARD.inWholeDays
+            // Store the new end time
+            val saved = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
+                if (it == 0L) System.currentTimeMillis() else it
+            }
+            // Calculate remaining ad-free days for display
+            val left = TimeUnit.MILLISECONDS.toDays(saved - System.currentTimeMillis())
             val result = channel.show(
-                message = resources.getText2(R.string.msg_claim_ad_free_reward_d, timeTobeAdded),
+                message = resources.getText2(
+                    R.string.msg_claim_ad_free_reward_dd,
+                    timeTobeAdded,
+                    left
+                ),
                 title = null,
                 leading = R.drawable.ic_remove_ads,
-                action = getString(R.string.claim),
+                action = getString(R.string.claim).uppercase(),
                 duration = Duration.Indefinite,
-                accent = Color.MetroGreen
+                accent = Color.MetroGreen2
             )
             if (result == Channel.Result.ActionPerformed)
                 advertiser.showRewardedAd()
@@ -256,6 +269,50 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     override fun loadBannerAd(size: AdSize) =
         advertiser.load(size)
 
+    override fun onAdImpression(value: AdData.AdImpression?) {
+        Log.d(TAG, "onAdImpression: $value")
+        // Safely cast to AdImpression, return if null// Log ad impression event to Firebase Analytics
+        val data = value ?: return
+        // Log ad impression event to Firebase Analytics
+        Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
+            param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
+            param(FirebaseAnalytics.Param.AD_UNIT_NAME, data.name)
+            param(FirebaseAnalytics.Param.AD_FORMAT, data.format)
+            param(FirebaseAnalytics.Param.AD_SOURCE, data.network)
+            param(FirebaseAnalytics.Param.VALUE, data.revenue)
+            // All IronSource revenue is sent in USD
+            param(FirebaseAnalytics.Param.CURRENCY, "USD")
+        }
+    }
+
+    override fun onAdRewarded(reward: Reward?, info: AdData.AdInfo?) {
+        // TODO - Maybe use the [reward] to reward the users.
+        // User has watched a rewarded ad, grant ad-free time
+        // Calculate the new end time of the ad-free period
+        val old = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
+            // If no previous reward, startnow
+            if (it == 0L) System.currentTimeMillis() else it
+        }
+        val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
+
+        // Store the new end time
+        preferences[KEY_AD_FREE_REWARD_MILLS] = new
+        // Calculate remaining ad-free days for display
+        val days = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
+        // Show a celebratory message to the user
+        // Exit the function as the reward has been processed
+        show(
+            message = resources.getText2(
+                R.string.msg_ad_free_time_rewarded_dd,
+                AD_FREE_TIME_REWARD.inWholeDays,
+                days
+            ),
+            icon = R.drawable.ic_remove_ads,
+            duration = Duration.Indefinite,
+            accent = Color.MetroGreen,
+        )
+    }
+
     override fun onAdEvent(event: String, data: AdData?) {
         Log.d(TAG, "onAdEvent: $event, $data")
         // Update if rewarded video is available
@@ -264,50 +321,6 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             return
         }
 
-        // on reward confirmed; reward the user
-        if (event == AdManager.AD_EVENT_REWARDED) {
-            // User has watched a rewarded ad, grant ad-free time
-            // Calculate the new end time of the ad-free period
-            val old = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
-                // If no previous reward, startnow
-                if (it == 0L) System.currentTimeMillis() else it
-            }
-            val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
-
-            // Store the new end time
-            preferences[KEY_AD_FREE_REWARD_MILLS] = new
-            // Calculate remaining ad-free days for display
-            val days = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
-            // Show a celebratory message to the user
-            // Exit the function as the reward has been processed
-            show(
-                message = getString(
-                    R.string.msg_ad_free_time_rewarded_dd,
-                    AD_FREE_TIME_REWARD.inWholeDays,
-                    days
-                ),
-                icon = R.drawable.ic_remove_ads,
-                duration = Duration.Indefinite,
-                accent = Color.MetroGreen,
-            )
-            return
-        }
-
-        // Only process impression events
-        if (event != AdManager.AD_EVENT_IMPRESSION)
-            return
-        // Safely cast to AdImpression, return if null// Log ad impression event to Firebase Analytics
-        val value = data as? AdData.AdImpression ?: return
-        // Log ad impression event to Firebase Analytics
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
-            param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
-            param(FirebaseAnalytics.Param.AD_UNIT_NAME, value.name)
-            param(FirebaseAnalytics.Param.AD_FORMAT, value.format)
-            param(FirebaseAnalytics.Param.AD_SOURCE, value.network)
-            param(FirebaseAnalytics.Param.VALUE, value.revenue)
-            // All IronSource revenue is sent in USD
-            param(FirebaseAnalytics.Param.CURRENCY, "USD")
-        }
     }
 
     override fun onResume() {
@@ -629,8 +642,9 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     // Skip if the purchase is not completed
                     val productId = purchase.products.first()
                     // Update the isAdFreeVersion flag
-                    if (productId == BuildConfig.IAP_NO_ADS && purchase.purchased)
-                        isAdFreeVersion = true
+                    if (productId == BuildConfig.IAP_NO_ADS)
+                        isAdFreeVersion = purchase.purchased
+                    // Skip if the purchase is not purchased
                     if (!purchase.purchased) return@forEach
                     val details = billingManager.details.value[productId]
                     // Skip if product details are unavailable or the

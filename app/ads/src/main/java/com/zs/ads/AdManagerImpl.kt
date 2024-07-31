@@ -55,6 +55,8 @@ private val IsAdInfo?.asAdInfo
     get() = if (this == null) null else AdData.AdInfo(this)
 private val IronSourceError?.asAdError
     get() = if (this == null) null else AdData.AdError(this)
+private val Placement?.asReward
+    get() = if (this == null) null else Reward(this)
 
 private val BANNER_RETRY_DELAY_MILLS =
     TimeUnit.SECONDS.toMillis(15)
@@ -143,7 +145,7 @@ internal class AdManagerImpl(
         // add impression listener
         IronSource.addImpressionDataListener {data ->
             val wrapped = if (data == null) null else AdData.AdImpression(data)
-            listener?.onAdEvent(AdManager.AD_EVENT_IMPRESSION, wrapped)
+            listener?.onAdImpression(wrapped)
         }
         // Add Listener for interstitial ads.
         IronSource.setLevelPlayRewardedVideoListener(
@@ -172,7 +174,7 @@ internal class AdManagerImpl(
                     // The placement parameter will include the reward data.
                     // When using server-to-server callbacks, you may ignore this event and wait for the ironSource server callback
                     Log.d(TAG, "onAdRewarded: $p0, $p1")
-                    listener?.onAdEvent(AdManager.AD_EVENT_REWARDED, p1.asAdInfo)
+                    listener?.onAdRewarded(p0.asReward, p1.asAdInfo)
                 }
 
                 override fun onAdClosed(p0: AdInfo?) {
@@ -247,7 +249,7 @@ internal class AdManagerImpl(
                     // Notify listener about the ad impression event
                     // for banners this represents both the successful load and the recording of an ad
                     // impression
-                    listener?.onAdEvent(AdManager.AD_EVENT_IMPRESSION, data)
+                    listener?.onAdImpression(data)
                     // Show the banner ad view since it's now loaded
                     _cachedBannerLayout.visibility = View.VISIBLE
                 }

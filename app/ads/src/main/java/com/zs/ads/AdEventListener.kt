@@ -35,4 +35,22 @@ interface AdEventListener {
      * such as ad metadata or error details.
      */
     fun onAdEvent(event: String, data: AdData?)
+
+    /**
+     * Called when an ad impression event occurs. This can be triggered when:
+     * - A banner ad is successfully loaded.
+     * - or the impression listener records impression
+     *
+     * @param value An [AdData.AdImpression] object containing details about the ad impression,
+     * or null if no ad impression data is available.
+     */
+    fun onAdImpression(value: AdData.AdImpression?)
+
+    /**
+     * Called when a rewarded ad is successfully completed and the user earns a reward.
+     *
+     * @param reward A [Reward] object representing the reward earned, or null if no reward is provided.
+     * @param info An [AdData.AdInfo] object containing additional information about the ad event.
+     */
+    fun onAdRewarded(reward: Reward?, info: AdData.AdInfo?)
 }

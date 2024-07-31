@@ -30,10 +30,13 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Colors
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -227,7 +230,7 @@ private inline fun Actions() {
         icon = painterResource(id = R.drawable.ic_remove_ads),
         modifier = Modifier.scale(0.75f),
         colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = contentColor.copy(0.12f),
+            backgroundColor = contentColor.copy(0.24f),
             contentColor = contentColor
         ),
         shape = CircleShape
@@ -237,9 +240,9 @@ private inline fun Actions() {
     val available = provider.isRewardedVideoAvailable
     val color = Material.colors.primary
     IconButton(
-        imageVector = Icons.Outlined.AutoAwesome,
+        imageVector = Icons.Outlined.MoreTime,
         onClick = provider::showRewardedVideo,
-        tint = contentColor,
+        tint = contentColor.copy(if (available) ContentAlpha.high else ContentAlpha.disabled),
         enabled = available,
         modifier = (if (!available) Modifier else Modifier
             .pulsate(color, animationSpec = DefaultRepeatableSpec)),
