@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.Density
 import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -220,16 +219,17 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
         lifecycleScope.launch {
             val timeTobeAdded = AD_FREE_TIME_REWARD.inWholeDays
             // Store the new end time
-            val saved = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
-                if (it == 0L) System.currentTimeMillis() else it
-            }
+            val saved = preferences.value(KEY_AD_FREE_REWARD_MILLS)
+                .coerceAtLeast(System.currentTimeMillis())
             // Calculate remaining ad-free days for display
-            val left = TimeUnit.MILLISECONDS.toDays(saved - System.currentTimeMillis())
+            val remaining = TimeUnit.MILLISECONDS.toDays(
+                (saved - System.currentTimeMillis())
+            )
             val result = channel.show(
                 message = resources.getText2(
                     R.string.msg_claim_ad_free_reward_dd,
                     timeTobeAdded,
-                    left
+                    remaining
                 ),
                 title = null,
                 leading = R.drawable.ic_remove_ads,
@@ -289,23 +289,21 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
         // TODO - Maybe use the [reward] to reward the users.
         // User has watched a rewarded ad, grant ad-free time
         // Calculate the new end time of the ad-free period
-        val old = preferences.value(KEY_AD_FREE_REWARD_MILLS).let {
-            // If no previous reward, startnow
-            if (it == 0L) System.currentTimeMillis() else it
-        }
-        val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
+        val old = preferences.value(KEY_AD_FREE_REWARD_MILLS)
+            .coerceAtLeast(System.currentTimeMillis())
 
+        val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
         // Store the new end time
         preferences[KEY_AD_FREE_REWARD_MILLS] = new
         // Calculate remaining ad-free days for display
-        val days = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
+        val remaining = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
         // Show a celebratory message to the user
         // Exit the function as the reward has been processed
         show(
             message = resources.getText2(
                 R.string.msg_ad_free_time_rewarded_dd,
                 AD_FREE_TIME_REWARD.inWholeDays,
-                days
+                remaining
             ),
             icon = R.drawable.ic_remove_ads,
             duration = Duration.Indefinite,
@@ -642,8 +640,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     // Skip if the purchase is not completed
                     val productId = purchase.products.first()
                     // Update the isAdFreeVersion flag
-                    if (productId == BuildConfig.IAP_NO_ADS)
-                        isAdFreeVersion = purchase.purchased
+//                    if (productId == BuildConfig.IAP_NO_ADS)
+//                        isAdFreeVersion = purchase.purchased
                     // Skip if the purchase is not purchased
                     if (!purchase.purchased) return@forEach
                     val details = billingManager.details.value[productId]
@@ -695,6 +693,9 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             val fontScale by observeAsState(key = Settings.FONT_SCALE)
             val density = LocalDensity.current
             val modified = if (fontScale == -1f) density else Density(density.density, fontScale)
+            // FixMe - Tis property doesnt get updated in initialize and hence this.
+            val isProVersion by observeAsState(product = BuildConfig.IAP_NO_ADS)
+            isAdFreeVersion = isProVersion.purchased
             // Set the content.
             CompositionLocalProvider(
                 LocalSystemFacade provides this,
