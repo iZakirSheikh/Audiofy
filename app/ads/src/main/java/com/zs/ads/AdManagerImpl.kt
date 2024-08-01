@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 06-07-2024.
+ * Created by Zakir Sheikh on 29-07-2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,117 +19,286 @@
 package com.zs.ads
 
 import android.app.Activity
-import android.os.Handler
-import android.os.Looper
+import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
+import android.view.View
+import android.widget.FrameLayout
 import com.ironsource.mediationsdk.IronSource
+import com.ironsource.mediationsdk.IronSourceBannerLayout
 import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo
-import com.ironsource.mediationsdk.impressionData.ImpressionData
-import com.ironsource.mediationsdk.impressionData.ImpressionDataListener
 import com.ironsource.mediationsdk.logger.IronSourceError
+import com.ironsource.mediationsdk.model.Placement
+import com.ironsource.mediationsdk.sdk.LevelPlayBannerListener
 import com.ironsource.mediationsdk.sdk.LevelPlayInterstitialListener
-import java.lang.Long.min
+import com.ironsource.mediationsdk.sdk.LevelPlayRewardedVideoListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
+import com.ironsource.mediationsdk.adunit.adapter.utility.AdInfo as IsAdInfo
 
 private const val TAG = "AdManagerImpl"
 
-private const val DELAY_LOAD_AD_START_MILLISECONDS = 10L * 1000L // 10 sec.
-private const val DELAY_LOAD_AD_MAX_TIME_MILLISECONDS = 1000L * 60L * 1L // 5 minutes
+private val INITIAL_RETRY_DELAY_MILLIS =
+    TimeUnit.SECONDS.toMillis(1)
+
+private val MAX_RETRY_BACKOFF_MILLIS =
+    TimeUnit.MINUTES.toMillis(1)
+
+private val IsAdInfo?.asAdInfo
+    get() = if (this == null) null else AdData.AdInfo(this)
+private val IronSourceError?.asAdError
+    get() = if (this == null) null else AdData.AdError(this)
+private val Placement?.asReward
+    get() = if (this == null) null else Reward(this)
+
+private val BANNER_RETRY_DELAY_MILLS =
+    TimeUnit.SECONDS.toMillis(15)
+
+private tailrec fun Context.findActivity(): Activity? = this as? Activity
+    ?: (this as? ContextWrapper)?.baseContext?.findActivity()
 
 internal class AdManagerImpl(
     private val iDelay: Duration,
     private val delay: Duration,
     private val forceDelay: Duration
-) : AdManager, LevelPlayInterstitialListener {
+) : AdManager {
 
-    var delayLoadAd = DELAY_LOAD_AD_START_MILLISECONDS
+    override var listener: AdEventListener? = null
 
-    /**
-     * The time this object was created; since this a global variable and hence this represents the
-     * time of app first loaded.
-     */
-    val timeMillsWhenCreated = System.currentTimeMillis()
+    // how long before the data source tries to reload the interstitial/rewarded ad.
+    private var delayRetryMills = INITIAL_RETRY_DELAY_MILLIS
+    private lateinit var _cachedBannerLayout: IronSourceBannerLayout
+    private val adManagerScope: CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /**
-     * The time in *mills* when interstitial ad was showed.
-     * *null* value represents, the ad was never showed.
-     */
-    var timeMillsWhenAdShowed: Long? = null
+    override fun onPause(context: Activity) = IronSource.onPause(context)
+    override fun onResume(context: Activity) = IronSource.onResume(context)
+    override fun showRewardedAd() = IronSource.showRewardedVideo()
+    override val isRewardedVideoAvailable: Boolean get() = IronSource.isRewardedVideoAvailable()
 
-    private val handler = Handler(Looper.getMainLooper())
 
-    val loadAdRunnable = {
-        IronSource.loadInterstitial()
-    }
 
+    // Add observers.
     init {
-        // Set listener and load first Ad.
-        IronSource.setLevelPlayInterstitialListener(this)
-        IronSource.loadInterstitial()
-    }
+        IronSource.setLevelPlayInterstitialListener(
+            object : LevelPlayInterstitialListener {
+                override fun onAdReady(p0: AdInfo?) {
+                    // Invoked when the interstitial ad was loaded successfully.
+                    // AdInfo parameter includes information about the loaded ad
+                    Log.d(TAG, "onAdReady: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_LOADED, p0.asAdInfo)
+                }
 
-    val onImpressionData = object : ImpressionDataListener {
-        override fun onImpressionSuccess(p0: ImpressionData?) {
-            if (p0 == null) return
-            iListener?.invoke(AdImpression(p0))
+                override fun onAdLoadFailed(p0: IronSourceError?) {
+                    Log.d(TAG, "onAdLoadFailed: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_FAILED_TO_LOAD, p0.asAdError)
+                    // Retry loading the ad after a delay, increasing the delay exponentially
+                    // until it reaches a maximum value
+                    adManagerScope.launch {
+                        delay(delayRetryMills)
+                        delayRetryMills = (delayRetryMills * 2).coerceAtMost(MAX_RETRY_BACKOFF_MILLIS)
+                        IronSource.loadInterstitial()
+                    }
+                }
+
+                override fun onAdOpened(p0: AdInfo?) {
+                    // Invoked when the Interstitial Ad Unit has opened, and user left the application screen.
+                    // This is the impression indication.
+                    Log.d(TAG, "onAdOpened: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_PRESENTED, p0.asAdInfo)
+                    timeMillsWhenAdShowed = System.currentTimeMillis()
+                }
+
+                override fun onAdShowSucceeded(p0: AdInfo?) {
+                    Log.d(TAG, "onAdShowSucceeded: $p0")
+                    // Invoked before the interstitial ad was opened, and before the
+                    // InterstitialOnAdOpenedEvent is reported.
+                    // This callback is not supported by all networks, and we recommend using it only if
+                    // it's supported by all networks you included in your build.
+                }
+
+                override fun onAdShowFailed(p0: IronSourceError?, p1: AdInfo?) {
+                    Log.d(TAG, "onAdShowFailed: $p0, $p1")
+                    // Invoked when the ad failed to show
+                }
+
+                override fun onAdClicked(p0: AdInfo?) {
+                    Log.d(TAG, "onAdClicked: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLICKED, p0.asAdInfo)
+                }
+
+                override fun onAdClosed(p0: AdInfo?) {
+                    Log.d(TAG, "onAdClosed: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLOSED, p0.asAdInfo)
+                    // Start a new load - this makes sure ads are present when called for show.
+                    IronSource.loadInterstitial()
+                }
+            }
+        )
+        // add impression listener
+        IronSource.addImpressionDataListener {data ->
+            val wrapped = if (data == null) null else AdData.AdImpression(data)
+            listener?.onAdImpression(wrapped)
         }
+        // Add Listener for interstitial ads.
+        IronSource.setLevelPlayRewardedVideoListener(
+            object : LevelPlayRewardedVideoListener {
+                override fun onAdOpened(p0: AdInfo?) {
+                    // The Rewarded Video ad view has opened. Your activity will loose focus
+                    Log.d(TAG, "onAdOpened: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_PRESENTED, p0.asAdInfo)
+                }
+
+                override fun onAdShowFailed(p0: IronSourceError?, p1: AdInfo?) {
+                    // The rewarded video ad was failed to show
+                    Log.d(TAG, "onAdShowFailed: $p0, $p1")
+                }
+
+                override fun onAdClicked(p0: Placement?, p1: AdInfo?) {
+                    // Invoked when the video ad was clicked.
+                    // This callback is not supported by all networks, and we recommend using it
+                    // only if it's supported by all networks you included in your build
+                    Log.d(TAG, "onAdClicked: $p0, $p1")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLICKED, p1.asAdInfo)
+                }
+
+                override fun onAdRewarded(p0: Placement?, p1: AdInfo?) {
+                    // The user completed to watch the video, and should be rewarded.
+                    // The placement parameter will include the reward data.
+                    // When using server-to-server callbacks, you may ignore this event and wait for the ironSource server callback
+                    Log.d(TAG, "onAdRewarded: $p0, $p1")
+                    listener?.onAdRewarded(p0.asReward, p1.asAdInfo)
+                }
+
+                override fun onAdClosed(p0: AdInfo?) {
+                    // The Rewarded Video ad view is about to be closed. Your activity will regain its focus
+                    Log.d(TAG, "onAdClosed: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLOSED, p0.asAdInfo)
+                    // Start a new load - this makes sure ads are present when called for show.
+                    IronSource.loadRewardedVideo()
+                }
+
+                override fun onAdAvailable(p0: AdInfo?) {
+                    // Indicates that there's an available ad.
+                    // The adInfo object includes information about the ad that was loaded successfully
+                    // Use this callback instead of onRewardedVideoAvailabilityChanged(true)
+                    Log.d(TAG, "onAdAvailable: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_LOADED, p0.asAdInfo)
+                }
+
+                override fun onAdUnavailable() {
+                    // Indicates that no ads are available to be displayed
+                    // Use this callback instead of onRewardedVideoAvailabilityChanged(false)
+                    Log.d(TAG, "onAdUnavailable: ")
+                    listener?.onAdEvent(AdManager.AD_EVENT_FAILED_TO_LOAD, null)
+                    // Retry loading the ad after a delay, increasing the delay exponentially
+                    // until it reaches a maximum value
+                    adManagerScope.launch {
+                        delay(delayRetryMills)
+                        delayRetryMills = (delayRetryMills * 2).coerceAtMost(MAX_RETRY_BACKOFF_MILLIS)
+                        IronSource.loadRewardedVideo()
+                    }
+                }
+            }
+        )
     }
 
-    override var iListener: ((data: AdImpression) -> Unit)? = null
-        set(value) {
-            field = value
-            if (value == null)
-                IronSource.removeImpressionDataListener(onImpressionData)
-            else
-                IronSource.addImpressionDataListener(onImpressionData)
-        }
-
-    override fun onPause(context: Activity) {
-        IronSource.onPause(context)
-    }
-
-    override fun onResume(context: Activity) {
-        IronSource.onResume(context)
-    }
-
-    override fun onAdReady(p0: AdInfo?) {
-        Log.d(TAG, "onAdReady: Info: $p0")
-    }
-
-    override fun onAdLoadFailed(p0: IronSourceError?) {
-        Log.d(TAG, "onAdLoadFailed: Error: $p0")
-        // start a new load.
-        val delay = delayLoadAd
-        // calculate next delay
-        delayLoadAd =
-            min(delayLoadAd * 2, DELAY_LOAD_AD_MAX_TIME_MILLISECONDS)
-        handler.postDelayed(loadAdRunnable, delay)
-    }
-
-    override fun onAdOpened(p0: AdInfo?) {
-        Log.d(TAG, "onAdOpened: Info: $p0")
-    }
-
-    override fun onAdShowSucceeded(p0: AdInfo?) {
-        Log.d(TAG, "onAdShowSucceeded: $p0")
-        // update the shown time
-        timeMillsWhenAdShowed = System.currentTimeMillis()
-    }
-
-    override fun onAdShowFailed(p0: IronSourceError?, p1: AdInfo?) {
-        Log.d(TAG, "onAdShowFailed: Info: $p1, Error $p0")
-    }
-
-    override fun onAdClicked(p0: AdInfo?) {
-        Log.d(TAG, "onAdClicked: Info $p0")
-    }
-
-    override fun onAdClosed(p0: AdInfo?) {
-        // Start a new load - this makes sure ads are present when called for show.
+    // Trigger initial load requests
+    init {
         IronSource.loadInterstitial()
-        Log.d(TAG, "onAdClosed: Info $p0")
+        IronSource.loadRewardedVideo()
+    }
+
+    override fun release() {
+        if (::_cachedBannerLayout.isInitialized)
+            IronSource.destroyBanner(_cachedBannerLayout)
+        adManagerScope.cancel()
+    }
+
+    override fun banner(context: Context): View {
+        // Check if banner layout is already cached
+        // Return cached banner if available
+        if (::_cachedBannerLayout.isInitialized)
+            return _cachedBannerLayout
+        // Find the activity associated with the context
+        val activity = context.findActivity() ?: error("No activity associated with view.")
+        // Get the standard banner ad size
+        val banner = AdSize.BANNER.value
+        // Create and configure the IronSource banner ad view
+        _cachedBannerLayout = IronSource.createBanner(activity, banner).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            // Initially hide the ad view until it's loaded
+            visibility = View.GONE
+            // Set the LevelPlay banner listener to handle ad events
+            levelPlayBannerListener = object : LevelPlayBannerListener {
+                override fun onAdLoaded(p0: AdInfo?) {
+                    Log.d(TAG, "onAdLoaded: $p0")
+                    // Notify listener about the ad loaded event
+                    listener?.onAdEvent(AdManager.AD_EVENT_LOADED, p0.asAdInfo)
+                    // Create AdData for impression event (if ad info is available)
+                    val data = if (p0 == null) null else AdData.AdImpression(p0)
+                    // Notify listener about the ad impression event
+                    // for banners this represents both the successful load and the recording of an ad
+                    // impression
+                    listener?.onAdImpression(data)
+                    // Show the banner ad view since it's now loaded
+                    _cachedBannerLayout.visibility = View.VISIBLE
+                }
+
+                override fun onAdLoadFailed(p0: IronSourceError?) {
+                    Log.d(TAG, "onAdLoadFailed: $p0")
+                    // Hide the empty banner.
+                    _cachedBannerLayout.visibility = View.GONE
+                    // Attempt to load the banner again
+                    adManagerScope.launch {
+                        // Retry loading the banner after a delay
+                        delay(BANNER_RETRY_DELAY_MILLS)
+                        IronSource.loadBanner(_cachedBannerLayout)
+                    }
+                }
+
+                override fun onAdClicked(p0: AdInfo?) {
+                    Log.d(TAG, "onAdClicked: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLICKED, p0.asAdInfo)
+                }
+
+                override fun onAdLeftApplication(p0: AdInfo?) {
+                    Log.d(TAG, "onAdLeftApplication: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_APPLICATION_LOST_FOCUS, p0.asAdInfo)
+                }
+
+                override fun onAdScreenPresented(p0: AdInfo?) {
+                    Log.d(TAG, "onAdScreenPresented: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_PRESENTED, p0.asAdInfo)
+                }
+
+                override fun onAdScreenDismissed(p0: AdInfo?) {
+                    Log.d(TAG, "onAdScreenDismissed: $p0")
+                    listener?.onAdEvent(AdManager.AD_EVENT_CLOSED, p0.asAdInfo)
+                }
+            }
+            // Initiate the ad loading process
+            IronSource.loadBanner(this)
+        }
+        // Return the newly created and cached banner layout
+        return _cachedBannerLayout
+    }
+
+    override fun load(size: AdSize) {
+        if (!::_cachedBannerLayout.isInitialized)
+            return
+        // update the banner size
+        _cachedBannerLayout.setBannerSize(size.value)
+        IronSource.loadBanner(_cachedBannerLayout)
     }
 
     /**
@@ -143,6 +312,19 @@ internal class AdManagerImpl(
         }
         IronSource.showInterstitial()
     }
+
+
+    /**
+     * The time this object was created; since this a global variable and hence this represents the
+     * time of app first loaded.
+     */
+    val timeMillsWhenCreated = System.currentTimeMillis()
+
+    /**
+     * The time in *mills* when interstitial ad was showed.
+     * *null* value represents, the ad was never showed.
+     */
+    var timeMillsWhenAdShowed: Long? = null
 
     override fun show(force: Boolean) {
         // Calculate time elapsed since last ad show (or object creation if no ads shown yet)
@@ -164,7 +346,6 @@ internal class AdManagerImpl(
         // Show the ad if conditions are met, otherwise do nothing
         if (show) show()
     }
-
     override fun show(delay: Duration) {
         // Calculate the time elapsed since the last ad was shown
         // (or object creation if no ads shown yet)

@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 06-07-2024.
+ * Created by Zakir Sheikh on 31-07-2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,18 @@
 
 package com.zs.ads
 
-import com.ironsource.mediationsdk.impressionData.ImpressionData
+import com.ironsource.mediationsdk.model.Placement
+
 
 /**
- * @see AdInfo
+ * A value class representing a reward earned from an ad placement.
+ *
+ * @property value The underlying [Placement] object that holds the reward details.
+ * @property amount  The amount of the reward.
+ * @property name The name or type of the reward.
  */
 @JvmInline
-value class AdImpression internal constructor(private val value: ImpressionData){
-    val format: String get() = value.adUnit
-    val network: String get() = value.adNetwork
-    val id: String get() = value.instanceId
-    val country: String get() = value.country
-    val revenue: Double get() = value.revenue
-    val name: String get() = value.instanceName
+value class Reward(internal val value: Placement){
+    val amount get() = value.rewardAmount
+    val name get() = value.rewardName
 }

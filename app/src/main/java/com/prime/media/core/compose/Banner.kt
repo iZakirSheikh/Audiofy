@@ -30,11 +30,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
-import com.zs.ads.AdError
-import com.zs.ads.AdInfo
-import com.zs.ads.AdListener
 import com.zs.ads.AdSize
-import com.zs.ads.AdView
 import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "Banner"
@@ -48,7 +44,7 @@ private const val TAG = "Banner"
  * @param modifier Modifiers to be applied to the AdView.
  * @param size The desired size of the banner ad. Defaults to [AdSize.SMART].
  * @param key An optional key to identify the ad placement. This is typically
- * used to differentiate between different ad units in your app.
+ *             used to differentiate between different ad units in your app.
  */
 @Suppress("UNRESOLVED_REFERENCE")
 @Composable
@@ -58,7 +54,7 @@ fun Banner(
     key: String? = null,
 ) {
     val facade = LocalSystemFacade.current
-    val view = facade.bannerAd as? AdView
+    val view = facade.bannerAd
     val id = remember { View.generateViewId()}
     // Check if the current AdView is either null or has a different ID
     // than the one generated for this composable. This indicates that
@@ -77,11 +73,9 @@ fun Banner(
             view
         },
         modifier = modifier.animateContentSize(), // Apply modifiers to the AndroidView
-        update = { layout ->
-            layout.size = size // Update the ad size
+        update = {
+            facade.loadBannerAd(size)
             Log.d(TAG, "onUpdate Banner : $key $size ")
-            // Load the ad using the provided key
-            layout.loadAd(key)
         },
         onRelease = {
             Log.d(TAG, "onRelease Banner : $key $size ")

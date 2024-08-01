@@ -130,7 +130,7 @@ interface Settings : Blacklist {
          */
         val USE_LEGACY_ARTWORK_METHOD = booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
         val TRASH_CAN_ENABLED =
-            booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
+            booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = false)
 
         /**
          * The set of files/ folders that have been excluded from media scanning.

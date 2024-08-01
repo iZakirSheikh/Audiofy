@@ -19,20 +19,27 @@
 package com.prime.media.library
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Colors
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -57,6 +64,8 @@ import com.prime.media.BuildConfig
 import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.about.AboutUs
+import com.prime.media.core.Anim
+import com.prime.media.core.LongDurationMills
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalNavController
@@ -93,6 +102,9 @@ private val NormalTopBarTitle
 
 private val Colors.topBar
     @Composable inline get() = primary.blend(background, 0.96f)
+
+private val DefaultRepeatableSpec =
+    repeatable(3, tween<Float>(Anim.LongDurationMills, 750))
 
 /**
  * Composable function to display the app bar for the library screen.
@@ -159,40 +171,19 @@ fun CarousalAppBar(
             painter = rememberVectorPainter(image = Icons.Filled.Info),
             contentDescription = "about us",
             modifier = Modifier
-                .layoutId(TopAppBarDefaults.LayoutIdNavIcon)
-                .pulsate(),
+                .layoutId(TopAppBarDefaults.LayoutIdNavIcon),
             tint = contentColor
         )
 
         // Actions  (Buy and settings)
-        val provider = LocalSystemFacade.current
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdAction),
+        CompositionLocalProvider(
+            LocalContentColor provides contentColor,
             content = {
-                // Buy full version button.
-                val purchase by purchase(id = BuildConfig.IAP_NO_ADS)
-                if (!purchase.purchased)
-                    OutlinedButton(
-                        label = textResource(R.string.library_ads),
-                        onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) },
-                        icon = painterResource(id = R.drawable.ic_remove_ads),
-                        modifier = Modifier.scale(0.75f),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = contentColor.copy(0.12f),
-                            contentColor = contentColor
-                        ),
-                        shape = CircleShape
-                    )
-                // Support
-                val ctx = LocalContext.current
-                IconButton(
-                    imageVector = Icons.Outlined.SupportAgent,
-                    onClick = { ctx.startActivity(Settings.TelegramIntent) },
-                    modifier = Modifier,
-                    tint = contentColor
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdAction),
+                    content = { Actions() }
                 )
-
             }
         )
 
@@ -207,7 +198,52 @@ fun CarousalAppBar(
                 .offset {
                     val dp = lerp(0.dp, 16.dp, fraction)
                     IntOffset(dp.roundToPx(), -dp.roundToPx())
-                }
+                },
+            maxLines = 2
         )
     }
+}
+
+context(RowScope)
+@Suppress("NOTHING_TO_INLINE")
+@Composable
+private inline fun Actions() {
+    val contentColor = LocalContentColor.current
+    // Support
+    val ctx = LocalContext.current
+    IconButton(
+        imageVector = Icons.Outlined.SupportAgent,
+        onClick = { ctx.startActivity(Settings.TelegramIntent) },
+        modifier = Modifier,
+        tint = contentColor
+    )
+    // Just return if the app is free version app.
+    val provider = LocalSystemFacade.current
+    if (provider.isAdFreeVersion)
+        return
+
+    // Buy full version button.
+    OutlinedButton(
+        label = textResource(R.string.library_ads),
+        onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) },
+        icon = painterResource(id = R.drawable.ic_remove_ads),
+        modifier = Modifier.scale(0.75f),
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = contentColor.copy(0.24f),
+            contentColor = contentColor
+        ),
+        shape = CircleShape
+    )
+
+    // check if rewarded video is available
+    val available = provider.isRewardedVideoAvailable
+    val color = Material.colors.primary
+    IconButton(
+        imageVector = Icons.Outlined.MoreTime,
+        onClick = provider::showRewardedVideo,
+        tint = contentColor.copy(if (available) ContentAlpha.high else ContentAlpha.disabled),
+        enabled = available,
+        modifier = (if (!available) Modifier else Modifier
+            .pulsate(color, animationSpec = DefaultRepeatableSpec)),
+    )
 }
