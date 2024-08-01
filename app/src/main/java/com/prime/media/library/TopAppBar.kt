@@ -171,8 +171,7 @@ fun CarousalAppBar(
             painter = rememberVectorPainter(image = Icons.Filled.Info),
             contentDescription = "about us",
             modifier = Modifier
-                .layoutId(TopAppBarDefaults.LayoutIdNavIcon)
-                .pulsate(animationSpec = DefaultRepeatableSpec),
+                .layoutId(TopAppBarDefaults.LayoutIdNavIcon),
             tint = contentColor
         )
 

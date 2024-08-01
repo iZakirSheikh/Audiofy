@@ -104,7 +104,7 @@
     <string name="start">Start</string>
     <string name="more">More</string>
     <string name="home">"Home"</string>
-    <string name="videos">Videos</string>
+    <string name="videos">Videos <sup><small>&beta;</small></sup></string>
     <string name="allow">Allow</string>
 
     <!--The play store add of this app recommended by someone arg: playstore address -->

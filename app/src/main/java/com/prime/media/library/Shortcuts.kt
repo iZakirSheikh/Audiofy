@@ -21,6 +21,7 @@ package com.prime.media.library
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.MainActivity
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.shape.FolderShape
 import com.prime.media.core.playback.Playback
@@ -78,11 +80,13 @@ private fun Shortcut(
     // Base container for the shortcut with styling and click handling
     val colors = Material.colors
     val color = colors.onBackground.copy(0.5f)
+    val accent = colors.primary
     Box(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
             // .background(colors.primary.copy(0.035f), FolderShape)
-            .border(1.dp, color, FolderShape) // Light border
+            .border(1.dp, accent.copy(0.4f), FolderShape) // Light border
+            .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,
                 ripple(true, color = Material.colors.primary), // Ripple effect on click
