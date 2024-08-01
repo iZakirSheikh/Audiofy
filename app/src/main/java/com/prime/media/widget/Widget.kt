@@ -1,0 +1,209 @@
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalSharedTransitionApi::class)
+
+package com.prime.media.widget
+
+import android.text.format.DateUtils
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.SliderDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceIn
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import com.airbnb.lottie.LottieProperty
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
+import com.prime.media.Material
+import com.prime.media.R
+import com.prime.media.core.Anim
+import com.prime.media.core.ContentPadding
+import com.prime.media.core.MediumDurationMills
+import com.prime.media.core.compose.Artwork
+import com.prime.media.core.compose.LottieAnimButton
+import com.prime.media.core.compose.LottieAnimation
+import com.prime.media.core.compose.marque
+import com.prime.media.core.compose.sharedBounds
+import com.prime.media.core.compose.sharedElement
+import com.prime.media.core.playback.artworkUri
+import com.prime.media.core.playback.subtitle
+import com.prime.media.core.playback.title
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.primex.material2.ListTile
+import ir.mahozad.multiplatform.wavyslider.material.WavySlider
+import kotlin.math.roundToLong
+
+private val DefaultArtworkSize = 84.dp
+private val DefaultArtworkShape = RoundedCornerShape(20)
+
+@Composable
+fun Widget(
+    item: MediaItem,
+    playing: Boolean,
+    duration: Long,
+    progress: Float,
+    onSeek: (progress: Float) -> Unit,
+    onAction: (action: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val accent = Material.colors.primary
+    ListTile(
+        color = Color.Transparent,
+        modifier = modifier,
+        overline = {
+            Label(
+                item.subtitle.toString(),
+                style = Material.typography.caption,
+                color = LocalContentColor.current.copy(ContentAlpha.medium)
+            )
+        },
+        headline = { Label(item.title.toString(), modifier = Modifier.marque(Int.MAX_VALUE)) },
+        leading = {
+            Artwork(
+                data = item.artworkUri,
+                modifier = Modifier
+                    .sharedBounds(Pixel.SHARED_ARTWORK_ID)
+                    .size(DefaultArtworkSize)
+                    .clip(DefaultArtworkShape),
+            )
+        },
+        trailing = {
+            // show playing bars.
+            LottieAnimation(
+                id = R.raw.playback_indicator,
+                iterations = Int.MAX_VALUE,
+                dynamicProperties = rememberLottieDynamicProperties(
+                    rememberLottieDynamicProperty(
+                        property = LottieProperty.COLOR,
+                        accent.toArgb(),
+                        "**"
+                    )
+                ),
+                modifier = Modifier
+                    .sharedBounds(Pixel.SHARED_PLAYING_BARS_ID)
+                    .requiredSize(24.dp),
+                isPlaying = playing,
+            )
+        },
+        subtitle = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(ContentPadding.small),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                content = {
+                    val color = LocalContentColor.current.copy(ContentAlpha.medium)
+                    // SeekBackward
+                    IconButton(
+                        onClick = { onAction(Pixel.ACTION_PREV_TRACK) },
+                        imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
+                        contentDescription = null,
+                        tint = color
+                    )
+
+                    val properties = rememberLottieDynamicProperties(
+                        rememberLottieDynamicProperty(
+                            property = LottieProperty.STROKE_COLOR,
+                            accent.toArgb(),
+                            "**"
+                        )
+                    )
+                    // Play Toggle
+                    LottieAnimButton(
+                        id = R.raw.lt_play_pause,
+                        atEnd = !playing,
+                        scale = 1.5f,
+                        progressRange = 0.0f..0.29f,
+                        duration = Anim.MediumDurationMills,
+                        easing = LinearEasing,
+                        onClick = { onAction(Pixel.ACTION_PLAY) },
+                        dynamicProperties = properties
+                    )
+
+                    // SeekNext
+                    IconButton(
+                        onClick = { onAction(Pixel.ACTION_NEXT_TRACK) },
+                        imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
+                        contentDescription = null,
+                        tint = color
+                    )
+                }
+            )
+        },
+        footer = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                content = {
+                    // played duration
+                    Label(
+                        when (duration) {
+                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
+                        },
+                        style = Material.typography.caption,
+                        color = LocalContentColor.current.copy(ContentAlpha.medium)
+                    )
+
+                    // slider
+                    WavySlider(
+                        value = progress.fastCoerceIn(0f, 1f),
+                        onValueChange = onSeek,
+                        modifier = Modifier.weight(1f),
+                        // idp because 0 dp is not supported.
+                        waveLength = if (!playing) 0.dp else 20.dp,
+                        waveHeight = if (!playing) 0.dp else 7.dp,
+                        incremental = true,
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = accent,
+                            thumbColor = Color.Transparent
+                        ),
+                    )
+
+                    // total duration
+                    Label(
+                        when (duration) {
+                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            else -> DateUtils.formatElapsedTime((duration / 1000))
+                        },
+                        style = Material.typography.caption,
+                        color = LocalContentColor.current.copy(ContentAlpha.medium)
+                    )
+
+                    // Expand to fill
+                    IconButton(
+                        imageVector = Icons.Outlined.OpenInNew,
+                        //   tint = accent
+                        onClick = { onAction(Pixel.ACTION_LAUCH_CONSOLE) },
+                        modifier = Modifier
+                            .scale(0.9f)
+                            .offset(x = 10.dp),
+                    )
+                }
+            )
+        }
+    )
+}
+

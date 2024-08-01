@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
@@ -398,11 +399,9 @@ private fun Snackbar2(
     elevation: Dp = 6.dp,
 ) {
     Surface(
-        // fill whole width and add some padding.
         modifier = modifier
-            .padding(WindowInsets.navigationBars.asPaddingValues())
             .padding(horizontal = 16.dp)
-            .sizeIn(minHeight = 56.dp),
+            .sizeIn(minHeight = 56.dp, maxWidth = 400.dp, minWidth = 360.dp),
         shape = shape,
         elevation = elevation,
         color = backgroundColor,

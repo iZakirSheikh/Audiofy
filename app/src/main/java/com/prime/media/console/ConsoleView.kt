@@ -93,6 +93,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layoutId
@@ -121,6 +122,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.Player
+import com.airbnb.lottie.LottieProperty
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
 import com.google.accompanist.adaptive.TwoPaneStrategy
@@ -522,13 +526,21 @@ private fun PlayButton(
                 BorderStroke(1.dp, Material.colors.outline.copy(0.06f))
             else null,
             content = {
+                val accent = Material.colors.primary
                 LottieAnimation(
                     id = R.raw.lt_play_pause,
                     atEnd = !isPlaying,
                     scale = 1.5f,
                     progressRange = 0.0f..0.29f,
                     duration = Anim.MediumDurationMills,
-                    easing = LinearEasing
+                    easing = LinearEasing,
+                    dynamicProperties = rememberLottieDynamicProperties(
+                        rememberLottieDynamicProperty(
+                            property = LottieProperty.STROKE_COLOR,
+                            accent.toArgb(),
+                            "**"
+                        )
+                    )
                 )
             }
         )
