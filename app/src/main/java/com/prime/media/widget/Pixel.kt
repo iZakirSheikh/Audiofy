@@ -8,8 +8,10 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +62,9 @@ import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalAnimatedVisibilityScope
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.current
+import com.prime.media.core.compose.scale
 import com.prime.media.core.compose.sharedBounds
+import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
 import kotlinx.coroutines.Dispatchers
@@ -134,9 +139,10 @@ private fun Layout(
             data = imageUri,
             modifier = Modifier
                 .border(1.dp, Color.White.copy(0.12f), CircleShape)
-                .clip(CircleShape)
                 .aspectRatio(1.0f)
-                .sharedBounds(Pixel.SHARED_ARTWORK_ID),
+                .sharedElement(Pixel.SHARED_ARTWORK_ID)
+                .clip(CircleShape)
+            ,
         )
 
         // Divider
@@ -172,6 +178,7 @@ private fun Layout(
 private val RECOMMENDED_ELEVATION = 12.dp
 private val LAYOUT_MAX_WIDTH = 400.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Pixel(
     modifier: Modifier = Modifier,
@@ -264,19 +271,15 @@ fun Pixel(
         modifier = Modifier
             .padding(horizontal = ContentPadding.large)
             .widthIn(max = LAYOUT_MAX_WIDTH)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        //Check if the tap is on the left half.
-                        val left = it.x < size.width / 2
-                        when {
-                            // If the tap is on the right and not expanded, launch console.
-                            !left && !expanded -> onAction(Pixel.ACTION_LAUCH_CONSOLE)
-                            else -> expanded = !expanded
-                        }
-                    }
-                )
-            }
+            .combinedClickable(
+                null, scale(),
+                onClick = { expanded = !expanded },
+                onLongClick = {
+                    if (!expanded)
+                        onAction(Pixel.ACTION_LAUCH_CONSOLE)
+                    else expanded = false
+                }
+            )
             .shadow(RECOMMENDED_ELEVATION, shape)
             .border(1.dp, Color.White.copy(0.12f), shape)
             .background(bgColor, shape = shape),

@@ -8,9 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.animateColorAsState
@@ -50,15 +47,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -73,11 +73,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
+import androidx.media3.common.Player
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -87,6 +88,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import androidx.palette.graphics.Palette
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.Firebase
@@ -114,6 +116,9 @@ import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
+import com.prime.media.core.playback.artworkUri
+import com.prime.media.core.playback.title
+import com.prime.media.core.util.getAlbumArt
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -136,12 +141,11 @@ import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.TagEditorViewModel
 import com.prime.media.library.Library
+import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Pixel
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
-import com.primex.core.BlueLilac
-import com.primex.core.DahliaYellow
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
@@ -151,6 +155,9 @@ import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlin.math.ln
 
@@ -266,7 +273,7 @@ fun Colors.backgroundColorAtElevation(
  * @see WindowInsetsControllerCompat.isAppearanceLightStatusBars
  */
 inline val Colors.isAppearanceLightSystemBars
-    @Composable inline get() = isLight && !preference(key = Settings.COLOR_STATUS_BAR).value
+    @Composable inline get() = isLight
 
 /**
  * Observes whether the app is in light mode based on the user's preference and system settings.
@@ -360,6 +367,76 @@ private fun Permission() {
 }
 
 private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
+private val LightAccentColor = Color.AzureBlue
+private val DarkAccentColor = Color.Amber
+
+/**
+ * Provides a dynamic accent color based on the current theme (dark/light) and the user's
+ * chosen colorization strategy. This composable reacts to changes in both the theme and
+ * the currently playing media item, updating the accent color accordingly.
+ *
+ * @param isDark Indicates whether the current theme is dark.
+ * @return A [State] object holding the calculated accent color, which will trigger
+ * recomposition when the color changes.
+ */
+@Composable
+private fun generate(isDark: Boolean): State<Color> {
+    // Get the activity context for accessing resources and services
+    val activity = LocalView.current.context as MainActivity
+
+    // Default accent color based on the current theme
+    val default = if (isDark) DarkAccentColor else LightAccentColor
+
+    return produceState(initialValue = default, key1 = isDark) {
+        Log.d(TAG, "generate: $isDark")
+
+        // Access the remote player and user preferences
+        val remote = activity.remote
+        val preferences = activity.preferences
+
+        // Combine events from the player with the colorization strategy preference
+        remote.events.transform {
+            // Emit the current media item initially, after a short delay
+            if (it == null) {
+                delay(500)
+                return@transform emit(remote.current)
+            }
+            // Emit the current media item when a transition occurs (e.g., new song starts)
+            if (it.containsAny(Player.EVENT_MEDIA_ITEM_TRANSITION))
+                emit(remote.current)
+            Log.d(TAG, "events: $it")
+        }.combine(preferences[Settings.COLORIZATION_STRATEGY]) { current, strategy ->
+            Log.d(TAG, "generate: ${current?.title}")
+            when (strategy) {
+                ColorizationStrategy.Default -> default // Use the default accent color for this theme
+                ColorizationStrategy.Artwork -> {
+                    // Extract a vibrant color from the current media item's artwork
+                    val artworkUri = current?.artworkUri
+                        ?: return@combine default // Get artwork URI or use default
+                    val bitmap = activity.getAlbumArt(artworkUri)
+                        ?: return@combine Color.Amber // Load bitmap or use fallback
+                    val palette =
+                        Palette.from(bitmap.toBitmap()).generate() // Analyze colors in the artwork
+                    val argb =
+                        default.toArgb() // Get ARGB value of the default color for potential adjustment
+
+                    // Pick a vibrant color based on the current theme
+                    val vibrantColor =
+                        if (isDark) palette.getLightVibrantColor(argb) else palette.getDarkVibrantColor(
+                            argb
+                        )
+                    Color(vibrantColor) // Create a Color object from the chosen value
+                }
+
+                else -> error("The Strategy $strategy is not supported!") // Handle unsupported strategies
+            }
+        }
+            .catch { emit(default) } // Emit the default color if any errors occur during color extraction
+            .collect {
+                value = it
+            } // Update the state with the calculated accent color, triggering recomposition
+    }
+}
 
 /**
  * Defines theme for app.
@@ -380,16 +457,15 @@ private fun Material(
         targetValue = if (darkTheme) Color.TrafficBlack else Color.White,
         animationSpec = DefaultColorSpec
     )
-
-    val primary = if (darkTheme) Color.Amber else Color.BlueLilac
-    val secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000)
+    val accent by generate(darkTheme)
+    val primary by animateColorAsState(accent)
     val colors = Colors(
-        primary = if (darkTheme) Color.Amber else Color.AzureBlue,
-        secondary = if (darkTheme) Color.DahliaYellow else Color(0xFF008000),
+        primary = primary,
+        secondary = primary,
         background = background,
         surface = surface,
         primaryVariant = primary.hsl(lightness = primary.lightness * 0.9f), // make a bit darker.
-        secondaryVariant = secondary.hsl(lightness = secondary.lightness * 0.9f),
+        secondaryVariant = primary.hsl(lightness = primary.lightness * 0.9f), // make a bit darker.,
         onPrimary = Color.SignalWhite,
         onSurface = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
         onBackground = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
@@ -417,13 +493,14 @@ private fun Material(
     // Update the system bars appearance with a delay to avoid splash screen issue.
     // Use flag to avoid hitting delay multiple times.
     var isFirstPass by remember { mutableStateOf(true) }
-    val colorSystemBars by preference(key = Settings.COLOR_STATUS_BAR)
-    val hideStatusBar by preference(key = Settings.HIDE_STATUS_BAR)
-    val color = when (colorSystemBars) {
-        false -> Color.Transparent
-        else -> colors.primaryVariant
+    val translucent by preference(key = Settings.TRANSLUCENT_SYSTEM_BARS)
+    val hideStatusBar by preference(key = Settings.IMMERSIVE_VIEW)
+    // Set the color for status and navigation bars based on translucency
+    val color = when (translucent) {
+        false -> Color.Transparent.toArgb()
+        else -> Color(0x20000000).toArgb()
     }
-    val isAppearanceLightSystemBars = !darkTheme && !colorSystemBars
+    val isAppearanceLightSystemBars = !darkTheme
     LaunchedEffect(isAppearanceLightSystemBars, hideStatusBar) {
         // A Small Delay to override the change of system bar after splash screen.
         // This is a workaround for a problem with using sideEffect to hideSystemBars.
@@ -434,16 +511,16 @@ private fun Material(
         val window = (view.context as Activity).window
         // Obtain the controller for managing the insets of the window.
         val controller = WindowCompat.getInsetsController(window, view)
-        window.navigationBarColor = color.toArgb()
-        window.statusBarColor = color.toArgb()
+        window.navigationBarColor = color
+        window.statusBarColor = color
         // Set the color of the navigation bar and the status bar to the determined color.
         controller.isAppearanceLightStatusBars = isAppearanceLightSystemBars
         controller.isAppearanceLightNavigationBars = isAppearanceLightSystemBars
         // Hide or show the status bar based on the user's preference.
         if (hideStatusBar)
-            controller.hide(WindowInsetsCompat.Type.statusBars())
+            controller.hide(WindowInsetsCompat.Type.systemBars())
         else
-            controller.show(WindowInsetsCompat.Type.statusBars())
+            controller.show(WindowInsetsCompat.Type.systemBars())
     }
 }
 
@@ -571,9 +648,9 @@ private fun NavigationBar(
         else -> BottomAppBar(
             modifier = modifier/*.height(110.dp)*/,
             windowInsets = WindowInsets.navigationBars,
-            backgroundColor = Color.Transparent,
+            backgroundColor = Material.colors.backgroundColorAtElevation(1.dp),
             contentColor = Material.colors.onBackground,
-            elevation = 0.dp,
+            elevation = 4.dp,
             contentPadding = PaddingValues(
                 horizontal = ContentPadding.normal,
                 vertical = ContentPadding.medium
@@ -605,7 +682,7 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
     // Settings
     composable(Settings.route) {
         val viewModel = hiltViewModel<SettingsViewModel>()
-        Settings(state = viewModel)
+        Settings(viewModel)
     }
     // Albums
     composable(Albums.route) {
@@ -655,7 +732,7 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
     // Console
     composable(Console.route) {
         val viewModel = hiltViewModel<ConsoleViewModel>()
-        CompositionLocalProvider (LocalAnimatedVisibilityScope provides this) {
+        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
             Console(state = viewModel)
         }
     }
@@ -670,24 +747,13 @@ private val ROUTES_IN_NAV_BAR =
 /**
  * The shape of the content inside the scaffold.
  */
-private val CONTENT_SHAPE = RoundedCornerShape(8)
-// Default Enter/Exit Transitions.
-private val DefaultEnterTransition:
-        (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) = {
-        scaleIn(tween(220, 90), 0.98f) + fadeIn(tween(700))
-    }
-private val DefaultExitTransition:
-        (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition) = {
-        fadeOut(animationSpec = tween(700))
-    }
+private val CONTENT_SHAPE = RoundedCornerShape(topStartPercent = 8, bottomStartPercent = 8)
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(channel: Channel) {
     // Determine if the app is in dark mode based on user preferences
-    val isDark = isPreferenceDarkTheme()
     val navController = rememberNavController()
-    Material(isDark) {
+    Material(isPreferenceDarkTheme()) {
         // Get the window size class
         val clazz = LocalWindowSize.current
         // Provide the navController, newWindowClass through LocalComposition.
@@ -699,8 +765,10 @@ fun Home(channel: Channel) {
                 val facade = LocalSystemFacade.current
                 // Determine whether to hide the navigation bar based on the current destination
                 val hideNavigationBar = navController.current !in ROUTES_IN_NAV_BAR
+                Log.d(TAG, "Home: ${navController.current}")
+                val vertical = clazz.widthRange < Range.Medium
                 NavigationSuiteScaffold(
-                    vertical = clazz.widthRange < Range.Medium,
+                    vertical = vertical,
                     channel = channel,
                     hideNavigationBar = hideNavigationBar,
                     progress = facade.inAppUpdateProgress,
@@ -708,11 +776,18 @@ fun Home(channel: Channel) {
                     // Set up the navigation bar using the NavBar composable
                     pixel = { Pixel() },
                     navBar = { NavigationBar(clazz.navTypeRail, navController) },
+                    shape = when {
+                        hideNavigationBar || !vertical -> RectangleShape
+                        else -> CONTENT_SHAPE
+                    },
                     content = {
                         val context = LocalContext.current
                         // Load start destination based on if storage permission is set or not.
                         val startDestination =
-                            when (ContextCompat.checkSelfPermission(context, Audiofy.STORAGE_PERMISSION)) {
+                            when (ContextCompat.checkSelfPermission(
+                                context,
+                                Audiofy.STORAGE_PERMISSION
+                            )) {
                                 PackageManager.PERMISSION_GRANTED -> Library.route
                                 else -> PERMISSION_ROUTE
                             }
@@ -724,8 +799,13 @@ fun Home(channel: Channel) {
                                 .clip(CONTENT_SHAPE)
                                 .background(Material.colors.background)
                                 .fillMaxSize(),
-                            enterTransition = DefaultEnterTransition,
-                            exitTransition = DefaultExitTransition
+                            enterTransition = {
+                                scaleIn(
+                                    tween(220, 90),
+                                    0.98f
+                                ) + fadeIn(tween(700))
+                            },
+                            exitTransition = { fadeOut(animationSpec = tween(700)) }
                         )
                     }
                 )

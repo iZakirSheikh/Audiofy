@@ -1484,20 +1484,13 @@ fun Console(state: Console) {
             detailsOf = DETAILS_OF_NONE
     }
 
-    // Check the value of detailsOf to determine whether to
-    // show the content in full screen or in two panes
-    // FixMe - I suspect moving content makes it not animate.
-    if (!isInTwoPaneMode)
-    // If detailsOf is none, return the content without using the TwoPane component
-        return content()
-
     // Use TwoPane component to show the content in two panes
     val context = LocalContext.current
     TwoPane(
         // The first pane is the content, which can be moved around based on details being shown
         first = content,
-        strategy = TwoPaneStrategy(windowSize, 10.dp),
-        displayFeatures = if (isInInspectionMode) emptyList() else calculateDisplayFeatures(activity = context.activity),
+        strategy = if(!isInTwoPaneMode) VerticalTwoPaneStrategy(1f) else TwoPaneStrategy(windowSize, 10.dp),
+        displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(activity = context.activity),
         // The second pane is the details pane, which can show different content based on the
         // detailsOf value
         // Use the horizontal or vertical two pane strategy based on the orientation and the new window size

@@ -109,6 +109,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.None
 import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.contentInsets
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shape.FolderShape
 import com.prime.media.core.compose.shimmer.pulsate
@@ -189,6 +190,7 @@ private inline fun Layout(
                             modifier = Modifier
                                 .verticalScroll(rememberScrollState())
                                 .navigationBarsPadding()
+                                .padding(WindowInsets.contentInsets)
                                 .padding(it)
                                 .fillMaxSize(),
                             content = { content() }

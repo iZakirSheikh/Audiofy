@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -143,7 +144,7 @@ class AudiosViewModel @Inject constructor(
         meta = MetaData(
             Text(
                 buildAnnotatedString {
-                    append(
+                    appendLine(
                         when (type) {
                             GET_EVERY -> "Audios"
                             GET_FROM_GENRE -> "Genre"
@@ -153,9 +154,7 @@ class AudiosViewModel @Inject constructor(
                             else -> error("no such audios key.")
                         }
                     )
-                    withStyle(SpanStyle(fontSize = 9.sp)) {
-                        // new line
-                        append("\n")
+                    withStyle(SpanStyle(fontSize = 9.sp, baselineShift = BaselineShift(0.5f))) {
                         // name of the album.
                         append(
                             when (type) {

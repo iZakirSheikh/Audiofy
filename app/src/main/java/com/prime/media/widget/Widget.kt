@@ -84,27 +84,20 @@ fun Widget(
             Artwork(
                 data = item.artworkUri,
                 modifier = Modifier
-                    .sharedBounds(Pixel.SHARED_ARTWORK_ID)
                     .size(DefaultArtworkSize)
+                    .sharedElement(Pixel.SHARED_ARTWORK_ID)
                     .clip(DefaultArtworkShape),
             )
         },
         trailing = {
-            // show playing bars.
-            LottieAnimation(
-                id = R.raw.playback_indicator,
-                iterations = Int.MAX_VALUE,
-                dynamicProperties = rememberLottieDynamicProperties(
-                    rememberLottieDynamicProperty(
-                        property = LottieProperty.COLOR,
-                        accent.toArgb(),
-                        "**"
-                    )
-                ),
+            // Expand to fill
+            IconButton(
+                imageVector = Icons.Outlined.OpenInNew,
+                //   tint = accent
+                onClick = { onAction(Pixel.ACTION_LAUCH_CONSOLE) },
                 modifier = Modifier
-                    .sharedBounds(Pixel.SHARED_PLAYING_BARS_ID)
-                    .requiredSize(24.dp),
-                isPlaying = playing,
+                    .scale(0.9f)
+                    .offset(x = 14.dp),
             )
         },
         subtitle = {
@@ -153,10 +146,28 @@ fun Widget(
         },
         footer = {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
                 content = {
+                    // show playing bars.
+                    LottieAnimation(
+                        id = R.raw.playback_indicator,
+                        iterations = Int.MAX_VALUE,
+                        dynamicProperties = rememberLottieDynamicProperties(
+                            rememberLottieDynamicProperty(
+                                property = LottieProperty.COLOR,
+                                accent.toArgb(),
+                                "**"
+                            )
+                        ),
+                        modifier = Modifier
+                            .sharedBounds(Pixel.SHARED_PLAYING_BARS_ID)
+                            .requiredSize(24.dp),
+                        isPlaying = playing,
+                    )
+
+
                     // played duration
                     Label(
                         when (duration) {
@@ -191,19 +202,8 @@ fun Widget(
                         style = Material.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
-
-                    // Expand to fill
-                    IconButton(
-                        imageVector = Icons.Outlined.OpenInNew,
-                        //   tint = accent
-                        onClick = { onAction(Pixel.ACTION_LAUCH_CONSOLE) },
-                        modifier = Modifier
-                            .scale(0.9f)
-                            .offset(x = 10.dp),
-                    )
                 }
             )
         }
     )
 }
-
