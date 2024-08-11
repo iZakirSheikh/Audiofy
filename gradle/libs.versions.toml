@@ -1,7 +1,7 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.6.0-rc01"  # Android Gradle Plugin for building Android apps
+agp = "8.5.2"  # Android Gradle Plugin for building Android apps
 kotlin = "2.0.10"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
 crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics
@@ -9,7 +9,7 @@ hilt-android = "2.52"  # Hilt for dependency injection in Android apps
 
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
-media3 = "1.4.0"  # Media playback, including audio and video
+media3 = "1.3.1"  # Media playback, including audio and video
 compose = "1.7.0-beta07"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
@@ -82,7 +82,7 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = 
 media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 mp3agic = { module = "com.mpatric:mp3agic", version = "0.9.1" }
-codex_extensions = { module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version =  "0.8.1"}
+codex_extensions = { module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version =  "0.7.1"}
 
 # Dependency Injection
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
