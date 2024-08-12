@@ -104,7 +104,6 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.prime.player
-          changesNotSentForReview: true
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: internal
 
