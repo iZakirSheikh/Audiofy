@@ -455,197 +455,7 @@ private fun Header(
     }
 }
 
-private val HeaderArtWorkShape = RoundedCornerShape(20)
 
-/**
- * A composable that display the [value] of the list of directory.
- *
- * @param value The metadata for an item in the directory.
- * @param modifier A modifier to apply to the metadata composable.
- *
- * Usage:
- * ```
- * Metadata(
- *     value = itemMetadata,
- *     modifier = Modifier.padding(8.dp)
- * )
- * ```
- */
-@Composable
-private fun <T : Any> Metadata(
-    resolver: DirectoryViewModel<T>,
-    onPerformAction: (action: Action) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    // return spacer is meta is null
-    val meta = resolver.meta ?: return Spacer(modifier = modifier)
-    // What is the meta?
-    // A MetaData provides additional info regarding the directory.
-    // The 2nd two slots of mActions are filled by this.
-    // TODO: Future versions might animate between vertical/horizontal.
-    ConstraintLayout(modifier) {
-        val (Artwork, Title, Cardinality, Date, Action1, Action2, Divider) = createRefs()
-
-        // create the chain
-        // This will determine the size of the MetaData Composable.
-        constrain(
-            ref = createVerticalChain(Artwork, Action1, chainStyle = ChainStyle.Packed),
-            constrainBlock = {
-                // Divider will act as the center anchor of Play Button
-                top.linkTo(parent.top, ContentPadding.normal)
-                bottom.linkTo(parent.bottom, ContentPadding.xLarge)
-            }
-        )
-
-
-        // Artwork.
-        // Because this composable only is hown when artwork isn't null; so
-        Artwork(
-            data = meta.artwork ?: "",
-            modifier = Modifier
-                .shadow(ContentElevation.high, HeaderArtWorkShape)
-                .background(Material.colors.surface)
-                .constrainAs(Artwork) {
-                    start.linkTo(parent.start, ContentPadding.normal)
-                    width = Dimension.value(76.dp)
-                    height = Dimension.ratio("0.61")
-                }
-        )
-
-        // Title
-        // since meta is Text hence annotated string can be used to populate subtitle.
-        Header(
-            text = stringResource(value = meta.title),
-            style = Material.typography.h4,
-            maxLines = 2,
-            textAlign = TextAlign.Start,
-
-            modifier = Modifier.constrainAs(Title) {
-                start.linkTo(Artwork.end, ContentPadding.normal)
-                end.linkTo(parent.end, ContentPadding.normal)
-                top.linkTo(Artwork.top)
-                width = Dimension.fillToConstraints
-            }
-        )
-
-        // line 3 of details
-        constrain(
-            ref = createHorizontalChain(
-                Cardinality,
-                Divider,
-                Date,
-                chainStyle = ChainStyle.SpreadInside
-            ),
-            constrainBlock = {
-                start.linkTo(Artwork.end, ContentPadding.normal)
-                end.linkTo(parent.end, ContentPadding.normal)
-            }
-        )
-
-        //Tracks
-        val count = meta.cardinality
-        val color = LocalContentColor.current
-        Text(
-            modifier = Modifier.constrainAs(Cardinality) {
-                top.linkTo(Title.bottom, ContentPadding.normal)
-                width = Dimension.percent(0.20f)
-            },
-            text = buildAnnotatedString {
-                append("$count\n")
-                withStyle(
-                    SpanStyle(
-                        color = color.copy(ContentAlpha.medium),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        baselineShift = BaselineShift(-0.7f)
-                    )
-                ) {
-                    append("Files")
-                }
-            },
-            textAlign = TextAlign.Center,
-            style = Material.typography.h6,
-            fontWeight = FontWeight.SemiBold,
-        )
-
-        //Divider 2
-        Divider(
-            modifier = Modifier.constrainAs(Divider) {
-                height = Dimension.value(56.dp)
-                top.linkTo(Cardinality.top, -ContentPadding.small)
-                width = Dimension.value(1.dp)
-            }
-        )
-
-        val date =
-            if (meta.dateModified == -1L) "N/A" else DateUtils.formatAsRelativeTimeSpan(meta.dateModified)
-        Text(
-            text = buildAnnotatedString {
-                append("$date\n")
-                withStyle(
-                    SpanStyle(
-                        color = color.copy(ContentAlpha.medium),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        baselineShift = BaselineShift(-0.7f)
-                    )
-                ) {
-                    append("Last Updated")
-                }
-            },
-            textAlign = TextAlign.Center,
-            style = Material.typography.h6,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.constrainAs(Date) {
-                top.linkTo(Cardinality.top)
-                width = Dimension.fillToConstraints
-            },
-        )
-
-        val actions = resolver.mActions
-        val second = actions.getOrNull(2)
-        if (second != null)
-            OutlinedButton(
-                label = stringResource(value = second.title),
-                onClick = { onPerformAction(second) },
-                icon = rememberVectorPainter(image = second.icon),
-                colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
-                border = ButtonDefaults.outlinedBorder,
-                modifier = Modifier.constrainAs(Action2) {
-                    bottom.linkTo(Action1.bottom)
-                    end.linkTo(Action1.start, ContentPadding.small)
-                    start.linkTo(Artwork.start, ContentPadding.medium)
-                    width = Dimension.fillToConstraints
-                },
-                contentPadding = PaddingValues(11.dp),
-                shape = Material.shapes.small2
-            )
-
-        val first = actions.getOrNull(1)
-        if (first != null)
-            Button(
-                label = stringResource(value = first.title),
-                onClick = { onPerformAction(first) },
-                icon = rememberVectorPainter(image = first.icon),
-                modifier = Modifier
-                    .padding(top = ContentPadding.xLarge)
-                    .constrainAs(Action1) {
-                        end.linkTo(parent.end, ContentPadding.xLarge)
-                        if (second != null)
-                            start.linkTo(Action2.end, ContentPadding.small)
-                        else
-                            start.linkTo(Artwork.start, ContentPadding.medium)
-                        width = Dimension.fillToConstraints
-                    },
-                contentPadding = PaddingValues(9.dp),
-                elevation = ButtonDefaults.elevation(
-                    defaultElevation = 8.dp,
-                    pressedElevation = 0.dp
-                ),
-                shape = Material.shapes.small2
-            )
-    }
-}
 
 // recyclable items.
 private const val CONTENT_TYPE_HEADER = "_header"
@@ -741,6 +551,8 @@ private fun <T : Any> List(
     cells: GridCells,
     key: ((item: T) -> Any)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onAction: (action: Action) -> Unit,
     itemContent: @Composable LazyGridItemScope.(T) -> Unit
 ) {
@@ -770,7 +582,9 @@ private fun <T : Any> List(
     LazyVerticalGrid(
         columns = cells,
         modifier = modifier,
-        contentPadding = LocalWindowPadding.current + contentPadding
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement,
+        contentPadding = WindowInsets.contentInsets + contentPadding
     ) {
         // used to pin the list to top.
         // such data search bar is not opened in hiding.
@@ -884,6 +698,8 @@ fun <T : Any> Directory(
     cells: GridCells,
     key: ((item: T) -> Any)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onAction: (action: Action) -> Unit,
     itemContent: @Composable LazyGridItemScope.(T) -> Unit,
 ) {
@@ -917,7 +733,7 @@ fun <T : Any> Directory(
                 FloatingActionButton(
                     onClick = { onAction(action) },
                     shape = RoundedCornerShape(30),
-                    modifier = Modifier.padding(LocalWindowPadding.current),
+                    modifier = Modifier.padding(WindowInsets.contentInsets),
                     content = {
                         // the icon of the Fab
                         Icon(
@@ -934,6 +750,8 @@ fun <T : Any> Directory(
                 cells = cells,
                 modifier = Modifier.padding(it),
                 contentPadding = contentPadding,
+                horizontalArrangement = horizontalArrangement,
+                verticalArrangement = verticalArrangement,
                 itemContent = itemContent,
                 key = key,
                 onAction = onAction

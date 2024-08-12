@@ -3,8 +3,12 @@ package com.prime.media.impl
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -14,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.core.util.PathUtils
 import com.prime.media.core.util.asComposeState
+import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Preference
 import com.prime.media.settings.Settings
 import com.primex.core.Text
@@ -48,37 +53,29 @@ class SettingsViewModel @Inject constructor(
     }
 
 
-    override val colorStatusBar by with(preferences) {
-        preferences[Settings.COLOR_STATUS_BAR].map {
+    override val translucentSystemBars by with(preferences) {
+        preferences[Settings.TRANSLUCENT_SYSTEM_BARS].map {
             Preference(
-                vector = null,
-                title = Text(R.string.pref_color_system_bars),
-                summery = Text(R.string.pref_color_system_bars_summery),
+                vector = Icons.Outlined.Fullscreen,
+                title = Text(R.string.pref_translucent_system_bars),
+                summery = Text(R.string.pref_translucent_system_bars_summery),
                 value = it
             )
         }.asComposeState()
     }
 
-    override val hideStatusBar by with(preferences) {
-        preferences[Settings.HIDE_STATUS_BAR].map {
+    override val immersiveView by with(preferences) {
+        preferences[Settings.IMMERSIVE_VIEW].map {
             Preference(
                 value = it,
-                title = Text(R.string.pref_hide_status_bar),
-                summery = Text(R.string.pref_hide_status_bar_summery),
-                vector = Icons.Outlined.HideImage
+                title = Text(R.string.pref_immersive_view),
+                summery = Text(R.string.pref_immersive_view_summery),
+                vector = Icons.Outlined.VisibilityOff
             )
         }.asComposeState()
     }
 
-    override val forceAccent by with(preferences) {
-        preferences[Settings.FORCE_COLORIZE].map {
-            Preference(
-                value = it,
-                title = Text(R.string.pref_force_accent_color),
-                summery = Text(R.string.pref_force_accent_color_summery)
-            )
-        }.asComposeState()
-    }
+
 
     override val minTrackLength: Preference<Int> by with(preferences) {
         preferences[Settings.MIN_TRACK_LENGTH_SECS].map {
@@ -105,6 +102,26 @@ class SettingsViewModel @Inject constructor(
             Preference(
                 title = Text(R.string.pref_fetch_artwork_from_media_store),
                 summery = Text(R.string.pref_fetch_artwork_from_media_store_summery),
+                value = it
+            )
+        }.asComposeState()
+    }
+
+    override val gridItemSizeMultiplier: Preference<Float> by with(preferences) {
+        preferences[Settings.GRID_ITEM_SIZE_MULTIPLIER].map {
+            Preference(
+                title = Text(R.string.pref_grid_item_size_multiplier),
+                summery = Text(R.string.pref_grid_item_size_multiplier_summery),
+                value = it,
+                vector = Icons.Outlined.GridView
+            )
+        }.asComposeState()
+    }
+    override val colorizationStrategy: Preference<ColorizationStrategy> by with(preferences) {
+        preferences[Settings.COLORIZATION_STRATEGY].map {
+            Preference(
+                title = Text(R.string.pref_colorization_strategy),
+                summery = Text(R.string.pref_colorization_strategy_summery),
                 value = it
             )
         }.asComposeState()
@@ -171,7 +188,7 @@ class SettingsViewModel @Inject constructor(
                 title = Text(R.string.pref_font_scale),
                 summery = Text(R.string.pref_font_scale_summery),
                 value = it,
-                vector = Icons.Outlined.ZoomIn
+                vector = Icons.Outlined.TextFields
             )
         }.asComposeState()
     }

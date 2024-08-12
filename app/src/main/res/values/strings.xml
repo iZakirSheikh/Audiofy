@@ -215,12 +215,12 @@
         Select the app theme: dark, light, or follow the system settings.
     </string>
     <!--Color StatusBar-->
-    <string name="pref_color_system_bars">Color Status Bar</string>
-    <string name="pref_color_system_bars_summery">Make the status bar colorful.</string>
+    <string name="pref_translucent_system_bars">System Bars</string>
+    <string name="pref_translucent_system_bars_summery">Controls the translucency or full transparency of system bars for edge-to-edge content display.</string>
     <!--Immersive View-->
-    <string name="pref_hide_status_bar">Hide Status Bar</string>
-    <string name="pref_hide_status_bar_summery">
-        Enjoy a more immersive view without the status bar.
+    <string name="pref_immersive_view">Immersive View</string>
+    <string name="pref_immersive_view_summery">
+        Hide the status bar and navigation bar for a distraction-free, full screen experience.
     </string>
     <!--Force Accent-->
     <string name="pref_force_accent_color">Force Accent Color</string>
@@ -430,4 +430,11 @@
             \nTotal premium days: %2$d. <b>Enjoy!</b>
        </font>
     </string>
+    <string name="pref_grid_item_size_multiplier">Grid Item size </string>
+    <string name="pref_grid_item_size_multiplier_summery">Control how much space each item takes up in the grid layout.</string>
+    <string name="pref_colorization_strategy">Auto Colorize &beta;</string>
+    <string name="pref_colorization_strategy_summery">Dynamically generate a theme based on the colors of the currently playing media artwork.</string>
+    <string name="times_factorx_f">%.1$f x</string>
+    <string name="pref_privacy_policy_summery">Click here to view the privacy policy.</string>
+    <string name="pref_privacy_policy">Privacy Policy</string>
 </resources>

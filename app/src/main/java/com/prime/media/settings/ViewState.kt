@@ -18,6 +18,7 @@ import com.prime.media.core.NightMode
 import com.prime.media.core.Route
 import com.prime.media.core.playback.Playback
 import com.primex.core.Text
+import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
@@ -42,6 +43,13 @@ private val provider = GoogleFont.Provider(
     providerPackage = "com.google.android.gms",
     certificates = R.array.com_google_android_gms_fonts_certs
 )
+
+/**
+ * Represents the available strategies for extracting a source color accent to construct a theme.
+ */
+enum class ColorizationStrategy {
+    Manual, Default, Wallpaper, Artwork
+}
 
 @Stable
 private fun FontFamily(name: String) = FontFamily(
@@ -114,9 +122,8 @@ interface Settings : Blacklist {
                     override fun restore(value: String): NightMode = NightMode.valueOf(value)
                 }
             )
-        val FORCE_COLORIZE = booleanPreferenceKey(PREFIX + "_force_colorize", false)
-        val COLOR_STATUS_BAR = booleanPreferenceKey(PREFIX + "_color_status_bar", false)
-        val HIDE_STATUS_BAR = booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
+        val TRANSLUCENT_SYSTEM_BARS = booleanPreferenceKey(PREFIX + "_force_colorize", true)
+        val IMMERSIVE_VIEW = booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
 
         /**
          * The length/duration of the track in mills considered above which to include
@@ -136,7 +143,7 @@ interface Settings : Blacklist {
          * The set of files/ folders that have been excluded from media scanning.
          */
         val BLACKLISTED_FILES = stringSetPreferenceKey(PREFIX + "_blacklisted_files")
-        val GAPLESS_PLAYBACK = booleanPreferenceKey(PREFIX + "_gap_less_playback")
+        val GAP_LESS_PLAYBACK = booleanPreferenceKey(PREFIX + "_gap_less_playback")
         val CROSS_FADE_DURATION_SECS = intPreferenceKey(PREFIX + "_cross_fade_tracks_durations")
 
         /**
@@ -154,36 +161,36 @@ interface Settings : Blacklist {
         val USE_IN_BUILT_AUDIO_FX = booleanPreferenceKey(PREFIX + "_use_in_built_audio_fx", true)
 
         /**
-         * Grid Size Multiplier.
-         *
-         * This constant represents a value between 0.6 and 1.5f that determines the size of items in a grid.
-         * Users can adjust this multiplier to make grid items appear smaller or larger based on their preferences.
-         *
-         * Usage:
-         * ```kotlin
-         * val GRID_ITEM_SIZE_MULTIPLIER = floatPreferenceKey(PREFIX + "_font_scale", defaultValue = 1.0f)
-         * ```
+         * Preference key for the grid item size multiplier (0.6 - 2.0f).
+         * Adjust to make grid items smaller or larger.
          */
-        val GRID_ITEM_SIZE_MULTIPLIER = floatPreferenceKey(PREFIX + "_grid_item_size_multiplier", defaultValue = 1.0f)
+        val GRID_ITEM_SIZE_MULTIPLIER =
+            floatPreferenceKey(PREFIX + "_grid_item_size_multiplier", defaultValue = 1.0f)
 
         /**
-         * Font Scale Preference.
-         *
-         * This constant represents the scaling factor applied to the system font.
-         * Users can adjust this value to control the size of the font, with the default being the system default font size.
-         * The acceptable range is from 1.0f to 2.0f (twice the system default size).
-         *
-         * Usage:
-         * ```kotlin
-         * val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
+         * Preference key for font scale (0.8f - 2.0f).
+         * Adjust to control font size relative to system default (-1f).
          */
         val FONT_SCALE = floatPreferenceKey(PREFIX + "_font_scale", -1f)
+
+
+        val COLORIZATION_STRATEGY = intPreferenceKey(
+            "${PREFIX}_colorization_strategy",
+            ColorizationStrategy.Default,
+            object : IntSaver<ColorizationStrategy>{
+                override fun restore(value: Int): ColorizationStrategy {
+                    return ColorizationStrategy.entries[value]
+                }
+                override fun save(value: ColorizationStrategy): Int {
+                    return value.ordinal
+                }
+            }
+        )
     }
 
     val darkUiMode: Preference<NightMode>
-    val colorStatusBar: Preference<Boolean>
-    val hideStatusBar: Preference<Boolean>
-    val forceAccent: Preference<Boolean>
+    val translucentSystemBars: Preference<Boolean>
+    val immersiveView: Preference<Boolean>
     val minTrackLength: Preference<Int>
     val recentPlaylistLimit: Preference<Int>
     val fetchArtworkFromMS: Preference<Boolean>
@@ -194,6 +201,8 @@ interface Settings : Blacklist {
     val closePlaybackWhenTaskRemoved: Preference<Boolean>
     val useInbuiltAudioFx: Preference<Boolean>
     val fontScale: Preference<Float>
+    val gridItemSizeMultiplier: Preference<Float>
+    val colorizationStrategy: Preference<ColorizationStrategy>
 
     fun <S, O> set(key: Key<S, O>, value: O)
 }

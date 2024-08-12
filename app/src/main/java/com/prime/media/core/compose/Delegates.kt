@@ -165,7 +165,8 @@ inline fun LottieAnimation(
     scale: Float = 1f,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     duration: Int = -1,
-    easing: Easing = FastOutSlowInEasing
+    easing: Easing = FastOutSlowInEasing,
+    dynamicProperties: LottieDynamicProperties? = null
 ) {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val duration2 = composition?.duration?.roundToLong() ?: AnimationConstants.LongDurationMills
@@ -181,6 +182,7 @@ inline fun LottieAnimation(
             .size(24.dp)
             .scale(scale)
             .then(modifier),
+        dynamicProperties = dynamicProperties
     )
 }
 
@@ -266,6 +268,7 @@ inline fun LottieAnimButton(
     enabled: Boolean = true,
     easing: Easing = FastOutSlowInEasing,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    dynamicProperties: LottieDynamicProperties? = null
 ) {
     IconButton(
         onClick = onClick,
@@ -279,7 +282,8 @@ inline fun LottieAnimButton(
                 scale = scale,
                 easing = easing,
                 progressRange = progressRange,
-                duration = duration
+                duration = duration,
+                dynamicProperties = dynamicProperties
             )
         }
     )

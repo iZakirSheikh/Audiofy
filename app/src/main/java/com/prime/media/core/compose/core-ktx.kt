@@ -118,3 +118,16 @@ private val NoneWindowInsets = WindowInsets(0)
  * Represents empty window insets with all values set to 0.
  */
 val WindowInsets.Companion.None get() =  NoneWindowInsets
+
+
+
+/**
+ * Conditionally applies another [Modifier] if the given [condition] is true.
+ *
+ * @param condition The condition to evaluate.
+ * @param other The [Modifier] to apply if the condition is true.
+ * @return This [Modifier] if the condition is false, otherwise this [Modifier] combined with [other].
+ */
+fun Modifier.thenIf(condition: Boolean, other: Modifier): Modifier {
+    return if (condition) this then other else this
+}
