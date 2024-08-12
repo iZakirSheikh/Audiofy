@@ -1,6 +1,7 @@
 package com.prime.media.core.compose
 
 import androidx.annotation.FloatRange
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -118,10 +119,12 @@ fun NavigationSuiteScaffold(
         // Conditionally display the navigation bar based on
         // 'hideNavigationBar'
         // Display the navigation bar (either bottom bar or navigation rail)
-        when {
-            // Don't show anything.
-            hideNavigationBar -> Spacer(modifier = Modifier)
-            else -> navBar()
+        // Don't show anything.
+        AnimatedContent(targetState = hideNavigationBar, label = "label_nav_bar") { value ->
+            when(value){
+                true -> Spacer(modifier = Modifier)
+                else -> navBar()
+            }
         }
         // Display the SnackBar using the provided channel
         SnackbarProvider(channel)
@@ -229,9 +232,10 @@ private inline fun Horizontal(
         val height = c.maxHeight
         // Measure the size requirements of each child element
         // Allow the elements to have a custom size by not constraining them.
-        var constraints = c.copy(minHeight = 0, minWidth = 0)
-        val snackBarPlaceable = measurables[INDEX_SNACK_BAR].measure(constraints)
+        var constraints = c.copy(minHeight = 0)
         val progressBarPlaceable = measurables[INDEX_PROGRESS_BAR].measure(constraints)
+        constraints = c.copy(minHeight = 0, minWidth = 0)
+        val snackBarPlaceable = measurables[INDEX_SNACK_BAR].measure(constraints)
         val navBarPlaceable = measurables[INDEX_NAV_BAR].measure(constraints)
         val pixelPlaceable = measurables[INDEX_PIXEL].measure(constraints)
         // Calculate the width available for the main content, excluding the navigation bar
