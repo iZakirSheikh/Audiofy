@@ -27,8 +27,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 123
-        versionName = "2.15.0"
+        versionCode = 125
+        versionName = "2.15.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         //Load secrets into BuildConfig
@@ -80,14 +80,12 @@ dependencies {
     implementation(libs.compose.activity)
 
     implementation(libs.bundles.compose)
-    implementation(libs.bundles.preview)
     implementation(libs.bundles.icons)
     implementation(libs.bundles.analytics)
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.media3)
     implementation(libs.bundles.room)
     implementation(libs.bundles.hilt)
-
     implementation(libs.coil)
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.adaptive)
@@ -113,6 +111,8 @@ dependencies {
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
     implementation("com.google.j2objc:j2objc-annotations:3.0.0")
+    // The preview is not required in release builds.
+    debugImplementation(libs.bundles.preview)
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

@@ -4,6 +4,7 @@
 package com.prime.media
 
 import android.app.Activity
+import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -60,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -78,7 +80,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.Player
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -88,7 +89,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.palette.graphics.Palette
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.Firebase
@@ -112,12 +112,12 @@ import com.prime.media.core.compose.NavigationItemDefaults
 import com.prime.media.core.compose.NavigationSuiteScaffold
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.Range
+import com.prime.media.core.compose.WallpaperAccentColor
 import com.prime.media.core.compose.WindowSize
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.artworkUri
-import com.prime.media.core.playback.title
 import com.prime.media.core.util.getAlbumArt
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
@@ -154,11 +154,17 @@ import com.primex.core.hsl
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.ln
 
 private const val TAG = "Home"
@@ -380,61 +386,43 @@ private val DarkAccentColor = Color.Amber
  * recomposition when the color changes.
  */
 @Composable
-private fun generate(isDark: Boolean): State<Color> {
+private fun observeAccentColor(
+    isDark: Boolean
+): State<Color> {
     // Get the activity context for accessing resources and services
     val activity = LocalView.current.context as MainActivity
-
     // Default accent color based on the current theme
     val default = if (isDark) DarkAccentColor else LightAccentColor
-
     return produceState(initialValue = default, key1 = isDark) {
-        Log.d(TAG, "generate: $isDark")
-
-        // Access the remote player and user preferences
-        val remote = activity.remote
+        // Observe changes in the strategy
         val preferences = activity.preferences
-
-        // Combine events from the player with the colorization strategy preference
-        remote.events.transform {
-            // Emit the current media item initially, after a short delay
-            if (it == null) {
-                delay(500)
-                return@transform emit(remote.current)
-            }
-            // Emit the current media item when a transition occurs (e.g., new song starts)
-            if (it.containsAny(Player.EVENT_MEDIA_ITEM_TRANSITION))
-                emit(remote.current)
-            Log.d(TAG, "events: $it")
-        }.combine(preferences[Settings.COLORIZATION_STRATEGY]) { current, strategy ->
-            Log.d(TAG, "generate: ${current?.title}")
+        preferences[Settings.COLORIZATION_STRATEGY].collect { strategy ->
             when (strategy) {
-                ColorizationStrategy.Default -> default // Use the default accent color for this theme
-                ColorizationStrategy.Artwork -> {
-                    // Extract a vibrant color from the current media item's artwork
-                    val artworkUri = current?.artworkUri
-                        ?: return@combine default // Get artwork URI or use default
-                    val bitmap = activity.getAlbumArt(artworkUri)
-                        ?: return@combine Color.Amber // Load bitmap or use fallback
-                    val palette =
-                        Palette.from(bitmap.toBitmap()).generate() // Analyze colors in the artwork
-                    val argb =
-                        default.toArgb() // Get ARGB value of the default color for potential adjustment
-
-                    // Pick a vibrant color based on the current theme
-                    val vibrantColor =
-                        if (isDark) palette.getLightVibrantColor(argb) else palette.getDarkVibrantColor(
-                            argb
-                        )
-                    Color(vibrantColor) // Create a Color object from the chosen value
+                ColorizationStrategy.Manual -> TODO("Not yet implemented!")
+                ColorizationStrategy.Wallpaper -> TODO("Not yet implemented!")
+                // just return the default color
+                ColorizationStrategy.Default -> value = default
+                else -> {
+                    // observe current playing item for accent color
+                    val remote = activity.remote
+                    remote.loaded
+                        .map {
+                            val current = remote.current
+                            val uri = current?.artworkUri ?: return@map null
+                            // Get the Bitmap Colors
+                            activity.getAlbumArt(uri)
+                        }
+                        .distinctUntilChanged()
+                        .flowOn(Dispatchers.Main)
+                        .onEach {
+                            val accent = WallpaperAccentColor(it?.toBitmap(), isDark, default)
+                            value = Color(accent)
+                        }
+                        .flowOn(Dispatchers.Default)
+                        .launchIn(this)
                 }
-
-                else -> error("The Strategy $strategy is not supported!") // Handle unsupported strategies
             }
         }
-            .catch { emit(default) } // Emit the default color if any errors occur during color extraction
-            .collect {
-                value = it
-            } // Update the state with the calculated accent color, triggering recomposition
     }
 }
 
@@ -457,7 +445,7 @@ private fun Material(
         targetValue = if (darkTheme) Color.TrafficBlack else Color.White,
         animationSpec = DefaultColorSpec
     )
-    val accent by generate(darkTheme)
+    val accent by observeAccentColor(darkTheme)
     val primary by animateColorAsState(accent)
     val colors = Colors(
         primary = primary,
@@ -466,11 +454,11 @@ private fun Material(
         surface = surface,
         primaryVariant = primary.hsl(lightness = primary.lightness * 0.9f), // make a bit darker.
         secondaryVariant = primary.hsl(lightness = primary.lightness * 0.9f), // make a bit darker.,
-        onPrimary = Color.SignalWhite,
+        onPrimary = if (primary.luminance() > 0.5) Color.TrafficBlack else Color.SignalWhite,
         onSurface = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
         onBackground = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
         error = Color.OrientRed,
-        onSecondary = Color.SignalWhite,
+        onSecondary =  if (primary.luminance() > 0.5) Color.TrafficBlack else Color.SignalWhite,
         onError = Color.SignalWhite,
         isLight = !darkTheme
     )
@@ -524,7 +512,6 @@ private fun Material(
     }
 }
 
-
 /**
  * Extension function for the NavController that facilitates navigation to a specified destination route.
  *
@@ -574,12 +561,13 @@ private fun NavigationBar(
             val current by navController.currentBackStackEntryAsState()
             val colors = NavigationItemDefaults.navigationItemColors()
             val route = current?.destination?.route
+            val facade = LocalSystemFacade.current
             // Home
             NavItem(
                 label = { Label(text = textResource(R.string.home)) },
                 icon = { Icon(imageVector = Icons.Filled.Home, contentDescription = null) },
                 checked = route == Library.route,
-                onClick = { navController.toRoute(Library.direction()) },
+                onClick = { navController.toRoute(Library.direction()); facade.launchReviewFlow() },
                 typeRail = typeRail,
                 colors = colors
             )
@@ -589,7 +577,7 @@ private fun NavigationBar(
                 label = { Label(text = textResource(R.string.folders)) },
                 icon = { Icon(imageVector = Icons.Filled.FolderCopy, contentDescription = null) },
                 checked = route == Folders.route,
-                onClick = { navController.toRoute(Folders.direction()) },
+                onClick = { navController.toRoute(Folders.direction()); facade.launchReviewFlow() },
                 typeRail = typeRail,
                 colors = colors
             )
@@ -599,14 +587,14 @@ private fun NavigationBar(
                 label = { Label(text = textResource(R.string.albums)) },
                 icon = { Icon(imageVector = Icons.Filled.Album, contentDescription = null) },
                 checked = route == Albums.route,
-                onClick = { navController.toRoute(Albums.direction()) },
+                onClick = { navController.toRoute(Albums.direction()); facade.launchReviewFlow() },
                 typeRail = typeRail,
                 colors = colors
             )
 
             // Playlists
             NavItem(
-                label = { Label(text = textResource(R.string.playlists)) },
+                label = { Label(text = textResource(R.string.playlists)); facade.launchReviewFlow() },
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.PlaylistPlay,
@@ -614,7 +602,7 @@ private fun NavigationBar(
                     )
                 },
                 checked = route == Playlists.route,
-                onClick = { navController.toRoute(Playlists.direction()) },
+                onClick = { navController.toRoute(Playlists.direction()); facade.launchReviewFlow() },
                 typeRail = typeRail,
                 colors = colors
             )
@@ -624,7 +612,7 @@ private fun NavigationBar(
                 label = { Label(text = textResource(R.string.settings)) },
                 icon = { Icon(imageVector = Icons.Outlined.Settings, contentDescription = null) },
                 checked = route == Settings.route,
-                onClick = { navController.toRoute(Settings.route) },
+                onClick = { navController.toRoute(Settings.route); facade.launchReviewFlow() },
                 typeRail = typeRail,
                 colors = colors
             )
@@ -765,7 +753,7 @@ fun Home(channel: Channel) {
                 val facade = LocalSystemFacade.current
                 // Determine whether to hide the navigation bar based on the current destination
                 val hideNavigationBar = navController.current !in ROUTES_IN_NAV_BAR
-                Log.d(TAG, "Home: ${navController.current}")
+                Log.d(TAG, "Home: ${navController.current} hide: $hideNavigationBar")
                 val vertical = clazz.widthRange < Range.Medium
                 NavigationSuiteScaffold(
                     vertical = vertical,
