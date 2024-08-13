@@ -154,14 +154,17 @@ import com.primex.core.hsl
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.ln
 
 private const val TAG = "Home"
@@ -410,10 +413,12 @@ private fun observeAccentColor(
                             activity.getAlbumArt(uri)
                         }
                         .distinctUntilChanged()
+                        .flowOn(Dispatchers.Main)
                         .onEach {
                             val accent = WallpaperAccentColor(it?.toBitmap(), isDark, default)
                             value = Color(accent)
                         }
+                        .flowOn(Dispatchers.Default)
                         .launchIn(this)
                 }
             }
