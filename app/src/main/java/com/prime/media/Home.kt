@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
@@ -100,6 +101,7 @@ import com.prime.media.console.Console
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
+import com.prime.media.core.composable
 import com.prime.media.core.compose.BottomNavItem
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.LocalAnimatedVisibilityScope
@@ -135,8 +137,11 @@ import com.prime.media.directory.store.Genres
 import com.prime.media.directory.store.GenresViewModel
 import com.prime.media.editor.TagEditor
 import com.prime.media.effects.AudioFx
+import com.prime.media.feedback.Feedback
+import com.prime.media.feedback.RouteFeedback
 import com.prime.media.impl.AudioFxViewModel
 import com.prime.media.impl.ConsoleViewModel
+import com.prime.media.impl.FeedbackViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.TagEditorViewModel
@@ -155,6 +160,7 @@ import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -396,7 +402,10 @@ private fun observeAccentColor(
     return produceState(initialValue = default, key1 = isDark) {
         // Observe changes in the strategy
         val preferences = activity.preferences
+        var job: Job? = null
         preferences[Settings.COLORIZATION_STRATEGY].collect { strategy ->
+            // cancel the old job
+            job?.cancel()
             when (strategy) {
                 ColorizationStrategy.Manual -> TODO("Not yet implemented!")
                 ColorizationStrategy.Wallpaper -> TODO("Not yet implemented!")
@@ -405,7 +414,8 @@ private fun observeAccentColor(
                 else -> {
                     // observe current playing item for accent color
                     val remote = activity.remote
-                    remote.loaded
+                    // launch a new job.
+                    job = remote.loaded
                         .map {
                             val current = remote.current
                             val uri = current?.artworkUri ?: return@map null
@@ -723,6 +733,14 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
         CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
             Console(state = viewModel)
         }
+    }
+    // Feedback
+    dialog(
+        RouteFeedback.route,
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+    ){
+        val viewModel = hiltViewModel<FeedbackViewModel>()
+        Feedback(viewModel)
     }
 }
 

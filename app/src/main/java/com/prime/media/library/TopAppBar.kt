@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
@@ -73,6 +74,7 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.None
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shimmer.pulsate
+import com.prime.media.feedback.RouteFeedback
 import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
@@ -211,9 +213,10 @@ private inline fun Actions() {
     val contentColor = LocalContentColor.current
     // Support
     val ctx = LocalContext.current
+    val navController = LocalNavController.current
     IconButton(
-        imageVector = Icons.Outlined.SupportAgent,
-        onClick = { ctx.startActivity(Settings.TelegramIntent) },
+        imageVector = Icons.Outlined.Feedback,
+        onClick = { navController.navigate(RouteFeedback()) },
         modifier = Modifier,
         tint = contentColor
     )

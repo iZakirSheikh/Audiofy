@@ -15,7 +15,6 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.core.NightMode
-import com.prime.media.core.Route
 import com.prime.media.core.playback.Playback
 import com.primex.core.Text
 import com.primex.preferences.IntSaver
@@ -77,10 +76,8 @@ private fun FontFamily(name: String) = FontFamily(
 
 @Stable
 interface Settings : Blacklist {
-    companion object : Route {
-        override val route = "settings"
-        override val title: Text get() = Text("Settings")
-        override val icon: ImageVector get() = Icons.Outlined.Settings
+    companion object {
+        val route = "settings"
 
         val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:helpline.prime.zs@gmail.com")

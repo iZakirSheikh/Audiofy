@@ -81,7 +81,7 @@ fun scale(
     return ScaleIndicationNodeFactory
 }
 
-object ScaleIndicationNodeFactory : IndicationNodeFactory {
+private object ScaleIndicationNodeFactory : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode {
         return ScaleIndicationNode(interactionSource)
     }
