@@ -2,7 +2,7 @@
 # Plugins and Gradle configuration
 #--------
 agp = "8.5.2"  # Android Gradle Plugin for building Android apps
-kotlin = "2.0.10"  # Kotlin language version for code compilation
+kotlin = "2.0.20"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
 crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.52"  # Hilt for dependency injection in Android apps
@@ -10,7 +10,7 @@ hilt-android = "2.52"  # Hilt for dependency injection in Android apps
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.4.0"  # Media playback, including audio and video
-compose = "1.7.0-beta07"  # Core foundation for building declarative UI with Compose
+compose = "1.7.0-rc01"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.34.0" # Accompanist is a labs like environment for new Compose APIs.
 junit = "4.13.2"
@@ -98,7 +98,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 toolkit-preferences = { module = "com.github.prime-zs.toolkit:preferences", version.ref = "toolkit" }
 
 # Analytics
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.0.2" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.0" }
 firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.0.3" }
 
 # Google Play Services
@@ -109,7 +109,7 @@ play_feature_delivery = { module = "com.google.android.play:feature-delivery-ktx
 
 # ADS
 unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.1" }
-iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.1.0" }
+iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.3.0" }
 iron_source_ad_qaulity = { module = "com.ironsource:adqualitysdk", version = "7.20.1" }
 unity_adapter = { module ="com.ironsource.adapters:unityadsadapter", version = "4.3.40" }
 
