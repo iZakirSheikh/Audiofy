@@ -1,7 +1,6 @@
 package com.prime.media.core.compose
 
 import androidx.annotation.FloatRange
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.dp
 
 private const val TAG = "NavigationSuitScaffold"
@@ -50,12 +50,21 @@ val WindowInsets.Companion.contentInsets
  */
 private val STANDARD_SPACING = 8.dp
 
+/**
+ * Checks if this [Placeable] has zero width or zero height.
+ */
+private val Placeable.isZeroSized get() = width == 0 || height == 0
 
 private const val INDEX_CONTENT = 0
 private const val INDEX_NAV_BAR = 1
 private const val INDEX_SNACK_BAR = 2
 private const val INDEX_PIXEL = 3
 private const val INDEX_PROGRESS_BAR = 4
+
+/**
+ * The size of the pixel when in collapsed mode.
+ */
+private val MINI_PIXEL_SIZE = 60.dp
 
 /**
  * A flexible Scaffold that provides a structured layout for displaying content along with a navigation bar,
@@ -120,11 +129,9 @@ fun NavigationSuiteScaffold(
         // 'hideNavigationBar'
         // Display the navigation bar (either bottom bar or navigation rail)
         // Don't show anything.
-        AnimatedContent(targetState = hideNavigationBar, label = "label_nav_bar") { value ->
-            when(value){
-                true -> Spacer(modifier = Modifier)
-                else -> navBar()
-            }
+        when (hideNavigationBar) {
+            true -> Spacer(modifier = Modifier)
+            else -> navBar()
         }
         // Display the SnackBar using the provided channel
         SnackbarProvider(channel)
@@ -149,7 +156,6 @@ fun NavigationSuiteScaffold(
         else -> Horizontal(content = composed, onNewInsets, modifier = finalModifier)
     }
 }
-
 
 @Composable
 private inline fun Vertical(
@@ -193,22 +199,36 @@ private inline fun Vertical(
             var y = (height - progressBarPlaceable.height)
             progressBarPlaceable.placeRelative(x, y)
             // Add insets to pixel only if nav bar is hidden.
+            val isNavBarHidden = navBarPlaceable.isZeroSized
             val insets =
-                if (navBarPlaceable.height == 0) systemNavBarInsets.getBottom(density = this@Layout) else 0
-            // Place pixel above the navbar, adjusting its position if the navbar
-            // is hidden
-            // we only need bottom insets since we are placing above the navBar
-            x = width / 2 - pixelPlaceable.width / 2;
-            y =
-                height - navBarPlaceable.height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insets
-            pixelPlaceable.placeRelative(x, y)
+                if (isNavBarHidden) systemNavBarInsets.getBottom(density = this@Layout) else 0
             // Place Toast at the centre bottom of the screen
             // remove nav bar offset from it.
             x = width / 2 - snackBarPlaceable.width / 2   // centre
-            // full height - toaster height - navbar - 16dp padding + navbar offset.
             y =
                 (height - navBarPlaceable.height - snackBarPlaceable.height - STANDARD_SPACING.roundToPx() - insets)
-            snackBarPlaceable.placeRelative(x, y)
+            // the snack-bar must be top of every composable.
+            snackBarPlaceable.placeRelative(x, y, 1f)
+            // Don't draw from here if the pixel anchor is missing.
+            if (isNavBarHidden) return@layout
+            // Determine the positioning of the pixel element based on its expanded state and the
+            // presence of the navigation bar.
+            // Calculate a threshold size to determine the pixel is considered "expanded".
+            val against = MINI_PIXEL_SIZE.roundToPx()
+            val isExpanded = pixelPlaceable.height > against && pixelPlaceable.width > against
+            // Calculate the x-coordinate for the pixel:
+            // - If expanded, center it horizontally on the screen.
+            // - Otherwise, position it at the start (left edge) of the navigation bar.
+            x = if (isExpanded) width / 2 - pixelPlaceable.width / 2 else 0
+            // Calculate the y-coordinate for the pixel:
+            // - If expanded, place it above the navigation bar with standard spacing and insets considered.
+            // - Otherwise, position it at the start of the navigation bar with a slight offset (16.dp).
+            // - If the navigation bar is not present (navBarPlaceable is null), the pixel will not be drawn.
+            y =
+                if (isExpanded) height - navBarPlaceable.height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insets
+                // start centre of nav_bar
+                else height - navBarPlaceable.height + 16.dp.roundToPx()
+            pixelPlaceable.placeRelative(x, y)
         }
     }
 }
@@ -257,15 +277,24 @@ private inline fun Horizontal(
             progressBarPlaceable.placeRelative(x, y)
             // Place pixel above the system navigationBar at the centre of the screen.
             val insetBottom = systemNavBarInsets.getBottom(density = this@Layout)
-            x = width / 2 - pixelPlaceable.width / 2;
-            y = height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insetBottom
-            pixelPlaceable.placeRelative(x, y)
             // Place SnackBar at the centre bottom of the screen
             // remove nav bar offset from it.
             x = width / 2 - snackBarPlaceable.width / 2   // centre
             // full height - toaster height - navbar - 16dp padding + navbar offset.
             y = (height - snackBarPlaceable.height - STANDARD_SPACING.roundToPx() - insetBottom)
             snackBarPlaceable.placeRelative(x, y)
+            // Don't draw from here if the pixel anchor is missing.
+            if (navBarPlaceable.isZeroSized) return@layout
+            val against = MINI_PIXEL_SIZE.roundToPx()
+            val isExpanded = pixelPlaceable.height > against && pixelPlaceable.width > against
+            // Position the element strategically based on the expanded state:
+            // - Expanded: Anchor it to the bottom center of the entire screen.
+            //- Collapsed: Align it to the bottom center of the navigation rail.
+            // Additionally, suppress rendering if the navigation rail is not present.
+            x = if (isExpanded) width / 2 - pixelPlaceable.width / 2 else navBarPlaceable.width / 2 - pixelPlaceable.width / 2
+            y = height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insetBottom
+            pixelPlaceable.placeRelative(x, y)
         }
     }
 }
+

@@ -5,6 +5,11 @@ package com.prime.media.widget
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
@@ -49,6 +55,7 @@ import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
+import com.primex.core.SignalWhite
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
@@ -57,9 +64,13 @@ import kotlin.math.roundToLong
 
 private val DefaultArtworkSize = 84.dp
 private val DefaultArtworkShape = RoundedCornerShape(20)
+private val Shape = RoundedCornerShape(14)
 
+/**
+ * A mini-player inspired by i-phone
+ */
 @Composable
-fun Widget(
+fun Iphone(
     item: MediaItem,
     playing: Boolean,
     duration: Long,
@@ -70,8 +81,12 @@ fun Widget(
 ) {
     val accent = Material.colors.primary
     ListTile(
-        color = Color.Transparent,
-        modifier = modifier,
+        color = Color.Black,
+        onColor = Color.SignalWhite,
+        modifier = modifier
+            .sharedBounds(PixelDefaults.SHARED_BACKGROUND_ID, exit = fadeOut() + scaleOut(), enter = fadeIn() + scaleIn())
+            .shadow(PixelDefaults.ELEVATION, Shape)
+            .border(2.dp, Color.White.copy(0.12f), Shape),
         overline = {
             Label(
                 item.subtitle.toString(),
@@ -85,7 +100,7 @@ fun Widget(
                 data = item.artworkUri,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                    .sharedElement(Pixel.SHARED_ARTWORK_ID)
+                    .sharedElement(PixelDefaults.SHARED_ARTWORK_ID)
                     .clip(DefaultArtworkShape),
             )
         },
@@ -94,7 +109,7 @@ fun Widget(
             IconButton(
                 imageVector = Icons.Outlined.OpenInNew,
                 //   tint = accent
-                onClick = { onAction(Pixel.ACTION_LAUCH_CONSOLE) },
+                onClick = { onAction(PixelDefaults.ACTION_LAUCH_CONSOLE) },
                 modifier = Modifier
                     .scale(0.9f)
                     .offset(x = 14.dp),
@@ -109,7 +124,7 @@ fun Widget(
                     val color = LocalContentColor.current.copy(ContentAlpha.medium)
                     // SeekBackward
                     IconButton(
-                        onClick = { onAction(Pixel.ACTION_PREV_TRACK) },
+                        onClick = { onAction(PixelDefaults.ACTION_PREV_TRACK) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
                         tint = color
@@ -130,13 +145,13 @@ fun Widget(
                         progressRange = 0.0f..0.29f,
                         duration = Anim.MediumDurationMills,
                         easing = LinearEasing,
-                        onClick = { onAction(Pixel.ACTION_PLAY) },
+                        onClick = { onAction(PixelDefaults.ACTION_PLAY) },
                         dynamicProperties = properties
                     )
 
                     // SeekNext
                     IconButton(
-                        onClick = { onAction(Pixel.ACTION_NEXT_TRACK) },
+                        onClick = { onAction(PixelDefaults.ACTION_NEXT_TRACK) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
                         tint = color
@@ -162,7 +177,7 @@ fun Widget(
                             )
                         ),
                         modifier = Modifier
-                            .sharedBounds(Pixel.SHARED_PLAYING_BARS_ID)
+                            .sharedBounds(PixelDefaults.SHARED_PLAYING_BARS_ID)
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )

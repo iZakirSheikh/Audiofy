@@ -155,7 +155,7 @@ fun NavRailItem(
             )
             // Label is only shown when checked.
             // return from here if not checked.
-            if (checked) return@Column
+            if (!checked) return@Column
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
                     value = Material.typography.overline,

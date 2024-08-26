@@ -7,26 +7,20 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -43,9 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.Player
@@ -55,7 +47,6 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.MainActivity
 import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.console.Console
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
@@ -67,6 +58,7 @@ import com.prime.media.core.compose.sharedBounds
 import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
+import com.primex.core.foreground
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -74,19 +66,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToLong
 
 private const val TAG = "Pixel"
-
-/**
- * Represents the default settings action of pixel widget.
- */
-object Pixel {
-    val ACTION_PLAY = "com.prime.media.action_play"
-    val ACTION_NEXT_TRACK = "com.prime.media.action_next"
-    val ACTION_PREV_TRACK = "com.prime.media.action_prev"
-    val ACTION_LAUCH_CONSOLE = "com.prime.media.action_launch_console"
-
-    const val SHARED_ARTWORK_ID = "artwork"
-    const val SHARED_PLAYING_BARS_ID = "playing_bars"
-}
 
 /**
  * Gets or sets the progress of the remote media item.
@@ -116,23 +95,47 @@ private val IN_FOCUS_EVENTS = intArrayOf(
     Player.EVENT_IS_PLAYING_CHANGED
 )
 
-/**
- * The standard size of a pixel
- */
-private val PixelSize = DpSize(width = 100.dp, height = 34.dp)
-private val PixelContentPadding = PaddingValues(vertical = 4.dp, horizontal = 4.dp)
+private val LAYOUT_MAX_WIDTH = 400.dp
 
+object PixelDefaults {
+
+    /**
+     * The size of the pixel in collapsed mode.
+     */
+    val MIN_SIZE = 40.dp
+
+    val ACTION_PLAY = "com.prime.media.action_play"
+    val ACTION_NEXT_TRACK = "com.prime.media.action_next"
+    val ACTION_PREV_TRACK = "com.prime.media.action_prev"
+    val ACTION_LAUCH_CONSOLE = "com.prime.media.action_launch_console"
+
+    const val SHARED_ARTWORK_ID = "artwork"
+    const val SHARED_PLAYING_BARS_ID = "playing_bars"
+    const val SHARED_BACKGROUND_ID = "background"
+
+    val ELEVATION = 12.dp
+}
+
+/**
+ * The Mini-Version of the Pixel.
+ */
 @Composable
-private fun Layout(
+private fun MiniLayout(
     imageUri: Uri?,
     playing: Boolean,
     modifier: Modifier = Modifier
-) = Row(
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically,
+) = Box(
+    contentAlignment = Alignment.Center,
     modifier = modifier
-        .requiredSize(PixelSize)
-        .padding(PixelContentPadding),
+        // .clip(CircleShape)
+        .sharedBounds(
+            PixelDefaults.SHARED_BACKGROUND_ID,
+            exit = fadeOut() + scaleOut(),
+            enter = fadeIn() + scaleIn()
+        )
+        .shadow(PixelDefaults.ELEVATION, CircleShape)
+        .background(Material.colors.surface)
+        .requiredSize(PixelDefaults.MIN_SIZE),
     content = {
         // The artwork of the current media item
         Artwork(
@@ -140,18 +143,9 @@ private fun Layout(
             modifier = Modifier
                 .border(1.dp, Color.White.copy(0.12f), CircleShape)
                 .aspectRatio(1.0f)
-                .sharedElement(Pixel.SHARED_ARTWORK_ID)
-                .clip(CircleShape)
-            ,
-        )
-
-        // Divider
-        Spacer(
-            Modifier
-                .padding(vertical = ContentPadding.small)
-                .fillMaxHeight()
-                .requiredWidth(1.dp)
-                .background(Color.White.copy(0.2f))
+                .foreground(Color.Black.copy(0.24f))
+                .sharedElement(PixelDefaults.SHARED_ARTWORK_ID)
+                .clip(CircleShape),
         )
 
         val accent = Material.colors.primary
@@ -168,15 +162,12 @@ private fun Layout(
             iterations = Int.MAX_VALUE,
             dynamicProperties = properties,
             modifier = Modifier
-                .sharedBounds(Pixel.SHARED_PLAYING_BARS_ID)
+                .sharedBounds(PixelDefaults.SHARED_PLAYING_BARS_ID)
                 .requiredSize(24.dp),
             isPlaying = playing,
         )
-    },
+    }
 )
-
-private val RECOMMENDED_ELEVATION = 12.dp
-private val LAYOUT_MAX_WIDTH = 400.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -187,13 +178,13 @@ fun Pixel(
     // If we are at console; return early; because we dnt want mini player here
     val route = navController.current
     if (route == Console.route)
-        return Spacer(Modifier)
+        return
     // Get the 'remote' object from the MainActivity.
     // Collect the 'loaded' state from the 'remote' object and observe it as a State.
     // If the data isn't loaded, return a Spacer and exit.
     val remote = (LocalView.current.context as MainActivity).remote
     val isLoaded by remote.loaded.collectAsState(initial = false)
-    if (!isLoaded) return Spacer(modifier = modifier)
+    if (!isLoaded) return
     // Construct the state of this composable
     var item by remember { mutableStateOf(remote.current) }
     var progress by remember { mutableFloatStateOf(remote.progress) }
@@ -223,65 +214,60 @@ fun Pixel(
         }
     }
     // return from here if current is empty
-    val current = item ?: return Spacer(Modifier)
+    val current = item ?: return
     // Setup the logic for transforming
     var expanded by remember { mutableStateOf(false) }
-    val radius by animateIntAsState(if (expanded) 14 else 100, label = "${TAG}_radius")
-    val shape = RoundedCornerShape(radius)
     // collapse if back pressed.
     BackHandler(expanded) { expanded = false }
     // Callback function that handles actions from the Pixel device.
     val onAction: (String) -> Unit = { action ->
         when (action) {
-            Pixel.ACTION_PLAY -> remote.togglePlay()
-            Pixel.ACTION_NEXT_TRACK -> remote.skipToNext()
-            Pixel.ACTION_PREV_TRACK -> remote.skipToPrev()
-            Pixel.ACTION_LAUCH_CONSOLE -> navController.navigate(Console.direction())
+            PixelDefaults.ACTION_PLAY -> remote.togglePlay()
+            PixelDefaults.ACTION_NEXT_TRACK -> remote.skipToNext()
+            PixelDefaults.ACTION_PREV_TRACK -> remote.skipToPrev()
+            PixelDefaults.ACTION_LAUCH_CONSOLE -> navController.navigate(Console.direction())
         }
     }
+
     // Setup the actual content
     val content: @Composable AnimatedContentScope.(Boolean) -> Unit = { value ->
         CompositionLocalProvider(
             LocalAnimatedVisibilityScope provides this,
-            LocalContentColor provides Color.White,
             content = {
+                val clickable = Modifier
+                    .combinedClickable(
+                        null, scale(),
+                        onClick = { expanded = !expanded },
+                        onLongClick = {
+                            if (!expanded)
+                                onAction(PixelDefaults.ACTION_LAUCH_CONSOLE)
+                            else expanded = false
+                        }
+                    )
                 when (value) {
                     // show pil if not expanded.
-                    false -> Layout(current.artworkUri, playing)
-                    else -> Widget(
+                    false -> MiniLayout(current.artworkUri, playing, modifier = clickable)
+                    else -> Iphone(
                         duration = remote.duration,
                         item = current,
                         playing = playing,
                         progress = progress,
                         onSeek = { remote.progress = it },
                         onAction = onAction,
+                        modifier = clickable
                     )
                 }
             }
         )
     }
-    val colors = Material.colors
-    val bgColor = if (colors.isLight) Color.Black else colors.backgroundColorAtElevation(1.dp)
 
     AnimatedContent(
         expanded,
         content = content,
         label = "${TAG}_animated_content",
-        // This modifier serves as a container for the content.
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = ContentPadding.large)
             .widthIn(max = LAYOUT_MAX_WIDTH)
-            .combinedClickable(
-                null, scale(),
-                onClick = { expanded = !expanded },
-                onLongClick = {
-                    if (!expanded)
-                        onAction(Pixel.ACTION_LAUCH_CONSOLE)
-                    else expanded = false
-                }
-            )
-            .shadow(RECOMMENDED_ELEVATION, shape)
-            .border(1.dp, Color.White.copy(0.12f), shape)
-            .background(bgColor, shape = shape),
     )
 }
+

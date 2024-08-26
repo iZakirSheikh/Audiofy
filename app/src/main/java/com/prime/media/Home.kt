@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -149,6 +150,7 @@ import com.prime.media.library.Library
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Pixel
+import com.prime.media.widget.PixelDefaults
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
 import com.primex.core.OrientRed
@@ -640,6 +642,9 @@ private fun NavigationBar(
                 routes()
                 // Some Space between naves and Icon.
                 Spacer(modifier = Modifier.weight(1f))
+                // Ensures adequate spacing at the bottom of the NavRail to accommodate pixel
+                // composable.
+                Spacer(modifier = Modifier.requiredSize(PixelDefaults.MIN_SIZE))
             },
         )
 
@@ -654,6 +659,9 @@ private fun NavigationBar(
                 vertical = ContentPadding.medium
             ),
             content = {
+                // Ensures adequate spacing at the start of the BottomBar to accommodate pixel
+                // composable.
+                Spacer(modifier = Modifier.requiredSize(PixelDefaults.MIN_SIZE))
                 Spacer(Modifier.weight(1f))
                 // Display routes at the contre of available space
                 routes()

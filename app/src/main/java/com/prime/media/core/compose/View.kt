@@ -123,7 +123,7 @@ fun PlayerView(
                 keepScreenOn = true
             }
         },
-        update = { it.resizeMode = resizeMode; it.player = player },
-        onRelease = {it.player = null}
+        update = { it.resizeMode = resizeMode; it.player = player;  it.keepScreenOn = true },
+        onRelease = {it.player = null; it.keepScreenOn = false}
     )
 }
