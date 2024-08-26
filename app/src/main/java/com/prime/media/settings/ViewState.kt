@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontFamily
@@ -13,16 +14,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
+import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.core.NightMode
 import com.prime.media.core.playback.Playback
 import com.primex.core.Text
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
+import com.primex.preferences.LongSaver
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
 import com.primex.preferences.floatPreferenceKey
 import com.primex.preferences.intPreferenceKey
+import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.stringPreferenceKey
 import com.primex.preferences.stringSetPreferenceKey
 
@@ -42,6 +46,11 @@ private val provider = GoogleFont.Provider(
     providerPackage = "com.google.android.gms",
     certificates = R.array.com_google_android_gms_fonts_certs
 )
+
+private val ColorSaver =   object : LongSaver<Color> {
+    override fun restore(value: Long): Color = Color(value)
+    override fun save(value: Color): Long = value.value.toLong()
+}
 
 /**
  * Represents the available strategies for extracting a source color accent to construct a theme.
@@ -174,14 +183,65 @@ interface Settings : Blacklist {
         val COLORIZATION_STRATEGY = intPreferenceKey(
             "${PREFIX}_colorization_strategy",
             ColorizationStrategy.Default,
-            object : IntSaver<ColorizationStrategy>{
+            object : IntSaver<ColorizationStrategy> {
                 override fun restore(value: Int): ColorizationStrategy {
                     return ColorizationStrategy.entries[value]
                 }
+
                 override fun save(value: ColorizationStrategy): Int {
                     return value.ordinal
                 }
             }
+        )
+
+        /**
+         * Preference key for controlling the content displayed in the console's signature field.
+         *
+         * Possible values:
+         * - `""`: Displays the default signature(the app's name).
+         * - `null` (empty string): Displays nothing in the signature field.
+         * - Any other string value: Displays the specified custom signature.
+         */
+        val SIGNATURE = stringPreferenceKey("${PREFIX}_signature")
+
+        /**
+         * Preference key for controlling the border width of artwork.
+         *
+         * Possible values:
+         * - `null`:  Artwork is displayed without a border.
+         * - Non-null integer: Represents the border width in dp (density-independent pixels).
+         */
+        val ARTWORK_BORDER_WIDTH = intPreferenceKey("${PREFIX}_artwork_border_width")
+
+        /**
+         * Preference key for storing the user's selected accent color for light theme.
+         *
+         * The color is stored as a Long value representing the ARGB color integer.
+         * A value of [Color.Unspecified] indicates that no accent color has been explicitly set.
+         */
+        val COLOR_ACCENT_LIGHT = longPreferenceKey(
+            "${PREFIX}_color_accent_light",
+            Color.Unspecified,
+            ColorSaver
+        )
+
+        /**
+         * @see COLOR_ACCENT_LIGHT
+         */
+        val COLOR_ACCENT_DARK = longPreferenceKey(
+            "${PREFIX}_color_accent_dark",
+            Color.Unspecified,
+            ColorSaver
+        )
+
+        /**
+         * Stores the ID of the currently selected glance widget version.
+         * This ID corresponds to an available In-App Purchase (IAP) product
+         * Defaults to the iPhone-inspired widget ([BuildConfig.IAP_WIDGET_PLATFORM_IPHONE]).
+         */
+        val GLANCE = stringPreferenceKey(
+            "${PREFIX}_glance",
+            BuildConfig.IAP_PLATFORM_WIDGET_IPHONE
         )
     }
 

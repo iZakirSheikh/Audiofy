@@ -62,6 +62,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.Lock
@@ -134,6 +135,7 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.backgroundColorAtElevation
 import com.prime.media.caption2
+import com.prime.media.config.RoutePersonalize
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
@@ -723,7 +725,6 @@ private fun More(
                 expanded = expanded == 3,
                 onDismissRequest = { expanded = 1; },
                 shape = Material.shapes.small2,
-
                 // TODO - Add one option for enabling/adding custom subtitle track.
                 content = {
                     DropDownMenuItem(
@@ -755,7 +756,7 @@ private fun More(
                             val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
                             val facade = LocalSystemFacade.current
                             IconButton(
-                                imageVector = Icons.Outlined.Tune,
+                                imageVector = Icons.Outlined.GraphicEq,
                                 onClick = {
                                     if (useBuiltIn)
                                         controller.navigate(AudioFx.route)
@@ -763,6 +764,12 @@ private fun More(
                                         facade.launchEqualizer(state.audioSessionId)
                                     expanded = 0
                                 }
+                            )
+                            
+                            // Control Centre
+                            IconButton(
+                                imageVector = Icons.Outlined.Tune,
+                                onClick = { controller.navigate(RoutePersonalize()); expanded = 0 }
                             )
                         }
                     )

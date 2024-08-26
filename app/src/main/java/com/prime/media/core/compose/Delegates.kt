@@ -3,6 +3,7 @@
 package com.prime.media.core.compose
 
 import android.graphics.Typeface
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
 import androidx.annotation.RawRes
@@ -21,13 +22,22 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.shrinkOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,10 +46,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -52,6 +64,7 @@ import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.LongDurationMills
 import com.primex.material2.Label
@@ -386,3 +399,49 @@ fun Modifier.size(
             }
         }
         .scale(scale)
+
+/**
+ * Creates a header with an optional action.
+ *
+ * @param text The text to display in the header. max 2 lines one for title and other subtitle
+ * @param modifier The [Modifier] to be applied to the header.
+ * @param style The [TextStyle] to be applied to the header text.
+ * @param contentPadding The padding to be applied around the header content.
+ * @param action An optional composable function to display an action within the header.*/
+@Composable
+inline fun Header(
+    text: CharSequence,
+    modifier: Modifier = Modifier,
+    style: TextStyle = Material.typography.h5,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    action: @Composable () -> Unit
+) = Row(
+    modifier = modifier
+        .fillMaxWidth()
+        .then(Modifier.padding(contentPadding)),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically,
+    content = {
+        // Title
+        Label(
+            style = style,
+            text = text,
+            maxLines = 2
+        )
+
+        // action.
+        action()
+    }
+)
+
+
+/**
+ * @see Header
+ */
+@Composable
+inline fun Header(
+    text: CharSequence,
+    modifier: Modifier = Modifier,
+    style: TextStyle = Material.typography.h5,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+) = Label(text = text, modifier.padding(contentPadding), style = style, maxLines = 2)

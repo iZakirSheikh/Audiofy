@@ -1,7 +1,7 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.5.2"  # Android Gradle Plugin for building Android apps
+agp = "8.6.0"  # Android Gradle Plugin for building Android apps
 kotlin = "2.0.20"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
 crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics

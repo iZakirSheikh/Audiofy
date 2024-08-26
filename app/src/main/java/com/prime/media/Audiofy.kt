@@ -1,10 +1,12 @@
 package com.prime.media
 
 import android.app.Application
+import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -13,6 +15,7 @@ import coil.fetch.Fetcher.Factory
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.Options
+import coil.util.DebugLogger
 import com.prime.media.core.coil.MediaMetaDataArtFetcher
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
@@ -81,6 +84,7 @@ class Audiofy : Application(), ImageLoaderFactory {
         override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
             // Check if the provided Uri corresponds to an album art Uri within the MediaStore.
             val isAlbumUri = let {
+                if(data.scheme != ContentResolver.SCHEME_CONTENT) return null
                 if (data.authority != MediaStore.AUTHORITY) return@let false
                 val segments = data.pathSegments
                 val size = segments.size

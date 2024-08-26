@@ -2,6 +2,7 @@
 
 package com.prime.media.widget
 
+import android.net.Uri
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +54,9 @@ import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.sharedBounds
 import com.prime.media.core.compose.sharedElement
+import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
+import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.primex.core.SignalWhite
@@ -72,21 +76,26 @@ private val Shape = RoundedCornerShape(14)
 @Composable
 fun Iphone(
     item: MediaItem,
-    playing: Boolean,
-    duration: Long,
-    progress: Float,
-    onSeek: (progress: Float) -> Unit,
-    onAction: (action: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    playing: Boolean = false,
+    duration: Long = C.TIME_UNSET,
+    progress: Float = 0.0f,
+    onSeek: (progress: Float) -> Unit = {},
+    onAction: (action: String) -> Unit = {},
 ) {
     val accent = Material.colors.primary
     ListTile(
         color = Color.Black,
         onColor = Color.SignalWhite,
         modifier = modifier
-            .sharedBounds(PixelDefaults.SHARED_BACKGROUND_ID, exit = fadeOut() + scaleOut(), enter = fadeIn() + scaleIn())
-            .shadow(PixelDefaults.ELEVATION, Shape)
-            .border(2.dp, Color.White.copy(0.12f), Shape),
+                .thenIf(item.mediaUri != Uri.EMPTY,
+            Modifier.sharedBounds(
+                Glance.SHARED_BACKGROUND_ID,
+                exit = fadeOut() + scaleOut(),
+                enter = fadeIn() + scaleIn()
+            ))
+            .shadow(Glance.ELEVATION, Shape)
+            .border(1.dp, Color.Gray.copy(0.12f), Shape),
         overline = {
             Label(
                 item.subtitle.toString(),
@@ -100,7 +109,7 @@ fun Iphone(
                 data = item.artworkUri,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                    .sharedElement(PixelDefaults.SHARED_ARTWORK_ID)
+                    .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedElement(Glance.SHARED_ARTWORK_ID))
                     .clip(DefaultArtworkShape),
             )
         },
@@ -109,7 +118,7 @@ fun Iphone(
             IconButton(
                 imageVector = Icons.Outlined.OpenInNew,
                 //   tint = accent
-                onClick = { onAction(PixelDefaults.ACTION_LAUCH_CONSOLE) },
+                onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                 modifier = Modifier
                     .scale(0.9f)
                     .offset(x = 14.dp),
@@ -124,7 +133,7 @@ fun Iphone(
                     val color = LocalContentColor.current.copy(ContentAlpha.medium)
                     // SeekBackward
                     IconButton(
-                        onClick = { onAction(PixelDefaults.ACTION_PREV_TRACK) },
+                        onClick = { onAction(Glance.ACTION_PREV_TRACK) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
                         tint = color
@@ -145,13 +154,13 @@ fun Iphone(
                         progressRange = 0.0f..0.29f,
                         duration = Anim.MediumDurationMills,
                         easing = LinearEasing,
-                        onClick = { onAction(PixelDefaults.ACTION_PLAY) },
+                        onClick = { onAction(Glance.ACTION_PLAY) },
                         dynamicProperties = properties
                     )
 
                     // SeekNext
                     IconButton(
-                        onClick = { onAction(PixelDefaults.ACTION_NEXT_TRACK) },
+                        onClick = { onAction(Glance.ACTION_NEXT_TRACK) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
                         tint = color
@@ -176,8 +185,8 @@ fun Iphone(
                                 "**"
                             )
                         ),
-                        modifier = Modifier
-                            .sharedBounds(PixelDefaults.SHARED_PLAYING_BARS_ID)
+                        modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,Modifier
+                            .sharedBounds(Glance.SHARED_PLAYING_BARS_ID))
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )
@@ -216,6 +225,11 @@ fun Iphone(
                         },
                         style = Material.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
+                    )
+                    // control centre
+                    IconButton(
+                        imageVector = Icons.Outlined.Tune,
+                        onClick = { onAction(Glance.ACTION_LAUNCH_CONTROL_PANEL) }
                     )
                 }
             )

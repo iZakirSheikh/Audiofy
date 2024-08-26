@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.prime.media.core.compose
 
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -199,4 +201,24 @@ fun Modifier.sharedBounds(
         zIndexInOverlay = zIndexInOverlay,
         clipInOverlayDuringTransition = clipInOverlayDuringTransition
     )
+}
+
+private val DefaultClipInOverlayDuringTransition: (LayoutDirection, Density) -> Path? =
+    { _, _ -> null }
+
+/**
+ * @see androidx.compose.animation.SharedTransitionScope.renderInSharedTransitionScopeOverlay
+ */
+fun Modifier.renderInSharedTransitionScopeOverlay(
+    zIndexInOverlay: Float = 0f,
+    clipInOverlayDuringTransition: (LayoutDirection, Density) -> Path? =
+        DefaultClipInOverlayDuringTransition
+) = composed {
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    with(sharedTransitionScope) {
+        Modifier.renderInSharedTransitionScopeOverlay(
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition
+            )
+    }
 }

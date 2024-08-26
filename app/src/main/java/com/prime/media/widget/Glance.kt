@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -40,24 +41,29 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
+import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalAnimatedVisibilityScope
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.current
+import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.scale
 import com.prime.media.core.compose.sharedBounds
 import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
+import com.prime.media.settings.Settings
 import com.primex.core.foreground
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -97,7 +103,7 @@ private val IN_FOCUS_EVENTS = intArrayOf(
 
 private val LAYOUT_MAX_WIDTH = 400.dp
 
-object PixelDefaults {
+object Glance {
 
     /**
      * The size of the pixel in collapsed mode.
@@ -108,6 +114,7 @@ object PixelDefaults {
     val ACTION_NEXT_TRACK = "com.prime.media.action_next"
     val ACTION_PREV_TRACK = "com.prime.media.action_prev"
     val ACTION_LAUCH_CONSOLE = "com.prime.media.action_launch_console"
+    val ACTION_LAUNCH_CONTROL_PANEL = "com.prime.media.action_launch_control_panel"
 
     const val SHARED_ARTWORK_ID = "artwork"
     const val SHARED_PLAYING_BARS_ID = "playing_bars"
@@ -117,7 +124,7 @@ object PixelDefaults {
 }
 
 /**
- * The Mini-Version of the Pixel.
+ * The Mini-Version of the Glance.
  */
 @Composable
 private fun MiniLayout(
@@ -129,13 +136,13 @@ private fun MiniLayout(
     modifier = modifier
         // .clip(CircleShape)
         .sharedBounds(
-            PixelDefaults.SHARED_BACKGROUND_ID,
+            Glance.SHARED_BACKGROUND_ID,
             exit = fadeOut() + scaleOut(),
             enter = fadeIn() + scaleIn()
         )
-        .shadow(PixelDefaults.ELEVATION, CircleShape)
+        .shadow(Glance.ELEVATION, CircleShape)
         .background(Material.colors.surface)
-        .requiredSize(PixelDefaults.MIN_SIZE),
+        .requiredSize(Glance.MIN_SIZE),
     content = {
         // The artwork of the current media item
         Artwork(
@@ -144,7 +151,7 @@ private fun MiniLayout(
                 .border(1.dp, Color.White.copy(0.12f), CircleShape)
                 .aspectRatio(1.0f)
                 .foreground(Color.Black.copy(0.24f))
-                .sharedElement(PixelDefaults.SHARED_ARTWORK_ID)
+                .sharedElement(Glance.SHARED_ARTWORK_ID)
                 .clip(CircleShape),
         )
 
@@ -162,16 +169,23 @@ private fun MiniLayout(
             iterations = Int.MAX_VALUE,
             dynamicProperties = properties,
             modifier = Modifier
-                .sharedBounds(PixelDefaults.SHARED_PLAYING_BARS_ID)
+                .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
                 .requiredSize(24.dp),
             isPlaying = playing,
         )
     }
 )
 
+// TODO - Instead of using Remote everywhere to fetch information regarding PlayingState; instead
+// a broadcast manager should be used that emits play state and all the necessary information like
+// duration etc. this will make the app BoilerPlate free.
+
+/**
+ * Represents the inApp Widget that expands MiniPLayer and collapses to Pixel (A Smaller Version of Widget.)
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Pixel(
+fun Glance(
     modifier: Modifier = Modifier,
 ) {
     val navController = LocalNavController.current
@@ -222,10 +236,13 @@ fun Pixel(
     // Callback function that handles actions from the Pixel device.
     val onAction: (String) -> Unit = { action ->
         when (action) {
-            PixelDefaults.ACTION_PLAY -> remote.togglePlay()
-            PixelDefaults.ACTION_NEXT_TRACK -> remote.skipToNext()
-            PixelDefaults.ACTION_PREV_TRACK -> remote.skipToPrev()
-            PixelDefaults.ACTION_LAUCH_CONSOLE -> navController.navigate(Console.direction())
+            Glance.ACTION_PLAY -> remote.togglePlay()
+            Glance.ACTION_NEXT_TRACK -> remote.skipToNext()
+            Glance.ACTION_PREV_TRACK -> remote.skipToPrev()
+            Glance.ACTION_LAUCH_CONSOLE -> navController.navigate(Console.direction())
+            Glance.ACTION_LAUNCH_CONTROL_PANEL -> {
+                navController.navigate(RoutePersonalize()); expanded = false
+            }
         }
     }
 
@@ -240,14 +257,16 @@ fun Pixel(
                         onClick = { expanded = !expanded },
                         onLongClick = {
                             if (!expanded)
-                                onAction(PixelDefaults.ACTION_LAUCH_CONSOLE)
+                                onAction(Glance.ACTION_LAUCH_CONSOLE)
                             else expanded = false
                         }
                     )
+                val widget by preference(Settings.GLANCE)
                 when (value) {
                     // show pil if not expanded.
                     false -> MiniLayout(current.artworkUri, playing, modifier = clickable)
-                    else -> Iphone(
+                    else -> Widget(
+                        widget,
                         duration = remote.duration,
                         item = current,
                         playing = playing,
@@ -271,3 +290,55 @@ fun Pixel(
     )
 }
 
+@Composable
+@NonRestartableComposable
+private fun Widget(
+    current: String,
+    item: MediaItem,
+    modifier: Modifier = Modifier,
+    playing: Boolean = false,
+    duration: Long = C.TIME_UNSET,
+    progress: Float = 0.0f,
+    onSeek: (progress: Float) -> Unit = {},
+    onAction: (action: String) -> Unit = {},
+) {
+    when(current){
+        BuildConfig.IAP_PLATFORM_WIDGET_IPHONE -> Iphone(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
+        BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE -> RedVelvetCake(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
+        BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE -> SnowCone(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
+
+        BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU -> Tiramisu(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
+    }
+}

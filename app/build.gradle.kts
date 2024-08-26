@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationDefaultConfig
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,13 +14,51 @@ plugins {
  * The secrets that needs to be added to BuildConfig at runtime.
  */
 val secrets = arrayOf(
-    "IAP_BUY_ME_COFFEE",
-    "IAP_NO_ADS",
     "ADS_APP_ID",
     "PLAY_CONSOLE_APP_RSA_KEY",
-    "IAP_TAG_EDITOR_PRO",
-    "IAP_CODEX"
 )
+
+/**
+ * Adds a string BuildConfig field to the project.
+ */
+private fun ApplicationDefaultConfig.buildConfigField(name: String, value: String) =
+    buildConfigField("String", name, "\"" + value + "\"")
+
+/**
+ * Init
+ */
+private fun ApplicationDefaultConfig.init() {
+    // Load secrets into BuildConfig
+    // These are passed through env of github.
+    secrets.forEach { secret ->
+        buildConfigField(secret, System.getenv(secret) ?: "")
+    }
+
+    // Load InAppProduct names into BuildConfig for easy access. No security risk in exposing these.
+    // Offer both individual and "full group" purchases (latter incentivizes more revenue and user savings).
+    // Buying "full group" unlocks all items within that group.
+    buildConfigField("IAP_TAG_EDITOR_PRO", "tag_editor_pro")
+    buildConfigField("IAP_BUY_ME_COFFEE", "buy_me_a_coffee")
+    buildConfigField("IAP_CODEX", "buy_codex")
+    buildConfigField("IAP_NO_ADS", "disable_ads")
+
+    // Widgets inspired by Android notifications, organized into groups.
+    // Purchasing a group unlocks all current widgets within it.
+    // Bonus: Any future widgets added to that group will also be unlocked automatically!
+    // A widget name can be anything; it might represent where from the widget got inspired.
+    //
+    // Available widget within group IAP_WIDGETS_PLATFORM:
+    // - IAP_PLATFORM_WIDGET_IPHONE: Inspired by the notification design on iPhone 15.
+    // - IAP_PLATFORM_WIDGET_SNOW_CONE: Inspired by the weather app widget on my phone.
+    // - IAP_PLATFORM_WIDGET_TIRAMISU: Inspired by Android 13 notification design.
+    // - IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE: Inspired by Android 11 notification design.
+    buildConfigField("IAP_WIDGETS_PLATFORM", "widgets_platform") // group
+    buildConfigField("IAP_PLATFORM_WIDGET_IPHONE", "platform_widget_iphone")
+    buildConfigField("IAP_PLATFORM_WIDGET_TIRAMISU", "platform_widget_tiramisu")
+    buildConfigField("IAP_PLATFORM_WIDGET_SNOW_CONE", "platform_widget_snow_cone")
+    buildConfigField("IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE", "platform_widget_red_violet_cake")
+    // Group
+}
 
 android {
     compileSdk = 34
@@ -27,15 +67,12 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 34
-        versionCode = 128
-        versionName = "2.16.2"
+        versionCode = 129
+        versionName = "2.17.0-beta01"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
-        //Load secrets into BuildConfig
-        secrets.forEach { secret ->
-            val value = "\"" + (System.getenv(secret) ?: "no_value") + "\""
-            buildConfigField("String", secret, value)
-        }
+        // init different config fields.
+        init()
     }
 
     buildTypes {

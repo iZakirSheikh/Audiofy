@@ -4,7 +4,6 @@
 package com.prime.media
 
 import android.app.Activity
-import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -98,6 +97,8 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
 import com.prime.media.about.AboutUs
+import com.prime.media.config.Personalize
+import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
@@ -144,15 +145,17 @@ import com.prime.media.impl.AudioFxViewModel
 import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.FeedbackViewModel
 import com.prime.media.impl.LibraryViewModel
+import com.prime.media.impl.PersonalizeViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.TagEditorViewModel
 import com.prime.media.library.Library
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
-import com.prime.media.widget.Pixel
-import com.prime.media.widget.PixelDefaults
+import com.prime.media.widget.Glance
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
+import com.primex.core.MetroGreen
+import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.TrafficBlack
@@ -164,15 +167,12 @@ import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.ln
 
 private const val TAG = "Home"
@@ -382,7 +382,7 @@ private fun Permission() {
 
 private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
 private val LightAccentColor = Color.AzureBlue
-private val DarkAccentColor = Color.Amber
+private val DarkAccentColor = Color(0xFFFFDE3F)
 
 /**
  * Provides a dynamic accent color based on the current theme (dark/light) and the user's
@@ -606,7 +606,7 @@ private fun NavigationBar(
 
             // Playlists
             NavItem(
-                label = { Label(text = textResource(R.string.playlists)); facade.launchReviewFlow() },
+                label = { Label(text = textResource(R.string.playlists)) },
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.PlaylistPlay,
@@ -644,7 +644,7 @@ private fun NavigationBar(
                 Spacer(modifier = Modifier.weight(1f))
                 // Ensures adequate spacing at the bottom of the NavRail to accommodate pixel
                 // composable.
-                Spacer(modifier = Modifier.requiredSize(PixelDefaults.MIN_SIZE))
+                Spacer(modifier = Modifier.requiredSize(Glance.MIN_SIZE))
             },
         )
 
@@ -661,7 +661,7 @@ private fun NavigationBar(
             content = {
                 // Ensures adequate spacing at the start of the BottomBar to accommodate pixel
                 // composable.
-                Spacer(modifier = Modifier.requiredSize(PixelDefaults.MIN_SIZE))
+                Spacer(modifier = Modifier.requiredSize(Glance.MIN_SIZE))
                 Spacer(Modifier.weight(1f))
                 // Display routes at the contre of available space
                 routes()
@@ -750,6 +750,11 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
         val viewModel = hiltViewModel<FeedbackViewModel>()
         Feedback(viewModel)
     }
+    // ControlCentre
+    composable(RoutePersonalize){
+        val viewModel = hiltViewModel<PersonalizeViewModel>()
+        Personalize(viewModel)
+    }
 }
 
 /**
@@ -788,7 +793,7 @@ fun Home(channel: Channel) {
                     progress = facade.inAppUpdateProgress,
                     background = Material.colors.backgroundColorAtElevation(1.dp),
                     // Set up the navigation bar using the NavBar composable
-                    pixel = { Pixel() },
+                    pixel = { Glance() },
                     navBar = { NavigationBar(clazz.navTypeRail, navController) },
                     shape = when {
                         hideNavigationBar || !vertical -> RectangleShape
