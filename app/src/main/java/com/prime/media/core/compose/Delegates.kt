@@ -66,6 +66,7 @@ import com.airbnb.lottie.compose.LottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.Material
 import com.prime.media.R
+import com.prime.media.core.ContentPadding
 import com.prime.media.core.LongDurationMills
 import com.primex.material2.Label
 import com.primex.material2.Placeholder
@@ -411,6 +412,7 @@ fun Modifier.size(
 @Composable
 inline fun Header(
     text: CharSequence,
+    leading: @Composable (() -> Unit) = {},
     modifier: Modifier = Modifier,
     style: TextStyle = Material.typography.h5,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -419,14 +421,17 @@ inline fun Header(
     modifier = modifier
         .fillMaxWidth()
         .then(Modifier.padding(contentPadding)),
-    horizontalArrangement = Arrangement.SpaceBetween,
+   // horizontalArrangement = Arrangement.spacedBy(ContentPadding.medium),
     verticalAlignment = Alignment.CenterVertically,
     content = {
+        // leading
+        leading()
         // Title
         Label(
             style = style,
             text = text,
-            maxLines = 2
+            maxLines = 2,
+            modifier = Modifier.weight(1f)
         )
 
         // action.

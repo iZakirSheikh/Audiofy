@@ -36,6 +36,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Scaffold
@@ -44,6 +45,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ReplyAll
+import androidx.compose.material.icons.twotone.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
@@ -69,6 +71,7 @@ import com.prime.media.R
 import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
+import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.Header
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSharedTransitionScope
@@ -121,9 +124,22 @@ private fun AppBarTop(modifier: Modifier = Modifier) {
                 onClick = navController::navigateUp
             )
         },
+        actions = {
+            val facade = LocalSystemFacade.current
+            IconButton(
+                Icons.TwoTone.Info,
+                onClick = {
+                    facade.show(
+                        R.string.msg_scr_personalize_customize_everywhere,
+                        duration = Channel.Duration.Indefinite
+                    )
+                }
+            )
+        },
         backgroundColor = Material.colors.backgroundColorAtElevation(1.dp),
         contentColor = Material.colors.onBackground,
         elevation = 0.dp,
+        modifier = modifier
     )
 }
 
@@ -149,6 +165,7 @@ private inline fun ColumnScope.Retrofit(
         val id = detail.productId
         val purchase by purchase(id)
         val isApplied = id == current
+        val isDebugable = BuildConfig.DEBUG
         when (id) {
             BuildConfig.IAP_PLATFORM_WIDGET_IPHONE -> Iphone(item = SampleMediaItem, modifier)
             BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE ->
@@ -182,7 +199,7 @@ private inline fun ColumnScope.Retrofit(
                     }
                 )
 
-                if (purchase.purchased || isGroupUnlocked || isApplied)
+                if (purchase.purchased || isGroupUnlocked || isApplied || isDebugable)
                     RadioButton(isApplied, onClick = { onRequestApply(id) }, enabled = !isApplied)
                 else
                 // get this for below price.
@@ -205,27 +222,44 @@ fun Personalize(viewState: PersonalizeViewState) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(ContentPadding.medium),
                 modifier = Modifier
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = ContentPadding.large, vertical = ContentPadding.normal)
                     .padding(it)
-                    .verticalScroll(rememberScrollState())
                     .fillMaxSize()
             ) {
                 val facade = LocalSystemFacade.current
                 val details by facade.inAppProductDetails.collectAsState()
                 val purchase by purchase(BuildConfig.IAP_WIDGETS_PLATFORM)
                 val current by preference(Settings.GLANCE)
-                Skins.forEach { (group, list) ->
-                    val groupDetails = details[group] ?: return@forEach
+                Skins.forEach { (bundle, list) ->
+                    val detail = details[bundle] ?: return@forEach
                     val children = list.mapNotNull { details[it] }
                     Header(
                         text = textResource(R.string.scr_personalize_title_legacy_widgets),
                         contentPadding = PaddingValues(vertical = ContentPadding.medium),
-                        style = Material.typography.h6
+                        style = Material.typography.h6,
+                        leading = {
+                            IconButton(
+                                Icons.Outlined.Info,
+                                onClick = {
+                                    facade.show(
+                                        message = buildAnnotatedString {
+                                            withSpanStyle(fontWeight = FontWeight.Bold) {
+                                                appendLine(detail.name)
+                                            }
+                                            withStyle(SpanStyle(color = Color.Gray, fontSize = 13.sp)) {
+                                                append(detail.description)
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+                        }
                     ) {
                         if (!purchase.purchased)
                             OutlinedButton(
-                                label = "Get - ${groupDetails.oneTimePurchaseOfferDetails?.formattedPrice}",
-                                onClick = { facade.launchBillingFlow(group) },
+                                label = "Get - ${detail.oneTimePurchaseOfferDetails?.formattedPrice}",
+                                onClick = { facade.launchBillingFlow(bundle) },
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = Color.Transparent,
                                 ),

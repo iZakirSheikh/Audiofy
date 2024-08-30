@@ -78,6 +78,7 @@ import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
+import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.primex.core.SignalWhite
 import com.primex.core.foreground
@@ -151,7 +152,7 @@ fun RedVelvetCake(
                 )),
                 headline = {
                     Label(
-                        item.title.toString(),
+                        item.subtitle.toString(),
                         color = LocalContentColor.current.copy(ContentAlpha.medium),
                         style = Material.typography.caption,
                         modifier = Modifier.fillMaxWidth(0.85f)

@@ -167,6 +167,7 @@ import com.primex.material2.OutlinedButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -429,6 +430,9 @@ private fun observeAccentColor(
                         .onEach {
                             val accent = WallpaperAccentColor(it?.toBitmap(), isDark, default)
                             value = Color(accent)
+                        }.catch {
+                            Log.d(TAG, "observeAccentColor: ${it.message}")
+                            value = default
                         }
                         .flowOn(Dispatchers.Default)
                         .launchIn(this)

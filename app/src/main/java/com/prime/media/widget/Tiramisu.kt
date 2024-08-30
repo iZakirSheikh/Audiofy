@@ -89,7 +89,7 @@ private inline val Colors.ring
     get() =
         Brush.horizontalGradient(listOf(primary.copy(0.5f), Color.Transparent,  primary.copy(0.5f)))
 private inline val Colors.contentColor get() =
-    if (primary.luminance() > 0.3f) Color.UmbraGrey else Color.SignalWhite
+    if (primary.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
 
 /**
  * Represents a widget inspired from the media notification of android 13.
@@ -119,10 +119,10 @@ fun Tiramisu(
                     Modifier.sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0f))
                     .clip(TiramisuShape)
                     .foreground(colors.ring)
-                    .foreground(Color.Black.copy(0.36f))
+                    .foreground(Color.Black.copy(0.26f))
                     .matchParentSize(),
             )
-            val onColor = colors.contentColor
+            val onColor = Color.SignalWhite
             ListTile(
                 color = Color.Transparent,
                 onColor = onColor,
@@ -213,8 +213,8 @@ fun Tiramisu(
                     FloatingActionButton(
                         onClick = { onAction(Glance.ACTION_PLAY) },
                         shape = RoundedCornerShape(28),
-                        backgroundColor = Color.SignalWhite.blend(colors.primary, 0.9f),
-                        contentColor = LocalContentColor.current,
+                        backgroundColor = Color.SignalWhite.blend(colors.primary, 0.2f),
+                        contentColor = Color.UmbraGrey,
                         modifier = Modifier.scale(0.9f),
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                     ) {
