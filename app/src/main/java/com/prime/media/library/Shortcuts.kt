@@ -86,7 +86,7 @@ private fun Shortcut(
             .clip(FolderShape) // Shape the shortcut like a folder
             // .background(colors.primary.copy(0.035f), FolderShape)
             .border(1.dp, accent.copy(0.3f), FolderShape) // Light border
-            .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
+          //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,
                 ripple(true, color = Material.colors.primary), // Ripple effect on click

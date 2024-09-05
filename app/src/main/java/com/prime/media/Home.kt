@@ -158,6 +158,7 @@ import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
+import com.primex.core.SkyBlue
 import com.primex.core.TrafficBlack
 import com.primex.core.UmbraGrey
 import com.primex.core.hsl
@@ -382,7 +383,7 @@ private fun Permission() {
 }
 
 private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
-private val LightAccentColor = Color.AzureBlue
+private val LightAccentColor = Color.SkyBlue
 private val DarkAccentColor = Color(0xFFFFDE3F)
 
 /**
