@@ -121,6 +121,12 @@ object Glance {
     const val SHARED_BACKGROUND_ID = "background"
 
     val ELEVATION = 12.dp
+
+    val SharedBoundsModifier = Modifier.sharedBounds(
+        SHARED_BACKGROUND_ID,
+        exit = fadeOut() + scaleOut(),
+        enter = fadeIn() + scaleIn()
+    )
 }
 
 /**
@@ -302,7 +308,7 @@ private fun Widget(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    when(current){
+    when (current) {
         BuildConfig.IAP_PLATFORM_WIDGET_IPHONE -> Iphone(
             item = item,
             modifier = modifier,
@@ -312,6 +318,7 @@ private fun Widget(
             onSeek = onSeek,
             onAction = onAction
         )
+
         BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE -> RedVelvetCake(
             item = item,
             modifier = modifier,
@@ -321,6 +328,7 @@ private fun Widget(
             onSeek = onSeek,
             onAction = onAction
         )
+
         BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE -> SnowCone(
             item = item,
             modifier = modifier,

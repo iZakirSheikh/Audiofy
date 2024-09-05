@@ -95,7 +95,7 @@ fun Iphone(
                 enter = fadeIn() + scaleIn()
             ))
             .shadow(Glance.ELEVATION, Shape)
-            .border(1.dp, Color.Gray.copy(0.12f), Shape),
+            .border(1.dp, Color.Gray.copy(0.24f), Shape),
         overline = {
             Label(
                 item.subtitle.toString(),
