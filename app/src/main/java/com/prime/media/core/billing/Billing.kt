@@ -318,14 +318,20 @@ fun BillingManager(
         purchase: Purchase
     ): Boolean {
         // don't acknowledge in debug app.
+        // According to docs
+        // If you don't acknowledge a purchase within three days, the user automatically receives a
+        // refund, and Google Play revokes the purchase.
         if (BuildConfig.DEBUG) return true
         if (purchase.isAcknowledged) return false
+        // Note: You should acknowledge a purchase only when the state is PURCHASED, i.e. Do not
+        // acknowledge it while a purchase is in PENDING state. The three day acknowledgement
+        // window begins only when the purchase state transitions from 'PENDING' to 'PURCHASED'.
+        if(purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return false
         val params =
             AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
         val result = mBillingClient.acknowledgePurchase(params)
         Log.i(TAG, "acknowledge: $result")
         return result.responseCode == BillingClient.BillingResponseCode.OK && purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-
     }
 
     /**
