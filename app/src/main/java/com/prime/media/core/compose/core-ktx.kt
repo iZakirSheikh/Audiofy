@@ -131,3 +131,11 @@ val WindowInsets.Companion.None get() =  NoneWindowInsets
 fun Modifier.thenIf(condition: Boolean, other: Modifier): Modifier {
     return if (condition) this then other else this
 }
+
+/**
+ * Another version of [thenIf]
+ */
+inline fun Modifier.thenIf(condition: Boolean, value: Modifier.() -> Modifier): Modifier {
+    // FixMe - Keep an eye on this; here Modifier is required otherwise value is twice applied.
+    return if (condition) this then Modifier.value() else this
+}

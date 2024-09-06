@@ -114,7 +114,6 @@ private fun TopAppBar(
     )
 }
 
-
 @Suppress("NOTHING_TO_INLINE")
 @Composable
 private inline fun GroupHeader(

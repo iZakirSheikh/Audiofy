@@ -452,4 +452,10 @@
     <string name="bug_report">Bug report</string>
     <string name="suggestion">Suggestion</string>
     <string name="feature_request">Request</string>
+    <string name="scr_personalize_title_desc">Personalize<font color='grey' size = '11'>\nTweak it till it\'s perfect, just for you.</font></string>
+    <string name="scr_personalize_title_legacy_widgets">Retro-Fit
+        <font color='grey' size='11'>\nA Blast from the Past</font></string>
+    <string name="msg_scr_personalize_customize_everywhere"><b>Matchy-Matchy Home Screen</b>
+        <font color ='grey' >\nDouble the customization, double the fun! Unlock a skin today, and get ready to personalize your home screen widgets with the same style in an upcoming update, at no additional cost.</font>
+       </string>
 </resources>

@@ -80,13 +80,13 @@ private fun Shortcut(
     // Base container for the shortcut with styling and click handling
     val colors = Material.colors
     val color = colors.onBackground.copy(0.5f)
-    val accent = colors.primary
+    val accent = colors.onBackground
     Box(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
             // .background(colors.primary.copy(0.035f), FolderShape)
-            .border(1.dp, accent.copy(0.2f), FolderShape) // Light border
-            .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
+            .border(1.dp, accent.copy(0.5f), FolderShape) // Light border
+          //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,
                 ripple(true, color = Material.colors.primary), // Ripple effect on click
@@ -101,7 +101,7 @@ private fun Shortcut(
         Icon(
             imageVector = icon,
             contentDescription = null, // Ensure a content description is provided elsewhere
-            tint = Material.colors.primary,
+            tint = accent,
             modifier = Modifier.align(Alignment.TopStart)
         )
 
@@ -109,7 +109,7 @@ private fun Shortcut(
         Label(
             text = label,
             style = Material.typography.caption,
-            color = Material.colors.primary,
+            color = accent,
             modifier = Modifier.align(Alignment.BottomStart)
         )
     }
