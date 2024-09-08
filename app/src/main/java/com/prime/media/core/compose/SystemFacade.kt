@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.content.res.ResourcesCompat
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
+import com.prime.media.BuildConfig
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.zs.ads.AdSize
@@ -192,14 +193,14 @@ interface SystemFacade {
     fun launchReviewFlow()
 
     /**
-     * Launches the Google Play Store app for this app's package.
+     * Launches the Google Play Store app for app with [id].
      *
      * This function creates an intent to open the Google Play Store app for this app's package.
      * If the Google Play Store app is not installed, the intent will open the Play Store website instead.
      *
      * Note: This function requires the `android.permission.INTERNET` permission to be declared in your app's manifest file.
      */
-    fun launchAppStore()
+    fun launchAppStore(id: String = BuildConfig.APPLICATION_ID)
 
     /**
      * @see com.primex.preferences.Preferences.observeAsState

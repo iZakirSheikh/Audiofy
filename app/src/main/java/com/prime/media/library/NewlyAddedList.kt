@@ -185,7 +185,7 @@ fun NewlyAddedList(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     // Collect newly added items from the Library state
-    val audios by state.newlyAdded.collectAsState(initial = null)
+    val audios by state.newlyAdded.collectAsState()
     // Display the list with loading, empty, and content states
     StatefulLazyList(
         items = audios,

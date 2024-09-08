@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
@@ -53,11 +55,13 @@ import com.prime.media.core.compose.SystemFacade
 import com.prime.media.core.compose.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
+import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
 import com.primex.core.Text
 import com.primex.core.getText2
+import com.primex.core.runCatching
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.longPreferenceKey
@@ -157,7 +161,7 @@ private fun initSplashScreen(isColdStart: Boolean) {
  * and display an indefinite message to the user, such as prompting them to purchase
  * a feature like an ad-free experience.
  */
-private const val MESSAGE_COUNT = 4
+private const val MESSAGE_COUNT = 5
 
 private val IAP_ARRAY = arrayOf(
     BuildConfig.IAP_NO_ADS,
@@ -381,8 +385,10 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
         }
     }
 
-    override fun launchAppStore() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
+
+    override fun launchAppStore(id: String){
+        val url = "market://details?id=$id"
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
             setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
             addFlags(
                 Intent.FLAG_ACTIVITY_NO_HISTORY
@@ -391,8 +397,10 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             )
         }
         val res = kotlin.runCatching { startActivity(intent) }
-        if (res.isFailure)
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
+        if (res.isFailure) {
+            val fallback = "http://play.google.com/store/apps/details?id=$id"
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallback)))
+        }
     }
 
     override fun launchBillingFlow(id: String) {
@@ -441,7 +449,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             // The flow has finished. The API does not indicate whether the user
             // reviewed or not, or even whether the review dialog was shown. Thus, no
             // matter the result, we continue our app flow.
-            com.primex.core.runCatching(TAG) {
+            runCatching(TAG) {
                 val reviewManager = ReviewManagerFactory.create(this@MainActivity)
                 // update the last asking
                 preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
@@ -454,7 +462,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
 
     override fun launchUpdateFlow(report: Boolean) {
         lifecycleScope.launch {
-            com.primex.core.runCatching(TAG) {
+            runCatching(TAG) {
                 val manager = AppUpdateManagerFactory.create(this@MainActivity)
                 manager.requestUpdateFlow().collect { result ->
                     when (result) {
@@ -613,6 +621,24 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 )
                 if (result == Channel.Result.ActionPerformed)
                     launchBillingFlow(productId)
+            }
+
+            4 -> {
+                val pkg = "com.googol.android.apps.photos"
+                // Check if the Gallery app is already installed
+                val isInstalled = runCatching(TAG){ packageManager.getPackageInfo(pkg, 0) } != null
+                // If the app is installed, show the next promotional message
+                if (isInstalled) return showPromotionalMessage(id + 1)
+                val result = channel.show(
+                    R.string.msg_promotion_gallery_app,
+                    action = R.string.dive_in,
+                    duration = Duration.Indefinite,
+                    accent = Color.Amber,
+                    leading = Icons.Outlined.GetApp
+                )
+                // If the user clicked the action button, launch the app store listing
+                if (result == Channel.Result.ActionPerformed)
+                    launchAppStore(pkg)
             }
         }
     }

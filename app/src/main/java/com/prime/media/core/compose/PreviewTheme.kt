@@ -101,7 +101,7 @@ private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
         error("launchReviewFlow Not Supported")
     }
 
-    override fun launchAppStore() {
+    override fun launchAppStore(id: String) {
         error("launchAppStore Not Supported")
     }
 

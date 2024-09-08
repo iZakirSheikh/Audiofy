@@ -21,9 +21,9 @@ interface Library {
     /**
      * The recently played tracks.
      */
-    val recent: Flow<List<Playlist.Member>>
+    val recent: StateFlow<List<Playlist.Member>?>
     val carousel: StateFlow<Long?>
-    val newlyAdded: Flow<List<Audio>>
+    val newlyAdded: StateFlow<List<Audio>?>
 
     /**
      * Callback method invoked upon clicking a history item.

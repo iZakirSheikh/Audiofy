@@ -52,6 +52,8 @@ class LibraryViewModel @Inject constructor(
 ) : ViewModel(), Library {
 
     override val recent = repository.playlist(Playback.PLAYLIST_RECENT)
+        .stateIn(viewModelScope, TimeOutPolicy, null)
+
     override val carousel = repository
         .recent(SHOW_CASE_MAX_ITEMS)
         .transform { list ->
@@ -80,6 +82,7 @@ class LibraryViewModel @Inject constructor(
                 limit = SHOW_CASE_MAX_ITEMS
             )
         }
+        .stateIn(viewModelScope, TimeOutPolicy, null)
 
     override fun onClickRecentFile(uri: String) {
         viewModelScope.launch {

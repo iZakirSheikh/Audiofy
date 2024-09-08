@@ -57,12 +57,17 @@ private val MyAppList = listOf(
     App(
         "Unit Converter",
         "https://play-lh.googleusercontent.com/TtUj94noX7g5B6Vs84A2PpVSCreYWVye5mHz32mSMHXCojT0xxDRtXBwXbc1q42AaA=s256-rw",
-        "market://details?id=com.prime.toolz2"
+        "com.prime.toolz2"
     ),
     App(
         "Scientific Calculator",
         "https://play-lh.googleusercontent.com/ZK1RCWbqO5faf4Z1diQM6HtoaGbmM5dYudYY5yXXP1yZawHrElerat7ix0slYzAxHZRq=s256-rw",
-        "market://details?id=com.prime.calculator.paid"
+        "com.prime.calculator.paid"
+    ),
+    App(
+        "Gallery - Photos & Videos",
+        "https://play-lh.googleusercontent.com/HlADK_i_qZoBn_4GNdjgCDt3Ah-h1ZbL_jUy1j_kDUo9Hvoq3AiUPI_ZxZXY95ftl7hu=w240-h480-rw",
+        "com.googol.android.apps.photos"
     )
 )
 
@@ -111,19 +116,7 @@ fun MyApps(
         MyAppList.forEach { app ->
             App(
                 value = app,
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(app.third)).apply {
-                        setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
-                        addFlags(
-                            Intent.FLAG_ACTIVITY_NO_HISTORY
-                                    or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-                                    or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-                        )
-                    }
-                    val res = kotlin.runCatching { facade.launch(intent) }
-                    if (res.isFailure)
-                        facade.show("Unable to open the Play Store. Make sure it's installed and updated.")
-                }
+                onClick = { facade.launchAppStore(app.third) }
             )
         }
     }

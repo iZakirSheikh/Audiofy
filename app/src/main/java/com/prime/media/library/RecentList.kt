@@ -115,7 +115,7 @@ fun RecentlyPlayedList(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     // Collect recently played items from the Library state
-    val recents by state.recent.collectAsState(initial = null)
+    val recents by state.recent.collectAsState()
     // Display the list with loading, empty, and content states
     StatefulLazyList(
         items = recents,      // Provide the list of recent items

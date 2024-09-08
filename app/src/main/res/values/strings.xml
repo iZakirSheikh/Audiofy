@@ -458,4 +458,8 @@
     <string name="msg_scr_personalize_customize_everywhere"><b>Matchy-Matchy Home Screen</b>
         <font color ='grey' >\nDouble the customization, double the fun! Unlock a skin today, and get ready to personalize your home screen widgets with the same style in an upcoming update, at no additional cost.</font>
        </string>
+    <string name="msg_promotion_gallery_app"><b>New App Alert!</b>
+        <font color ='grey'>\nDownload our new <b>Gallery</b> app and experience a new way to view and manage your photos.</font>
+    </string>
+    <string name="dive_in">Dive In!</string>
 </resources>
