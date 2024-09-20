@@ -57,6 +57,10 @@ private fun ApplicationDefaultConfig.init() {
     buildConfigField("IAP_PLATFORM_WIDGET_TIRAMISU", "platform_widget_tiramisu")
     buildConfigField("IAP_PLATFORM_WIDGET_SNOW_CONE", "platform_widget_snow_cone")
     buildConfigField("IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE", "platform_widget_red_violet_cake")
+    // ColorCroft Widget Bundle
+    buildConfigField("IAP_COLOR_CROFT_WIDGET_BUNDLE", "aurora_widget_bundle")
+    buildConfigField("IAP_COLOR_CROFT_GRADIENT_GROVES", "color_craft_gradient_groves")
+    buildConfigField("IAP_COLOR_CROFT_GOLDEN_DUST", "color_craft_golden_dust")
     // Group
 }
 
@@ -66,9 +70,9 @@ android {
     defaultConfig {
         applicationId = "com.prime.player"
         minSdk = 21
-        targetSdk = 34
-        versionCode = 134
-        versionName = "2.17.2"
+        targetSdk = 35
+        versionCode = 135
+        versionName = "2.17.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -89,7 +93,7 @@ android {
         // Add necessary changes to debug apk.
         debug {
             // makes it possible to install both release and debug versions in same device.
-            applicationIdSuffix = ".debug"
+           // applicationIdSuffix = ".debug"
             resValue("string", "app_name2", "Debug")
             versionNameSuffix = "-debug"
         }
@@ -150,6 +154,7 @@ dependencies {
     implementation("com.google.j2objc:j2objc-annotations:3.0.0")
     // The preview is not required in release builds.
     debugImplementation(libs.bundles.preview)
+    implementation(libs.androidx.graphics.shapes)
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

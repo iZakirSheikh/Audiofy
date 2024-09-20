@@ -172,7 +172,11 @@ private val IAP_ARRAY = arrayOf(
     BuildConfig.IAP_PLATFORM_WIDGET_IPHONE,
     BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE,
     BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE,
-    BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU
+    BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU,
+    /*Color Croft Widget bundle*/
+    BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE,
+    BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
+    BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST,
 )
 
 /**

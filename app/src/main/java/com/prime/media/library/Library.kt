@@ -54,6 +54,7 @@ import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material.icons.twotone.PlayCircle
@@ -99,6 +100,7 @@ import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.about.AboutUs
 import com.prime.media.caption2
+import com.prime.media.config.RoutePersonalize
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
@@ -129,6 +131,7 @@ import com.primex.core.foreground
 import com.primex.core.lerp
 import com.primex.core.textResource
 import com.primex.core.visualEffect
+import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
@@ -166,6 +169,7 @@ private inline fun Layout(
                         .verticalScroll(rememberScrollState())
                         .navigationBarsPadding()
                         .padding(it)
+                        .padding(WindowInsets.contentInsets)
                         .fillMaxSize(),
                     content = {
                         details()
@@ -281,14 +285,26 @@ fun Library(state: Library) {
             )
         },
         content = {
-            // Resents.
+            // Personalize
             val navigator = LocalNavController.current
+            DropDownMenuItem(
+                textResource(R.string.scr_personalize_title_desc),
+                icon = rememberVectorPainter(Icons.Outlined.Palette),
+                onClick = {
+                    navigator.navigate(RoutePersonalize())
+                },
+                modifier = Modifier.padding(vertical = ContentPadding.medium)
+            )
+
+            // Resents.
+
             Header(
                 modifier = Modifier.fillMaxWidth(),
                 text = textResource(R.string.library_history),
                 onMoreClick = { navigator.navigate(Members.direction(Playback.PLAYLIST_RECENT)) },
                 contentPadding = DefaultContentPadding
             )
+
             // FixMe -  Can't use indented padding here because the anchor (i.e ZeroWidthSpace) in
             //  StateFulLazyList is casing issues
             RecentlyPlayedList(

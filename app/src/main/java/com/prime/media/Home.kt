@@ -384,7 +384,7 @@ private fun Permission() {
 
 private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
 private val LightAccentColor = Color.SkyBlue
-private val DarkAccentColor = Color(0xFFFFDE3F)
+private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**
  * Provides a dynamic accent color based on the current theme (dark/light) and the user's

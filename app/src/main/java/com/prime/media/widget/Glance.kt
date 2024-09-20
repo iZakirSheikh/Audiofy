@@ -348,5 +348,25 @@ private fun Widget(
             onSeek = onSeek,
             onAction = onAction
         )
+
+        BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST -> GoldenDust(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
+
+        BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES -> GradientGroves(
+            item = item,
+            modifier = modifier,
+            playing = playing,
+            duration = duration,
+            progress = progress,
+            onSeek = onSeek,
+            onAction = onAction
+        )
     }
 }
