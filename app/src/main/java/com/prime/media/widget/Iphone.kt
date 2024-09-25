@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -23,9 +24,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,7 +44,6 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
@@ -52,8 +52,6 @@ import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -63,6 +61,8 @@ import com.primex.core.SignalWhite
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 import kotlin.math.roundToLong
 
@@ -83,23 +83,26 @@ fun Iphone(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val accent = Material.colors.primary
+    val accent = com.zs.core_ui.AppTheme.colors.accent
     ListTile(
-        color = Color.Black,
         onColor = Color.SignalWhite,
         modifier = modifier
-                .thenIf(item.mediaUri != Uri.EMPTY,
-            Modifier.sharedBounds(
-                Glance.SHARED_BACKGROUND_ID,
-                exit = fadeOut() + scaleOut(),
-                enter = fadeIn() + scaleIn()
-            ))
+            .thenIf(
+                item.mediaUri != Uri.EMPTY,
+                Modifier.sharedBounds(
+                    Glance.SHARED_BACKGROUND_ID,
+                    exit = fadeOut() + scaleOut(),
+                    enter = fadeIn() + scaleIn()
+                )
+            )
             .shadow(Glance.ELEVATION, Shape)
-            .border(1.dp, Color.Gray.copy(0.24f), Shape),
+            .border(1.dp, Color.Gray.copy(0.24f), Shape)
+            .background(Color.Black)
+        ,
         overline = {
             Label(
                 item.subtitle.toString(),
-                style = Material.typography.caption,
+                style = com.zs.core_ui.AppTheme.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
         },
@@ -109,14 +112,17 @@ fun Iphone(
                 data = item.artworkUri,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                    .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedElement(Glance.SHARED_ARTWORK_ID))
+                    .thenIf(
+                        item.mediaUri != Uri.EMPTY,
+                        Modifier.sharedElement(Glance.SHARED_ARTWORK_ID)
+                    )
                     .clip(DefaultArtworkShape),
             )
         },
         trailing = {
             // Expand to fill
             IconButton(
-                imageVector = Icons.Outlined.OpenInNew,
+                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                 //   tint = accent
                 onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                 modifier = Modifier
@@ -185,8 +191,11 @@ fun Iphone(
                                 "**"
                             )
                         ),
-                        modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,Modifier
-                            .sharedBounds(Glance.SHARED_PLAYING_BARS_ID))
+                        modifier = Modifier
+                            .thenIf(
+                                item.mediaUri != Uri.EMPTY, Modifier
+                                    .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
+                            )
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )
@@ -195,10 +204,10 @@ fun Iphone(
                     // played duration
                     Label(
                         when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
                         },
-                        style = Material.typography.caption,
+                        style = com.zs.core_ui.AppTheme.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
 
@@ -220,10 +229,10 @@ fun Iphone(
                     // total duration
                     Label(
                         when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000))
                         },
-                        style = Material.typography.caption,
+                        style = com.zs.core_ui.AppTheme.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
                     // control centre

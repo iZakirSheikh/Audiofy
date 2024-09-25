@@ -21,3 +21,6 @@ include(":app")
 
 include(":codex")
 include(":ads")
+include(":core-ui")
+include(":playback")
+include(":core")

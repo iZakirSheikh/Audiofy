@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import com.prime.media.Material
+import com.zs.core_ui.AppTheme
 
 private val DefaultNavItemShape = RoundedCornerShape(20)
 
@@ -36,8 +36,8 @@ object NavigationItemDefaults {
     fun navigationItemColors(
         backgroundColor: Color = Color.Transparent,
         contentColor: Color = LocalContentColor.current,
-        selectedBackgroundColor: Color = Material.colors.primary.copy(0.08f),
-        selectedContentColor: Color = Material.colors.primary,
+        selectedBackgroundColor: Color = AppTheme.colors.accent.copy(0.08f),
+        selectedContentColor: Color = AppTheme.colors.accent,
         disabledBackgroundColor: Color = Color.Transparent,
         disabledContentColor: Color = contentColor.copy(ContentAlpha.disabled),
     ) = ChipDefaults.outlinedFilterChipColors(
@@ -107,7 +107,7 @@ fun BottomNavItem(
             if (!checked) return@Row
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
-                    value = Material.typography.caption,
+                    value = AppTheme.typography.caption,
                     label
                 )
             }
@@ -158,7 +158,7 @@ fun NavRailItem(
             if (!checked) return@Column
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
-                    value = Material.typography.overline,
+                    value = AppTheme.typography.overline,
                     label
                 )
             }

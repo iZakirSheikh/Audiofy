@@ -4,7 +4,6 @@ import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -80,7 +79,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -530,7 +528,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     override fun shareApp() {
         ShareCompat.IntentBuilder(this).setType("text/plain")
             .setChooserTitle(getString(R.string.app_name))
-            .setText(getString(R.string.share_app_desc_s, Audiofy.GOOGLE_STORE)).startChooser()
+            .setText(getString(R.string.desc_share_app_s, Audiofy.GOOGLE_STORE)).startChooser()
     }
 
     override fun launchEqualizer(id: Int) {
@@ -542,7 +540,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                         putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
                         putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
-                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC);
+                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
                     }
                 )
             }
@@ -680,7 +678,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
         val manager = SplitInstallManagerFactory.create(this@MainActivity)
         // Observe active purchases and prompt the user to install any purchased dynamic features.
         lifecycleScope.launch {
-            billingManager.purchases.collect() { purchases ->
+            billingManager.purchases.collect { purchases ->
                 purchases.forEach { purchase ->
                     // Skip if the purchase is not completed
                     val productId = purchase.products.first()

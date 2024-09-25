@@ -34,7 +34,7 @@ import com.prime.media.core.db.findAudio
 import com.prime.media.core.db.uri
 import com.prime.media.core.util.getActivityResult
 import com.prime.media.editor.TagEditor
-import com.primex.core.activity
+import com.primex.core.findActivity
 import com.primex.core.getText2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -345,7 +345,7 @@ class TagEditorViewModel @Inject constructor(
         url = TextFieldValue(file.url ?: "")
         originalArtist = TextFieldValue(file.originalArtist ?: "")
         publisher = TextFieldValue(file.publisher ?: "")
-        val na = resources.getText(R.string.not_available_abbv)
+        val na = resources.getText(R.string.abbr_not_available)
         // initialize the extra info.
         extraInfo = resources.getText2(
             R.string.tag_editor_scr_extra_immutable_info_ssss,
@@ -458,7 +458,7 @@ class TagEditorViewModel @Inject constructor(
                         IntentSenderRequest.Builder(it).build()
                     }
                     // This must be Component activity
-                    val activity = ctx.activity as ComponentActivity
+                    val activity = ctx.findActivity() as ComponentActivity
                     val result = activity.getActivityResult(
                         ActivityResultContracts.StartIntentSenderForResult(),
                         request

@@ -62,7 +62,6 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
@@ -72,12 +71,11 @@ import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
-import com.prime.media.small2
-import com.prime.media.surfaceColorAtElevation
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "PlayingQueue"
 
@@ -114,7 +112,7 @@ private fun Track(
                 text = value.title.toString(),
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
-                style = Material.typography.body2
+                style = AppTheme.typography.bodyMedium
             )
         },
         // The playBars animation or drag indicator;
@@ -162,12 +160,12 @@ private fun TopAppBar(
         title = {
             Label(
                 text = stringResource(R.string.playing_queue),
-                style = Material.typography.body2,
+                style = AppTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
         },
-        backgroundColor = Material.colors.surfaceColorAtElevation(5.dp),
-        contentColor = Material.colors.onSurface,
+        backgroundColor = AppTheme.colors.background(5.dp),
+        contentColor = AppTheme.colors.onBackground,
         elevation = 0.dp,
         modifier = modifier,
         // Just for representational purposes.
@@ -224,7 +222,7 @@ private inline fun ListHeader(
                     top = ContentPadding.large,
                     bottom = ContentPadding.medium
                 )
-                .animateItemPlacement()
+                .animateItem()
         )
     }
 }
@@ -268,7 +266,7 @@ fun Content(
                     modifier = Modifier
                         .offset(y = -ContentPadding.medium)
                         .clickable { resolver.playTrack(item.mediaUri!!) }
-                        .animateItemPlacement()
+                        .animateItem()
                         .padding(horizontal = ContentPadding.small),
                     isPlaying = isLoaded,
                     onRemoveRequest = { resolver.remove(context, item.mediaUri!!) }
@@ -376,8 +374,8 @@ inline fun PlayingQueue(
         properties = DialogProperties(usePlatformDefaultWidth = false),
         content = {
             Surface(
-                color = Material.colors.surface,
-                shape = Material.shapes.small2,
+                color = AppTheme.colors.background(1.dp),
+                shape = AppTheme.shapes.compact,
                 content = { PlayingQueue(state = state, onDismissRequest = onDismissRequest) },
                 modifier = Modifier
                     .sizeIn(maxWidth = 500.dp, maxHeight = 700.dp)

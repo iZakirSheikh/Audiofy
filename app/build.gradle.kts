@@ -2,12 +2,12 @@ import com.android.build.api.dsl.ApplicationDefaultConfig
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.firebase)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.crashanlytics)
-    kotlin("kapt")
+    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.service)
+    alias(libs.plugins.crashanlytics)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 /**
@@ -65,14 +65,14 @@ private fun ApplicationDefaultConfig.init() {
 }
 
 android {
-    compileSdk = 34
+    compileSdk = 35
     namespace = "com.prime.media"
     defaultConfig {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 136
-        versionName = "3.0.0-alpha01"
+        versionCode = 137
+        versionName = "3.0.0-alpha02"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -94,7 +94,7 @@ android {
         debug {
             // makes it possible to install both release and debug versions in same device.
             applicationIdSuffix = ".debug"
-            resValue("string", "app_name2", "Debug")
+            resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }
     }
@@ -118,43 +118,42 @@ android {
 
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
-    implementation(libs.compose.activity)
+    implementation(libs.androidx.activity.compose)
 
-    implementation(libs.bundles.compose)
-    implementation(libs.bundles.icons)
-    implementation(libs.bundles.analytics)
-    implementation(libs.bundles.play.services)
+    implementation(libs.bundles.material.icons)
     implementation(libs.bundles.media3)
-    implementation(libs.bundles.room)
+    implementation(libs.bundles.play.services)
+    implementation(libs.bundles.analytics)
     implementation(libs.bundles.hilt)
-    implementation(libs.coil)
+    implementation(libs.bundles.room)
+
+    implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
-    implementation(libs.accompanist.adaptive)
-    implementation(libs.lottie)
+    implementation(libs.accompanist.adaptive) // TODO - Replace this with custom impl.
+    implementation(libs.lottie.compose)
     implementation(libs.toolkit.preferences)
-    implementation(libs.splashscreen)
-    implementation(libs.window)
-
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.window)
     implementation(libs.navigation.compose)
-    implementation(libs.ui.text.google.fonts)
-    implementation(libs.core.ktx)
-
-    kapt(libs.hilt.android.compiler)
-    kapt(libs.room.compiler)
-
     implementation(libs.kenburnsview)
     implementation(libs.wavy.slider)
-    implementation(libs.constraint.layout)
+    implementation(libs.androidx.constraint.layout.compose)
     implementation(libs.androidx.palette.ktx)
+    implementation (libs.material.view)
+    implementation(libs.androidx.graphics.shapes)
+    implementation(libs.mp3agic)
+    implementation(libs.androidx.ui.text.google.fonts)
 
-    // TODO - Consider using this as Dynamic Feature Module in future.
+    // TODO - Replace these with ksp.
+    kapt(libs.hilt.android.compiler)
+    kapt(libs.room.compiler)
+    //
     implementation(project(":ads"))
+    implementation(project(":core-ui"))
+
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
     implementation("com.google.j2objc:j2objc-annotations:3.0.0")
-    // The preview is not required in release builds.
-    debugImplementation(libs.bundles.preview)
-    implementation(libs.androidx.graphics.shapes)
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

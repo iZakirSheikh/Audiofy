@@ -39,8 +39,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prime.media.Material
-import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
@@ -70,7 +68,7 @@ private fun RecentItem(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .clip(Material.shapes.small) // Apply rounded corners
+            .clip(com.zs.core_ui.AppTheme.shapes.small) // Apply rounded corners
             .clickable(onClick = onClick) // Enable clicking
         //.then(modifier) // Apply additional modifiers
     ) {
@@ -81,7 +79,7 @@ private fun RecentItem(
                 .size(66.dp) // Adjust size if needed
                 .border(2.dp, Color.White, RECENT_ICON_SHAPE) // Add white border
                 .shadow(ContentElevation.low, RECENT_ICON_SHAPE) // Add subtle shadow
-                .background(Material.colors.surface)
+                .background(com.zs.core_ui.AppTheme.colors.background(1.dp))
         )
 
         // Label below the artwork with padding and styling
@@ -90,7 +88,7 @@ private fun RecentItem(
             modifier = Modifier
                 .padding(top = ContentPadding.medium)
                 .width(80.dp),
-            style = Material.typography.caption2,
+            style = com.zs.core_ui.AppTheme.typography.caption,
             maxLines = 2, // Allow at most 2 lines for label
             textAlign = TextAlign.Center,
             minLines = 2

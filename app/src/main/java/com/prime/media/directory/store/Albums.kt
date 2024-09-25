@@ -5,7 +5,13 @@ package com.prime.media.directory.store
 import android.provider.MediaStore
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
@@ -19,26 +25,36 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.caption2
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.impl.Repository
-import com.prime.media.core.compose.*
+import com.prime.media.core.compose.Artwork
+import com.prime.media.core.compose.Channel
+import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.db.Album
-import com.prime.media.core.playback.Remote
 import com.prime.media.core.db.uri
-import com.prime.media.directory.*
-import com.prime.media.small2
+import com.prime.media.core.playback.Remote
+import com.prime.media.directory.Action
+import com.prime.media.directory.Directory
+import com.prime.media.directory.DirectoryViewModel
+import com.prime.media.directory.GroupBy
+import com.prime.media.directory.Mapped
+import com.prime.media.directory.MetaData
+import com.prime.media.directory.ViewType
+import com.prime.media.impl.Repository
 import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.textResource
 import com.primex.material2.Label
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
@@ -128,7 +144,7 @@ fun Album(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Material.shapes.medium)
+            .clip(com.zs.core_ui.AppTheme.shapes.medium)
             .then(modifier)
             // add padding after size.
             .padding(GridItemPadding)
@@ -139,7 +155,7 @@ fun Album(
     ) {
 
         Surface(
-            shape = Material.shapes.small2,
+            shape = com.zs.core_ui.AppTheme.shapes.compact,
             elevation = ContentElevation.medium,
             modifier = Modifier
                 .fillMaxWidth()
@@ -157,13 +173,13 @@ fun Album(
             text = value.title,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Material.typography.caption,
+            style = com.zs.core_ui.AppTheme.typography.caption,
         )
 
         // Subtitle
         Label(
             text = textResource(R.string.albums_scr_year_d, value.firstYear),
-            style = Material.typography.caption2
+            style = com.zs.core_ui.AppTheme.typography.caption
         )
     }
 }
@@ -175,7 +191,7 @@ fun Albums(viewModel: AlbumsViewModel) {
     Directory(
         viewModel = viewModel,
         cells = GridCells.Adaptive(TILE_WIDTH + (4.dp * 2)),
-        onAction = { /*TODO: Currently we don't support more actions.*/},
+        onAction = { /*TODO: Currently we don't support more actions.*/ },
         key = { it.id },
         contentPadding = PaddingValues(horizontal = ContentPadding.normal),
     ) {
@@ -186,7 +202,7 @@ fun Albums(viewModel: AlbumsViewModel) {
                     val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
                     navigator.navigate(direction)
                 }
-               // .animateItemPlacement()
+            // .animateItemPlacement()
         )
     }
 }

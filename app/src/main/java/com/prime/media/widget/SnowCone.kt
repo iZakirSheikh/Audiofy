@@ -27,6 +27,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,9 +39,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -55,16 +56,12 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.Anim
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -73,6 +70,9 @@ import com.prime.media.core.playback.title
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 
 private val SnowConeShape = RoundedCornerShape(14)
 private val DefaultArtworkShape = RoundedCornerShape(20)
@@ -91,29 +91,29 @@ fun SnowCone(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val colors = Material.colors
+    val colors =  AppTheme.colors
     ListTile(
-        color = colors.backgroundColorAtElevation(1.dp),
         onColor = colors.onBackground,
-        shape = SnowConeShape,
         modifier = modifier
             .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedBounds(
                 Glance.SHARED_BACKGROUND_ID,
                 exit = fadeOut() + scaleOut(),
                 enter = fadeIn() + scaleIn(),
-
-                ))
+                )
+            )
             .heightIn(max = 120.dp)
             .shadow(16.dp, SnowConeShape)
             .thenIf(
                 !colors.isLight,
-                Modifier.border(0.5.dp, colors.primary.copy(0.12f), SnowConeShape)
-            ),
+                Modifier.border(0.5.dp, colors.accent.copy(0.12f), SnowConeShape)
+            )
+            .background(AppTheme.colors.background(1.dp))
+        ,
         // subtitle
         headline = {
             Label(
                 item.subtitle.toString(),
-                style = Material.typography.caption,
+                style = AppTheme.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
         },
@@ -121,7 +121,7 @@ fun SnowCone(
         overline = {
             Label(
                 item.title.toString(),
-                style = Material.typography.subtitle1,
+                style = AppTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.marque(Int.MAX_VALUE)
             )
@@ -147,7 +147,7 @@ fun SnowCone(
                 )
 
                 IconButton(
-                    imageVector = Icons.Outlined.OpenInNew,
+                    imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                     onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                     modifier = Modifier.offset(10.dp, -4.dp)
                 )

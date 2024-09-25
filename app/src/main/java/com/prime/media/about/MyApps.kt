@@ -18,8 +18,6 @@
 
 package com.prime.media.about
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,14 +33,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prime.media.Audiofy
-import com.prime.media.Material
-import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.small2
 import com.primex.material2.Label
+import com.zs.core_ui.AppTheme
 
 /**
  * Represents an app with its title, image URL, and Play Store URL.
@@ -78,7 +73,10 @@ private fun App(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.clip(Material.shapes.small2).clickable(onClick = onClick).padding(ContentPadding.small),
+        modifier = modifier
+            .clip(AppTheme.shapes.compact)
+            .clickable(onClick = onClick)
+            .padding(ContentPadding.small),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -93,7 +91,7 @@ private fun App(
             text = value.first,
             maxLines = 2,
             textAlign = TextAlign.Center,
-            style = Material.typography.caption2,
+            style = AppTheme.typography.caption,
             modifier = Modifier.width(56.dp)
         )
     }

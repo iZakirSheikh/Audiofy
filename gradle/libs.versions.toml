@@ -1,89 +1,76 @@
 [versions]
-# Plugins and Gradle configuration
-#--------
-agp = "8.6.1"  # Android Gradle Plugin for building Android apps
-kotlin = "2.0.20"  # Kotlin language version for code compilation
-firebase = "4.4.2"  # Firebase core library for integrating Firebase services
-crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics
-hilt-android = "2.52"  # Hilt for dependency injection in Android apps
-
-# Library Versions
-room = "2.6.1"  # Room persistence library for SQLite database access
-media3 = "1.4.1"  # Media playback, including audio and video
-compose = "1.7.2"  # Core foundation for building declarative UI with Compose
-toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
-accompanist = "0.36.0" # Accompanist is a labs like environment for new Compose APIs.
-junit = "4.13.2"
-junit-version = "1.2.1"
-espresso-core = "3.6.1"
-appcompat = "1.7.0"
-material = "1.12.0"
+agp = "8.6.1"
+kotlin = "2.0.20"
+compose = "1.8.0-alpha02"
+media3 = "1.4.1"
+toolkit = "2.0.2-rc04"
+material_icons = "1.7.2"
+hilt-android = "2.52"
+room = "2.6.1"
 
 [plugins]
-# Jetbrains Compose Compiler
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-firebase = { id = "com.google.gms.google-services", version.ref = "firebase" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
-crashanlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
-android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+google-service = { id = "com.google.gms.google-services", version = "4.4.2" }
+crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
+android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 
 
 [libraries]
-androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version = "1.0.1" }
-compose-activity = { module = "androidx.activity:activity-compose", version = "1.9.2" }
 # Jetpack Compose
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-compose-animation-graphics = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
-toolkit-core-ktx = { module = "com.github.prime-zs.toolkit:core-ktx", version.ref = "toolkit" }
-toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.ref = "toolkit" }
-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+androidx-animation-graphics = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
 
-# Tooling
+# Misc
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.2" }
+coil-compose = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
+kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
+wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
+androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
+androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version = "1.0.1" }
+androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.0.1" }
+# TODO - Remove this when widgets are replaced by compose glance.
+material_view = { module = "com.google.android.material:material", version = "1.12.0" }
+androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.1" }
+androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.0" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
+androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.8.2" }
+
+# Accompanist
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.36.0" }
+accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.36.0" }
+
+
+# Firebase
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.0" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.1.0" }
+
+#Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
-
-#Icons
-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "compose" }
-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }
-
-# Coil:
-coil = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
-# Accompanist -
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
-# Navigation Compose
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.1" }
-# Google Fonts
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.2" }
-# Window
-window = { module = "androidx.window:window", version = "1.3.0" }
-# Constraint Layout Compose
-constraint-layout = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.0.1" }
-# Lottie Compose
-lottie = { module = "com.airbnb.android:lottie-compose", version = "6.5.2" }
-# Core KTX
-core-ktx = { module = "androidx.core:core-ktx", version = "1.13.1" }
-# Ken Burns View
-kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
-# Wavy Slider
-wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
-#Splashscreen
-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
-#Palete
-androidx-palette-ktx = {module = "androidx.palette:palette-ktx", version = "1.0.0"}
-
-# Media3 ExoPlayer
-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+# Material Icons
+androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "material_icons" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
+# Playback
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 mp3agic = { module = "com.mpatric:mp3agic", version = "0.9.1" }
-codex_extensions = { module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version =  "0.8.1"}
+nextlib = { module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version = "0.8.1" }
+
+#Toolkit
+toolkit-core-ktx = { module = "com.github.prime-zs.toolkit:core-ktx", version.ref = "toolkit" }
+toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.ref = "toolkit" }
+toolkit-preferences = { module = "com.github.prime-zs.toolkit:preferences", version.ref = "toolkit" }
+
 
 # Dependency Injection
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
@@ -91,16 +78,21 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
 
 # Room Runtime
-# TODO - Replace this with Koin
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 
-toolkit-preferences = { module = "com.github.prime-zs.toolkit:preferences", version.ref = "toolkit" }
+# AdNetwork
+unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.1" }
+iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.3.0" }
+iron_source_ad_qaulity = { module = "com.ironsource:adqualitysdk", version = "7.20.1" }
+unity_adapter = { module = "com.ironsource.adapters:unityadsadapter", version = "4.3.40" }
 
-# Analytics
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.1.0" }
+androidx-window = { group = "androidx.window", name = "window", version = "1.3.0" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.9.2" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
+androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.5.2" }
 
 # Google Play Services
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
@@ -108,29 +100,13 @@ play-app-review-ktx = { module = "com.google.android.play:review-ktx", version =
 google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.1.0" }
 play_feature_delivery = { module = "com.google.android.play:feature-delivery-ktx", version = "2.1.0" }
 
-# ADS
-unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.1" }
-iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.3.0" }
-iron_source_ad_qaulity = { module = "com.ironsource:adqualitysdk", version = "7.20.1" }
-unity_adapter = { module ="com.ironsource.adapters:unityadsadapter", version = "4.3.40" }
-
 [bundles]
-compose = [
-    "compose-animation-graphics",
-    "compose-material",
-    "compose-foundation",
-    "compose-ui",
-    "compose-ui-graphics",
-    "toolkit-core-ktx",
-    "toolkit-material2"
-]
-
-play_services = ["play_feature_delivery", "google-billing-ktx", "play-app-review-ktx", "play-app-update-ktx"]
+compose = ["androidx-animation-graphics", "androidx-material", "androidx-ui", "androidx-ui-graphics", "toolkit-material2", "toolkit-core-ktx"]
+compose-preview = ["ui-tooling", "ui-tooling-preview"]
+material-icons = ["androidx-material-icons-core", "androidx-material-icons-extended"]
+media3 = ["androidx-media3-exoplayer", "androidx-media3-session", "androidx-media3-ui"]
+play_services = ["play-app-review-ktx", "play-app-update-ktx", "google-billing-ktx", "play_feature_delivery"]
 analytics = ["firebase-analytics-ktx", "firebase-crashlytics-ktx"]
 room = ["room-runtime", "room-ktx"]
 hilt = ["hilt-navigation-compose", "hilt-android"]
-media3 = ["media3-session", "media3-exoplayer", "media3-ui", "mp3agic"]
-icons = ["material-icons-extended", "material-icons-core"]
-preview = ["ui-tooling-preview", "ui-tooling"]
-ad_networks = ["iron_source", "iron_source_ad_qaulity", "unity-ads", "unity_adapter"]
-
+ad_network = ["iron_source", "iron_source_ad_qaulity", "unity-ads", "unity_adapter"]

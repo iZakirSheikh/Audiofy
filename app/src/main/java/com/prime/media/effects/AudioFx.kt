@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.prime.media.effects
 
@@ -36,17 +36,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
-import com.prime.media.small2
-import com.prime.media.surfaceColorAtElevation
 import com.primex.core.rotateTransform
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.TextButton
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "AudioFx"
 
@@ -62,12 +59,12 @@ private fun TopBar(
         title = {
             Label(
                 text = textResource(R.string.equalizer),
-                style = Material.typography.body1,
+                style = AppTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
         },
-        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
-        contentColor = Material.colors.onSurface,
+        backgroundColor = AppTheme.colors.background(1.dp),
+        contentColor = AppTheme.colors.onBackground,
         modifier = modifier,
         elevation = 0.dp,
         actions = {
@@ -113,13 +110,13 @@ private fun Equalizer(
             .sizeIn(maxHeight = 220.dp)
             .horizontalScroll(rememberScrollState()),
     ) {
-        CompositionLocalProvider(value = LocalContentColor provides  Material.colors.onSurface) {
+        CompositionLocalProvider(value = LocalContentColor provides  AppTheme.colors.onBackground) {
             // y - axis
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                CompositionLocalProvider(LocalTextStyle provides Material.typography.caption) {
+                CompositionLocalProvider(LocalTextStyle provides AppTheme.typography.caption) {
                     Label(
                         text = stringResource(
                             id = R.string.audio_fx_scr_abbr_db_suffix_d,
@@ -154,7 +151,7 @@ private fun Equalizer(
                             id = R.string.audio_fx_scr_abbr_hz_suffix_d,
                             fx.getBandCenterFreq(band) / 1000
                         ),
-                        style = Material.typography.caption2
+                        style = AppTheme.typography.caption
                     )
                 }
             }
@@ -179,13 +176,13 @@ fun Preset(
         selected = selected,
         enabled = enabled,
         border =
-        BorderStroke(1.dp, Material.colors.primary.copy(ChipDefaults.OutlinedBorderOpacity)),
+        BorderStroke(1.dp, AppTheme.colors.accent.copy(ChipDefaults.OutlinedBorderOpacity)),
         modifier = modifier.padding(ContentPadding.small)
     ) {
         Label(
             text = label,
             modifier = Modifier.padding(end = ContentPadding.small),
-            style = Material.typography.caption
+            style = AppTheme.typography.caption
         )
 
         if (icon == null)
@@ -209,8 +206,8 @@ fun AudioFx(
 ) {
     Column(
         modifier = Modifier
-            .clip(Material.shapes.small2)
-            .background(Material.colors.surface)
+            .clip(AppTheme.shapes.compact)
+            .background(AppTheme.colors.background(1.dp))
             .fillMaxWidth()
             .animateContentSize()
             .pointerInput(Unit) {}

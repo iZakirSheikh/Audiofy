@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -22,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.*
 import com.prime.media.core.compose.*
@@ -43,6 +43,7 @@ import java.util.*
 import javax.inject.Inject
 import kotlin.random.Random
 import com.primex.core.Text
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "AlbumsViewModel"
 
@@ -302,7 +303,7 @@ class MembersViewModel @Inject constructor(
                 toaster.show(
                     "The tracks are already in the playlist",
                     "Message",
-                    leading = Icons.Outlined.Message
+                    leading = Icons.AutoMirrored.Outlined.Message
                 )
                 return@launch
             }
@@ -386,7 +387,7 @@ private fun Member(
         modifier = modifier,
         overlineText = {
             Label(
-                style = Material.typography.caption,
+                style = AppTheme.typography.caption,
                 text = value.subtitle,
                 color = LocalContentColor.current.copy(ContentAlpha.medium),
                 fontWeight = FontWeight.SemiBold,
@@ -395,7 +396,7 @@ private fun Member(
         text = {
             Label(
                 text = value.title,
-                style = Material.typography.body1,
+                style = AppTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
             )
@@ -408,7 +409,7 @@ private fun Member(
                 modifier = Modifier
                     .border(2.dp, Color.White, shape = MEMBER_ICON_SHAPE)
                     .shadow(ContentElevation.medium, shape = MEMBER_ICON_SHAPE)
-                    .background(Material.colors.surface)
+                    .background(AppTheme.colors.background(1.dp))
                     .size(ARTWORK_SIZE),
             )
         },
@@ -434,14 +435,14 @@ private fun Member(
                         border =
                         BorderStroke(
                             1.dp,
-                            Material.colors.primary.copy(ChipDefaults.OutlinedBorderOpacity)
+                            AppTheme.colors.accent.copy(ChipDefaults.OutlinedBorderOpacity)
                         ),
                         modifier = Modifier.padding(ContentPadding.small)
                     ) {
                         Label(
                             text = it.title.get,
                             modifier = Modifier.padding(end = ContentPadding.small),
-                            style = Material.typography.caption
+                            style = AppTheme.typography.caption
                         )
                         Icon(
                             imageVector = it.icon,
@@ -461,7 +462,7 @@ fun Members(viewModel: MembersViewModel) {
     val selected = viewModel.selected
     // The confirm is a stata variable
     // that holds the value of current confirmation action
-    var confirm by rememberState<Action?>(initial = null)
+    var confirm by remember { mutableStateOf<Action?>(null) }
     // show confirm dialog for playlist Add.
     //irrespective of it is called on single or multiple items.
     if (confirm == Action.PlaylistAdd) {

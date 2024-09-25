@@ -18,6 +18,7 @@
 
 package com.prime.media.directory
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,11 +32,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonDefaults.OutlinedBorderOpacity
+import androidx.compose.material.ButtonDefaults.OutlinedBorderSize
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -50,17 +55,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prime.media.Material
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.util.DateUtils
-import com.prime.media.small2
 import com.primex.core.stringResource
 import com.primex.core.value
 import com.primex.material2.Button
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import com.zs.core_ui.AppTheme
 
 
 private val HeaderArtWorkShape = RoundedCornerShape(20)
@@ -105,7 +109,7 @@ fun <T : Any> Metadata(
                         data = meta.artwork ?: "",
                         modifier = Modifier
                             .shadow(ContentElevation.high, HeaderArtWorkShape)
-                            .background(Material.colors.surface)
+                            .background(AppTheme.colors.background(1.dp))
                             .width(76.dp)
                             .aspectRatio(0.61f)
                     )
@@ -118,7 +122,7 @@ fun <T : Any> Metadata(
                             // since meta is Text hence annotated string can be used to populate subtitle.
                             Label(
                                 text = stringResource(value = meta.title),
-                                style = Material.typography.h4,
+                                style = AppTheme.typography.headlineLarge,
                                 maxLines = 2,
                                 textAlign = TextAlign.Start,
                             )
@@ -145,7 +149,7 @@ fun <T : Any> Metadata(
                                             }
                                         },
                                         textAlign = TextAlign.Center,
-                                        style = Material.typography.h6,
+                                        style = AppTheme.typography.titleLarge,
                                         fontWeight = FontWeight.SemiBold,
                                     )
 
@@ -175,7 +179,7 @@ fun <T : Any> Metadata(
                                             }
                                         },
                                         textAlign = TextAlign.Center,
-                                        style = Material.typography.h6,
+                                        style = AppTheme.typography.titleLarge,
                                         fontWeight = FontWeight.SemiBold,
                                         modifier = Modifier.weight(0.7f),
                                     )
@@ -199,10 +203,13 @@ fun <T : Any> Metadata(
                             onClick = { onPerformAction(second) },
                             icon = rememberVectorPainter(image = second.icon),
                             colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
-                            border = ButtonDefaults.outlinedBorder,
+                            border =  BorderStroke(
+                                OutlinedBorderSize,
+                                AppTheme.colors.accent.copy(alpha = OutlinedBorderOpacity)
+                            ),
                             modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(11.dp),
-                            shape = Material.shapes.small2
+                            shape = CircleShape
                         )
 
                     val first = actions.getOrNull(1)
@@ -213,11 +220,11 @@ fun <T : Any> Metadata(
                             icon = rememberVectorPainter(image = first.icon),
                             modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(9.dp),
-                            elevation = ButtonDefaults.elevation(
-                                defaultElevation = 8.dp,
-                                pressedElevation = 0.dp
-                            ),
-                            shape = Material.shapes.small2
+                            elevation = null,
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = AppTheme.colors.background(3.dp)
+                            )
                         )
                 }
             )

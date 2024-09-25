@@ -34,16 +34,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.FloatingActionButtonDefaults
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -63,14 +62,11 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.Anim
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LottieAnimation
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -82,14 +78,18 @@ import com.primex.core.foreground
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
 private val TiramisuShape = RoundedCornerShape(14)
-private inline val Colors.ring
+private inline val com.zs.core_ui.Colors.ring
+    @Composable
     get() =
-        Brush.horizontalGradient(listOf(primary.copy(0.5f), Color.Transparent,  primary.copy(0.5f)))
-private inline val Colors.contentColor get() =
-    if (primary.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
+        Brush.horizontalGradient(listOf(accent.copy(0.5f), Color.Transparent,  accent.copy(0.5f)))
+private inline val com.zs.core_ui.Colors.contentColor @Composable get() =
+    if (accent.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
 
 /**
  * Represents a widget inspired from the media notification of android 13.
@@ -104,11 +104,11 @@ fun Tiramisu(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val colors = Material.colors
+    val colors =  AppTheme.colors
     Box(
         modifier = modifier
             .shadow(Glance.ELEVATION, TiramisuShape)
-            .background(Material.colors.background)
+            .background(AppTheme.colors.background)
             .heightIn(max = 160.dp)
             .fillMaxWidth(),
         content = {
@@ -139,7 +139,7 @@ fun Tiramisu(
                     Label(
                         item.title.toString(),
                         color = LocalContentColor.current.copy(ContentAlpha.medium),
-                        style = Material.typography.caption,
+                        style = AppTheme.typography.caption,
                         modifier = Modifier.fillMaxWidth(0.85f)
                     )
                 },
@@ -147,7 +147,7 @@ fun Tiramisu(
                 headline = {
                     Label(
                         item.title.toString(),
-                        style = Material.typography.subtitle1,
+                        style = AppTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth(0.85f),
                         fontWeight = FontWeight.Bold,
                     )
@@ -202,7 +202,7 @@ fun Tiramisu(
 
                             // Expand to fill
                             IconButton(
-                                imageVector = Icons.Outlined.OpenInNew,
+                                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                                 //   tint = accent
                                 onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                             )
@@ -213,7 +213,7 @@ fun Tiramisu(
                     FloatingActionButton(
                         onClick = { onAction(Glance.ACTION_PLAY) },
                         shape = RoundedCornerShape(28),
-                        backgroundColor = Color.SignalWhite.blend(colors.primary, 0.2f),
+                        backgroundColor = Color.SignalWhite.blend(colors.accent, 0.2f),
                         contentColor = Color.UmbraGrey,
                         modifier = Modifier.scale(0.9f),
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),

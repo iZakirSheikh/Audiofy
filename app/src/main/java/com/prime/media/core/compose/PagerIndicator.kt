@@ -51,7 +51,7 @@ import kotlin.math.sign
  * @param indicatorShape the shape representing each indicator. This defaults to [CircleShape].
  */
 @Composable
-public fun HorizontalPagerIndicator(
+fun HorizontalPagerIndicator(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     pageCount: Int = pagerState.pageCount,
@@ -122,8 +122,8 @@ For more migration information, please visit https://google.github.io/accompanis
 )
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-public fun HorizontalPagerIndicator(
-    pagerState: androidx.compose.foundation.pager.PagerState,
+fun HorizontalPagerIndicator(
+    pagerState: PagerState,
     pageCount: Int,
     modifier: Modifier = Modifier,
     pageIndexMapping: (Int) -> Int = { it },
@@ -254,7 +254,7 @@ For more migration information, please visit https://google.github.io/accompanis
 """
 )
 @Composable
-public fun VerticalPagerIndicator(
+fun VerticalPagerIndicator(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     pageCount: Int = pagerState.pageCount,
@@ -323,8 +323,8 @@ For more migration information, please visit https://google.github.io/accompanis
 )
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-public fun VerticalPagerIndicator(
-    pagerState: androidx.compose.foundation.pager.PagerState,
+fun VerticalPagerIndicator(
+    pagerState: PagerState,
     pageCount: Int,
     modifier: Modifier = Modifier,
     pageIndexMapping: (Int) -> Int = { it },

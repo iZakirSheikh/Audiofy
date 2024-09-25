@@ -20,56 +20,32 @@
 
 package com.prime.media.widget
 
-import android.graphics.DrawFilter
 import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -78,41 +54,35 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
 import com.primex.core.ImageBrush
-import com.primex.core.MetroGreen2
-import com.primex.core.Rose
 import com.primex.core.SignalWhite
-import com.primex.core.SkyBlue
 import com.primex.core.UmbraGrey
 import com.primex.core.blend
-import com.primex.core.shadow.shadow
 import com.primex.core.visualEffect
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.sharedElement
 
 private val WidgetShape = RoundedCornerShape(16.dp)
-private val Colors.bg: Brush
+private val com.zs.core_ui.Colors.bg: Brush
+    @Composable
     get() {
-        val accent = primary.copy(0.85f)
+        val accent = accent.copy(0.85f)
         return Brush.horizontalGradient(
             listOf(
                 accent,
@@ -158,7 +128,7 @@ fun GradientGroves(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val colors = Material.colors
+    val colors = AppTheme.colors
     ListTile(
         modifier = modifier
             .thenIf(item.mediaUri != Uri.EMPTY, Glance.SharedBoundsModifier)
@@ -171,14 +141,14 @@ fun GradientGroves(
             Label(
                 item.title.toString(),
                 modifier = Modifier.marque(Int.MAX_VALUE),
-                style = Material.typography.h5,
+                style = AppTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
         },
         overline = {
             Label(
                 item.subtitle.toString(),
-                style = Material.typography.caption,
+                style = AppTheme.typography.caption,
                 color = LocalContentColor.current
             )
         },
@@ -202,7 +172,7 @@ fun GradientGroves(
                 content = {
                     val bgModifier = Modifier
                         .scale(0.88f)
-                        .background(Material.colors.primary.copy(0.3f), CircleShape)
+                        .background(AppTheme.colors.accent.copy(0.3f), CircleShape)
                     // SeekBackward
                     IconButton(
                         onClick = { onAction(Glance.ACTION_PREV_TRACK) },
@@ -212,7 +182,7 @@ fun GradientGroves(
                     )
 
                     FloatingActionButton(
-                        backgroundColor = colors.primary.blend(Color.SignalWhite, 0.2f),
+                        backgroundColor = colors.accent.blend(Color.SignalWhite, 0.2f),
                         contentColor = LocalContentColor.current,
                         shape = RoundedCornerShape(28),
                         onClick = { onAction(Glance.ACTION_PLAY) },) {
@@ -245,7 +215,7 @@ fun GradientGroves(
 
                     //
                     IconButton(
-                        imageVector = Icons.Outlined.OpenInNew,
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                         onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                         modifier = bgModifier,
                     )

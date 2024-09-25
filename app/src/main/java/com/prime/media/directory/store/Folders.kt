@@ -3,7 +3,14 @@ package com.prime.media.directory.store
 import android.provider.MediaStore
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
@@ -17,27 +24,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.*
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.impl.Repository
 import com.prime.media.core.compose.Channel
-import com.prime.media.core.db.*
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.db.Folder
+import com.prime.media.core.db.name
 import com.prime.media.core.util.PathUtils
-import com.prime.media.directory.*
+import com.prime.media.directory.Action
+import com.prime.media.directory.Directory
+import com.prime.media.directory.DirectoryViewModel
+import com.prime.media.directory.GroupBy
+import com.prime.media.directory.MetaData
+import com.prime.media.directory.ViewType
+import com.prime.media.impl.Repository
 import com.prime.media.impl.block
 import com.prime.media.settings.Settings
 import com.primex.core.DahliaYellow
+import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.material2.Label
-import com.primex.core.Rose
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
@@ -152,7 +169,7 @@ fun Folder(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Material.shapes.medium)
+            .clip(com.zs.core_ui.AppTheme.shapes.medium)
             .then(modifier)
             // add padding after size.
             .padding(GridItemPadding)
@@ -177,7 +194,7 @@ fun Folder(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Material.typography.caption,
+            style = com.zs.core_ui.AppTheme.typography.caption,
         )
     }
 }
@@ -203,7 +220,7 @@ fun Folders(viewModel: FoldersViewModel) {
                     },
                     onLongClick = { viewModel.exclude(it.path) }
                 )
-                //.animateItemPlacement()
+            //.animateItemPlacement()
         )
     }
 }

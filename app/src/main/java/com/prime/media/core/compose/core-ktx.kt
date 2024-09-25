@@ -137,5 +137,5 @@ fun Modifier.thenIf(condition: Boolean, other: Modifier): Modifier {
  */
 inline fun Modifier.thenIf(condition: Boolean, value: Modifier.() -> Modifier): Modifier {
     // FixMe - Keep an eye on this; here Modifier is required otherwise value is twice applied.
-    return if (condition) this then Modifier.value() else this
+    return if (condition) this then value() else this
 }

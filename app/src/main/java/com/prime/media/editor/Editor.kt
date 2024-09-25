@@ -25,19 +25,19 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.HideImage
-import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Shop
@@ -47,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -68,29 +69,25 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.ContentPadding
+import com.prime.media.core.Divider
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.purchase
-import com.prime.media.outline
-import com.prime.media.overlay
-import com.prime.media.small2
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.composableOrNull
 import com.primex.core.drawHorizontalDivider
-import com.primex.core.getText2
-import com.primex.core.gradient
+import com.primex.core.foreground
 import com.primex.core.rememberVectorPainter
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.primex.material2.Text
 import com.primex.material2.TextButton
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "TagEditor"
 
@@ -182,7 +179,7 @@ private inline fun Property(
                 Label(text = if (placeholder != ResourcesCompat.ID_NULL) textResource(id = placeholder) else "")
             },
             singleLine = maxLines == 1,
-            shape = MaterialTheme.shapes.small2,
+            shape = AppTheme.shapes.compact,
             keyboardOptions = keyboardOptions,
             visualTransformation = visualTransformation,
             modifier = Modifier
@@ -203,7 +200,7 @@ private inline fun Info(
     item(key = "info", contentType = "Info") {
         val color = LocalContentColor.current
         Text(
-            style = MaterialTheme.typography.body2,
+            style = AppTheme.typography.bodyMedium,
             color = color,
             modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
             text = value
@@ -224,11 +221,11 @@ private inline fun Lyrics(
             onValueChange = onValueChange,
             minLines = 10,
             maxLines = 12,
-            shape = Material.shapes.small2,
+            shape = AppTheme.shapes.compact,
             readOnly = !enabled,
             visualTransformation = LRCVisualTransformation,
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Material.colors.overlay,
+                backgroundColor = AppTheme.colors.background.copy(0.04f),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
@@ -264,15 +261,15 @@ private inline fun Artwork(
                     BitmapPainter(image) else
                     rememberVectorPainter(
                         image = Icons.Outlined.HideImage,
-                        tintColor = Material.colors.onBackground
+                        tintColor = AppTheme.colors.onBackground
                     ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .clip(ArtworkShape)
-                    .background(Material.colors.overlay, ArtworkShape)
+                    .background(AppTheme.colors.background(0.5.dp), ArtworkShape)
                     .aspectRatio(1.0f) // different when width > height
-                    .gradient(true, listOf(Color.Black.copy(0.3f), Color.Black.copy(0.3f)))
+                    .foreground(Brush.verticalGradient(listOf(Color.Black.copy(0.3f), Color.Black.copy(0.3f))))
             )
             // Representational Icon.
             Icon(imageVector = Icons.Outlined.Edit, contentDescription = null, tint = Color.White)
@@ -292,9 +289,9 @@ private inline fun BuyMe() {
                     label = textResource(id = R.string.tag_editor_screen_buy_now_action),
                     onClick = { facade.launchBillingFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
             },
-            color = Material.colors.backgroundColorAtElevation(1.dp),
-            onColor = Material.colors.onBackground,
-            shape = Material.shapes.small2,
+            color = AppTheme.colors.background(1.dp),
+            onColor = AppTheme.colors.onBackground,
+            shape = AppTheme.shapes.compact,
             leading = {
                 Icon(
                     imageVector = Icons.Outlined.Shop,
@@ -310,7 +307,7 @@ private inline fun BuyMe() {
 context(LazyGridScope)
 private inline fun Header(@StringRes id: Int) {
     item(key = id, contentType = "Header", span = fullLineSpan) {
-        val primary = MaterialTheme.colors.secondary
+        val primary = AppTheme.colors.accent
         Label(
             text = textResource(id = id),
             fontWeight = FontWeight.SemiBold,
@@ -505,14 +502,14 @@ private fun Toolbar(
         navigationIcon = {
             val navigator = LocalNavController.current
             com.primex.material2.IconButton(
-                imageVector = Icons.Outlined.ReplyAll,
+                imageVector = Icons.AutoMirrored.Outlined.ReplyAll,
                 contentDescription = null,
                 onClick = { navigator.navigateUp() }
             )
         },
-        backgroundColor = MaterialTheme.colors.background,
+        backgroundColor = AppTheme.colors.background,
         modifier = modifier.drawHorizontalDivider(
-            Material.colors.outline,
+            AppTheme.colors.onBackground.copy(ContentAlpha.Divider),
             indent = TopBarDividerIndent
         ),
         elevation = 0.dp,
@@ -541,7 +538,7 @@ fun TagEditor(state: TagEditor) {
                 },
                 shape = FloatingActionButtonShape,
                 backgroundColor = Color.MetroGreen2,
-                contentColor = Material.colors.onPrimary
+                contentColor = AppTheme.colors.onAccent
             )
         },
         content = {

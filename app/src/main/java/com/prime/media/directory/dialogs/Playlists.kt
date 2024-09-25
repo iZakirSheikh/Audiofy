@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@ import com.prime.media.core.db.Playlist
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 import com.primex.material2.neumorphic.Neumorphic
+import com.zs.core_ui.AppTheme
 
 @Composable
 @Deprecated("Re-write this")
@@ -38,7 +40,7 @@ private fun Playlist(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Material.shapes.medium)
+            .clip(AppTheme.shapes.medium)
             .clickable(onClick = onPlaylistClick)
             // add padding after size.
             .padding(
@@ -56,12 +58,12 @@ private fun Playlist(
                 .sizeIn(maxWidth = 70.dp)
                 .aspectRatio(1.0f),
             elevation = ContentElevation.low,
-            lightShadowColor = Material.colors.lightShadowColor,
-            darkShadowColor = Material.colors.darkShadowColor,
+            lightShadowColor = AppTheme.colors.lightShadowColor,
+            darkShadowColor = AppTheme.colors.darkShadowColor,
 
             content = {
                 Icon(
-                    imageVector = Icons.Outlined.PlaylistPlay,
+                    imageVector = Icons.AutoMirrored.Outlined.PlaylistPlay,
                     contentDescription = null,
                     modifier = Modifier
                         .requiredSize(40.dp)
@@ -74,13 +76,13 @@ private fun Playlist(
             text = value.name,
             maxLines = 2,
             modifier = Modifier.padding(top = ContentPadding.medium),
-            style = Material.typography.caption,
+            style = AppTheme.typography.caption,
         )
 
         // Subtitle
         Label(
             text = "Modified - ${DateUtils.formatAsRelativeTimeSpan(value.dateModified)}",
-            style = Material.typography.caption2
+            style = AppTheme.typography.caption
         )
     }
 }
@@ -103,8 +105,8 @@ fun Playlists(
             onDismissRequest = onDismissRequest,
             vectorIcon = Icons.Outlined.Info,
             button2 = stringResource(id = R.string.dismiss) to onDismissRequest,
-            topBarBackgroundColor = Material.colors.overlay,
-            topBarContentColor = Material.colors.onSurface,
+            topBarBackgroundColor = AppTheme.colors.background(0.5.dp),
+            topBarContentColor = AppTheme.colors.onBackground,
         ) {
             Crossfade(
                 targetState = value.isEmpty(),

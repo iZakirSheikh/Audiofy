@@ -19,7 +19,6 @@
 package com.prime.media.library
 
 import android.net.Uri
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.runtime.Composable
@@ -46,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -56,22 +53,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
 import com.prime.media.core.db.albumUri
-import com.prime.media.small2
 import com.primex.core.ImageBrush
-import com.primex.core.blend
 import com.primex.core.foreground
 import com.primex.core.visualEffect
 import com.primex.material2.Label
+import com.zs.core_ui.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -94,7 +87,7 @@ private fun NewlyAddedItem(
 ) {
     Box(
         modifier = modifier
-            .shadow(ContentElevation.low, Material.shapes.small2) // Light shadow
+            .shadow(ContentElevation.low, AppTheme.shapes.compact) // Light shadow
             .clickable(onClick = onClick) // Enable clicking
             .size(224.dp, 132.dp), // Set minimum size
         contentAlignment = Alignment.Center // Center content within the box
@@ -103,7 +96,7 @@ private fun NewlyAddedItem(
         var accent by remember { mutableStateOf(Color.Unspecified) }
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        val primary = MaterialTheme.colors.primary
+        val primary = AppTheme.colors.accent
         Image(
             contentDescription = null,
             modifier = Modifier
@@ -118,7 +111,7 @@ private fun NewlyAddedItem(
                     )
                 ) // Apply transparent-to-primary gradient
                 .foreground(Color.Black.copy(0.2f))
-                .background(Material.colors.surface)
+                .background(AppTheme.colors.background(1.dp))
                 .matchParentSize(), // Fill available space,
             contentScale = ContentScale.Crop,
             alignment = Alignment.Center,
@@ -149,10 +142,10 @@ private fun NewlyAddedItem(
                 .padding(horizontal = ContentPadding.normal) // Add horizontal padding
                 .fillMaxWidth(0.5f) // Take up half the available width
                 .align(Alignment.CenterStart), // Align to the left
-            style = Material.typography.body1,
+            style = AppTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             maxLines = 2, // Allow at most 2 lines for label
-            color = Material.colors.onPrimary, // Use contrasting text color
+            color = AppTheme.colors.accent, // Use contrasting text color
         )
 
         // Play icon aligned to the right with padding and size
@@ -163,7 +156,7 @@ private fun NewlyAddedItem(
                 .align(Alignment.CenterEnd) // Align to the right
                 .padding(horizontal = ContentPadding.large) // Add horizontal padding
                 .size(40.dp, 40.dp), // Set icon size
-            tint = Material.colors.onPrimary // Use contrasting color
+            tint = AppTheme.colors.onAccent // Use contrasting color
         )
     }
 }

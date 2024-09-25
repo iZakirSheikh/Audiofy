@@ -29,16 +29,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Colors
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.MoreTime
-import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -62,21 +58,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.about.AboutUs
 import com.prime.media.core.Anim
 import com.prime.media.core.LongDurationMills
-import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.None
-import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shimmer.pulsate
 import com.prime.media.feedback.RouteFeedback
 import com.prime.media.impl.Repository
-import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
 import com.primex.core.blend
 import com.primex.core.foreground
@@ -89,21 +81,22 @@ import com.primex.material2.Text
 import com.primex.material2.appbar.CollapsableTopBarLayout
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
+import com.zs.core_ui.AppTheme
 
 /**
  * Defines the typography style for the large top bar title.
  */
 private val LargeTopBarTitle
-    @Composable inline get() = Material.typography.h4.copy(lineHeight = 20.sp)
+    @Composable inline get() = AppTheme.typography.headlineLarge.copy(lineHeight = 20.sp)
 
 /**
  * Defines the typography style for the normal top bar title.
  */
 private val NormalTopBarTitle
-    @Composable inline get() = Material.typography.body1
+    @Composable inline get() = AppTheme.typography.bodyLarge
 
-private val Colors.topBar
-    @Composable inline get() = primary.blend(background, 0.96f)
+private val com.zs.core_ui.Colors.topBar
+    @Composable inline get() = accent.blend(background, 0.96f)
 
 private val DefaultRepeatableSpec =
     repeatable(3, tween<Float>(Anim.LongDurationMills, 750))
@@ -132,7 +125,7 @@ fun CarousalAppBar(
     ) {
         // Background with image representation and gradient
         val id by state.carousel.collectAsState()
-        val colors = Material.colors
+        val colors = AppTheme.colors
         val gradient =
             Brush.verticalGradient(colors = listOf(Color.Transparent, colors.background))
         // Background
@@ -240,7 +233,7 @@ private inline fun Actions() {
 
     // check if rewarded video is available
     val available = provider.isRewardedVideoAvailable
-    val color = Material.colors.primary
+    val color = AppTheme.colors.accent
     IconButton(
         imageVector = Icons.Outlined.MoreTime,
         onClick = provider::showRewardedVideo,

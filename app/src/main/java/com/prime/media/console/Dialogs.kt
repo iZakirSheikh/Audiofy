@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTextApi::class)
-
 package com.prime.media.console
 
 
@@ -17,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonDefaults.OutlinedBorderSize
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Slider
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
@@ -39,19 +38,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.outline
-import com.prime.media.small2
-import com.prime.media.surfaceColorAtElevation
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
 import com.primex.material2.Dialog
+import com.primex.material2.Divider
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import com.primex.material2.TextButton
+import com.zs.core_ui.AppTheme
 import kotlin.math.roundToInt
 
 private const val TAG = "ConsoleDialogs"
@@ -66,11 +63,11 @@ private fun TopBar(
         title = {
             Label(
                 text = textResource(R.string.sleep_timer_dialog_title),
-                style = Material.typography.body1
+                style = AppTheme.typography.bodyLarge
             )
         },
-        backgroundColor = Material.colors.surfaceColorAtElevation(1.dp),
-        contentColor = Material.colors.onSurface,
+        backgroundColor = AppTheme.colors.background(1.dp),
+        contentColor = AppTheme.colors.onBackground,
         modifier = modifier,
         elevation = 0.dp,
         actions = {
@@ -94,7 +91,7 @@ private inline fun Layout(
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
             .padding(top = ContentPadding.medium),
-        style = Material.typography.h6,
+        style = AppTheme.typography.titleLarge,
     )
 
     Slider(
@@ -139,7 +136,7 @@ fun SleepTimer(
         onDismissRequest = { onValueChange(-2) }
     ) {
         Surface(
-            shape = Material.shapes.small2,
+            shape = AppTheme.shapes.compact,
             content = {
                 Column {
                     // TopBar
@@ -181,8 +178,8 @@ fun PlaybackSpeed(
     Dialog(
         expanded = expanded,
         onDismissRequest = { onValueChange(-1f) },
-        backgroundColor = Material.colors.surfaceColorAtElevation(0.3.dp),
-        shape = Material.shapes.small2,
+        backgroundColor = AppTheme.colors.background(0.3.dp),
+        shape = AppTheme.shapes.compact,
         content = {
             Column {
                 // TopBar
@@ -190,7 +187,7 @@ fun PlaybackSpeed(
                     title = {
                         Label(
                             text = textResource(id = R.string.playback_speed_dialog_title),
-                            style = Material.typography.body1
+                            style = AppTheme.typography.bodyLarge
                         )
                     },
                     backgroundColor = Color.Transparent,
@@ -203,7 +200,7 @@ fun PlaybackSpeed(
                         )
                     },
                     modifier = Modifier.drawHorizontalDivider(
-                        Material.colors.outline,
+                        AppTheme.colors.onBackground.copy(ContentAlpha.Divider),
                         indent = PaddingValues(horizontal = ContentPadding.normal)
                     )
                 )
@@ -215,7 +212,7 @@ fun PlaybackSpeed(
                     modifier = Modifier
                         .padding(DIALOG_ITEM_PADDING)
                         .align(Alignment.CenterHorizontally),
-                    style = Material.typography.h3,
+                    style = AppTheme.typography.displaySmall,
                     fontWeight = FontWeight.Light
                 )
 
@@ -241,7 +238,7 @@ fun PlaybackSpeed(
                             ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
                         val border = BorderStroke(
                             OutlinedBorderSize,
-                            Material.colors.primary.copy(alpha = ButtonDefaults.OutlinedBorderOpacity)
+                            AppTheme.colors.accent.copy(alpha = ButtonDefaults.OutlinedBorderOpacity)
                         )
                         val shape = CircleShape
                         val array =

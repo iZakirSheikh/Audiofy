@@ -20,18 +20,11 @@ package com.prime.media.core.compose
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.AnimationConstants
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.material.Colors
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -39,19 +32,15 @@ import androidx.compose.ui.unit.DpSize
 import androidx.navigation.compose.rememberNavController
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
-import com.prime.media.settings.Settings
 import com.primex.core.BlueLilac
 import com.primex.core.DahliaYellow
-import com.primex.core.OrientRed
-import com.primex.core.SignalWhite
 import com.primex.core.Text
-import com.primex.core.TrafficBlack
-import com.primex.core.UmbraGrey
 import com.primex.core.hsl
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.observeAsState
 import com.zs.ads.AdSize
+import com.zs.core_ui.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 
 private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
@@ -157,7 +146,7 @@ private val DarkSecondaryVariantColor = Color(0xFFf57d00)
  */
 @Composable
 fun PreviewTheme(darkTheme: Boolean, content: @Composable () -> Unit) {
-    BoxWithConstraints() {
+    BoxWithConstraints {
         val size = DpSize(this.maxWidth, this.maxHeight)
         val windowSizeClass = WindowSize(size)
         val nav = rememberNavController()
@@ -170,40 +159,12 @@ fun PreviewTheme(darkTheme: Boolean, content: @Composable () -> Unit) {
             LocalWindowSize provides windowSizeClass,
             LocalNavController provides nav
         ) {
-            val background by animateColorAsState(
-                targetValue = if (darkTheme) Color(0xFF0E0E0F) else Color(0xFFF5F5FA),
-                animationSpec = tween(AnimationConstants.DefaultDurationMillis)
-            )
-            val surface by animateColorAsState(
-                targetValue = if (darkTheme) Color.TrafficBlack else Color.White,
-                animationSpec = tween(AnimationConstants.DefaultDurationMillis)
-            )
             val primary = if (darkTheme) DarkPrimaryColor else LightPrimaryColor
-            val primaryVariant =
-                if (darkTheme) DarkPrimaryVariantColor else LightPrimaryVariantColor
-            val secondary = if (darkTheme) DarkSecondaryColor else LightSecondaryColor
-            val secondaryVariant =
-                if (darkTheme) DarkSecondaryVariantColor else LightSecondaryVariantColor
-            val colors = Colors(
-                primary = primary,
-                secondary = secondary,
-                background = background,
-                surface = surface,
-                primaryVariant = primaryVariant,
-                secondaryVariant = secondaryVariant,
-                onPrimary = Color.SignalWhite,
-                onSurface = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
-                onBackground = if (darkTheme) Color.SignalWhite else Color.UmbraGrey,
-                error = Color.OrientRed,
-                onSecondary = Color.SignalWhite,
-                onError = Color.SignalWhite,
-                isLight = !darkTheme
-            )
             // Actual theme compose; in future handle fonts etc.
-            MaterialTheme(
-                colors = colors,
+            AppTheme(
+                accent = primary,
+                isLight = !darkTheme,
                 content = content,
-                typography = Typography(Settings.DefaultFontFamily)
             )
         }
     }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -27,6 +26,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.dp
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "NavigationSuitScaffold"
 
@@ -107,7 +107,7 @@ fun NavigationSuiteScaffold(
     pixel: @Composable () -> Unit = {},
     hideNavigationBar: Boolean = false,
     shape: Shape = RectangleShape,
-    background: Color = MaterialTheme.colors.background,
+    background: Color = AppTheme.colors.background,
     contentColor: Color = contentColorFor(backgroundColor = background),
     channel: Channel = remember(::Channel),
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
@@ -170,7 +170,7 @@ private inline fun Vertical(
         content = content,
         modifier = modifier,
     ) { measurables, c ->
-        val width = c.maxWidth;
+        val width = c.maxWidth
         val height = c.maxHeight
         // Measure the size requirements of each child element, allowing
         // them to use the full width
@@ -248,7 +248,7 @@ private inline fun Horizontal(
         content = content,
         modifier = modifier,
     ) { measurables, c ->
-        val width = c.maxWidth;
+        val width = c.maxWidth
         val height = c.maxHeight
         // Measure the size requirements of each child element
         // Allow the elements to have a custom size by not constraining them.
@@ -263,7 +263,7 @@ private inline fun Horizontal(
         constraints = c.copy(minWidth = contentWidth, maxWidth = contentWidth)
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
         layout(width, height) {
-            var x = 0;
+            var x = 0
             var y = 0
             // place nav_bar from top at the start of the screen
             navBarPlaceable.placeRelative(x, y)

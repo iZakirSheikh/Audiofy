@@ -44,9 +44,9 @@ import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -67,7 +67,6 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
@@ -77,8 +76,6 @@ import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LottieAnimation
 import com.prime.media.core.compose.marque
 import com.prime.media.core.compose.shape.RoundedPolygonShape
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.shimmer.shimmer
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
@@ -90,7 +87,9 @@ import com.primex.core.visualEffect
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
-import ir.mahozad.multiplatform.wavyslider.material.WavySlider
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 import kotlin.math.roundToLong
 
 private val WidgetShape = RoundedCornerShape(16.dp)
@@ -140,14 +139,14 @@ fun GoldenDust(
             Label(
                 item.title.toString(),
                 modifier = Modifier.marque(Int.MAX_VALUE),
-                style = Material.typography.h5,
+                style = AppTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
         },
         overline = {
             Label(
                 item.subtitle.toString(),
-                style = Material.typography.caption,
+                style = AppTheme.typography.caption,
                 color = LocalContentColor.current
             )
         },
@@ -253,10 +252,10 @@ fun GoldenDust(
                     // played duration
                     Label(
                         when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
                         },
-                        style = Material.typography.caption,
+                        style = AppTheme.typography.caption,
                     )
 
                     // slider
@@ -273,16 +272,16 @@ fun GoldenDust(
                     // total duration
                     Label(
                         when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000))
                         },
-                        style = Material.typography.caption,
+                        style = AppTheme.typography.caption,
                         color = LocalContentColor.current,
                     )
 
                     // Expand to fill
                     IconButton(
-                        imageVector = Icons.Outlined.OpenInNew,
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                         //   tint = accent
                         onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                         modifier = IconModifier

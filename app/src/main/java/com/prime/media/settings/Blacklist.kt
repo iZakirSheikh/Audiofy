@@ -21,12 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.util.PathUtils
-import com.prime.media.small2
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -43,7 +41,7 @@ private fun Item(
     modifier: Modifier = Modifier
 ) {
     ListTile(
-        headline = { Label(text = title, fontWeight = FontWeight.Bold, style = Material.typography.body2) },
+        headline = { Label(text = title, fontWeight = FontWeight.Bold, style = com.zs.core_ui.AppTheme.typography.bodyMedium) },
         subtitle = { Label(text = subtitle) },
         leading = { Icon(imageVector = Icons.Outlined.FolderOff, contentDescription = null) },
         centerAlign = true,
@@ -76,7 +74,7 @@ private fun Blacklist(
                 message = stringResource(R.string.blacklist_empty_desc)
             )
             // Show actual list
-            else -> LazyColumn() {
+            else -> LazyColumn {
                 list?.forEach { path ->
                     val name = PathUtils.name(path)
                     item {
@@ -128,7 +126,7 @@ fun BlacklistDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(0.60f) // different when width > height
-                    .clip(Material.shapes.small2),
+                    .clip(com.zs.core_ui.AppTheme.shapes.compact),
             )
         }
     )

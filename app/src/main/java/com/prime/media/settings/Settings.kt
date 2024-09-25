@@ -15,13 +15,11 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Colors
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AudioFile
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Feedback
@@ -37,6 +35,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.NightMode
 import com.prime.media.core.compose.Banner
@@ -60,7 +58,6 @@ import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.None
 import com.prime.media.core.compose.contentInsets
 import com.primex.core.plus
-import com.primex.core.rememberState
 import com.primex.core.stringResource
 import com.primex.core.textResource
 import com.primex.material2.DropDownPreference
@@ -74,6 +71,7 @@ import com.primex.material2.appbar.LargeTopAppBar
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
+import com.zs.core_ui.AppTheme
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -84,9 +82,9 @@ private val CentreTileShape = RectangleShape
 private val BottomTileShape = RoundedCornerShape(0.dp, 0.dp, 24.dp, 24.dp)
 private val SingleTileShape = RoundedCornerShape(24.dp)
 
-private val Colors.tileBackgroundColor
+private val com.zs.core_ui.Colors.tileBackgroundColor
     @ReadOnlyComposable @Composable get() =
-        backgroundColorAtElevation(elevation = 1.dp)
+        background(elevation = 1.dp)
 
 @Composable
 @NonRestartableComposable
@@ -101,15 +99,15 @@ private fun TopAppBar(
         navigationIcon = {
             val navController = LocalNavController.current
             IconButton(
-                imageVector = Icons.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = navController::navigateUp
             )
         },
         style = TopAppBarDefaults.largeAppBarStyle(
-            scrolledContainerColor = Material.colors.backgroundColorAtElevation(elevation = 1.dp),
-            containerColor = Material.colors.background,
-            scrolledContentColor = Material.colors.onBackground,
-            contentColor = Material.colors.onBackground,
+            scrolledContainerColor = AppTheme.colors.background(elevation = 1.dp),
+            containerColor = AppTheme.colors.background,
+            scrolledContentColor = AppTheme.colors.onBackground,
+            contentColor = AppTheme.colors.onBackground,
         )
     )
 }
@@ -126,8 +124,8 @@ private inline fun GroupHeader(
         modifier = Modifier
             .padding(paddingValues)
             .then(modifier),
-        color = Material.colors.primary,
-        style = Material.typography.subtitle2
+        color = AppTheme.colors.accent,
+        style = AppTheme.typography.titleSmall
     )
 }
 
@@ -149,7 +147,7 @@ private inline fun General(
         },
         icon = Icons.Outlined.Recycling,
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, TopTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, TopTileShape),
     )
 
     // Legacy Artwork Method
@@ -164,7 +162,7 @@ private inline fun General(
         },
         icon = Icons.Outlined.Camera,
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
     )
 
     // Exclude Track Duration
@@ -183,7 +181,7 @@ private inline fun General(
         preview = {
             Text(
                 text = "${excludeTrackDuration.value}s",
-                style = MaterialTheme.typography.body2,
+                style = AppTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .size(60.dp)
@@ -192,11 +190,11 @@ private inline fun General(
             )
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
     )
 
     val list = viewState.excludedFiles
-    var showBlackListDialog by rememberState(initial = false)
+    var showBlackListDialog by remember { mutableStateOf(false) }
     // The Blacklist Dialog.
     BlacklistDialog(
         showBlackListDialog,
@@ -214,7 +212,7 @@ private inline fun General(
                 showBlackListDialog = true
                 facade.showAd(true)
             }
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Recent Playlist Limit
@@ -234,7 +232,7 @@ private inline fun General(
         preview = {
             Text(
                 text = "${maxRecentSize.value} files",
-                style = MaterialTheme.typography.body2,
+                style = AppTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .size(60.dp)
@@ -243,7 +241,7 @@ private inline fun General(
             )
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Use Inbuilt Audio FX
@@ -259,7 +257,7 @@ private inline fun General(
         },
         icon = Icons.Outlined.Tune,
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Close Playback When Task Removed
@@ -275,7 +273,7 @@ private inline fun General(
         },
         icon = Icons.Outlined.HideSource,
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, BottomTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, BottomTileShape)
     )
 }
 
@@ -302,7 +300,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, TopTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, TopTileShape)
     )
 
     // Colorization Strategy
@@ -319,7 +317,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // App font scale
@@ -345,7 +343,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Grid Item Multiplier
@@ -370,7 +368,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Translucent System Bars
@@ -386,7 +384,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, CentreTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Hide/Show SystemBars for Immersive View
@@ -401,7 +399,7 @@ private inline fun Appearance(
             facade.showAd(force = true)
         },
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, BottomTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, BottomTileShape)
     )
 }
 
@@ -414,9 +412,9 @@ private inline fun AboutUs(
     val provider = LocalSystemFacade.current
     Text(
         text = textResource(R.string.pref_about_us_summery),
-        style = MaterialTheme.typography.body2,
+        style = AppTheme.typography.bodyMedium,
         modifier = Modifier
-            .background(Material.colors.tileBackgroundColor, TopTileShape)
+            .background(AppTheme.colors.tileBackgroundColor, TopTileShape)
             .padding(horizontal = ContentPadding.xLarge, vertical = ContentPadding.normal),
         color = LocalContentColor.current.copy(ContentAlpha.medium)
     )
@@ -430,7 +428,7 @@ private inline fun AboutUs(
         icon = Icons.Outlined.PrivacyTip,
         modifier = Modifier
             .clickable { ctx.startActivity(Settings.PrivacyPolicyIntent) }
-            .background(Material.colors.tileBackgroundColor, CentreTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
     )
 
     // The app version and check for updates.
@@ -441,7 +439,7 @@ private inline fun AboutUs(
         icon = Icons.Outlined.TouchApp,
         modifier = Modifier
             .clickable { provider.launchUpdateFlow(true) }
-            .background(Material.colors.tileBackgroundColor, BottomTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, BottomTileShape),
     )
 }
 
@@ -456,7 +454,7 @@ private inline fun Feedback(
         icon = Icons.Outlined.Feedback,
         modifier = Modifier
             .clickable { facade.launchAppStore() }
-            .background(Material.colors.tileBackgroundColor, TopTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, TopTileShape),
     )
     Preference(
         title = stringResource(R.string.pref_rate_us),
@@ -464,7 +462,7 @@ private inline fun Feedback(
         icon = Icons.Outlined.Star,
         modifier = Modifier
             .clickable { facade.launchAppStore() }
-            .background(Material.colors.tileBackgroundColor, CentreTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
     )
 
     Preference(
@@ -473,7 +471,7 @@ private inline fun Feedback(
         icon = Icons.Outlined.Share,
         modifier = Modifier
             .clickable { facade.shareApp() }
-            .background(Material.colors.tileBackgroundColor, BottomTileShape),
+            .background(AppTheme.colors.tileBackgroundColor, BottomTileShape),
     )
 }
 

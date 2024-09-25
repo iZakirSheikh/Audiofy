@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.SeekBar
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +22,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.flaviofaria.kenburnsview.KenBurnsView
 import com.flaviofaria.kenburnsview.TransitionGenerator
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "View"
 
@@ -52,7 +52,7 @@ fun KenBurns(
 @Composable
 fun Seekbar(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colors.primary,
+    color: Color = AppTheme.colors.accent,
     thumb: Drawable? = null,
     progress: Float,
     onValueChange: (Float) -> Unit,

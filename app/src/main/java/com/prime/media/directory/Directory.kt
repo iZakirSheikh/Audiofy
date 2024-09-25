@@ -4,43 +4,79 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.outlined.ReplyAll
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.RadioButtonChecked
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
-import androidx.constraintlayout.compose.ChainStyle
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import com.prime.media.*
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.util.DateUtils
-import com.prime.media.core.compose.*
-import com.primex.core.*
-import com.primex.material2.*
+import com.prime.media.core.compose.LocalNavController
+import com.prime.media.core.compose.Placeholder
+import com.prime.media.core.compose.contentInsets
+import com.primex.core.Text
+import com.primex.core.drawHorizontalDivider
+import com.primex.core.plus
+import com.primex.core.raw
+import com.primex.core.stringResource
+import com.primex.material2.DropDownMenuItem
+import com.primex.material2.Header
+import com.primex.material2.IconButton
+import com.primex.material2.Indication
+import com.primex.material2.Label
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
+import com.zs.core_ui.AppTheme
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -81,7 +117,7 @@ private fun Action(
     enabled: Boolean = !checked,
     onAction: () -> Unit
 ) {
-    val color = if (checked) Material.colors.primary else LocalContentColor.current
+    val color = if (checked) AppTheme.colors.accent else LocalContentColor.current
     CompositionLocalProvider(
         LocalContentColor provides color,
         LocalContentAlpha provides ContentAlpha.high
@@ -99,7 +135,7 @@ private fun Action(
                             drawRect(
                                 brush = Brush.horizontalGradient(
                                     listOf(
-                                        color.copy(Material.CONTAINER_COLOR_ALPHA),
+                                        color.copy(ContentAlpha.Indication),
                                         Color.Transparent
                                     )
                                 )
@@ -156,8 +192,8 @@ private fun <T : Any> Toolbar(
         shape = TopBarShape,
         elevation = ContentElevation.low,
         modifier = modifier.padding(top = ContentPadding.medium),
-        lightShadowColor = Material.colors.lightShadowColor,
-        darkShadowColor = Material.colors.darkShadowColor,
+        lightShadowColor = AppTheme.colors.lightShadowColor,
+        darkShadowColor = AppTheme.colors.darkShadowColor,
         // The label must not fill width
         // this will surely make the look and feel of the app bad.
         title = {
@@ -179,7 +215,7 @@ private fun <T : Any> Toolbar(
                     else
                         navigator.navigateUp()
                 },
-                imageVector = Icons.Outlined.ReplyAll,
+                imageVector = Icons.AutoMirrored.Outlined.ReplyAll,
                 contentDescription = null
             )
         },
@@ -208,9 +244,9 @@ private fun <T : Any> Toolbar(
             )*/
 
             // SortBy
-            var showOrderMenu by rememberState(initial = false)
+            var showOrderMenu by remember { mutableStateOf(false) }
             IconButton(onClick = { showOrderMenu = true }) {
-                Icon(imageVector = Icons.Outlined.Sort, contentDescription = null)
+                Icon(imageVector = Icons.AutoMirrored.Outlined.Sort, contentDescription = null)
                 val actions = resolver.orders
                 DropdownMenu(
                     expanded = showOrderMenu,
@@ -220,7 +256,7 @@ private fun <T : Any> Toolbar(
                     // ascending descending logic
                     val ascending = filter.third
                     CompositionLocalProvider(
-                        LocalContentColor provides Material.colors.primary
+                        LocalContentColor provides AppTheme.colors.accent
                     ) {
                         DropDownMenuItem(
                             title = "Ascending",
@@ -252,7 +288,7 @@ private fun <T : Any> Toolbar(
             val actions = resolver.mActions
             val from = if (resolver.meta?.isSimple != false) 1 else 3
             if (actions.size > from) {
-                var showActionMenu by rememberState(initial = false)
+                var showActionMenu by remember { mutableStateOf(false) }
                 IconButton(onClick = { showActionMenu = true }) {
                     Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
                     // more options show in both cases if something is selected or not.
@@ -319,10 +355,10 @@ private fun <T : Any> ActionBar(
         modifier = modifier.padding(top = ContentPadding.medium),
         elevation = ContentElevation.low,
         shape = TopBarShape,
-        contentColor = Material.colors.primary,
+        contentColor = AppTheme.colors.accent,
 
-        lightShadowColor = Material.colors.lightShadowColor,
-        darkShadowColor = Material.colors.darkShadowColor,
+        lightShadowColor = AppTheme.colors.lightShadowColor,
+        darkShadowColor = AppTheme.colors.darkShadowColor,
         // here the navigation icon is the clear button.
         // clear selection if selected > 0
         navigationIcon = {
@@ -355,7 +391,7 @@ private fun <T : Any> ActionBar(
             // The remain actions.
             // only show if it is > 2
             if (actions.size > 2) {
-                var showActionMenu by rememberState(initial = false)
+                var showActionMenu by remember { mutableStateOf(false) }
                 IconButton(onClick = { showActionMenu = true }) {
                     Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
                     // more options show in both cases if something is selected or not.
@@ -430,7 +466,7 @@ private fun Header(
             // in case the length of the title string is 1
             true -> Header(
                 text = title,
-                style = Material.typography.h3,
+                style = AppTheme.typography.displaySmall,
                 fontWeight = FontWeight.Normal,
                 color = color,
                 modifier = Modifier
@@ -444,7 +480,7 @@ private fun Header(
                 color = color,
                 maxLines = 2,
                 fontWeight = FontWeight.Normal,
-                style = Material.typography.h4,
+                style = AppTheme.typography.headlineLarge,
                 modifier = Modifier
                     // don't fill whole line.
                     .fillMaxWidth(0.7f)
@@ -454,7 +490,6 @@ private fun Header(
         }
     }
 }
-
 
 
 // recyclable items.
@@ -488,7 +523,7 @@ private fun <T : Any> SearchBar(
         leadingIcon = { Icon(imageVector = Icons.Outlined.Search, contentDescription = null) },
         placeholder = { Label(text = "Type here to search!!") },
         label = { Label(text = "Search") },
-        shape = Material.shapes.small2,
+        shape = AppTheme.shapes.compact,
         trailingIcon = {
             IconButton(onClick = { resolver.filter(if (!query.isNullOrBlank()) "" else null) }) {
                 Icon(imageVector = Icons.Outlined.Close, contentDescription = null)
@@ -516,7 +551,7 @@ private inline fun <T> LazyGridScope.content(
             content = {
                 Header(
                     value = header,
-                  //  modifier = Modifier.animateItemPlacement()
+                    //  modifier = Modifier.animateItemPlacement()
                 )
             }
         )
@@ -560,7 +595,7 @@ private fun <T : Any> List(
     //outside in the future.
     //Currently, we only support mapped data, but we aim to support paged data in the future."
     val flow = resolver.data as StateFlow<Mapped<T>>
-    val data by flow.collectAsState() as State<Mapped<T>?>
+    val data by flow.collectAsState()
 
     // The data can be in following cases:
     // case 1: data is null; means the initial loading state.
@@ -640,6 +675,7 @@ private fun <T : Any> List(
                     iconResId = R.raw.lt_loading_dots_blue,
                     modifier = Modifier.wrapContentHeight()
                 )
+
                 1 -> Placeholder(
                     title = "Oops Empty!!",
                     iconResId = R.raw.lt_empty_box,
@@ -720,7 +756,7 @@ fun <T : Any> Directory(
                 onAction = onAction,
                 modifier = Modifier
                     .statusBarsPadding()
-                    .drawHorizontalDivider(color = Material.colors.onSurface)
+                    .drawHorizontalDivider(color = AppTheme.colors.onBackground)
                     .padding(bottom = ContentPadding.medium),
             )
         },

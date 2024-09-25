@@ -8,15 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
@@ -40,17 +36,16 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.compose.Channel.Data
 import com.prime.media.core.compose.Channel.Duration
 import com.prime.media.core.compose.Channel.Result
-import com.prime.media.small2
 import com.primex.core.SignalWhite
 import com.primex.core.Text
 import com.primex.core.get
 import com.primex.core.value
 import com.primex.material2.IconButton
 import com.primex.material2.Label
+import com.zs.core_ui.AppTheme
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -390,13 +385,13 @@ private fun Modifier.indicator(color: Color) = this then Modifier.drawBehind {
 private fun Snackbar2(
     data: Data,
     modifier: Modifier = Modifier,
-    shape: Shape = MaterialTheme.shapes.small,
-    backgroundColor: Color = if (MaterialTheme.colors.isLight)
+    shape: Shape = AppTheme.shapes.small,
+    backgroundColor: Color = if (AppTheme.colors.isLight)
         Color(0xFF0E0E0F)
     else
-        MaterialTheme.colors.backgroundColorAtElevation(1.dp),
+        AppTheme.colors.background(1.dp),
     contentColor: Color = Color.SignalWhite,
-    actionColor: Color = data.accent.takeOrElse { MaterialTheme.colors.primary },
+    actionColor: Color = data.accent.takeOrElse { AppTheme.colors.accent },
     elevation: Dp = 6.dp,
 ) {
     Surface(
@@ -436,14 +431,14 @@ private fun Snackbar2(
                         Label(
                             text = title.get,
                             color = LocalContentColor.current.copy(ContentAlpha.high),
-                            style = MaterialTheme.typography.body2.copy(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Top, LineHeightStyle.Trim.LastLineBottom)),
+                            style = AppTheme.typography.bodyMedium.copy(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Top, LineHeightStyle.Trim.LastLineBottom)),
                             fontWeight = FontWeight.SemiBold
                         )
 
                     Label(
                         text = data.message.value,
                         color = LocalContentColor.current,
-                        style = MaterialTheme.typography.body2,
+                        style = AppTheme.typography.bodyMedium,
                         maxLines = 5,
                     )
 
@@ -473,7 +468,7 @@ private fun Snackbar2(
                                 ButtonDefaults.OutlinedBorderSize,
                                 Color.SignalWhite.copy(alpha = ButtonDefaults.OutlinedBorderOpacity)
                             ),
-                            shape = MaterialTheme.shapes.small2,
+                            shape = AppTheme.shapes.compact,
                             modifier = Modifier.offset(x = 8.dp, y = 16.dp)
                         )
 

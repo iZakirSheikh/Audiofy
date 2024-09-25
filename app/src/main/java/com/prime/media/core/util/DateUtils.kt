@@ -21,17 +21,17 @@ object DateUtils {
         return when {
             mills >= DateUtils.HOUR_IN_MILLIS -> {
                 val hours = ((mills + 1800000) / DateUtils.HOUR_IN_MILLIS).toInt()
-                Text(R.plurals.duration_hours, hours, hours)
+                Text(R.plurals.duration_hours_d, hours, hours)
             }
 
             mills >= DateUtils.MINUTE_IN_MILLIS -> {
                 val minutes = ((mills + 30000) / DateUtils.MINUTE_IN_MILLIS).toInt()
-                Text(R.plurals.duration_minutes, minutes, minutes)
+                Text(R.plurals.duration_minutes_d, minutes, minutes)
             }
 
             else -> {
                 val seconds = ((mills + 500) / DateUtils.SECOND_IN_MILLIS).toInt()
-                Text(R.plurals.duration_seconds, seconds, seconds)
+                Text(R.plurals.duration_seconds_d, seconds, seconds)
             }
         }
     }
@@ -50,21 +50,21 @@ object DateUtils {
             mills >= DateUtils.HOUR_IN_MILLIS -> {
                 val hours = ((mills + 1800000) / DateUtils.HOUR_IN_MILLIS).toInt()
                 res.getQuantityString(
-                    R.plurals.duration_hours, hours, hours
+                    R.plurals.duration_hours_d, hours, hours
                 )
             }
 
             mills >= DateUtils.MINUTE_IN_MILLIS -> {
                 val minutes = ((mills + 30000) / DateUtils.MINUTE_IN_MILLIS).toInt()
                 res.getQuantityString(
-                    R.plurals.duration_minutes, minutes, minutes
+                    R.plurals.duration_minutes_d, minutes, minutes
                 )
             }
 
             else -> {
                 val seconds = ((mills + 500) / DateUtils.SECOND_IN_MILLIS).toInt()
                 res.getQuantityString(
-                    R.plurals.duration_seconds, seconds, seconds
+                    R.plurals.duration_seconds_d, seconds, seconds
                 )
             }
         }

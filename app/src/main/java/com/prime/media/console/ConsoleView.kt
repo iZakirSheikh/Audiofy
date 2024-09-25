@@ -102,7 +102,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -131,10 +130,7 @@ import com.google.accompanist.adaptive.TwoPane
 import com.google.accompanist.adaptive.TwoPaneStrategy
 import com.google.accompanist.adaptive.VerticalTwoPaneStrategy
 import com.google.accompanist.adaptive.calculateDisplayFeatures
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
-import com.prime.media.caption2
 import com.prime.media.config.RoutePersonalize
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentElevation
@@ -154,16 +150,11 @@ import com.prime.media.core.compose.preference
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
-import com.prime.media.darkShadowColor
 import com.prime.media.effects.AudioFx
-import com.prime.media.isAppearanceLightSystemBars
-import com.prime.media.lightShadowColor
-import com.prime.media.outline
 import com.prime.media.settings.Settings
-import com.prime.media.small2
 import com.primex.core.ImageBrush
 import com.primex.core.SignalWhite
-import com.primex.core.activity
+import com.primex.core.findActivity
 import com.primex.core.plus
 import com.primex.core.visualEffect
 import com.primex.material2.DropDownMenuItem
@@ -173,9 +164,18 @@ import com.primex.material2.OutlinedButton2
 import com.primex.material2.menu.DropDownMenu2
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Colors
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
 private const val TAG = "ConsoleView"
+
+/**
+ * Returns true if the system bars are required to be light-themed, false otherwise.
+ * @see WindowInsetsControllerCompat.isAppearanceLightStatusBars
+ */
+private inline val Colors.isAppearanceLightSystemBars
+    @Composable inline get() = isLight
 
 /** Default background style. */
 private const val DEFAULT_BACKGROUND = 0
@@ -453,7 +453,7 @@ private val DefaultArtworkShape = Rounded_15
  * @param value The current value of the SeekBar between 0 and 1, [Float.NaN] indicates waiting.
  * @param onValueChange Callback triggered when the SeekBar value changes.
  * @param modifier Optional Modifier for additional styling.
- * @param color The color of the SeekBar, default is the primary color from MaterialTheme.
+ * @param color The color of the SeekBar, default is the primary color from AppTheme.
  * @param style The style of the SeekBar, either [SEEKBAR_STYLE_SIMPLE] or [SEEKBAR_STYLE_WAVY].
  */
 @Composable
@@ -462,7 +462,7 @@ private fun SeekBar(
     value: Float,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    accent: Color = Material.colors.primary,
+    accent: Color = AppTheme.colors.accent,
     @Seekbar style: Int = SEEKBAR_STYLE_SIMPLE,
 ) {
     // if the value is Float.NaN; show a non ending progress bar.
@@ -521,14 +521,14 @@ private fun PlayButton(
             modifier = modifier,
             shape = RoundedCornerShape_24,
             colors = NeumorphicButtonDefaults.neumorphicButtonColors(
-                lightShadowColor = Material.colors.lightShadowColor,
-                darkShadowColor = Material.colors.darkShadowColor
+                lightShadowColor = AppTheme.colors.lightShadowColor,
+                darkShadowColor = AppTheme.colors.darkShadowColor
             ),
-            border = if (!Material.colors.isLight)
-                BorderStroke(1.dp, Material.colors.outline.copy(0.06f))
+            border = if (!AppTheme.colors.isLight)
+                BorderStroke(1.dp, AppTheme.colors.onBackground.copy(0.06f))
             else null,
             content = {
-                val accent = Material.colors.primary
+                val accent = AppTheme.colors.accent
                 LottieAnimation(
                     id = R.raw.lt_play_pause,
                     atEnd = !isPlaying,
@@ -627,7 +627,7 @@ private inline fun Controls(
  * Composable function displaying a progress bar along with two icon buttons.
  *
  * @param style The style of the progress bar, default is [SEEKBAR_STYLE_WAVY].
- * @param accent The accent color for the progress bar, default is the primary color from MaterialTheme.
+ * @param accent The accent color for the progress bar, default is the primary color from AppTheme.
  * @param state The current state of the console.
  */
 @Composable
@@ -636,7 +636,7 @@ private fun TimeBar(
     modifier: Modifier = Modifier,
     onRequest: (request: @Request Int) -> Boolean,
     @Seekbar style: Int = SEEKBAR_STYLE_WAVY,
-    accent: Color = Material.colors.primary,
+    accent: Color = AppTheme.colors.accent,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.then(NoOpPointerInput)
@@ -660,7 +660,7 @@ private fun TimeBar(
     val context = LocalContext.current
     IconButton(
         imageVector = when {
-            LocalInspectionMode.current || context.activity.isOrientationLocked -> Icons.Outlined.ScreenLockLandscape
+            LocalInspectionMode.current || context.findActivity().isOrientationLocked -> Icons.Outlined.ScreenLockLandscape
             else -> Icons.Outlined.ScreenRotation
         },
         onClick = { onRequest(REQUEST_TOGGLE_ROTATION_LOCK) }
@@ -705,7 +705,7 @@ private fun More(
             DropDownMenu2(
                 expanded = expanded == 2,
                 onDismissRequest = { expanded = 1 },
-                shape = Material.shapes.small2,
+                shape = AppTheme.shapes.compact,
                 content = {
                     DropDownMenuItem(
                         title = "Auto",
@@ -724,7 +724,7 @@ private fun More(
             DropDownMenu2(
                 expanded = expanded == 3,
                 onDismissRequest = { expanded = 1; },
-                shape = Material.shapes.small2,
+                shape = AppTheme.shapes.compact,
                 // TODO - Add one option for enabling/adding custom subtitle track.
                 content = {
                     DropDownMenuItem(
@@ -744,7 +744,7 @@ private fun More(
             DropDownMenu2(
                 expanded = expanded == 1,
                 onDismissRequest = { expanded = 0; state.ensureAlwaysVisible(false) },
-                shape = Material.shapes.small2,
+                shape = AppTheme.shapes.compact,
                 content = {
                     // A top row; showing common options
                     Row(
@@ -765,7 +765,7 @@ private fun More(
                                     expanded = 0
                                 }
                             )
-                            
+
                             // Control Centre
                             IconButton(
                                 imageVector = Icons.Outlined.Tune,
@@ -856,7 +856,7 @@ private fun Options(
             // If the value is -1f, it means a dismiss request
                 state.playbackSpeed = it
             state.ensureAlwaysVisible(false)
-            expanded = 0;
+            expanded = 0
         }
     )
 
@@ -878,7 +878,7 @@ private fun Options(
         onClick = {
             // check if parent might handle the request of showing the dialog.
             if (onRequest(REQUEST_SHOW_PLAYING_QUEUE))
-                return@IconButton;
+                return@IconButton
             expanded = 1; state.ensureAlwaysVisible(true)
         },
     )
@@ -899,9 +899,9 @@ private fun Options(
                 when (show) {
                     true -> Label(
                         text = formatElapsedTime(mills / 1000L),
-                        style = Material.typography.caption2,
+                        style = AppTheme.typography.caption,
                         fontWeight = FontWeight.Bold,
-                        color = Material.colors.secondary
+                        color = AppTheme.colors.accent
                     )
 
                     else -> Icon(
@@ -948,7 +948,7 @@ private fun Background(
         BACKGROUND_VIDEO_SURFACE, DEFAULT_BACKGROUND -> {
             // Animate color changes for visual transitions
             val color by animateColorAsState(
-                targetValue = if (style == BACKGROUND_VIDEO_SURFACE) Color.Black else Material.colors.background,
+                targetValue = if (style == BACKGROUND_VIDEO_SURFACE) Color.Black else AppTheme.colors.background,
                 label = "Background color Change."
             )
             // Create the background with the determined color
@@ -966,11 +966,11 @@ private fun Message(
     modifier: Modifier = Modifier
 ) {
     // Early return when message is empty
-    if (message == null) return Unit
+    if (message == null) return
     Label(
         text = message,
         modifier = modifier
-            .shadow(ContentElevation.medium, Material.shapes.small2, true)
+            .shadow(ContentElevation.medium, AppTheme.shapes.compact, true)
             .background(Color.Black)
             .padding(horizontal = ContentPadding.normal, vertical = ContentPadding.medium)
     )
@@ -1015,8 +1015,8 @@ private fun MainContent(
         if (onRequest(REQUEST_HANDLE_BACK_PRESS))
             return@onNavigateBack
         // Check if the activity has orientation lock enabled - unlock it.
-        if (context.activity.isOrientationLocked)
-            context.activity.toggleRotationLock()
+        if (context.findActivity().isOrientationLocked)
+            context.findActivity().toggleRotationLock()
         else {
             // Flag to remove the PlayerView and navigate up in the navigation controller
             removePlayerView = true
@@ -1044,9 +1044,9 @@ private fun MainContent(
 
         else -> {
             background = DEFAULT_BACKGROUND
-            accent = Material.colors.primary
-            contentColor = Material.colors.onSurface
-            isAppearanceLightSystemBars = Material.colors.isAppearanceLightSystemBars
+            accent = AppTheme.colors.accent
+            contentColor = AppTheme.colors.onBackground
+            isAppearanceLightSystemBars = AppTheme.colors.isAppearanceLightSystemBars
         }
     }
     // Change the appearance of System bars
@@ -1076,7 +1076,7 @@ private fun MainContent(
                     // TODO - Find Proper Place to store this logic.
                     // TODO - Add support for other gestures like seek, volume +/-, Brightness +/-
                     .pointerInput("tapGesture") {
-                        var lastTapTime = -1L;
+                        var lastTapTime = -1L
                         var tapCount = 1 // Track double tap timing and count
                         detectTapGestures(
                             // Reset onTap
@@ -1170,21 +1170,21 @@ private fun MainContent(
                 .layoutId(Constraints.ID_ARTWORK)
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
-                .background(Material.colors.surface),
+                .background(AppTheme.colors.background(1.dp)),
         )
 
         // Timer
         Label(
             text = state.position(LocalContentColor.current.copy(ContentAlpha.disabled)),
             modifier = Modifier.layoutId(Constraints.ID_POSITION),
-            style = Material.typography.caption2,
+            style = AppTheme.typography.caption,
             fontWeight = FontWeight.Bold
         )
 
         // Subtitle
         Label(
             text = state.subtitle ?: stringResource(id = R.string.unknown),
-            style = Material.typography.caption2,
+            style = AppTheme.typography.caption,
             modifier = Modifier.layoutId(Constraints.ID_SUBTITLE),
             color = contentColor
         )
@@ -1321,7 +1321,7 @@ fun Console(state: Console) {
         null
     // Declare a function to handle incoming requests from the UI,
     // such as showing or hiding the details pane.
-    val onRequest = onRequest@{ request:  Int ->
+    val onRequest = onRequest@{ request: Int ->
         // Log the incoming request value for debugging purposes
         Log.d(TAG, "onRequest code: $request")
 
@@ -1374,17 +1374,20 @@ fun Console(state: Console) {
                 controller?.isAppearanceLightNavigationBars = isAppearanceLightStatusBars
                 return@onRequest true
             }
+
             REQUEST_TOOGLE_LOCK -> {
                 val isLocked = state.visibility == Console.VISIBILITY_LOCKED
-                state.message = if (isLocked)  "\uD83D\uDD13 Unlocked" else  "\uD83D\uDD12 Locked"
-                state.visibility = if (isLocked) Console.VISIBILITY_VISIBLE else Console.VISIBILITY_LOCKED
+                state.message = if (isLocked) "\uD83D\uDD13 Unlocked" else "\uD83D\uDD12 Locked"
+                state.visibility =
+                    if (isLocked) Console.VISIBILITY_VISIBLE else Console.VISIBILITY_LOCKED
                 // return consumed
                 true
             }
+
             REQUEST_TOGGLE_VISIBILITY -> {
                 val visibility = state.visibility
                 val isLocked = visibility == Console.VISIBILITY_LOCKED
-                if (isLocked){
+                if (isLocked) {
                     state.message = "\uD83D\uDD12 Long click to Unlock"
                     return@onRequest true
                 }
@@ -1400,11 +1403,14 @@ fun Console(state: Console) {
                 // Return cosnumed.
                 true
             }
+
             REQUEST_TOGGLE_ROTATION_LOCK -> {
-                val activity = view.context.activity
-                state.message = if (activity.isOrientationLocked)  "\uD83D\uDD13 Rotation" else  "\uD83D\uDD12 Rotation"
+                val activity = view.context.findActivity()
+                state.message =
+                    if (activity.isOrientationLocked) "\uD83D\uDD13 Rotation" else "\uD83D\uDD12 Rotation"
                 activity.toggleRotationLock()
             }
+
             else -> error("Unsupported request: $request")  // Throw an error for unsupported requests
         }
     }
@@ -1456,10 +1462,10 @@ fun Console(state: Console) {
     }
     // Call to pause the screen when the user intends to leave the screen, and the current
     // content is a video.
-    val owner = LocalLifecycleOwner.current
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     // Determine the default appearance of light system bars based on user preferences and
     // material theme.
-    val isAppearanceLightSystemBars = Material.colors.isAppearanceLightSystemBars
+    val isAppearanceLightSystemBars = AppTheme.colors.isAppearanceLightSystemBars
     // Use DisposableEffect to observe the lifecycle events of the current owner (typically the
     // current composable).
     DisposableEffect(key1 = owner) {
@@ -1496,8 +1502,13 @@ fun Console(state: Console) {
     TwoPane(
         // The first pane is the content, which can be moved around based on details being shown
         first = content,
-        strategy = if(!isInTwoPaneMode) VerticalTwoPaneStrategy(1f) else TwoPaneStrategy(windowSize, 10.dp),
-        displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(activity = context.activity),
+        strategy = if (!isInTwoPaneMode) VerticalTwoPaneStrategy(1f) else TwoPaneStrategy(
+            windowSize,
+            10.dp
+        ),
+        displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(
+            activity = context.findActivity()
+        ),
         // The second pane is the details pane, which can show different content based on the
         // detailsOf value
         // Use the horizontal or vertical two pane strategy based on the orientation and the new window size
@@ -1517,17 +1528,17 @@ fun Console(state: Console) {
                 shape = RoundedCornerShape(radius),
                 // Use the overlay color or the background color based on the lightness of
                 // the material colors
-                color = if (Material.colors.isLight)
-                    Material.colors.backgroundColorAtElevation(1.dp)
+                color = if (AppTheme.colors.isLight)
+                    AppTheme.colors.background(1.dp)
                 else
-                    Material.colors.backgroundColorAtElevation(0.1.dp),
+                    AppTheme.colors.background(0.1.dp),
                 // Use the onSurface color as the content color
-                contentColor = Material.colors.onSurface,
+                contentColor = AppTheme.colors.onBackground,
                 // Use the outline color as the border stroke or null based on the lightness
                 // of the material colors
-                border = if (Material.colors.isLight) BorderStroke(
+                border = if (AppTheme.colors.isLight) BorderStroke(
                     0.2.dp,
-                    Material.colors.primary
+                    AppTheme.colors.accent
                 ) else null,
                 // Display the playing queue with the given state, onDismissRequest function,
                 // and modifier

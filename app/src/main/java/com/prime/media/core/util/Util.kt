@@ -155,7 +155,7 @@ fun Context.share(audio: Audio) {
  * If cancelling the given future is undesired, use [Futures.nonCancellationPropagating] or
  * [kotlinx.coroutines.NonCancellable].
  */
-public suspend fun <T> ListenableFuture<T>.await(): T {
+suspend fun <T> ListenableFuture<T>.await(): T {
     try {
         if (isDone) return Uninterruptibles.getUninterruptibly(this)
     } catch (e: ExecutionException) {

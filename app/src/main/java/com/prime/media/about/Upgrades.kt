@@ -51,8 +51,6 @@ import com.android.billingclient.api.ProductDetails
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
-import com.prime.media.Material
-import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Channel
@@ -61,6 +59,7 @@ import com.prime.media.core.compose.purchase
 import com.prime.media.core.compose.shimmer.shimmer
 import com.primex.material2.IconButton
 import com.primex.material2.Label
+import com.zs.core_ui.AppTheme
 
 /**
  * The name of the on-demand module for the Codex feature.
@@ -143,9 +142,9 @@ private fun Product(
         content = {
             val shimmerColors = listOf(
                 Color.Unspecified,
-                Material.colors.onSurface.copy(0.05f),
-                Material.colors.onSurface.copy(0.1f),
-                Material.colors.onSurface.copy(0.05f),
+                AppTheme.colors.onBackground.copy(0.05f),
+                AppTheme.colors.onBackground.copy(0.1f),
+                AppTheme.colors.onBackground.copy(0.05f),
                 Color.Unspecified
             )
 
@@ -169,7 +168,7 @@ private fun Product(
                             )
                             Label(
                                 text = details.name,
-                                style = Material.typography.caption,
+                                style = AppTheme.typography.caption,
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = ContentPadding.medium),
@@ -193,13 +192,13 @@ private fun Product(
                     Label(
                         text = details.oneTimePurchaseOfferDetails?.formattedPrice ?: "N/A",
                         modifier = Modifier.padding(vertical = ContentPadding.medium),
-                        style = Material.typography.h5,
+                        style = AppTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Light
                     )
                     Label(
                         text = details.description,
-                        style = Material.typography.caption2,
-                        color = Material.colors.onSurface.copy(ContentAlpha.disabled)
+                        style = AppTheme.typography.caption,
+                        color = AppTheme.colors.onBackground.copy(ContentAlpha.disabled)
                     )
                 }
             )

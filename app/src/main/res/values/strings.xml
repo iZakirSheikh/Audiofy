@@ -1,41 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?><!--Some common variables-->
+<!DOCTYPE resources [<!ENTITY appname "Audiofy"><!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev"> <!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">]><!--The string resources should follow the above rules strictly-->
+<resources>
+    <!--
      Naming convention for string resources:
      - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
      - The string resources should be named as follows:
        1. If the string is simple, like Delete, its name should be R.string.delete.
-       2. If the string contains complex text, the name should be in this format: screen_purpose_variables (optional; if no variables, omit this). For example, pref_theme_ss.
-       3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional). The message can be styled as bold or experimental, like alpha superscript. The message can have any length.
-       4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s (optional).
+       2. If the string contains complex text, the name should be in this format: screen_purpose_variables
+          (optional; if no variables, omit this). For example, pref_theme_ss.
+       3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional).
+          The message can be styled as bold or experimental, like alpha superscript. The message
+          can have any length.
+       4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s
+          (optional).
        5. The snackbar message should have this structure: Title\n bold + experimental + message.
-   -->
-<!--Some common variables-->
-<!DOCTYPE resources [<!ENTITY appname "Audiofy"><!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev"> <!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">]><!--The string resources should follow the above rules strictly-->
-<resources>
+          The string resources should follow the above rules strictly
+     -->
+
     <string name="app_name">&appname;</string>
-    <!--The name of the app icon in launcher.-->
-    <string name="app_name2">@string/app_name</string>
+    <!--
+        App icon name. Dynamically set to reflect the build type (e.g., debug, release).
+        This helps visually differentiate between app variants on a device.
+    -->
+    <string name="launcher_label">@string/app_name</string>
     <!--Simple Strings-->
     <string name="dismiss">Dismiss</string>
     <string name="empty">empty</string>
-    <string name="library">Library</string>
-    <string name="search_placeholder">Type here to search.</string>
-    <string name="search">Search</string>
-    <string name="show">Show</string>
     <string name="loading">Loading</string>
     <string name="unknown">Unknown</string>
-    <string name="coming_soon">Coming soon!</string>
     <string name="playing_queue">Playing Queue</string>
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
-    <string name="queue_update">Queue Update</string>
     <string name="about_us">About Us</string>
     <string name="app_version">App Version</string>
     <string name="settings">Settings</string>
     <string name="appearance">Appearance</string>
     <string name="error">Error</string>
     <string name="delete">Delete</string>
-    <string name="trash">Trash</string>
-    <string name="alert">Alert</string>
     <string name="confirm">Confirm</string>
     <string name="success">Success</string>
     <string name="warning">Warning</string>
@@ -84,7 +85,6 @@
     <string name="bits_per_sample">Bits per sample</string>
     <string name="year">Year</string>
     <string name="disk_number">Disk number</string>
-    <string name="property">property</string>
     <string name="apply">Apply</string>
     <string name="track_number">Track number</string>
     <string name="genre">Genre</string>
@@ -92,7 +92,7 @@
     <string name="author">Author</string>
     <string name="writer">Writer</string>
     <string name="done">Done</string>
-    <string name="not_available_abbv">N/A</string>
+    <string name="abbr_not_available">N/A</string>
     <string name="duration">Duration</string>
     <string name="album_artist">Album artist</string>
     <string name="comment">Comment</string>
@@ -102,50 +102,29 @@
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
     <string name="start">Start</string>
-    <string name="more">More</string>
-    <string name="home">"Home"</string>
     <string name="videos">Videos <sup><small>&beta;</small></sup></string>
     <string name="allow">Allow</string>
 
-    <!--The play store add of this app recommended by someone arg: playstore address -->
-    <string name="share_app_desc_s">Let me recommend you this application %1$s</string>
+    <string name="desc_share_app_s">Let me recommend you this application %1$s</string>
     <!--A plural represents how many items are there-->
-    <plurals name="item">
-        <item quantity="zero">empty</item>
-        <item quantity="one">%d item</item>
-        <item quantity="other">%d items</item>
-    </plurals>
     <!--A plural represents how many files are there-->
-    <plurals name="file">
-        <item quantity="zero">empty</item>
-        <item quantity="one">%d file</item>
-        <item quantity="other">%d files</item>
-    </plurals>
     <!--A string indicating duration hors-->
-    <plurals name="duration_hours">
+    <plurals name="duration_hours_d">
         <item quantity="one">%d hour</item>
         <item quantity="other">%d hours</item>
     </plurals>
     <!--A string resource duration minutes-->
-    <plurals name="duration_minutes">
+    <plurals name="duration_minutes_d">
         <item quantity="one">%d minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
     <!--A string resource duration seconds-->
-    <plurals name="duration_seconds">
+    <plurals name="duration_seconds_d">
         <item quantity="one">%d second</item>
         <item quantity="other">%d seconds</item>
     </plurals>
     <string name="msg_unknown_error"><b>Error\n</b>Oops!! some unknown error has occurred.</string>
-    <string name="msg_audio_focus_denied">Audio focus denied</string>
     <string name="msg_unplayable_file">can\'t play the audio file</string>
-    <string name="msg_new_update"><b>Update\n</b>You can enjoy the best of <b>&appname;</b> by
-        updating to the latest version. The new version has <b>improved features, fixed bugs, and
-            increased performance</b> that will make your experience more enjoyable.
-    </string>
-    <string name="msg_feature_coming_soon"><b>Coming Soon\n</b>We\'re working <b>hard</b> to bring
-        this feature to you. Please check back soon for updates.
-    </string>
     <!--The messages to be shown when on removing a track from queue.-->
     <string name="msg_track_will_be_removed">The track will be removed shortly.</string>
     <string name="msg_track_remove_error">Oops! It seems there was an <b>error</b> while trying to
@@ -154,11 +133,6 @@
     <!--Delete files-->
     <string name="msg_delete_files_warning_d"><b>Warning\n</b>You are about to delete %d files
         permanently. This cannot be undone. Click <b>Delete</b> or the message will cancel itself.
-    </string>
-    <string name="msg_trash_files_warning_d"><b>Warning\n</b>
-        You are about to trash %d files. Deleted files will be moved to the trashcan and
-        can be restored within 30 days.
-        \nClick <b>Trash</b> or the message will cancel itself.
     </string>
     <!--Delete error-->
     <string name="msg_error_status_uncertain">Error Status Uncertain</string>
@@ -216,30 +190,27 @@
     </string>
     <!--Color StatusBar-->
     <string name="pref_translucent_system_bars">System Bars</string>
-    <string name="pref_translucent_system_bars_summery">Controls the translucency or full transparency of system bars for edge-to-edge content display.</string>
+    <string name="pref_translucent_system_bars_summery">Enable tranparent system bars for an edge-to-edge experience <b><i>\n(Android 6.0+)</i></b>
+
+    </string>
     <!--Immersive View-->
     <string name="pref_immersive_view">Immersive View</string>
-    <string name="pref_immersive_view_summery">
-        Hide the status bar and navigation bar for a distraction-free, full screen experience.
-    </string>
-    <!--Force Accent-->
-    <string name="pref_force_accent_color">Force Accent Color</string>
-    <string name="pref_force_accent_color_summery">Increase or decrease the accent color usage in the app.</string>
+    <string name="pref_immersive_view_summery">Activate to hide the status and navigation bars for a seamless, full-screen experience.</string>
     <!--Min Track Length-->
     <string name="pref_minimum_track_length">Minimum track length</string>
     <string name="pref_minimum_track_length_summery">
-        Only tracks longer than this duration (in seconds) will be added to the library.
+        Tracks shorter than this duration (in seconds) will not be added to the library.
     </string>
     <!--Recent Playlist Size-->
     <string name="pref_recent_playlist_size">Recent playlist size</string>
     <string name="pref_recent_playlist_size_summery">
-        Set the maximum number of tracks that should be stored in the playlist history.
+         Define the maximum number of tracks to keep in the playlist history.
     </string>
 
     <!--Stop Playback when app is removed from recents.-->
     <string name="pref_stop_playback_when_task_removed">Stop Playback</string>
-    <string name="pref_stop_playback_when_task_removed_summery">Stop playback service when app is
-        removed from recents.
+    <string name="pref_stop_playback_when_task_removed_summery">
+        Terminate playback service when the app is removed from the recent tasks list.
     </string>
 
     <string name="pref_use_inbuilt_audio_effects">Audio Effects</string>
@@ -294,7 +265,6 @@
         We appreciate your support for the app. If you love it, please share it with your friends,
         family and WhatsApp groups. Remember, sharing is caring!
     </string>
-    <string name="pref_get_to_know_us">Get to Know Us</string>
     <string name="pref_get_to_know_us_subttile_s">"v%1$s by &author;"</string>
 
     <!--=====================            Media Library          =================================-->
@@ -328,7 +298,6 @@
     <string name="msg_blacklist_item_remove_success_s">%1$s has been successfully removed from blacklist</string>
     <!--============================          Albums     ==================================      -->
     <string name="albums_scr_year_d">Year: %1$s</string>
-    <string name="albums_scr_title">@string/albums</string>
 
     <!--============================          TagEditor     ==================================      -->
     <string name="overwrite">Overwrite</string>
@@ -346,9 +315,7 @@
     </string>
     <string name="tag_editor_screen_buy_now_action">Get Tag Editor Pro</string>
     <string name="tag_editor_property_placeholder">Tap here to enter text</string>
-    <string name="tag_editor_web_address_prefix"><font color="#00a300">http://</font></string>
     <string name="lyrics">Lyrics</string>
-    <string name="msg_tag_editor_error_s"><b>Error</b> \n%1s</string>
     <string name="tag_editor_lyrics_placeholder">
         Please input your lyrics in either:\n
         1. Synchronized Lyrics (“[MM:SS.XX] line”), or\n
@@ -363,36 +330,19 @@
     <string name="playback_speed_dialog_x_f">%1$.2fx</string>
 
     <!--======================         AudioFx        ======================      -->
-    <string name="audio_fx_scr_ttile">@string/equalizer</string>
     <string name="equalizer">Equalizer &beta;</string>
     <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
     <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
 
 
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
-    <array name="audio_fx_scr_equalizer_presets">
-        <item>Custom</item>
-        <item>Normal</item>
-        <item>Classical</item>
-        <item>Dance</item>
-        <item>Flat</item>
-        <item>Folk</item>
-        <item>Heavy Metal</item>
-        <item>Hip Hop</item>
-        <item>Jazz</item>
-        <item>Pop</item>
-        <item>Rock</item>
-    </array>
     <string name="title_codex">Media Codecs Extensions for Audiofy Media Player</string>
-    <string name="msg_library_join_us"><b>Enjoying the app? Join our community on:</b>\n<font color='grey'>Connect with us on GitHub, Reddit, and Telegram for the latest news, tips, and discussions!</font>
-    </string>
     <string name="msg_library_rate_us"><!--Title-->
         <b>Rate Our App and Help Us Improve</b>\n<!--Message Body-->
         <font color='grey'>If you\'re enjoying our app, please consider leaving us a 5-star rating on the Play Store. Your positive feedback helps us grow and improve our app for everyone.
         </font>
     </string>
     <string name="rate_us">Rate Us</string>
-    <string name="buy_me_a_coffee">Buy me a Coffee</string>
     <string name="install">Install</string>
     <string name="pref_font_scale">Font Scale</string>
     <string name="pref_font_scale_summery">Zoom in or out the text shown on the screen.</string>"
@@ -416,7 +366,6 @@
     <string name="thanks">Thanks</string>
     <string name="msg_unlock_codex_ss"><b>Limited Time Offer: Get Codex for just %1$s!\n</b><font color="grey" size="11">Unlock seamless playback for H.264, HEVC, VP8, VP9 and more with Codex!</font></string>
     <string name="msg_unlock_tag_editor_pro_ss"><b>Edit Lyrics &amp; Album Art with Ease!\n</b><font color='grey' size="11">Get Tag Editor Pro for only %1$s and enhance your music experience.</font></string>
-    <string name="upgrade">Upgrade</string>
     <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font color='grey' size="11">A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
     <string name="msg_claim_ad_free_reward_ds"><b>%2$s Ad-Free Left! Extend Now</b>
         <font color='grey' size="11">
@@ -434,7 +383,6 @@
     <string name="pref_grid_item_size_multiplier_summery">Control how much space each item takes up in the grid layout.</string>
     <string name="pref_colorization_strategy">Auto Colorize &beta;</string>
     <string name="pref_colorization_strategy_summery">Dynamically generate a theme based on the colors of the currently playing media artwork.</string>
-    <string name="times_factorx_f">%.1$f x</string>
     <string name="pref_privacy_policy_summery">Click here to view the privacy policy.</string>
     <string name="pref_privacy_policy">Privacy Policy</string>
     <string name="feedback_placeholder">Tell us how we can improve our product.</string>
@@ -452,14 +400,13 @@
     <string name="bug_report">Bug report</string>
     <string name="suggestion">Suggestion</string>
     <string name="feature_request">Request</string>
-    <string name="scr_personalize_title_desc">Personalize<font color='grey' size = '11'>\nTweak it till it\'s perfect, just for you.</font></string>
-    <string name="scr_personalize_title_legacy_widgets">Retro-Fit
-        <font color='grey' size='11'>\nA Blast from the Past</font></string>
+    <string name="scr_personalize_title_desc">Personalize<font color='grey' size='11'>\nTweak it till it\'s perfect, just for you.</font></string>
     <string name="msg_scr_personalize_customize_everywhere"><b>Matchy-Matchy Home Screen</b>
-        <font color ='grey' >\nDouble the customization, double the fun! Unlock a skin today, and get ready to personalize your home screen widgets with the same style in an upcoming update, at no additional cost.</font>
+        <font color='grey'>\nDouble the customization, double the fun! Unlock a skin today, and get ready to personalize your home screen widgets with the same style in an upcoming update, at no additional cost.</font>
        </string>
     <string name="msg_promotion_gallery_app"><b>New App Alert!</b>
-        <font color ='grey'>\nDownload our new <b>Gallery</b> app and experience a new way to view and manage your photos.</font>
+        <font color='grey'>\nDownload our new <b>Gallery</b> app and experience a new way to view and manage your photos.</font>
     </string>
     <string name="dive_in">Dive In!</string>
+    <string name="home">Home</string>
 </resources>

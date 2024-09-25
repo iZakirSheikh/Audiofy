@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
@@ -29,4 +29,4 @@ android {
     kotlinOptions { jvmTarget = "1.8" }
 }
 
-dependencies { implementation(libs.bundles.ad.networks) }
+dependencies { implementation(libs.bundles.ad.network) }

@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
@@ -46,19 +45,18 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentPadding
-import com.prime.media.outline
-import com.prime.media.small2
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
 import com.primex.core.withParagraphStyle
 import com.primex.core.withSpanStyle
 import com.primex.material2.Dialog
+import com.primex.material2.Divider
 import com.primex.material2.Label
 import com.primex.material2.Text
 import com.primex.material2.TextButton
+import com.zs.core_ui.AppTheme
 import java.io.File
 
 private const val TAG = "Properties"
@@ -106,8 +104,8 @@ private fun Toolbar(
                 modifier = Modifier.padding(ContentPadding.small)
             )
         },
-        backgroundColor = MaterialTheme.colors.background,
-        modifier = modifier.drawHorizontalDivider(Material.colors.outline),
+        backgroundColor = AppTheme.colors.background,
+        modifier = modifier.drawHorizontalDivider(AppTheme.colors.onBackground.copy(ContentAlpha.Divider)),
         elevation = 0.dp
     )
 }
@@ -121,7 +119,7 @@ private inline fun Property(
     item(key = title, contentType = "property", span = span) {
         val name = textResource(id = title)
         val color = LocalContentColor.current
-        Text(style = MaterialTheme.typography.caption,
+        Text(style = AppTheme.typography.caption,
             color = color.copy(ContentAlpha.medium),
             modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
             text = buildAnnotatedString {
@@ -142,7 +140,7 @@ private fun Layout(
     retriver: MediaMetadataRetriever, modifier: Modifier = Modifier, file: File? = null
 ) {
     val bitmap = remember(retriver::embeddedBitmap)
-    val notAvailable = textResource(id = R.string.not_available_abbv)
+    val notAvailable = textResource(id = R.string.abbr_not_available)
     val ctx = LocalContext.current
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -276,14 +274,14 @@ private inline fun Properties(
                     file = file,
                     modifier = Modifier
                         .padding(it)
-                        .drawHorizontalDivider(Material.colors.outline)
+                        .drawHorizontalDivider(AppTheme.colors.onBackground.copy(ContentAlpha.Divider))
                 )
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(0.50f) // different when width > height
-                .clip(Material.shapes.small2),
-            backgroundColor = MaterialTheme.colors.surface,
+                .clip(AppTheme.shapes.compact),
+            backgroundColor = AppTheme.colors.background(1.dp),
             bottomBar = {
                 Row(
                     modifier = Modifier
@@ -304,7 +302,7 @@ fun Properties(
     expanded: Boolean, path: String, onDismissListener: () -> Unit
 ) {
     if (!expanded)
-        return Unit
+        return
     var retriver: MediaMetadataRetriever? by remember {
         mutableStateOf(null)
     }

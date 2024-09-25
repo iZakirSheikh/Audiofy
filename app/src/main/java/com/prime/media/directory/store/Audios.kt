@@ -35,7 +35,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
@@ -653,7 +652,7 @@ private inline fun Actions(
             atEnd = !favourite
         )
         // MoreVert
-        var showMore by rememberState(initial = false)
+        var showMore by remember { mutableStateOf(false) }
         IconButton(
             onClick = { showMore = true },
             modifier = Modifier.offset(x = 33.dp),
@@ -723,7 +722,7 @@ private fun Audio(
             Label(
                 text = value.name,
                 maxLines = 2,
-                style = Material.typography.body2,
+                style = com.zs.core_ui.AppTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -736,7 +735,7 @@ private fun Audio(
                     .border(2.dp, LocalContentColor.current, shape = CircleShape)
                     .scale(0.8f)
                     .shadow(ContentElevation.low, shape = CircleShape)
-                    .background(Material.colors.surface)
+                    .background(com.zs.core_ui.AppTheme.colors.background(1.dp))
                     .size(ARTWORK_SIZE),
             )
         },
@@ -748,7 +747,7 @@ private fun Audio(
 fun Audios(viewModel: AudiosViewModel) {
     val favourites by viewModel.favourites.collectAsState(initial = emptyList())
     val selected = viewModel.selected
-    var confirm by rememberState<Action?>(initial = null)
+    var confirm by remember { mutableStateOf<Action?>(null) }
 
     // show conform irrespective of it is called on single or multiple items.
     if (confirm == Action.PlaylistAdd) {
@@ -775,7 +774,7 @@ fun Audios(viewModel: AudiosViewModel) {
             Action.Share -> viewModel.share(context)
             Action.AddToQueue -> viewModel.addToQueue()
             Action.PlayNext -> viewModel.playNext()
-            Action.Delete -> viewModel.delete(context.activity)
+            Action.Delete -> viewModel.delete(context.findActivity())
             Action.SelectAll -> viewModel.selectAll()
             Action.GoToAlbum -> viewModel.toAlbum(navigator)
             Action.GoToArtist -> viewModel.toArtist(navigator)

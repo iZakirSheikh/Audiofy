@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.prime.media.config
 
 
@@ -28,6 +26,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.RadioButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
@@ -44,15 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.billingclient.api.ProductDetails
 import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Header
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.purchase
 import com.prime.media.core.playback.MediaItem
-import com.prime.media.outline
-import com.prime.media.small2
 import com.prime.media.widget.GoldenDust
 import com.prime.media.widget.GradientGroves
 import com.prime.media.widget.Iphone
@@ -64,6 +60,8 @@ import com.primex.core.withSpanStyle
 import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.OutlinedButton
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Divider
 
 private const val TAG = "Widgets"
 
@@ -182,7 +180,7 @@ fun LazyListScope.widgets(
                 Header(
                     text = info.name,
                     contentPadding = PaddingValues(bottom = ContentPadding.medium),
-                    modifier = Modifier.drawHorizontalDivider(Material.colors.outline),
+                    modifier = Modifier.drawHorizontalDivider(AppTheme.colors.onBackground.copy(ContentAlpha.Divider)),
                     action = {
                         // emit purchase button.
                         val facade = LocalSystemFacade.current
@@ -225,7 +223,7 @@ fun LazyListScope.widgets(
                 Header(
                     text = info.name,
                     contentPadding = PaddingValues(bottom = ContentPadding.normal),
-                    style = Material.typography.body2,
+                    style = AppTheme.typography.bodyMedium,
                     action = {
                         // info
                         val facade = LocalSystemFacade.current
@@ -251,7 +249,7 @@ fun LazyListScope.widgets(
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = Color.Transparent,
                             ),
-                            shape = Material.shapes.small2,
+                            shape = AppTheme.shapes.compact,
                             border = ButtonDefaults.outlinedBorder
                         )
                     }

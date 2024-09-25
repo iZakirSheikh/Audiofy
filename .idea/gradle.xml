@@ -12,6 +12,9 @@
             <option value="$PROJECT_DIR$/ads" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/codex" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core-ui" />
+            <option value="$PROJECT_DIR$/playback" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

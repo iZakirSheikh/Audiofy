@@ -193,7 +193,7 @@ suspend fun ContentResolver.getAudios(
         limit = limit,
         transform = { c ->
             List(c.count) {
-                c.moveToPosition(it);
+                c.moveToPosition(it)
                 c.toAudio
             }
         },
@@ -243,7 +243,7 @@ suspend fun ContentResolver.getArtists(
         limit = limit,
         transform = { c ->
             List(c.count) {
-                c.moveToPosition(it);
+                c.moveToPosition(it)
                 c.toArtist
             }
         },
@@ -299,7 +299,7 @@ suspend fun ContentResolver.getAlbums(
         limit = limit,
         transform = { c ->
             List(c.count) {
-                c.moveToPosition(it);
+                c.moveToPosition(it)
                 c.toAlbum
             }
                 // FixMe: The albums are not distinct.
@@ -345,7 +345,7 @@ suspend fun ContentResolver.getGenres(
         limit = limit,
         transform = { c ->
             List(c.count) {
-                c.moveToPosition(it);
+                c.moveToPosition(it)
                 c.toGenre
             }
         },
@@ -404,7 +404,7 @@ private suspend inline fun ContentResolver.getBucketAudios(
         limit,
         transform = { c ->
             List(c.count) {
-                c.moveToPosition(it);
+                c.moveToPosition(it)
                 c.toAudio
             }
         },

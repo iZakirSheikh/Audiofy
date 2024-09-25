@@ -38,14 +38,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -64,17 +63,13 @@ import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.Anim
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.MediumDurationMills
 import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.LottieAnimButton
 import com.prime.media.core.compose.LottieAnimation
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.compose.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
@@ -85,15 +80,20 @@ import com.primex.core.foreground
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 import kotlin.math.roundToLong
 
 private val WidgetShape = RoundedCornerShape(14)
 
-private val Colors.widgetBackground
-    inline get() = backgroundColorAtElevation(2.dp)
-private val Colors.veil
-    get() = Brush.horizontalGradient(
+private val com.zs.core_ui.Colors.widgetBackground
+    @Composable
+    inline get() = background(2.dp)
+private val com.zs.core_ui.Colors.veil
+    @Composable
+    inline get() = Brush.horizontalGradient(
         0.0f to widgetBackground,
         0.4f to widgetBackground.copy(0.85f),
         0.96f to Color.Transparent,
@@ -113,14 +113,14 @@ fun RedVelvetCake(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val colors = Material.colors
+    val colors = AppTheme.colors
     val background = colors.widgetBackground
     Box(
         modifier = modifier
             .shadow(Glance.ELEVATION, WidgetShape)
             .thenIf(
                 !colors.isLight,
-                Modifier.border(0.5.dp, colors.primary.copy(0.12f), WidgetShape)
+                Modifier.border(0.5.dp, colors.accent.copy(0.12f), WidgetShape)
             )
             .background(background, WidgetShape)
             .heightIn(max = 150.dp)
@@ -131,7 +131,10 @@ fun RedVelvetCake(
             Artwork(
                 data = item.artworkUri,
                 modifier = Modifier
-                    .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedElement(Glance.SHARED_ARTWORK_ID))
+                    .thenIf(
+                        item.mediaUri != Uri.EMPTY,
+                        Modifier.sharedElement(Glance.SHARED_ARTWORK_ID)
+                    )
                     .align(Alignment.TopEnd)
                     .aspectRatio(1.0f, matchHeightConstraintsFirst = true)
                     .foreground(colors.veil)
@@ -140,28 +143,30 @@ fun RedVelvetCake(
             )
 
             // actual content
-            val accent = colors.primary
+            val accent = colors.accent
             ListTile(
                 color = Color.Transparent,
-                onColor = Material.colors.onBackground,
-                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,Modifier .sharedBounds(
-                    Glance.SHARED_BACKGROUND_ID,
-                    exit = fadeOut() + scaleOut(),
-                    enter = fadeIn() + scaleIn(),
-                    zIndexInOverlay = 1f
-                )),
+                onColor = AppTheme.colors.onBackground,
+                modifier = Modifier.thenIf(
+                    item.mediaUri != Uri.EMPTY, Modifier.sharedBounds(
+                        Glance.SHARED_BACKGROUND_ID,
+                        exit = fadeOut() + scaleOut(),
+                        enter = fadeIn() + scaleIn(),
+                        zIndexInOverlay = 1f
+                    )
+                ),
                 headline = {
                     Label(
                         item.subtitle.toString(),
                         color = LocalContentColor.current.copy(ContentAlpha.medium),
-                        style = Material.typography.caption,
+                        style = AppTheme.typography.caption,
                         modifier = Modifier.fillMaxWidth(0.85f)
                     )
                 },
                 overline = {
                     Label(
                         item.title.toString(),
-                        style = Material.typography.subtitle1,
+                        style = AppTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth(0.85f),
                         fontWeight = FontWeight.Bold,
                     )
@@ -178,8 +183,11 @@ fun RedVelvetCake(
                                 "**"
                             )
                         ),
-                        modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,Modifier
-                            .sharedBounds(Glance.SHARED_PLAYING_BARS_ID))
+                        modifier = Modifier
+                            .thenIf(
+                                item.mediaUri != Uri.EMPTY, Modifier
+                                    .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
+                            )
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )
@@ -236,7 +244,7 @@ fun RedVelvetCake(
                         content = {
                             // Expand to fill
                             IconButton(
-                                imageVector = Icons.Outlined.OpenInNew,
+                                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                                 //   tint = accent
                                 onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
                             )
@@ -244,10 +252,10 @@ fun RedVelvetCake(
                             // played duration
                             Label(
                                 when (duration) {
-                                    C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                                    C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                                     else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
                                 },
-                                style = Material.typography.caption,
+                                style = AppTheme.typography.caption,
                                 color = LocalContentColor.current.copy(ContentAlpha.medium)
                             )
 
@@ -269,10 +277,10 @@ fun RedVelvetCake(
                             // total duration
                             Label(
                                 when (duration) {
-                                    C.TIME_UNSET -> stringResource(R.string.not_available_abbv)
+                                    C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                                     else -> DateUtils.formatElapsedTime((duration / 1000))
                                 },
-                                style = Material.typography.caption,
+                                style = AppTheme.typography.caption,
                                 color = LocalContentColor.current
                             )
                             // control centre

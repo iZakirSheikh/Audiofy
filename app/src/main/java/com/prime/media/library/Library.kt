@@ -3,142 +3,67 @@
 package com.prime.media.library
 
 
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Colors
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Grain
-import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.SupportAgent
-import androidx.compose.material.icons.twotone.PlayCircle
-import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.lerp
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
-import androidx.compose.ui.unit.sp
 import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
-import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.about.AboutUs
-import com.prime.media.caption2
 import com.prime.media.config.RoutePersonalize
-import com.prime.media.core.ContentElevation
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Artwork
 import com.prime.media.core.compose.Banner
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
 import com.prime.media.core.compose.LocalWindowSize
 import com.prime.media.core.compose.None
-import com.prime.media.core.compose.Placeholder
 import com.prime.media.core.compose.contentInsets
-import com.prime.media.core.compose.purchase
-import com.prime.media.core.compose.shape.FolderShape
-import com.prime.media.core.compose.shimmer.pulsate
-import com.prime.media.core.db.albumUri
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
-import com.prime.media.directory.store.Albums
-import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
-import com.prime.media.directory.store.Genres
-import com.prime.media.impl.Repository
-import com.prime.media.small2
-import com.primex.core.ImageBrush
 import com.primex.core.blend
-import com.primex.core.foreground
-import com.primex.core.lerp
 import com.primex.core.textResource
-import com.primex.core.visualEffect
 import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
-import com.primex.material2.Label
-import com.primex.material2.OutlinedButton
 import com.primex.material2.Text
-import com.primex.material2.appbar.CollapsableTopBarLayout
 import com.primex.material2.appbar.TopAppBarDefaults
-import com.primex.material2.appbar.TopAppBarScrollBehavior
+import com.zs.core_ui.AppTheme
 
 /**
  * A Composable function that lays out a screen with a top bar, content, and details section.
@@ -210,11 +135,11 @@ private inline fun Layout(
 private val DefaultContentPadding =
     PaddingValues(ContentPadding.normal, ContentPadding.medium, ContentPadding.normal)
 
-private val Colors.topBar
-    @Composable inline get() = primary.blend(background, 0.96f)
+private val com.zs.core_ui.Colors.topBar
+    @Composable inline get() = accent.blend(background, 0.96f)
 
-private val Colors.border
-    @Composable inline get() = BorderStroke(0.2.dp, primary.copy(0.3f))
+private val com.zs.core_ui.Colors.border
+    @Composable inline get() = BorderStroke(0.2.dp, accent.copy(0.3f))
 
 /**
  * Creates a composable header with a title, optional subtitle, and an optional "More" button.
@@ -222,7 +147,7 @@ private val Colors.border
  * @param title The main text of the header.
  * @param subtitle An optional secondary text below the title.
  * @param modifier Additional modifiers to apply to the header layout.
- * @param style The text style to use for the title. Defaults to `Material.typography.h5`.
+ * @param style The text style to use for the title. Defaults to `com.zs.core_ui.AppTheme.typography.headlineSmall`.
  * @param onMoreClick An optional callback to be executed when the "More" button is clicked.
  * @param contentPadding The padding to apply around the content of the header.
  */
@@ -230,7 +155,7 @@ private val Colors.border
 private fun Header(
     text: CharSequence,
     modifier: Modifier = Modifier,
-    style: TextStyle = Material.typography.h5,
+    style: TextStyle = AppTheme.typography.headlineSmall,
     onMoreClick: (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -252,8 +177,8 @@ private fun Header(
                 onClick = onMoreClick,
                 modifier = Modifier
                     .scale(0.80f)
-                    .border(Material.colors.border, shape = CircleShape),
-                tint = Material.colors.primary
+                    .border(AppTheme.colors.border, shape = CircleShape),
+                tint = AppTheme.colors.accent
             )
         }
     }
@@ -349,10 +274,10 @@ fun Library(state: Library) {
                     Header(
                         modifier = Modifier.takeIf { !isTwoPane }
                             ?: Modifier
-                                .background(Material.colors.topBar)
+                                .background(AppTheme.colors.topBar)
                                 .fillMaxWidth(),
                         text = textResource(R.string.library_shortcuts),
-                        style = if (isTwoPane) Material.typography.subtitle1 else Material.typography.h5,
+                        style = if (isTwoPane) AppTheme.typography.titleMedium else AppTheme.typography.headlineSmall,
                         contentPadding = if (isTwoPane) PaddingValues(
                             horizontal = ContentPadding.normal,
                             vertical = ContentPadding.small
@@ -376,13 +301,13 @@ fun Library(state: Library) {
                         .padding(top = ContentPadding.medium, end = ContentPadding.normal),
                     // Use the outline color as the border stroke or null based on the lightness
                     // of the material colors
-                    border = Material.colors.border,
+                    border = AppTheme.colors.border,
                     // Use the overlay color or the background color based on the lightness of
                     // the material colors
                     color = Color.Transparent,
                     // Use the ContentShape as the shape of the surface
-                    shape = Material.shapes.small2,
-                    contentColor = Material.colors.onBackground,
+                    shape = AppTheme.shapes.compact,
+                    contentColor = AppTheme.colors.onBackground,
                     content = {
                         Column(content = { content() })
                     },

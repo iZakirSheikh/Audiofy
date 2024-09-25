@@ -19,29 +19,22 @@
 package com.prime.media.feedback
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Chip
-import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
-import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -54,10 +47,8 @@ import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Feedback
-import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.ReportGmailerrorred
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.Stars
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -71,29 +62,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.media3.common.Label
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
-import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.scale
 import com.prime.media.settings.Settings
-import com.prime.media.small2
-import com.primex.core.DahliaYellow
 import com.primex.core.TrafficYellow
 import com.primex.core.textResource
 import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.Text
-import com.primex.material2.dialog.TextInputDialog
 
 @Composable
 private fun Toolbar(
@@ -108,8 +88,8 @@ private fun Toolbar(
                 modifier = Modifier.padding(horizontal = ContentPadding.normal)
             )
         },
-        backgroundColor = Material.colors.backgroundColorAtElevation(2.dp),
-        contentColor = Material.colors.onBackground,
+        backgroundColor = com.zs.core_ui.AppTheme.colors.background(2.dp),
+        contentColor = com.zs.core_ui.AppTheme.colors.onBackground,
         elevation = 0.dp,
         modifier = modifier,
         actions = {
@@ -152,7 +132,7 @@ private fun Tag(
     modifier = modifier,
 ) {
     Icon(imageVector = icon, contentDescription = label.toString())
-    Text(text = label, modifier = Modifier.padding(start = ButtonDefaults.IconSpacing), style = Material.typography.caption2)
+    Text(text = label, modifier = Modifier.padding(start = ButtonDefaults.IconSpacing), style = com.zs.core_ui.AppTheme.typography.caption)
 }
 
 @Composable
@@ -160,7 +140,6 @@ fun Vertical(
     viewState: FeedbackViewState
 ) = Column(
     modifier = Modifier
-        .windowInsetsPadding(WindowInsets.ime)
         .wrapContentHeight()
         .widthIn(250.dp, 400.dp),
     verticalArrangement = Arrangement.spacedBy(ContentPadding.normal),
@@ -237,7 +216,7 @@ fun Vertical(
             .focusRequester(focusRequester),
         maxLines = 8,
         minLines = 4,
-        shape = Material.shapes.small2,
+        shape = com.zs.core_ui.AppTheme.shapes.compact,
         colors = TextFieldDefaults.outlinedTextFieldColors(),
         placeholder = { Text(text = textResource(id = R.string.feedback_placeholder)) },
         label = { Text(text = stringResource(R.string.message)) },
@@ -256,7 +235,7 @@ fun Vertical(
             .offset(y = -ContentPadding.medium)
             .align(Alignment.End)
             .padding(end = ContentPadding.normal),
-        style = Material.typography.caption2
+        style = com.zs.core_ui.AppTheme.typography.caption
     )
 
     // Submit button
@@ -281,10 +260,10 @@ fun Feedback(viewState: FeedbackViewState) {
         modifier = Modifier.padding(
             horizontal = ContentPadding.large,
             vertical = ContentPadding.normal
-        ),
-        shape = Material.shapes.small2,
-        color = Material.colors.backgroundColorAtElevation(0.5.dp),
-        contentColor = Material.colors.onBackground,
+        ).windowInsetsPadding(WindowInsets.ime),
+        shape = com.zs.core_ui.AppTheme.shapes.compact,
+        color = com.zs.core_ui.AppTheme.colors.background(0.5.dp),
+        contentColor = com.zs.core_ui.AppTheme.colors.onBackground,
         elevation = 0.dp
     ) {
         Vertical(viewState = viewState)

@@ -402,7 +402,7 @@ class ConsoleViewModel @Inject constructor(
                 var trackName = super.getTrackName(format)
                 val label = format.label
                 if (!label.isNullOrBlank() && !trackName.startsWith(label)) { // HACK
-                    trackName += " - $label";
+                    trackName += " - $label"
                 }
                 return trackName
             }

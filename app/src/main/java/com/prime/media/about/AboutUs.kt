@@ -18,8 +18,6 @@
 
 package com.prime.media.about
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,12 +40,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.ReplyAll
 import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -62,18 +60,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
-import com.prime.media.caption2
 import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.purchased
 import com.prime.media.core.compose.Banner
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.purchase
 import com.prime.media.settings.Settings
-import com.prime.media.surfaceColorAtElevation
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
 import com.primex.material2.IconButton
@@ -84,6 +76,7 @@ import com.primex.material2.appbar.LargeTopAppBar
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
+import com.zs.core_ui.AppTheme
 
 private const val TAG = "AboutUs"
 
@@ -103,13 +96,13 @@ private fun TopAppBar(
         title = { Label(text = textResource(id = R.string.about_us)) },
         navigationIcon = {
             val navController = LocalNavController.current
-            IconButton(imageVector = Icons.Outlined.ReplyAll, onClick = navController::navigateUp)
+            IconButton(imageVector = Icons.AutoMirrored.Outlined.ReplyAll, onClick = navController::navigateUp)
         },
         scrollBehavior = behaviour,
         style = TopAppBarDefaults.largeAppBarStyle(
-            scrolledContainerColor = Material.colors.surfaceColorAtElevation(1.dp),
-            scrolledContentColor = Material.colors.onSurface,
-            containerColor = Material.colors.backgroundColorAtElevation(0.1.dp)
+            scrolledContainerColor = AppTheme.colors.background(1.dp),
+            scrolledContentColor = AppTheme.colors.onBackground,
+            containerColor = AppTheme.colors.background(0.1.dp)
         ),
         actions = {
             val facade = LocalSystemFacade.current
@@ -176,7 +169,7 @@ private fun AppInfoBanner(
         overline = {
             Text(
                 text = textResource(id = R.string.app_name),
-                style = Material.typography.h3,
+                style = AppTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 fontFamily = Settings.DancingScriptFontFamily
             )
@@ -188,7 +181,7 @@ private fun AppInfoBanner(
                     R.string.pref_get_to_know_us_subttile_s,
                     BuildConfig.VERSION_NAME
                 ),
-                style = Material.typography.caption2,
+                style = AppTheme.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
         },
@@ -196,7 +189,7 @@ private fun AppInfoBanner(
             Icon(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = null,
-                // tint = Material.colors.primary,
+                // tint = com.zs.core_ui.AppTheme.colors.accent,
                 tint = Color.Unspecified,
                 modifier = Modifier
                     .scale(3f)
@@ -215,7 +208,7 @@ private fun AppInfoBanner(
                         .weight(1f)
                         .height(56.dp)
                     val buttonColors = ButtonDefaults.buttonColors(
-                        backgroundColor = Material.colors.backgroundColorAtElevation(1.dp)
+                        backgroundColor = AppTheme.colors.background(1.dp)
                     )
                     val buttonShape = RoundedCornerShape(20)
                     val padding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
@@ -253,7 +246,7 @@ private fun AppInfoBanner(
                         content = {
                             Label(
                                 text = textResource(id = R.string.rate_us),
-                                style = Material.typography.body2
+                                style = AppTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             IconButton(
@@ -285,7 +278,7 @@ private val HEADER_PADDING = PaddingValues(
 private inline fun Header(
     text: CharSequence
 ) {
-    val primary = Material.colors.secondary
+    val primary = AppTheme.colors.accent
     Label(
         text = text,
         fontWeight = FontWeight.SemiBold,
@@ -296,7 +289,7 @@ private inline fun Header(
             .fillMaxWidth()
             .drawHorizontalDivider(color = primary)
             .padding(bottom = ContentPadding.medium),
-        style = Material.typography.body2
+        style = AppTheme.typography.bodyMedium
     )
 }
 

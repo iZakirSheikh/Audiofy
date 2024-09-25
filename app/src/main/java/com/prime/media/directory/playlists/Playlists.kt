@@ -7,9 +7,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,21 +29,17 @@ import com.prime.media.impl.Repository
 import com.prime.media.core.compose.Channel
 import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.thenIf
-import com.prime.media.darkShadowColor
-import com.prime.media.lightShadowColor
-import com.prime.media.overlay
-import com.prime.media.small2
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
 import com.prime.media.settings.Settings
 import com.primex.core.Rose
 import com.primex.core.Text
-import com.primex.core.rememberState
 import com.primex.material2.*
 import com.primex.material2.dialog.AlertDialog
 import com.primex.material2.dialog.TextInputDialog
 import com.primex.material2.neumorphic.Neumorphic
+import com.zs.core_ui.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -189,7 +185,7 @@ class PlaylistsViewModel @Inject constructor(
 private val TILE_WIDTH = 100.dp
 
 private val PlaylistShape = RoundedCornerShape(20)
-private val PlaylistIcon = Icons.Outlined.PlaylistPlay
+private val PlaylistIcon = Icons.AutoMirrored.Outlined.PlaylistPlay
 
 @Composable
 fun Playlist(
@@ -200,13 +196,13 @@ fun Playlist(
     Column(
         modifier = Modifier
             // clip the ripple
-            .clip(Material.shapes.small2)
+            .clip(AppTheme.shapes.compact)
             .then(modifier)
             .thenIf(
                 checked,
                 Modifier.border(
                     BorderStroke(2.dp, LocalContentColor.current),
-                    Material.shapes.small2
+                    AppTheme.shapes.compact
                 ).scale(0.85f)
             ),
         verticalArrangement = Arrangement.spacedBy(ContentPadding.medium)
@@ -219,8 +215,8 @@ fun Playlist(
                 .aspectRatio(1.0f, true)
                 .align(Alignment.CenterHorizontally),
             elevation = ContentElevation.low,
-            lightShadowColor = Material.colors.lightShadowColor,
-            darkShadowColor = Material.colors.darkShadowColor,
+            lightShadowColor = AppTheme.colors.lightShadowColor,
+            darkShadowColor = AppTheme.colors.darkShadowColor,
             content = {
                 Icon(
                     imageVector = PlaylistIcon,
@@ -236,7 +232,7 @@ fun Playlist(
         Label(
             text = value.name,
             maxLines = 2,
-            style = Material.typography.body2,
+            style = AppTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -257,8 +253,8 @@ private inline fun EditDialog(
             label = placeholder,
             vectorIcon = Icons.TwoTone.Edit,
             textFieldShape = RoundedCornerShape(20),
-            topBarContentColor = Material.colors.onBackground,
-            topBarBackgroundColor = Material.colors.overlay
+            topBarContentColor = AppTheme.colors.onBackground,
+            topBarBackgroundColor = AppTheme.colors.background(1.dp)
         )
 }
 
@@ -268,7 +264,7 @@ private val GridItemsArrangement = Arrangement.spacedBy(6.dp)
 @Composable
 fun Playlists(viewModel: PlaylistsViewModel) {
     val navigator = LocalNavController.current
-    var confirm by rememberState<Action?>(initial = null)
+    var confirm by remember { mutableStateOf<Action?>(null) }
 
     EditDialog(
         expanded = confirm == Action.PlaylistAdd,

@@ -21,7 +21,6 @@ package com.prime.media.library
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
@@ -48,19 +46,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.MainActivity
-import com.prime.media.Material
 import com.prime.media.R
-import com.prime.media.backgroundColorAtElevation
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.shape.FolderShape
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.playlists.Members
-import com.prime.media.directory.store.Albums
 import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Genres
 import com.primex.core.textResource
 import com.primex.material2.Label
+import com.zs.core_ui.AppTheme
 
 /**
  * Composable function to create a clickable shortcut with an icon and label.
@@ -78,8 +74,7 @@ private fun Shortcut(
     modifier: Modifier = Modifier,
 ) {
     // Base container for the shortcut with styling and click handling
-    val colors = Material.colors
-    val color = colors.onBackground.copy(0.5f)
+    val colors =  AppTheme.colors
     val accent = colors.onBackground
     Box(
         modifier = modifier
@@ -89,7 +84,7 @@ private fun Shortcut(
           //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,
-                ripple(true, color = Material.colors.primary), // Ripple effect on click
+                ripple(true, color = AppTheme.colors.accent), // Ripple effect on click
                 role = Role.Button, // Semantically indicate a button
                 onClick = onAction // Trigger the action on click
             )
@@ -108,7 +103,7 @@ private fun Shortcut(
         // Label at the bottom
         Label(
             text = label,
-            style = Material.typography.caption,
+            style = AppTheme.typography.caption,
             color = accent,
             modifier = Modifier.align(Alignment.BottomStart)
         )

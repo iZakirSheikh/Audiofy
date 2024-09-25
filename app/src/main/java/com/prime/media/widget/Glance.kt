@@ -48,23 +48,23 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
-import com.prime.media.Material
 import com.prime.media.R
 import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
 import com.prime.media.core.ContentPadding
 import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LocalAnimatedVisibilityScope
 import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.compose.current
 import com.prime.media.core.compose.preference
 import com.prime.media.core.compose.scale
-import com.prime.media.core.compose.sharedBounds
-import com.prime.media.core.compose.sharedElement
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.settings.Settings
 import com.primex.core.foreground
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.LocalNavAnimatedVisibilityScope
+import com.zs.core_ui.sharedBounds
+import com.zs.core_ui.sharedElement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -147,7 +147,7 @@ private fun MiniLayout(
             enter = fadeIn() + scaleIn()
         )
         .shadow(Glance.ELEVATION, CircleShape)
-        .background(Material.colors.surface)
+        .background(AppTheme.colors.background(1.dp))
         .requiredSize(Glance.MIN_SIZE),
     content = {
         // The artwork of the current media item
@@ -161,7 +161,7 @@ private fun MiniLayout(
                 .clip(CircleShape),
         )
 
-        val accent = Material.colors.primary
+        val accent = AppTheme.colors.accent
         val properties = rememberLottieDynamicProperties(
             rememberLottieDynamicProperty(
                 property = LottieProperty.COLOR,
@@ -255,7 +255,7 @@ fun Glance(
     // Setup the actual content
     val content: @Composable AnimatedContentScope.(Boolean) -> Unit = { value ->
         CompositionLocalProvider(
-            LocalAnimatedVisibilityScope provides this,
+            LocalNavAnimatedVisibilityScope provides this,
             content = {
                 val clickable = Modifier
                     .combinedClickable(

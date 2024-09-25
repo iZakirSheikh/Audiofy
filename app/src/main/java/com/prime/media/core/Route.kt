@@ -26,7 +26,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.prime.media.core.compose.LocalAnimatedVisibilityScope
+import com.zs.core_ui.LocalNavAnimatedVisibilityScope
 
 private val SPLIT_REGEX = Regex("(?=[A-Z])")
 
@@ -105,7 +105,7 @@ fun NavGraphBuilder.composable(
     route: Route,
     content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
 ) = composable(route = route.route, content = { id ->
-    CompositionLocalProvider(value = LocalAnimatedVisibilityScope provides this) {
+    CompositionLocalProvider(value = LocalNavAnimatedVisibilityScope provides this) {
         content(id)
     }
 })
