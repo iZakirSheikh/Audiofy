@@ -71,8 +71,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 135
-        versionName = "2.17.3"
+        versionCode = 136
+        versionName = "3.0.0-alpha01"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -93,7 +93,7 @@ android {
         // Add necessary changes to debug apk.
         debug {
             // makes it possible to install both release and debug versions in same device.
-           // applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug"
             resValue("string", "app_name2", "Debug")
             versionNameSuffix = "-debug"
         }
@@ -112,7 +112,7 @@ android {
     }
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
-    dynamicFeatures += setOf(":app:codex")
+    dynamicFeatures += setOf(":codex")
     composeCompiler { enableStrongSkippingMode = false }
 }
 
@@ -148,7 +148,7 @@ dependencies {
     implementation(libs.androidx.palette.ktx)
 
     // TODO - Consider using this as Dynamic Feature Module in future.
-    implementation(project(":app:ads"))
+    implementation(project(":ads"))
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
     implementation("com.google.j2objc:j2objc-annotations:3.0.0")

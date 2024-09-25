@@ -19,5 +19,5 @@ include(":app")
 
 
 
-include(":app:codex")
-include(":app:ads")
+include(":codex")
+include(":ads")

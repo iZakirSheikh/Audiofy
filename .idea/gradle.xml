@@ -9,9 +9,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/ads" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/app/ads" />
-            <option value="$PROJECT_DIR$/app/codex" />
+            <option value="$PROJECT_DIR$/codex" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
