@@ -132,21 +132,22 @@ import com.google.accompanist.adaptive.VerticalTwoPaneStrategy
 import com.google.accompanist.adaptive.calculateDisplayFeatures
 import com.prime.media.R
 import com.prime.media.config.RoutePersonalize
-import com.prime.media.core.Anim
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.MediumDurationMills
-import com.prime.media.core.compose.AnimatedIconButton
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.LottieAnimButton
-import com.prime.media.core.compose.LottieAnimation
-import com.prime.media.core.compose.PlayerView
-import com.prime.media.core.compose.Range
-import com.prime.media.core.compose.WindowSize
-import com.prime.media.core.compose.marque
-import com.prime.media.core.compose.preference
+import com.zs.core_ui.Anim
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.MediumDurationMills
+import com.prime.media.common.AnimatedIconButton
+import com.prime.media.common.Artwork
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.zs.core_ui.LocalWindowSize
+import com.prime.media.common.LottieAnimButton
+import com.prime.media.common.LottieAnimation
+import com.prime.media.common.PlayerView
+import com.zs.core_ui.Range
+import com.zs.core_ui.WindowSize
+import com.prime.media.common.marque
+import com.prime.media.common.preference
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.subtitle
 import com.prime.media.core.playback.title
@@ -1164,7 +1165,7 @@ private fun MainContent(
 
         // Artwork
         // TODO - Support different shapes, animation, effects, etc.
-        com.prime.media.core.compose.Artwork(
+        Artwork(
             data = state.artworkUri,
             modifier = Modifier
                 .layoutId(Constraints.ID_ARTWORK)

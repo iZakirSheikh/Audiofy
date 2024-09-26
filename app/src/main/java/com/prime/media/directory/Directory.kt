@@ -60,11 +60,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.prime.media.R
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.contentInsets
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.Placeholder
 import com.primex.core.Text
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.plus
@@ -77,6 +76,7 @@ import com.primex.material2.Indication
 import com.primex.material2.Label
 import com.primex.material2.neumorphic.NeumorphicTopAppBar
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.adaptive.contentInsets
 import kotlinx.coroutines.flow.StateFlow
 
 /**

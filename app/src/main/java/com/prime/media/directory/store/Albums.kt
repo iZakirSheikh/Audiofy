@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalTextApi::class)
-
 package com.prime.media.directory.store
 
 import android.provider.MediaStore
@@ -21,16 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalNavController
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
+import com.prime.media.common.LocalNavController
 import com.prime.media.core.db.Album
 import com.prime.media.core.db.uri
 import com.prime.media.core.playback.Remote
@@ -46,6 +42,8 @@ import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.textResource
 import com.primex.material2.Label
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -68,7 +66,7 @@ typealias Albums = AlbumsViewModel.Companion
 class AlbumsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val remote: Remote,
 ) : DirectoryViewModel<Album>(handle) {
 
@@ -93,7 +91,7 @@ class AlbumsViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            toaster.showToast("ViewType\nToggle not implemented yet.")
         }
     }
 
@@ -122,11 +120,11 @@ class AlbumsViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
-                    R.string.msg_unknown_error,
-                    leading = Icons.Outlined.Error,
+                toaster.showToast(
+                    "Oops! Some unknown error occurred.",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Channel.Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())

@@ -2,10 +2,9 @@ package com.prime.media.impl
 
 import android.content.ContentResolver
 import android.content.Context
-import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.Playlists
-import com.prime.media.core.playback.Remote
 import com.primex.preferences.Preferences
+import com.zs.core_ui.toast.ToastHostState
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,10 +49,10 @@ object SingletonModules {
 object ActivityModules {
     @ActivityRetainedScoped
     @Provides
-    fun toaster() = Channel()
+    fun toaster() = ToastHostState()
 
     @ActivityRetainedScoped
     @Provides
-    fun systemDelegate(@ApplicationContext ctx: Context, channel: Channel): SystemDelegate =
+    fun systemDelegate(@ApplicationContext ctx: Context, channel: ToastHostState): SystemDelegate =
         SystemDelegate(ctx, channel)
 }

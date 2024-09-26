@@ -27,10 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalNavController
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
 import com.prime.media.core.db.Artist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.Action
@@ -45,6 +44,8 @@ import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.material2.Label
 import com.primex.material2.neumorphic.Neumorphic
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -69,7 +70,7 @@ private val Artist.firstTitleChar
 class ArtistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val remote: Remote,
 ) : DirectoryViewModel<Artist>(handle) {
 
@@ -94,7 +95,7 @@ class ArtistsViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            toaster.showToast("ViewType\nToggle not implemented yet.")
         }
     }
 
@@ -123,12 +124,11 @@ class ArtistsViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
-                    "Some unknown error occured!.",
-                    "Error",
-                    leading = Icons.Outlined.Error,
+                toaster.showToast(
+                    "Error\nSome unknown error occured!.",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Channel.Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())

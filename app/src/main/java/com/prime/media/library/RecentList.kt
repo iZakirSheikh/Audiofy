@@ -39,10 +39,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
 import com.primex.material2.Text
+import com.zs.core_ui.AppTheme
 
 /**
  * The shape of the recent icon.
@@ -79,7 +80,7 @@ private fun RecentItem(
                 .size(66.dp) // Adjust size if needed
                 .border(2.dp, Color.White, RECENT_ICON_SHAPE) // Add white border
                 .shadow(ContentElevation.low, RECENT_ICON_SHAPE) // Add subtle shadow
-                .background(com.zs.core_ui.AppTheme.colors.background(1.dp))
+                .background(AppTheme.colors.background(1.dp))
         )
 
         // Label below the artwork with padding and styling

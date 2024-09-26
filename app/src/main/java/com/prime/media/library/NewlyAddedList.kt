@@ -52,19 +52,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.palette.graphics.Palette
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.prime.media.R
-import com.prime.media.core.Anim
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
+import com.zs.core_ui.Anim
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
 import com.prime.media.core.db.albumUri
 import com.primex.core.ImageBrush
 import com.primex.core.foreground
 import com.primex.core.visualEffect
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.WallpaperAccentColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -127,8 +127,7 @@ private fun NewlyAddedItem(
                 onSuccess = {
                     scope.launch(Dispatchers.IO) {
                         val image = it.result.drawable.toBitmap()
-                        val value =
-                            Palette.from(image).generate().getDominantColor(primary.toArgb())
+                        val value = WallpaperAccentColor(image, false, primary)
                         accent = Color(value)
                     }
                 }

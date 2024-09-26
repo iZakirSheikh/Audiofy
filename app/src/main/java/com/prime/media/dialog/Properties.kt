@@ -46,7 +46,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
+import com.zs.core_ui.ContentPadding
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
 import com.primex.core.withParagraphStyle

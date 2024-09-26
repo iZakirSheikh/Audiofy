@@ -64,9 +64,9 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.settings.Settings
 import com.primex.core.TrafficYellow
 import com.primex.core.textResource

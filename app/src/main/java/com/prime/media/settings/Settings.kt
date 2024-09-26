@@ -50,13 +50,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.NightMode
-import com.prime.media.core.compose.Banner
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.None
-import com.prime.media.core.compose.contentInsets
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.NightMode
+import com.prime.media.common.Banner
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.None
 import com.primex.core.plus
 import com.primex.core.stringResource
 import com.primex.core.textResource
@@ -72,6 +71,7 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.adaptive.contentInsets
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constants

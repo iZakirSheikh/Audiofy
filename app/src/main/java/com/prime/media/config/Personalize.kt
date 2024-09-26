@@ -39,17 +39,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.preference
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.preference
 import com.prime.media.settings.Settings
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.toast.Toast
 
 private const val TAG = "Personalize"
 
@@ -78,7 +78,7 @@ private fun Toolbar(modifier: Modifier = Modifier) {
                 onClick = {
                     facade.show(
                         R.string.msg_scr_personalize_customize_everywhere,
-                        duration = Channel.Duration.Indefinite
+                        duration = Toast.DURATION_INDEFINITE
                     )
                 }
             )

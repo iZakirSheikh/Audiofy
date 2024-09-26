@@ -29,13 +29,14 @@ import androidx.lifecycle.viewModelScope
 import com.mpatric.mp3agic.ID3v1Genres
 import com.mpatric.mp3agic.Mp3File
 import com.prime.media.R
-import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.db.uri
-import com.prime.media.core.util.getActivityResult
+import com.prime.media.common.util.getActivityResult
 import com.prime.media.editor.TagEditor
 import com.primex.core.findActivity
 import com.primex.core.getText2
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -291,7 +292,7 @@ class TagEditorViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val resources: Resources,
     private val resolver: ContentResolver,
-    private val snackbar: Channel
+    private val snackbar: ToastHostState
 ) : ViewModel(), TagEditor {
 
     val path = handle.get<String>(TagEditor.KEY_PRAM_DATA)
@@ -367,15 +368,15 @@ class TagEditorViewModel @Inject constructor(
             val result = runCatching { initialize() }
             // show error message if there happened an error during initializing phase
             if (result.isFailure)
-                snackbar.show(R.string.msg_unknown_error)
+                snackbar.showToast("${result.exceptionOrNull()?.message}")
         }
     }
 
     override fun reset() {
         viewModelScope.launch {
             val action =
-                snackbar.show(R.string.msg_tag_editor_reset_warning, action = R.string.reset)
-            if (action == Channel.Result.Dismissed)
+                snackbar.showToast("Resetting the file will discard all the changes", action = "Proceed")
+            if (action == Toast.RESULT_DISMISSED)
                 return@launch
             // else reset/reinitialize
             initialize()
@@ -404,7 +405,7 @@ class TagEditorViewModel @Inject constructor(
                 _artwork = stream.toByteArray()
             }
             if (result.isFailure)
-                snackbar.show(R.string.msg_unknown_error)
+                snackbar.showToast("${result.exceptionOrNull()?.message}")
         }
     }
 
@@ -435,11 +436,11 @@ class TagEditorViewModel @Inject constructor(
 
     override fun save(ctx: Context) {
         viewModelScope.launch {
-            val action = snackbar.show(
-                R.string.msg_tag_editor_scr_overwrite_waring,
-                action = R.string.overwrite
+            val action = snackbar.showToast(
+                "Saving the file will overwrite the original",
+                action = "Proceed"
             )
-            if (action == Channel.Result.Dismissed)
+            if (action == Toast.RESULT_DISMISSED)
                 return@launch
             val result = runCatching {
                 val cacheDir = ctx.cacheDir.path
@@ -464,7 +465,7 @@ class TagEditorViewModel @Inject constructor(
                         request
                     )
                     if (result.resultCode != Activity.RESULT_OK) {
-                        snackbar.show(R.string.msg_tag_editor_overwrite_permission_revoked)
+                        snackbar.showToast("Failed to save file.")
                         return@launch
                     }
                 }
@@ -487,10 +488,10 @@ class TagEditorViewModel @Inject constructor(
                     }
                 }
                 tmpFile.delete()
-                snackbar.show(R.string.msg_tag_editor_file_update_success)
+                snackbar.showToast("File saved successfully.")
             }
             if (result.isFailure)
-                snackbar.show(resources.getText2(R.string.error, result.exceptionOrNull()?.message ?: ""))
+                snackbar.showToast(resources.getText2(R.string.error, result.exceptionOrNull()?.message ?: ""))
         }
     }
 }

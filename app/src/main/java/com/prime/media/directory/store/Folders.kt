@@ -24,13 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalNavController
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
 import com.prime.media.core.db.Folder
 import com.prime.media.core.db.name
-import com.prime.media.core.util.PathUtils
+import com.prime.media.common.util.PathUtils
 import com.prime.media.directory.Action
 import com.prime.media.directory.Directory
 import com.prime.media.directory.DirectoryViewModel
@@ -46,6 +44,8 @@ import com.primex.core.Text
 import com.primex.material2.Label
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -69,7 +69,7 @@ private val Folder.firstTitleChar
 class FoldersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val preferences: Preferences
 ) : DirectoryViewModel<Folder>(handle) {
 
@@ -94,7 +94,7 @@ class FoldersViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            toaster.showToast("ViewType\nToggle not implemented yet.")
         }
     }
 
@@ -115,12 +115,11 @@ class FoldersViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
-                    "Some unknown error occured!. ${it.message}",
-                    "Error",
-                    leading = Icons.Outlined.Error,
+                toaster.showToast(
+                    "Error\nSome unknown error occured!. ${it.message}",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Channel.Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
@@ -130,27 +129,24 @@ class FoldersViewModel @Inject constructor(
             with(toaster) {
                 val list = preferences.value(Settings.BLACKLISTED_FILES)
                 val name = PathUtils.name(path)
-                val response = show(
-                    Text(R.string.msg_block_folder_warning_s, name),
-                    Text(id = R.string.warning),
-                    Text(id = R.string.add),
-                    Icons.Outlined.Block,
-                    Color.DahliaYellow,
-                    duration = Channel.Duration.Short,
+                val response = showToast(
+                    "Warning\nYou are about to block folder $name",
+                    icon = Icons.Outlined.Block,
+                   accent =  Color.DahliaYellow,
+                    duration = Toast.DURATION_INDEFINITE,
                 )
-                if (response == Channel.Result.Dismissed)
+                if (response == Toast.RESULT_DISMISSED)
                     return@launch
                 val result = preferences.block(path)
                 if (result > 0)
-                    show(
-                        Text(R.string.msg_block_success_s, name),
-                        Text(R.string.pref_blacklist),
-                        leading = Icons.Outlined.Block,
+                    showToast(
+                        "$name has been added to block list",
+                        icon = Icons.Outlined.Block,
                         accent = Color.Rose,
-                        duration = Channel.Duration.Short,
+                        duration = Toast.DURATION_SHORT,
                     )
                 else
-                    show(R.string.msg_unknown_error, R.string.error)
+                    showToast("Oops! some unknown error has occurred.")
             }
         }
     }

@@ -13,7 +13,7 @@ import androidx.annotation.WorkerThread
 import com.prime.media.core.db.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
-import com.prime.media.core.util.toMember
+import com.prime.media.common.util.toMember
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.value

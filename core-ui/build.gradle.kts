@@ -25,7 +25,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions { jvmTarget = "1.8" }
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs = listOf(
+            "-Xopt-in=kotlin.RequiresOptIn",
+            "-Xopt-in=com.primex.core.ExperimentalToolkitApi"
+        )
+    }
     buildFeatures { compose = true }
 }
 
@@ -37,4 +43,14 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.window)
     implementation(libs.lottie.compose)
+    implementation(libs.androidx.palette.ktx)
+    implementation(libs.wavy.slider)
+    implementation(libs.androidx.graphics.shapes)
+}
+
+// TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.
+//       Please investigate if this issue is related to the Wavy Slider and resolve it. Once the main issue is fixed,
+//       consider removing this block of code.
+configurations {
+    all { exclude(group = "androidx.compose.material3", module = "material3") }
 }

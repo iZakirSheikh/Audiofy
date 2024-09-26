@@ -16,7 +16,7 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.Options
 import coil.util.DebugLogger
-import com.prime.media.core.coil.MediaMetaDataArtFetcher
+import com.prime.media.common.coil.MediaMetaDataArtFetcher
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.intPreferenceKey

@@ -16,8 +16,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
-import com.prime.media.core.util.PathUtils
-import com.prime.media.core.util.asComposeState
+import com.prime.media.common.util.PathUtils
+import com.prime.media.common.util.asComposeState
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Preference
 import com.prime.media.settings.Settings

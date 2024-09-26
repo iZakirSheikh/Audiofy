@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.core.app.ShareCompat
@@ -43,22 +45,19 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
-import com.prime.media.core.billing.BillingManager
-import com.prime.media.core.billing.observeAsState
-import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.Channel.Duration
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.SystemFacade
-import com.prime.media.core.compose.calculateWindowSizeClass
+import com.prime.media.common.billing.BillingManager
+import com.prime.media.common.billing.observeAsState
+import com.prime.media.common.billing.purchased
+import com.prime.media.common.LocalSystemFacade
+import com.zs.core_ui.LocalWindowSize
+import com.prime.media.common.SystemFacade
+import com.zs.core_ui.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
-import com.primex.core.Text
 import com.primex.core.getText2
 import com.primex.core.runCatching
 import com.primex.preferences.Key
@@ -71,6 +70,8 @@ import com.zs.ads.AdEventListener
 import com.zs.ads.AdManager
 import com.zs.ads.AdSize
 import com.zs.ads.Reward
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -242,19 +243,18 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 param(FirebaseAnalytics.Param.ITEM_NAME, "claim_reward")
                 param("reward_type", "24hrs_ad_free")
             }
-            val result = channel.show(
+            val result = channel.showToast(
                 message = resources.getText2(
                     R.string.msg_claim_ad_free_reward_ds,
                     timeTobeAdded,
                     remaining
                 ),
-                title = null,
-                leading = R.drawable.ic_remove_ads,
+                icon = Icons.Outlined.AdsClick,
                 action = getString(R.string.claim).uppercase(),
-                duration = Duration.Indefinite,
+                duration = Toast.DURATION_INDEFINITE,
                 accent = Color.MetroGreen2
             )
-            if (result == Channel.Result.ActionPerformed) {
+            if (result == Toast.ACTION_PERFORMED) {
                 advertiser.showRewardedAd()
                 // Log the ad_claiming_reward event to Firebase
                 Firebase.analytics.logEvent("ad_claiming_reward"){
@@ -283,7 +283,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     lateinit var preferences: Preferences
 
     @Inject
-    lateinit var channel: Channel
+    lateinit var channel: ToastHostState
 
     @Inject
     lateinit var remote: Remote
@@ -327,8 +327,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 AD_FREE_TIME_REWARD.inWholeDays,
                 remaining
             ),
-            icon = R.drawable.ic_remove_ads,
-            duration = Duration.Indefinite,
+            icon = Icons.Outlined.AdsClick,
+            duration = Toast.DURATION_INDEFINITE,
             accent = Color.MetroGreen,
         )
     }
@@ -368,25 +368,17 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
         advertiser.show(force)
     }
 
-    override fun show(
-        message: Text,
-        title: Text?,
-        action: Text?,
-        icon: Any?,
-        accent: Color,
-        duration: Duration,
-        onAction: (() -> Unit)?
-    ) {
+    override fun show(message: CharSequence, icon: ImageVector?, accent: Color, duration: Int) {
         lifecycleScope.launch {
-            val res = channel.show(message, title, action, icon, accent, duration)
-            if (onAction == null)
-                return@launch
-            // invoke on action.
-            if (res == Channel.Result.ActionPerformed)
-                onAction()
+            channel.showToast(message, null, icon, accent, duration )
         }
     }
 
+    override fun show(message: Int, icon: ImageVector?, accent: Color, duration: Int) {
+        lifecycleScope.launch {
+            channel.showToast(resources.getText2(message), null, icon, accent, duration )
+        }
+    }
 
     override fun launchAppStore(id: String){
         val url = "market://details?id=$id"
@@ -469,7 +461,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 manager.requestUpdateFlow().collect { result ->
                     when (result) {
                         AppUpdateResult.NotAvailable ->
-                            if (report) channel.show(R.string.msg_no_new_update_available)
+                            if (report) channel.showToast(resources.getText2(R.string.msg_no_new_update_available))
 
                         is AppUpdateResult.InProgress -> {
                             val state = result.installState
@@ -497,14 +489,14 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                                 return@collect
                             }
                             // else show the toast.
-                            val res = channel.show(
-                                message = R.string.msg_new_update_downloaded,
-                                action = R.string.update,
-                                duration = Duration.Indefinite,
+                            val res = channel.showToast(
+                                message = resources.getText2(R.string.msg_new_update_downloaded),
+                                action = resources.getText2(R.string.update),
+                                duration = Toast.DURATION_INDEFINITE,
                                 accent = Color.MetroGreen
                             )
                             // complete update when ever user clicks on action.
-                            if (res == Channel.Result.ActionPerformed) manager.completeUpdate()
+                            if (res == Toast.ACTION_PERFORMED) manager.completeUpdate()
                         }
 
                         is AppUpdateResult.Available -> {
@@ -534,7 +526,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     override fun launchEqualizer(id: Int) {
         lifecycleScope.launch {
             if (id == AudioEffect.ERROR_BAD_VALUE)
-                return@launch show(R.string.msg_unknown_error, R.string.error)
+                return@launch show(R.string.msg_unknown_error)
             val result = kotlin.runCatching {
                 startActivity(
                     Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -546,13 +538,13 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             }
             if (!result.isFailure)
                 return@launch
-            val res = channel.show(
-                message = R.string.msg_3rd_party_equalizer_not_found,
-                action = R.string.launch,
+            val res = channel.showToast(
+                message = resources.getText2(R.string.msg_3rd_party_equalizer_not_found),
+                action = resources.getText2(R.string.launch),
                 accent = Color.OrientRed,
-                duration = Duration.Short
+                duration = Toast.DURATION_SHORT
             )
-            if (res != Channel.Result.ActionPerformed)
+            if (res != Toast.ACTION_PERFORMED)
                 return@launch
             runCatching {
                 val intent = Intent(Intent.ACTION_VIEW)
@@ -571,12 +563,12 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
-                val result = channel.show(
+                val result = channel.showToast(
                     resources.getText2(id = R.string.msg_ad_free_experience_ss, price),
                     action = resources.getText2(id = R.string.unlock),
-                    duration = Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
-                if (result == Channel.Result.ActionPerformed)
+                if (result == Toast.ACTION_PERFORMED)
                     launchBillingFlow(productId)
             }
 
@@ -586,12 +578,12 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
-                val result = channel.show(
+                val result = channel.showToast(
                     resources.getText2(id = R.string.msg_unlock_codex_ss, price),
                     action = resources.getText2(id = R.string.unlock),
-                    duration = Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
-                if (result == Channel.Result.ActionPerformed)
+                if (result == Toast.ACTION_PERFORMED)
                     launchBillingFlow(productId)
             }
 
@@ -601,12 +593,12 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 //val product = billingManager.details.value[productId]
                 //val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
-                val result = channel.show(
-                    R.string.msg_library_buy_me_a_coffee,
-                    action = R.string.thanks,
-                    duration = Duration.Indefinite
+                val result = channel.showToast(
+                    resources.getText2(R.string.msg_library_buy_me_a_coffee),
+                    action = resources.getText2(R.string.thanks),
+                    duration = Toast.DURATION_INDEFINITE
                 )
-                if (result == Channel.Result.ActionPerformed)
+                if (result == Toast.ACTION_PERFORMED)
                     launchBillingFlow(productId)
             }
 
@@ -616,12 +608,12 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
                 val product = billingManager.details.value[productId]
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
-                val result = channel.show(
+                val result = channel.showToast(
                     resources.getText2(id = R.string.msg_unlock_tag_editor_pro_ss, price),
                     action = resources.getText2(id = R.string.unlock),
-                    duration = Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
-                if (result == Channel.Result.ActionPerformed)
+                if (result == Toast.ACTION_PERFORMED)
                     launchBillingFlow(productId)
             }
 
@@ -631,15 +623,15 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 val isInstalled = runCatching(TAG){ packageManager.getPackageInfo(pkg, 0) } != null
                 // If the app is installed, show the next promotional message
                 if (isInstalled) return showPromotionalMessage(id + 1)
-                val result = channel.show(
-                    R.string.msg_promotion_gallery_app,
-                    action = R.string.dive_in,
-                    duration = Duration.Indefinite,
+                val result = channel.showToast(
+                    resources.getText2(R.string.msg_promotion_gallery_app),
+                    action = resources.getText2(R.string.dive_in),
+                    duration = Toast.DURATION_INDEFINITE,
                     accent = Color.Amber,
-                    leading = Icons.Outlined.GetApp
+                    icon = Icons.Outlined.GetApp
                 )
                 // If the user clicked the action button, launch the app store listing
-                if (result == Channel.Result.ActionPerformed)
+                if (result == Toast.ACTION_PERFORMED)
                     launchAppStore(pkg)
             }
         }
@@ -697,16 +689,16 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     if (manager.isInstalled(dynamicModuleName))
                         return@forEach
                     // Prompt the user to install the dynamic feature
-                    val response = channel.show(
+                    val response = channel.showToast(
                         resources.getText2(
                             id = R.string.msg_install_dynamic_module_ss,
                             details.name
                         ),
-                        duration = Duration.Indefinite,
+                        duration = Toast.DURATION_INDEFINITE,
                         action = resources.getText2(R.string.install)
                     )
                     // Initiate the installation if the user chooses to install
-                    if (response != Channel.Result.ActionPerformed)
+                    if (response != Toast.ACTION_PERFORMED)
                         return@forEach
                     manager.startInstall(details.dynamicFeatureRequest)
                 }

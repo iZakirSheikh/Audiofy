@@ -18,12 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.prime.media.*
 import com.prime.media.R
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.util.DateUtils
-import com.prime.media.core.compose.*
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.util.DateUtils
 import com.prime.media.core.db.Playlist
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
@@ -130,7 +128,7 @@ fun Playlists(
                         }
                     }
                     else -> {
-                        Placeholder(
+                        com.prime.media.common.Placeholder(
                             iconResId = R.raw.lt_empty_box,
                             title = "Oops Empty!!",
                             message = "Please go to Playlists to new ones."

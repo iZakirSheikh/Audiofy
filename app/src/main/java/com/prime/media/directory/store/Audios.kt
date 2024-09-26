@@ -31,47 +31,47 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.prime.media.R
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
 import com.prime.media.core.*
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LottieAnimButton
+import com.prime.media.common.Artwork
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LottieAnimButton
 import com.prime.media.core.db.Audio
-import com.prime.media.core.playback.Remote
-import com.prime.media.core.util.PathUtils
-import com.prime.media.core.util.DateUtils
-import com.prime.media.core.util.addDistinct
-import com.prime.media.core.util.share
-import com.prime.media.directory.*
-import com.prime.media.directory.dialogs.Playlists
-import com.prime.media.impl.Repository
 import com.prime.media.core.db.albumUri
 import com.prime.media.core.db.key
 import com.prime.media.core.db.toMediaItem
-import com.prime.media.core.util.toMember
+import com.prime.media.core.playback.Remote
+import com.prime.media.common.util.DateUtils
+import com.prime.media.common.util.PathUtils
+import com.prime.media.common.util.addDistinct
+import com.prime.media.common.util.share
+import com.prime.media.common.util.toMember
 import com.prime.media.dialog.Properties
+import com.prime.media.directory.*
+import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.editor.TagEditor
+import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
+import com.primex.preferences.Preferences
+import com.primex.preferences.value
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 import kotlin.random.Random.Default.nextInt
-import com.primex.core.Text
-import com.primex.preferences.Preferences
-import com.primex.preferences.value
+import com.primex.core.Text.Companion as TextData
+import com.zs.core_ui.ContentElevation as E
 
 private const val TAG = "AudiosViewModel"
 
@@ -84,7 +84,7 @@ typealias Audios = AudiosViewModel.Companion
 class AudiosViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val remote: Remote,
     private val preferences: Preferences
 ) : DirectoryViewModel<Audio>(handle) {
@@ -123,7 +123,7 @@ class AudiosViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented/supported yet.", "ViewType")
+            toaster.showToast("ViewType\nToggle not implemented/supported yet.")
         }
     }
 
@@ -141,7 +141,7 @@ class AudiosViewModel @Inject constructor(
     init {
         // emit the name to meta
         meta = MetaData(
-            Text(
+            TextData(
                 buildAnnotatedString {
                     appendLine(
                         when (type) {
@@ -230,11 +230,11 @@ class AudiosViewModel @Inject constructor(
                 )
 
                 when (order) {
-                    GroupBy.Album -> list.groupBy { audio -> Text(audio.album) }
-                    GroupBy.Artist -> list.groupBy { audio -> Text(audio.artist) }
+                    GroupBy.Album -> list.groupBy { audio -> TextData(audio.album) }
+                    GroupBy.Artist -> list.groupBy { audio -> TextData(audio.artist) }
                     GroupBy.DateAdded -> TODO()
                     GroupBy.DateModified -> list.groupBy {
-                        Text(
+                        TextData(
                             value = DateUtils.formatAsRelativeTimeSpan(
                                 it.dateModified
                             )
@@ -242,14 +242,14 @@ class AudiosViewModel @Inject constructor(
                     }
 
                     GroupBy.Folder -> TODO()
-                    GroupBy.Name -> list.groupBy { audio -> Text(audio.firstTitleChar) }
-                    GroupBy.None -> mapOf(Text("") to list)
+                    GroupBy.Name -> list.groupBy { audio -> TextData(audio.firstTitleChar) }
+                    GroupBy.None -> mapOf(TextData("") to list)
                     GroupBy.Length -> list.groupBy { audio ->
                         when {
-                            audio.duration < TimeUnit.MINUTES.toMillis(2) -> Text(R.string.audios_scr_less_then_2_mins)
-                            audio.duration < TimeUnit.MINUTES.toMillis(5) -> Text(R.string.audios_scr_less_than_5_mins)
-                            audio.duration < TimeUnit.MINUTES.toMillis(10) -> Text(R.string.audios_scr_less_than_10_mins)
-                            else -> Text(R.string.audios_scr_greater_than_10_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(2) -> TextData(R.string.audios_scr_less_then_2_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(5) -> TextData(R.string.audios_scr_less_than_5_mins)
+                            audio.duration < TimeUnit.MINUTES.toMillis(10) -> TextData(R.string.audios_scr_less_than_10_mins)
+                            else -> TextData(R.string.audios_scr_greater_than_10_mins)
                         }
                     }
 
@@ -258,12 +258,11 @@ class AudiosViewModel @Inject constructor(
             }
             .catch {
                 // any exception.
-                toaster.show(
-                    "Some unknown error occured!. $it",
-                    "Error",
-                    leading = Icons.Outlined.Error,
+                toaster.showToast(
+                    "Error\nSome unknown error occured!. $it",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Channel.Duration.Indefinite
+                    duration = Toast.DURATION_INDEFINITE
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
@@ -343,7 +342,7 @@ class AudiosViewModel @Inject constructor(
                 else -> 0
             }
             remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
-            toaster.show(title = "Playing", message = "Playing tracks enjoy.")
+            toaster.showToast(message = "Playing\nPlaying tracks enjoy.")
         }
     }
 
@@ -373,7 +372,7 @@ class AudiosViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    toaster.showToast("No item selected.")
                     return@launch
                 }
             }
@@ -383,10 +382,9 @@ class AudiosViewModel @Inject constructor(
 
             val playlist = repository.getPlaylist(name)
             if (playlist == null) {
-                toaster.show(
-                    "It seems the playlist doesn't exist.",
-                    "Error",
-                    leading = Icons.Outlined.Error
+                toaster.showToast(
+                    "Error\nIt seems the playlist doesn't exist.",
+                    icon = Icons.Outlined.Error
                 )
                 return@launch
             }
@@ -406,17 +404,15 @@ class AudiosViewModel @Inject constructor(
             }
 
             if (count < list.size)
-                toaster.show(
-                    "Added only $count items to $name",
-                    "Warning",
-                    leading = Icons.Outlined.Warning,
+                toaster.showToast(
+                    "Warning\nAdded only $count items to $name",
+                    icon = Icons.Outlined.Warning,
                     accent = Color.Amber,
                 )
             else
-                toaster.show(
+                toaster.showToast(
                     "Added $count items to $name",
-                    "Success",
-                    leading = Icons.Outlined.CheckCircle,
+                    icon = Icons.Outlined.CheckCircle,
                     accent = Color.MetroGreen,
                 )
         }
@@ -452,7 +448,7 @@ class AudiosViewModel @Inject constructor(
                     focused.isNotBlank() -> listOf(focused)
                     selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                     else -> {
-                        toaster.show("No item selected.", "Message")
+                        toaster.showToast("No item selected.")
                         return@launch
                     }
                 }
@@ -467,9 +463,8 @@ class AudiosViewModel @Inject constructor(
                 if (audios.isEmpty())
                     return@launch
                 val count = remote.add(*audios.toTypedArray(), index = index)
-                show(
-                    buildPluralResource(id = R.plurals.msg_queue_updated_dd, count, count, audios.size),
-                    title = null,
+                showToast(
+                    "Added $count items to Queue",
                     null,
                     Icons.Outlined.Queue,
                     if (count == 0) Color.RedViolet else Color.MetroGreen
@@ -490,7 +485,7 @@ class AudiosViewModel @Inject constructor(
                     focused.isNotBlank() -> listOf(focused)
                     selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                     else -> {
-                        toaster.show("No item selected.", "Message")
+                        toaster.showToast("No item selected.")
                         return@launch
                     }
                 }
@@ -511,16 +506,15 @@ class AudiosViewModel @Inject constructor(
                     true -> repository.delete(activity, *uris.toTypedArray(), trash = isTrashEnabled)
                     else -> {
                         // trash isn't supported below this version.
-                        val res = show(
-                            buildTextResource(R.string.msg_delete_files_warning_d, list.size),
-                            null,
-                            buildTextResource(R.string.delete),
-                            Icons.Outlined.WarningAmber,
+                        val res = showToast(
+                            "Delete this many items.",
+                            "Delete",
+                            icon = Icons.Outlined.WarningAmber,
                             accent = Color.Rose,
-                            Channel.Duration.Long
+                            Toast.DURATION_INDEFINITE
                         )
                         // check if user is interested in deleting the files or not.
-                        if (res == Channel.Result.Dismissed)
+                        if (res == Toast.RESULT_DISMISSED)
                             return@launch
                         // return
                         repository.delete(activity, *uris.toTypedArray(), trash = false)
@@ -529,32 +523,11 @@ class AudiosViewModel @Inject constructor(
                 // handle error code
                 // show appropriate message
                 when (result) {
-                    -2 -> show(
-                        R.string.msg_showing_delete_dialog,
-                        R.string.confirm,
-                        leading = Icons.Outlined.DeleteForever,
-                        accent = Color.Rose,
-                    )
-
-                    -3 -> show(
-                        R.string.msg_deleting_process_cancelled,
-                        R.string.cancelled,
-                        leading = Icons.Outlined.Cancel,
-                    )
                     // handle general case
-                    -1 -> show(
-                        R.string.msg_delete_unknown_error,
-                        R.string.error,
-                        leading = Icons.Outlined.Error,
+                    -1 -> showToast(
+                        "Oops! An error occurred while deleting files.",
+                        icon = Icons.Outlined.Error,
                         accent = Color.Rose
-                    )
-
-                    else -> show(
-                        buildTextResource(id = R.string.msg_delete_success_ss, result, uris.size),
-                        null,
-                        null,
-                        Icons.Outlined.Delete,
-                        Color.MetroGreen
                     )
                 }
             }
@@ -594,7 +567,7 @@ class AudiosViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    toaster.showToast("No item selected." )
                     return@launch
                 }
             }
@@ -734,8 +707,8 @@ private fun Audio(
                 modifier = Modifier
                     .border(2.dp, LocalContentColor.current, shape = CircleShape)
                     .scale(0.8f)
-                    .shadow(ContentElevation.low, shape = CircleShape)
-                    .background(com.zs.core_ui.AppTheme.colors.background(1.dp))
+                    .shadow(E.low, shape = CircleShape)
+                    .background(AppTheme.colors.background(1.dp))
                     .size(ARTWORK_SIZE),
             )
         },

@@ -6,14 +6,14 @@ import android.widget.Toast
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.core.content.res.ResourcesCompat
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.Channel.Result as SnackbarResult
-import com.prime.media.core.compose.Channel.Duration as SnackbarDuration
-import com.prime.media.core.compose.Channel as SnackbarHostState2
 import com.primex.core.getQuantityText2
 import com.primex.core.getText2
+import com.zs.core_ui.toast.Duration
+import com.zs.core_ui.toast.Result
+import com.zs.core_ui.toast.ToastHostState
 
 interface SystemDelegate {
 
@@ -56,22 +56,27 @@ interface SystemDelegate {
     suspend fun showSnackbar(
         message: CharSequence,
         action: CharSequence? = null,
-        icon: Any? = null,
+        icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        duration: SnackbarDuration = if (action == null) SnackbarDuration.Short else SnackbarDuration.Indefinite
-    ): SnackbarResult
+        @Duration duration: Int = if (action == null) com.zs.core_ui.toast.Toast.DURATION_SHORT else com.zs.core_ui.toast.Toast.DURATION_INDEFINITE
+    ): @Result Int
 
     suspend fun showSnackbar(
         @StringRes message: Int,
         @StringRes action: Int = ResourcesCompat.ID_NULL,
-        icon: Any? = null,
+        icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        duration: SnackbarDuration = if (action == ResourcesCompat.ID_NULL) SnackbarDuration.Short else SnackbarDuration.Indefinite
-    ): SnackbarResult
+        @Duration duration: Int = if (action == ResourcesCompat.ID_NULL) com.zs.core_ui.toast.Toast.DURATION_SHORT else com.zs.core_ui.toast.Toast.DURATION_INDEFINITE
+    ): @Result Int = showSnackbar(
+        message = resources.getText2(message),
+        action = if (action == ResourcesCompat.ID_NULL) null else resources.getText2(action),
+        icon = icon,
+        accent = accent,
+        duration = duration
+    )
 }
 
-@OptIn(ExperimentalTextApi::class)
-fun SystemDelegate(ctx: Context, channel: SnackbarHostState2) =
+fun SystemDelegate(ctx: Context, channel: ToastHostState) =
     object : SystemDelegate {
 
         @Deprecated("Try to avoid using this.")
@@ -103,26 +108,9 @@ fun SystemDelegate(ctx: Context, channel: SnackbarHostState2) =
         override suspend fun showSnackbar(
             message: CharSequence,
             action: CharSequence?,
-            icon: Any?,
+            icon: ImageVector?,
             accent: Color,
-            duration: SnackbarDuration
-        ): SnackbarResult {
-            return channel.show(message, null,  action, icon, accent, duration)
-        }
+            duration: Int
+        ): Int = channel.showToast(message, action,  icon, accent, duration)
 
-        override suspend fun showSnackbar(
-            message: Int,
-            action: Int,
-            icon: Any?,
-            accent: Color,
-            duration: SnackbarDuration
-        ): SnackbarResult {
-            return showSnackbar(
-                getText(message),
-                if (action == ResourcesCompat.ID_NULL) null else getText(action),
-                icon,
-                accent,
-                duration
-            )
-        }
     }

@@ -18,7 +18,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.mediaUri
-import com.prime.media.core.util.await
+import com.prime.media.common.util.await
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview

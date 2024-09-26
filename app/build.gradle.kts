@@ -71,8 +71,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 137
-        versionName = "3.0.0-alpha02"
+        versionCode = 138
+        versionName = "3.0.0-alpha03"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -120,7 +120,6 @@ android {
 dependencies {
     implementation(libs.androidx.activity.compose)
 
-    implementation(libs.bundles.material.icons)
     implementation(libs.bundles.media3)
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.analytics)
@@ -133,14 +132,10 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.toolkit.preferences)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.window)
     implementation(libs.navigation.compose)
-    implementation(libs.kenburnsview)
     implementation(libs.wavy.slider)
     implementation(libs.androidx.constraint.layout.compose)
-    implementation(libs.androidx.palette.ktx)
     implementation (libs.material.view)
-    implementation(libs.androidx.graphics.shapes)
     implementation(libs.mp3agic)
     implementation(libs.androidx.ui.text.google.fonts)
 
@@ -150,6 +145,8 @@ dependencies {
     //
     implementation(project(":ads"))
     implementation(project(":core-ui"))
+    implementation(project(":core"))
+    implementation(project(":playback"))
 
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.

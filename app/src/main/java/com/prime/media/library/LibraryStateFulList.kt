@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.core.compose.Placeholder
+import com.prime.media.common.Placeholder
 
 
 private val NormalRecentItemArrangement = Arrangement.spacedBy(8.dp)

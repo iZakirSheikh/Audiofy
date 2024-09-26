@@ -86,27 +86,22 @@ import com.prime.media.about.AboutUs
 import com.prime.media.config.Personalize
 import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
-import com.prime.media.core.Anim
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.NightMode
-import com.prime.media.core.composable
-import com.prime.media.core.compose.BottomNavItem
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.NavRailItem
-import com.prime.media.core.compose.NavigationItemDefaults
-import com.prime.media.core.compose.NavigationSuiteScaffold
-import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.compose.Range
-import com.prime.media.core.compose.WallpaperAccentColor
-import com.prime.media.core.compose.WindowSize
-import com.prime.media.core.compose.current
-import com.prime.media.core.compose.preference
+import com.zs.core_ui.Anim
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.NightMode
+import com.prime.media.common.composable
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.zs.core_ui.LocalWindowSize
+import com.prime.media.common.Placeholder
+import com.zs.core_ui.Range
+import com.zs.core_ui.WallpaperAccentColor
+import com.zs.core_ui.WindowSize
+import com.prime.media.common.current
+import com.prime.media.common.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.artworkUri
-import com.prime.media.core.util.getAlbumArt
+import com.prime.media.common.util.getAlbumArt
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -137,12 +132,16 @@ import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Glance
 import com.primex.core.SepiaBrown
-import com.primex.core.SkyBlue
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
+import com.zs.core_ui.adaptive.BottomNavItem
+import com.zs.core_ui.adaptive.NavRailItem
+import com.zs.core_ui.adaptive.NavigationItemDefaults
+import com.zs.core_ui.adaptive.NavigationSuiteScaffold
+import com.zs.core_ui.toast.ToastHostState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -552,7 +551,7 @@ private val ROUTES_IN_NAV_BAR =
 private val CONTENT_SHAPE = RoundedCornerShape(topStartPercent = 8, bottomStartPercent = 8)
 
 @Composable
-fun Home(channel: Channel) {
+fun Home(channel: ToastHostState) {
     // Determine if the app is in dark mode based on user preferences
     val navController = rememberNavController()
     val darkTheme = isPreferenceDarkTheme()
@@ -578,7 +577,7 @@ fun Home(channel: Channel) {
                     val vertical = clazz.widthRange < Range.Medium
                     NavigationSuiteScaffold(
                         vertical = vertical,
-                        channel = channel,
+                        toastHostState = channel,
                         hideNavigationBar = hideNavigationBar,
                         progress = facade.inAppUpdateProgress,
                         background = AppTheme.colors.background(1.dp),

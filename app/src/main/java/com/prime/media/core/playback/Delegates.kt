@@ -22,7 +22,7 @@ import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.prime.media.R
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.db.Playlists
-import com.prime.media.core.util.Member
+import com.prime.media.common.util.Member
 import java.io.File
 import java.io.FileOutputStream
 

@@ -47,8 +47,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.MainActivity
 import com.prime.media.R
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.shape.FolderShape
+import com.prime.media.common.LocalNavController
+import com.zs.core_ui.shape.FolderShape
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.store.Artists

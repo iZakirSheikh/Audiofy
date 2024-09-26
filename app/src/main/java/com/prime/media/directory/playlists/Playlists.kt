@@ -1,7 +1,16 @@
 package com.prime.media.directory.playlists
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -11,7 +20,12 @@ import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.twotone.Edit
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,29 +35,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.prime.media.*
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.impl.Repository
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.preference
-import com.prime.media.core.compose.thenIf
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.preference
+import com.prime.media.common.thenIf
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
-import com.prime.media.directory.*
+import com.prime.media.directory.Action
+import com.prime.media.directory.Directory
+import com.prime.media.directory.DirectoryViewModel
+import com.prime.media.directory.GroupBy
+import com.prime.media.directory.Mapped
+import com.prime.media.directory.MetaData
+import com.prime.media.directory.ViewType
+import com.prime.media.impl.Repository
 import com.prime.media.settings.Settings
 import com.primex.core.Rose
 import com.primex.core.Text
-import com.primex.material2.*
+import com.primex.material2.Label
 import com.primex.material2.dialog.AlertDialog
 import com.primex.material2.dialog.TextInputDialog
 import com.primex.material2.neumorphic.Neumorphic
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
@@ -59,7 +81,7 @@ private val VALID_NAME_REGEX = Regex("^[\\p{L}\\p{N}]+$")
 class PlaylistsViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val remote: Remote,
 ) : DirectoryViewModel<Playlist>(handle) {
 
@@ -84,27 +106,25 @@ class PlaylistsViewModel @Inject constructor(
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            toaster.showToast("ViewType\nToggle not implemented yet.")
         }
     }
 
     fun createPlaylist(name: String) {
         viewModelScope.launch {
             if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                toaster.show(
-                    message = "The provided name is an invalid",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
+                toaster.showToast(
+                    message = "Error\nThe provided name is an invalid",
+                    icon = Icons.Outlined.ErrorOutline,
                     accent = Color.Rose
                 )
                 return@launch
             }
             val exists = repository.exists(name)
             if (exists) {
-                toaster.show(
-                    message = "The playlist with name $name already exists.",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
+                toaster.showToast(
+                    message = "Error\nThe playlist with name $name already exists.",
+                    icon = Icons.Outlined.ErrorOutline,
                     accent = Color.Rose
                 )
                 return@launch
@@ -121,10 +141,9 @@ class PlaylistsViewModel @Inject constructor(
             val playlist = repository.getPlaylist(item) ?: return@launch
             val success = repository.delete(playlist)
             if (!success)
-                toaster.show(
-                    "An error occured while deleting ${playlist.name}",
-                    "Error",
-                    leading = Icons.Outlined.ErrorOutline,
+                toaster.showToast(
+                    "Error\nAn error occured while deleting ${playlist.name}",
+                    icon = Icons.Outlined.ErrorOutline,
                     accent = Color.Rose
                 )
         }
@@ -133,20 +152,18 @@ class PlaylistsViewModel @Inject constructor(
     fun rename(name: String) {
         viewModelScope.launch {
             if (name.isBlank() || !VALID_NAME_REGEX.matches(name)) {
-                toaster.show(
-                    message = "The provided name is an invalid",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
+                toaster.showToast(
+                    message = "Error\nThe provided name is an invalid",
+                    icon = Icons.Outlined.ErrorOutline,
                     accent = Color.Rose
                 )
                 return@launch
             }
             val exists = repository.exists(name)
             if (exists) {
-                toaster.show(
-                    message = "The playlist with name $name already exists.",
-                    title = "Error",
-                    leading = Icons.Outlined.ErrorOutline,
+                toaster.showToast(
+                    message = "Error\nThe playlist with name $name already exists.",
+                    icon = Icons.Outlined.ErrorOutline,
                     accent = Color.Rose
                 )
                 return@launch
@@ -158,8 +175,8 @@ class PlaylistsViewModel @Inject constructor(
                 name = name, dateModified = System.currentTimeMillis()
             )
             when (repository.update(update)) {
-                true -> toaster.show(message = "The name of the playlist has been update to $name")
-                else -> toaster.show(message = "An error occurred while update the name of the playlist to $name")
+                true -> toaster.showToast(message = "The name of the playlist has been update to $name")
+                else -> toaster.showToast(message = "An error occurred while update the name of the playlist to $name")
             }
         }
     }

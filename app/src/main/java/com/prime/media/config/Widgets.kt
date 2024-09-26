@@ -20,7 +20,6 @@ package com.prime.media.config
 
 
 import android.net.Uri
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,11 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.billingclient.api.ProductDetails
 import com.prime.media.BuildConfig
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Header
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.purchase
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.billing.purchased
+import com.prime.media.common.Header
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.purchase
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.widget.GoldenDust
 import com.prime.media.widget.GradientGroves

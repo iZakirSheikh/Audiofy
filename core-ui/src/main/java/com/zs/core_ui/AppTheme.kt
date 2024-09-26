@@ -112,6 +112,40 @@ import kotlin.math.ln
 
 private const val TAG = "AppTheme"
 
+// Setup animation related default things
+typealias Anim = AnimationConstants
+
+private const val LONG_DURATION_TIME = 500
+
+/**
+ * 500 Mills
+ */
+val Anim.LongDurationMills get() = LONG_DURATION_TIME
+private const val MEDIUM_DURATION_TIME = 400
+
+/**
+ * 400 Mills
+ */
+val Anim.MediumDurationMills get() = MEDIUM_DURATION_TIME
+private const val SHORT_DURATION_TIME = 200
+
+/**
+ * 200 Mills
+ */
+val Anim.ShortDurationMills get() = SHORT_DURATION_TIME
+private const val ACTIVITY_SHORT_DURATION = 150
+
+/**
+ * 150 Mills
+ */
+val Anim.ActivityShortDurationMills get() = ACTIVITY_SHORT_DURATION
+private const val ACTIVITY_LONG_DURATION = 220
+
+/**
+ * 220 Mills
+ */
+val Anim.ActivityLongDurationMills get() = ACTIVITY_LONG_DURATION
+
 /**
  * Provides a [CompositionLocal] to access the current [SharedTransitionScope].
  *

@@ -51,15 +51,15 @@ import com.android.billingclient.api.ProductDetails
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.billing.purchased
-import com.prime.media.core.compose.Channel
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.purchase
-import com.prime.media.core.compose.shimmer.shimmer
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.billing.purchased
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.purchase
+import com.zs.core_ui.shimmer.shimmer
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.toast.Toast
 
 /**
  * The name of the on-demand module for the Codex feature.
@@ -182,7 +182,7 @@ private fun Product(
                                 onClick = {
                                     facade.show(
                                         details.description,
-                                        duration = Channel.Duration.Long
+                                        duration = Toast.DURATION_INDEFINITE
                                     )
                                 }
                             )

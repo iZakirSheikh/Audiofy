@@ -33,9 +33,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LocalSystemFacade
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
+import com.prime.media.common.LocalSystemFacade
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 

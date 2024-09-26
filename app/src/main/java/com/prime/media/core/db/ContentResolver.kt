@@ -19,9 +19,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Stable
 import com.prime.media.core.playback.MediaItem
-import com.prime.media.core.util.PathUtils
-import com.prime.media.core.util.registerActivityResultLauncher
-import com.prime.media.core.util.removeId
+import com.prime.media.common.util.PathUtils
+import com.prime.media.common.util.registerActivityResultLauncher
+import com.prime.media.common.util.removeId
 import com.prime.media.impl.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose

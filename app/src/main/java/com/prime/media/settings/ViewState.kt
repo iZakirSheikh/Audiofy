@@ -3,8 +3,6 @@ package com.prime.media.settings
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -16,7 +14,7 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.core.NightMode
+import com.zs.core_ui.NightMode
 import com.prime.media.core.playback.Playback
 import com.primex.core.Text
 import com.primex.preferences.IntSaver

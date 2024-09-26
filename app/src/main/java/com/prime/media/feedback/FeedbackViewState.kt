@@ -21,7 +21,7 @@ package com.prime.media.feedback
 import androidx.annotation.IntRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.navigation.NavController
-import com.prime.media.core.Route
+import com.prime.media.common.Route
 
 /**
  * A route for submitting feedback.

@@ -20,30 +20,34 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
+import com.prime.media.common.Artwork
+import com.prime.media.common.composable
 import com.prime.media.core.*
-import com.prime.media.core.compose.*
 import com.prime.media.core.db.Playlist.Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.util.addDistinct
+import com.prime.media.common.util.addDistinct
+import com.prime.media.common.util.toMediaItem
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.impl.Repository
-import com.prime.media.core.util.toMediaItem
 import com.primex.core.*
 import com.primex.material2.*
+import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.toast.Toast
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import kotlin.random.Random
-import com.primex.core.Text
-import com.zs.core_ui.AppTheme
+import com.primex.core.Text.Companion as DataText
+import com.zs.core_ui.ContentPadding as C
 
 private const val TAG = "AlbumsViewModel"
 
@@ -56,7 +60,7 @@ private val Member.firstTitleChar
 class MembersViewModel @Inject constructor(
     handle: SavedStateHandle,
     private val repository: Repository,
-    private val toaster: Channel,
+    private val toaster: ToastHostState,
     private val remote: Remote,
 ) : DirectoryViewModel<Member>(handle) {
 
@@ -83,7 +87,7 @@ class MembersViewModel @Inject constructor(
         // emit the name to meta
         //TODO: Add other fields in future versions.
         meta = MetaData(
-            Text(title)
+            DataText(title)
         )
     }
 
@@ -115,27 +119,27 @@ class MembersViewModel @Inject constructor(
                     )
 
                     when (order) {
-                        GroupBy.None -> mapOf(Text("") to src)
-                        GroupBy.Name -> src.groupBy { Text(it.firstTitleChar) }
+                        GroupBy.None -> mapOf(DataText("") to src)
+                        GroupBy.Name -> src.groupBy { DataText(it.firstTitleChar) }
                         else -> error("$order invalid")
                     }
                 }
         }
             .catch {
             // any exception.
-            toaster.show(
+            toaster.showToast(
                 "Some unknown error occured!.",
                 "Error",
-                leading = Icons.Outlined.Error,
+                icon = Icons.Outlined.Error,
                 accent = Color.Rose,
-                duration = Channel.Duration.Indefinite
+                duration = Toast.DURATION_INDEFINITE
             )
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
         viewModelScope.launch {
-            toaster.show("Toggle not implemented yet.", "ViewType")
+            toaster.showToast("Toggle not implemented yet.", "ViewType")
         }
     }
 
@@ -169,7 +173,6 @@ class MembersViewModel @Inject constructor(
                 else -> 0
             }
             remote.onRequestPlay(shuffle, index, list.map { it.toMediaItem })
-            toaster.show(title = "Playing", message = "Playing tracks enjoy.")
         }
     }
 
@@ -186,7 +189,7 @@ class MembersViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    toaster.showToast("No item selected.")
                     return@launch
                 }
             }
@@ -200,10 +203,9 @@ class MembersViewModel @Inject constructor(
                     count++
             }
             if (count < list.size)
-                toaster.show(
-                    "Deleted $count items from $title",
-                    "Delete",
-                    leading = Icons.Outlined.Error,
+                toaster.showToast(
+                    "Delete\nDeleted $count items from $title",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose,
                 )
         }
@@ -229,21 +231,12 @@ class MembersViewModel @Inject constructor(
                     focused.isNotBlank() -> listOf(focused)
                     selected.isNotEmpty() -> ArrayList(selected)
                     else -> {
-                        toaster.show("No item selected.", "Message")
+                        toaster.showToast("No item selected.")
                         return@launch
                     }
                 }
                 // consume selected
                 clear()
-                // show warning
-                show(
-                    R.string.msg_queue_add_experimental_warning,
-                    R.string.warning,
-                    ResourcesCompat.ID_NULL,
-                    Icons.Outlined.Warning,
-                    Color.DahliaYellow,
-                    Channel.Duration.Short
-                )
                 // map keys to media item
                 val audios = list.mapNotNull {id ->
                     src.find { it.uri == id}?.toMediaItem
@@ -253,9 +246,8 @@ class MembersViewModel @Inject constructor(
                 if (audios.isEmpty())
                     return@launch
                 val count = remote.add(*audios.toTypedArray(), index = index)
-                show(
-                    buildPluralResource(id = R.plurals.msg_queue_updated_dd, count, count, audios.size),
-                    buildTextResource(if (count == 0) R.string.msg_error_status_uncertain else R.string.success),
+                showToast(
+                    "Added $count items to queue",
                     null,
                     Icons.Outlined.Queue,
                     if (count == 0) Color.RedViolet else Color.MetroGreen
@@ -300,10 +292,9 @@ class MembersViewModel @Inject constructor(
         // focus or selected.
         viewModelScope.launch {
             if(key == name){
-                toaster.show(
+                toaster.showToast(
                     "The tracks are already in the playlist",
-                    "Message",
-                    leading = Icons.AutoMirrored.Outlined.Message
+                    icon = Icons.AutoMirrored.Outlined.Message
                 )
                 return@launch
             }
@@ -315,7 +306,7 @@ class MembersViewModel @Inject constructor(
                 focused.isNotBlank() -> listOf(focused)
                 selected.isNotEmpty() -> kotlin.collections.ArrayList(selected)
                 else -> {
-                    toaster.show("No item selected.", "Message")
+                    toaster.showToast("No item selected.")
                     return@launch
                 }
             }
@@ -325,10 +316,9 @@ class MembersViewModel @Inject constructor(
 
             val playlist = repository.getPlaylist(name)
             if (playlist == null) {
-                toaster.show(
-                    "It seems the playlist doesn't exist.",
-                    "Error",
-                    leading = Icons.Outlined.Error
+                toaster.showToast(
+                    "Error\nIt seems the playlist doesn't exist.",
+                    icon = Icons.Outlined.Error
                 )
                 return@launch
             }
@@ -348,17 +338,15 @@ class MembersViewModel @Inject constructor(
             }
 
             if (count < list.size)
-                toaster.show(
+                toaster.showToast(
                     "Added only $count items to $name",
-                    "Warning",
-                    leading = Icons.Outlined.Warning,
+                    icon = Icons.Outlined.Warning,
                     accent = Color.Amber,
                 )
             else
-                toaster.show(
+                toaster.showToast(
                     "Added $count items to $name",
-                    "Success",
-                    leading = Icons.Outlined.CheckCircle,
+                    icon = Icons.Outlined.CheckCircle,
                     accent = Color.MetroGreen,
                 )
         }
@@ -425,7 +413,7 @@ private fun Member(
             Row(
                 Modifier
                     .horizontalScroll(rememberScrollState())
-                    .padding(start = ARTWORK_SIZE, end = ContentPadding.normal)
+                    .padding(start = ARTWORK_SIZE, end = C.normal)
             ) {
                 actions.forEach {
                     val color = ChipDefaults.outlinedChipColors(backgroundColor = Color.Transparent)
@@ -437,11 +425,11 @@ private fun Member(
                             1.dp,
                             AppTheme.colors.accent.copy(ChipDefaults.OutlinedBorderOpacity)
                         ),
-                        modifier = Modifier.padding(ContentPadding.small)
+                        modifier = Modifier.padding(C.small)
                     ) {
                         Label(
                             text = it.title.get,
-                            modifier = Modifier.padding(end = ContentPadding.small),
+                            modifier = Modifier.padding(end = C.small),
                             style = AppTheme.typography.caption
                         )
                         Icon(
@@ -546,7 +534,7 @@ fun Members(viewModel: MembersViewModel) {
                         viewModel.select(member.uri)
                     }
                 )
-                .padding(horizontal = ContentPadding.normal)
+                .padding(horizontal = C.normal)
         )
     }
 }

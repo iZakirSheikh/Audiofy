@@ -12,17 +12,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import com.prime.media.R
-import com.prime.media.core.compose.Channel
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.db.uri
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
-import com.prime.media.core.util.toMediaItem
+import com.prime.media.common.util.toMediaItem
 import com.prime.media.library.Library
 import com.primex.core.DahliaYellow
 import com.primex.core.MetroGreen
 import com.primex.core.Rose
+import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.firstOrNull
@@ -47,7 +47,7 @@ private const val SHOW_CASE_MAX_ITEMS = 20
 class LibraryViewModel @Inject constructor(
     repository: Repository,
     private val remote: Remote,
-    private val channel: Channel
+    private val channel: ToastHostState
 ) : ViewModel(), Library {
 
     override val recent = repository.playlist(Playback.PLAYLIST_RECENT)
@@ -97,7 +97,7 @@ class LibraryViewModel @Inject constructor(
             val item = items?.find { it.uri == uri }
             // If the media item is not found in the recent list, show an error message.
             if (item == null) {
-                channel.show(R.string.msg_unknown_error, leading = Icons.Outlined.Error, accent = Color.Rose)
+                channel.showToast("Oops! Unknown error", icon = Icons.Outlined.Error, accent = Color.Rose)
                 return@launch
             }
             // Add the media item to the playlist.
@@ -114,10 +114,9 @@ class LibraryViewModel @Inject constructor(
             val items = newlyAdded.firstOrNull()
             val item = items?.find { it.id == id }
             if (item == null) {
-                channel.show(
-                    R.string.msg_unknown_error,
-                    R.string.error,
-                    leading = Icons.Outlined.Error,
+                channel.showToast(
+                    "Oops! Unknown error",
+                    icon = Icons.Outlined.Error,
                     accent = Color.Rose
                 )
                 return@launch

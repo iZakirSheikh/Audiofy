@@ -7,6 +7,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -354,7 +356,7 @@ class ConsoleViewModel @Inject constructor(
                 if (!res)
                     showSnackbar(
                         message = R.string.msg_error_fav_playlist_update,
-                        icon = R.drawable.ic_heart,
+                        icon = Icons.Outlined.FavoriteBorder,
                         accent = Color.OrientRed
                     )
             }

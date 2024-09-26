@@ -51,12 +51,13 @@ import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.current
-import com.prime.media.core.compose.preference
-import com.prime.media.core.compose.scale
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LottieAnimation
+import com.prime.media.common.current
+import com.prime.media.common.preference
+import com.zs.core_ui.scale
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.settings.Settings
@@ -170,7 +171,7 @@ private fun MiniLayout(
             )
         )
         // show playing bars.
-        com.prime.media.core.compose.LottieAnimation(
+        LottieAnimation(
             id = R.raw.playback_indicator,
             iterations = Int.MAX_VALUE,
             dynamicProperties = properties,

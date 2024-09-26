@@ -50,5 +50,5 @@
 }
 -keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
 # Deon't obscate names of those objects that implements SafeArgs and Route
--keepnames class * implements com.prime.media.core.Route
--keepnames class * implements com.prime.media.core.SafeArgs
+-keepnames class * implements com.prime.media.common.Route
+-keepnames class * implements com.prime.media.common.SafeArgs

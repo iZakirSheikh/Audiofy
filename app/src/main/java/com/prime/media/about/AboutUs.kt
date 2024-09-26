@@ -51,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -60,11 +61,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
+import com.prime.media.MainActivity
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Banner
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Banner
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.settings.Settings
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
@@ -77,6 +79,8 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.toast.Toast
+import kotlinx.coroutines.launch
 
 private const val TAG = "AboutUs"
 
@@ -96,7 +100,10 @@ private fun TopAppBar(
         title = { Label(text = textResource(id = R.string.about_us)) },
         navigationIcon = {
             val navController = LocalNavController.current
-            IconButton(imageVector = Icons.AutoMirrored.Outlined.ReplyAll, onClick = navController::navigateUp)
+            IconButton(
+                imageVector = Icons.AutoMirrored.Outlined.ReplyAll,
+                onClick = navController::navigateUp
+            )
         },
         scrollBehavior = behaviour,
         style = TopAppBarDefaults.largeAppBarStyle(
@@ -105,16 +112,20 @@ private fun TopAppBar(
             containerColor = AppTheme.colors.background(0.1.dp)
         ),
         actions = {
-            val facade = LocalSystemFacade.current
+            val facade = LocalSystemFacade.current as MainActivity
+            val scope = rememberCoroutineScope()
             // Feedback
             IconButton(
                 imageVector = Icons.Outlined.AlternateEmail,
                 onClick = {
-                    facade.show(
-                        message = "Something not working as expected? Share your feedback to help us improve.",
-                        action = "Proceed",
-                        onAction = { facade.launch(Settings.FeedbackIntent) }
-                    )
+                    scope.launch {
+                        val res = facade.channel.showToast(
+                            message = "Something not working as expected? Share your feedback to help us improve.",
+                            action = "Proceed",
+                        )
+                        if (res == Toast.ACTION_PERFORMED)
+                            facade.launch(Settings.FeedbackIntent)
+                    }
                 },
             )
 
@@ -122,11 +133,14 @@ private fun TopAppBar(
             IconButton(
                 imageVector = Icons.Outlined.DataObject,
                 onClick = {
-                    facade.show(
-                        message = "Curious about the code? Check out our GitHub repository and don't forget to star us if you like it!",
-                        action = "View",
-                        onAction = { facade.launch(Settings.GithubIntent) }
-                    )
+                    scope.launch {
+                        val res = facade.channel.showToast(
+                            message = "Curious about the code? Check out our GitHub repository and don't forget to star us if you like it!",
+                            action = "View",
+                        )
+                        if (res == Toast.ACTION_PERFORMED)
+                            facade.launch(Settings.GithubIntent)
+                    }
                 },
             )
 
@@ -134,11 +148,14 @@ private fun TopAppBar(
             IconButton(
                 imageVector = Icons.Outlined.BugReport,
                 onClick = {
-                    facade.show(
-                        message = "Spot a bug, typo, or have a feature request? Let us know on GitHub!",
-                        action = "Proceed",
-                        onAction = { facade.launch(Settings.GitHubIssuesPage) }
-                    )
+                    scope.launch {
+                        val res = facade.channel.showToast(
+                            message = "Spot a bug, typo, or have a feature request? Let us know on GitHub!",
+                            action = "Proceed",
+                        )
+                        if (res == Toast.ACTION_PERFORMED)
+                            facade.launch(Settings.GitHubIssuesPage)
+                    }
                 },
             )
 
@@ -146,11 +163,14 @@ private fun TopAppBar(
             IconButton(
                 imageVector = Icons.Outlined.SupportAgent,
                 onClick = {
-                    facade.show(
-                        message = "Join our Telegram community for support, discussions, and updates!",
-                        action = "Join",
-                        onAction = { facade.launch(Settings.TelegramIntent) }
-                    )
+                    scope.launch {
+                        val res = facade.channel.showToast(
+                            message = "Join our Telegram community for support, discussions, and updates!",
+                            action = "Join",
+                        )
+                        if (res == Toast.ACTION_PERFORMED)
+                            facade.launch(Settings.TelegramIntent)
+                    }
                 },
             )
         }

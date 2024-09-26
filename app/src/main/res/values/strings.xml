@@ -360,7 +360,7 @@
             \nUpgrade now and enjoy a premium, <b>ad-free</b> experience <b>forever</b>.
         </font></string>
     <string name="msg_library_buy_me_a_coffee"><b>Like the app?</b>
-        <font color='grey' size="11">
+        <font color='grey'>
             \nBuy me a <b>coffee</b> to help keep it awesome! Your <b>support fuels development</b> and is greatly appreciated. ☕ Thank you!
         </font></string>
     <string name="thanks">Thanks</string>

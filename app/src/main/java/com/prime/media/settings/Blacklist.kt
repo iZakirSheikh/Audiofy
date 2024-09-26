@@ -22,9 +22,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Placeholder
-import com.prime.media.core.util.PathUtils
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Placeholder
+import com.prime.media.common.util.PathUtils
 import com.primex.material2.Dialog
 import com.primex.material2.IconButton
 import com.primex.material2.Label

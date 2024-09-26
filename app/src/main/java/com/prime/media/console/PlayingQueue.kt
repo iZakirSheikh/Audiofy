@@ -63,10 +63,10 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.compose.LottieAnimButton
-import com.prime.media.core.compose.Placeholder
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
+import com.prime.media.common.LottieAnimButton
+import com.prime.media.common.Placeholder
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle

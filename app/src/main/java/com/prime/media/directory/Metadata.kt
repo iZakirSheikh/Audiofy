@@ -40,7 +40,6 @@ import androidx.compose.material.ButtonDefaults.OutlinedBorderSize
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -55,10 +54,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.prime.media.core.ContentElevation
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Artwork
-import com.prime.media.core.util.DateUtils
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Artwork
+import com.prime.media.common.util.DateUtils
 import com.primex.core.stringResource
 import com.primex.core.value
 import com.primex.material2.Button

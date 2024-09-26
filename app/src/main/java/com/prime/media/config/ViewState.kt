@@ -18,9 +18,7 @@
 
 package com.prime.media.config
 
-import androidx.compose.ui.graphics.Color
-import com.prime.media.core.Route
-import com.primex.preferences.Key
+import com.prime.media.common.Route
 
 object RoutePersonalize: Route
 

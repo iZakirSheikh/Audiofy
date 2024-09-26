@@ -46,13 +46,12 @@ import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
 import com.prime.media.R
 import com.prime.media.config.RoutePersonalize
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Banner
-import com.prime.media.core.compose.LocalNavController
-import com.prime.media.core.compose.LocalSystemFacade
-import com.prime.media.core.compose.LocalWindowSize
-import com.prime.media.core.compose.None
-import com.prime.media.core.compose.contentInsets
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Banner
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.zs.core_ui.LocalWindowSize
+import com.prime.media.common.None
 import com.prime.media.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
@@ -64,6 +63,7 @@ import com.primex.material2.IconButton
 import com.primex.material2.Text
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.adaptive.contentInsets
 
 /**
  * A Composable function that lays out a screen with a top bar, content, and details section.

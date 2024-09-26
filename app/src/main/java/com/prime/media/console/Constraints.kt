@@ -16,9 +16,9 @@ import androidx.constraintlayout.compose.VerticalChainReference
 import androidx.constraintlayout.compose.VerticalChainScope
 import androidx.constraintlayout.compose.Visibility
 import androidx.constraintlayout.compose.atMost
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.Range
-import com.prime.media.core.compose.WindowSize
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.Range
+import com.zs.core_ui.WindowSize
 
 private const val TAG = "ConstraintSets"
 

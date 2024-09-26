@@ -37,8 +37,8 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.core.ContentPadding
-import com.prime.media.core.compose.LocalNavController
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalNavController
 import com.primex.core.rotateTransform
 import com.primex.core.textResource
 import com.primex.material2.Label
