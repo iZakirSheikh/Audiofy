@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -55,6 +57,7 @@ import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios
 import com.prime.media.directory.store.Genres
 import com.primex.core.textResource
+import com.primex.material2.Divider
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 
@@ -80,7 +83,7 @@ private fun Shortcut(
         modifier = modifier
             .clip(FolderShape) // Shape the shortcut like a folder
             // .background(colors.primary.copy(0.035f), FolderShape)
-            .border(1.dp, accent.copy(0.5f), FolderShape) // Light border
+            .border(1.dp, accent.copy(0.4f), FolderShape) // Light border
           //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,

@@ -76,7 +76,7 @@ import com.prime.media.common.LottieAnimation
 import com.prime.media.common.marque
 import com.zs.core_ui.shape.RoundedPolygonShape
 import com.zs.core_ui.shimmer.shimmer
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
@@ -127,7 +127,7 @@ fun GoldenDust(
     val isPreview = item.mediaUri == Uri.EMPTY
     ListTile(
         modifier = modifier
-            .thenIf(!isPreview, Glance.SharedBoundsModifier)
+            .thenIf(!isPreview, ){Glance.SharedBoundsModifier}
             .visualEffect(ImageBrush.NoiseBrush, 0.4f, overlay = true)
             .shimmer(Accent, 400.dp, BlendMode.Overlay, ShimmerAnimSpec)
             .border(1.dp, onAccent, WidgetShape)
@@ -241,10 +241,7 @@ fun GoldenDust(
                             )
                         ),
                         modifier = Modifier
-                            .thenIf(
-                                item.mediaUri != Uri.EMPTY, Modifier
-                                    .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
-                            )
+                            .thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )

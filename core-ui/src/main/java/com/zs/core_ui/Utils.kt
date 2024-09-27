@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.view.Window
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
@@ -95,5 +96,12 @@ var Window.systemBarsColor: Color
         navigationBarColor = value.toArgb()
     }
     get() = error("Not supported!")
+
+private val NoneWindowInsets = WindowInsets(0)
+
+/**
+ * Represents empty window insets with all values set to 0.
+ */
+val WindowInsets.Companion.None get() =  NoneWindowInsets
 
 

@@ -62,7 +62,7 @@ import com.zs.core_ui.MediumDurationMills
 import com.prime.media.common.Artwork
 import com.prime.media.common.LottieAnimation
 import com.prime.media.common.marque
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
@@ -131,7 +131,7 @@ fun GradientGroves(
     val colors = AppTheme.colors
     ListTile(
         modifier = modifier
-            .thenIf(item.mediaUri != Uri.EMPTY, Glance.SharedBoundsModifier)
+            .thenIf(item.mediaUri != Uri.EMPTY){Glance.SharedBoundsModifier}
             .visualEffect(ImageBrush.NoiseBrush, 0.4f, overlay = true)
             .background(Color.White, WidgetShape)
             .background(colors.bg, WidgetShape),

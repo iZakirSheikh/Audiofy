@@ -6,7 +6,6 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -23,8 +22,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 private const val TAG = "ComposeUtil"
-
-
 
 /**
  * Used to provide access to the [NavHostController] through composition without needing to pass it down the tree.
@@ -65,12 +62,15 @@ fun composable(condition: Boolean, content: @Composable () -> Unit) =
  */
 @ExperimentalAnimationGraphicsApi
 @Composable
+@Deprecated("Find better solutions.")
 inline fun rememberAnimatedVectorResource(@DrawableRes id: Int, atEnd: Boolean) =
     androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
         animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
 
 val edgeWidth = 10.dp
+
+@Deprecated("Find better solution.")
 private fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
     val edgeWidthPx = edgeWidth.toPx()
     drawRect(
@@ -89,6 +89,7 @@ private fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
  * An extension of marque that draw marqueue with faded edge.
  */
 @OptIn(ExperimentalFoundationApi::class)
+@Deprecated("Think more about this")
 fun Modifier.marque(iterations: Int) =
     Modifier
         .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
@@ -102,30 +103,3 @@ fun Modifier.marque(iterations: Int) =
             iterations = iterations,
         )
         .then(this)
-
-private val NoneWindowInsets = WindowInsets(0)
-/**
- * Represents empty window insets with all values set to 0.
- */
-val WindowInsets.Companion.None get() =  NoneWindowInsets
-
-
-
-/**
- * Conditionally applies another [Modifier] if the given [condition] is true.
- *
- * @param condition The condition to evaluate.
- * @param other The [Modifier] to apply if the condition is true.
- * @return This [Modifier] if the condition is false, otherwise this [Modifier] combined with [other].
- */
-fun Modifier.thenIf(condition: Boolean, other: Modifier): Modifier {
-    return if (condition) this then other else this
-}
-
-/**
- * Another version of [thenIf]
- */
-inline fun Modifier.thenIf(condition: Boolean, value: Modifier.() -> Modifier): Modifier {
-    // FixMe - Keep an eye on this; here Modifier is required otherwise value is twice applied.
-    return if (condition) this then value() else this
-}

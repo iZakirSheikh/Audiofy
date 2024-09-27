@@ -455,7 +455,7 @@ fun AppTheme(
     val background by animateColorAsState(
         targetValue = when {
             !isLight -> Color(0xFF0E0E0F)
-            else -> applyTonalElevation(accent, Color.White, 0.6.dp)
+            else -> Color.White
         },
         animationSpec = DefaultColorSpec, label = "background"
     )

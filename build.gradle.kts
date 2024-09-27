@@ -8,4 +8,5 @@ plugins {
     alias(libs.plugins.crashanlytics) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.android.dynamic.feature) apply false
+    alias(libs.plugins.ksp) apply false
 }

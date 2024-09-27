@@ -70,7 +70,7 @@ import com.zs.core_ui.MediumDurationMills
 import com.prime.media.common.Artwork
 import com.prime.media.common.LottieAnimButton
 import com.prime.media.common.LottieAnimation
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
@@ -119,9 +119,7 @@ fun RedVelvetCake(
         modifier = modifier
             .shadow(Glance.ELEVATION, WidgetShape)
             .thenIf(
-                !colors.isLight,
-                Modifier.border(0.5.dp, colors.accent.copy(0.12f), WidgetShape)
-            )
+                !colors.isLight){border(0.5.dp, colors.accent.copy(0.12f), WidgetShape)}
             .background(background, WidgetShape)
             .heightIn(max = 150.dp)
             .fillMaxWidth(),
@@ -132,9 +130,7 @@ fun RedVelvetCake(
                 data = item.artworkUri,
                 modifier = Modifier
                     .thenIf(
-                        item.mediaUri != Uri.EMPTY,
-                        Modifier.sharedElement(Glance.SHARED_ARTWORK_ID)
-                    )
+                        item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID)}
                     .align(Alignment.TopEnd)
                     .aspectRatio(1.0f, matchHeightConstraintsFirst = true)
                     .foreground(colors.veil)
@@ -148,13 +144,12 @@ fun RedVelvetCake(
                 color = Color.Transparent,
                 onColor = AppTheme.colors.onBackground,
                 modifier = Modifier.thenIf(
-                    item.mediaUri != Uri.EMPTY, Modifier.sharedBounds(
-                        Glance.SHARED_BACKGROUND_ID,
-                        exit = fadeOut() + scaleOut(),
-                        enter = fadeIn() + scaleIn(),
-                        zIndexInOverlay = 1f
-                    )
-                ),
+                    item.mediaUri != Uri.EMPTY){sharedBounds(
+                    Glance.SHARED_BACKGROUND_ID,
+                    exit = fadeOut() + scaleOut(),
+                    enter = fadeIn() + scaleIn(),
+                    zIndexInOverlay = 1f
+                )},
                 headline = {
                     Label(
                         item.subtitle.toString(),
@@ -185,9 +180,7 @@ fun RedVelvetCake(
                         ),
                         modifier = Modifier
                             .thenIf(
-                                item.mediaUri != Uri.EMPTY, Modifier
-                                    .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
-                            )
+                                item.mediaUri != Uri.EMPTY){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )

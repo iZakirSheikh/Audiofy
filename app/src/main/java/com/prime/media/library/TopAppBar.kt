@@ -65,7 +65,6 @@ import com.zs.core_ui.LongDurationMills
 import com.prime.media.common.Artwork
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.common.None
 import com.zs.core_ui.shimmer.pulsate
 import com.prime.media.feedback.RouteFeedback
 import com.prime.media.impl.Repository
@@ -82,6 +81,7 @@ import com.primex.material2.appbar.CollapsableTopBarLayout
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.None
 
 /**
  * Defines the typography style for the large top bar title.

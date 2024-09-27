@@ -52,7 +52,7 @@ import com.prime.media.common.Artwork
 import com.prime.media.common.LottieAnimButton
 import com.prime.media.common.LottieAnimation
 import com.prime.media.common.marque
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
@@ -88,13 +88,11 @@ fun Iphone(
         onColor = Color.SignalWhite,
         modifier = modifier
             .thenIf(
-                item.mediaUri != Uri.EMPTY,
-                Modifier.sharedBounds(
-                    Glance.SHARED_BACKGROUND_ID,
-                    exit = fadeOut() + scaleOut(),
-                    enter = fadeIn() + scaleIn()
-                )
-            )
+                item.mediaUri != Uri.EMPTY){sharedBounds(
+                Glance.SHARED_BACKGROUND_ID,
+                exit = fadeOut() + scaleOut(),
+                enter = fadeIn() + scaleIn()
+            )}
             .shadow(Glance.ELEVATION, Shape)
             .border(1.dp, Color.Gray.copy(0.24f), Shape)
             .background(Color.Black)
@@ -113,9 +111,7 @@ fun Iphone(
                 modifier = Modifier
                     .size(DefaultArtworkSize)
                     .thenIf(
-                        item.mediaUri != Uri.EMPTY,
-                        Modifier.sharedElement(Glance.SHARED_ARTWORK_ID)
-                    )
+                        item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID)}
                     .clip(DefaultArtworkShape),
             )
         },
@@ -193,9 +189,7 @@ fun Iphone(
                         ),
                         modifier = Modifier
                             .thenIf(
-                                item.mediaUri != Uri.EMPTY, Modifier
-                                    .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
-                            )
+                                item.mediaUri != Uri.EMPTY){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
                             .requiredSize(24.dp),
                         isPlaying = playing,
                     )

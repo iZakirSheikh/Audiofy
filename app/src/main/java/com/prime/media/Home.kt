@@ -131,6 +131,7 @@ import com.prime.media.library.Library
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Glance
+import com.primex.core.BlueLilac
 import com.primex.core.SepiaBrown
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -246,7 +247,7 @@ private fun Permission() {
 }
 
 private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
-private val LightAccentColor = Color.SepiaBrown
+private val LightAccentColor = Color.BlueLilac
 private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**
@@ -580,7 +581,7 @@ fun Home(channel: ToastHostState) {
                         toastHostState = channel,
                         hideNavigationBar = hideNavigationBar,
                         progress = facade.inAppUpdateProgress,
-                        background = AppTheme.colors.background(1.dp),
+                        background = AppTheme.colors.background(2.dp),
                         // Set up the navigation bar using the NavBar composable
                         pixel = { Glance() },
                         navBar = { NavigationBar(clazz.navTypeRail, navController) },

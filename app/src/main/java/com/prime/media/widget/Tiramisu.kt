@@ -63,11 +63,8 @@ import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
-import com.zs.core_ui.Anim
-import com.zs.core_ui.MediumDurationMills
 import com.prime.media.common.Artwork
 import com.prime.media.common.LottieAnimation
-import com.prime.media.common.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.title
@@ -75,10 +72,13 @@ import com.primex.core.SignalWhite
 import com.primex.core.UmbraGrey
 import com.primex.core.blend
 import com.primex.core.foreground
+import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -115,8 +115,7 @@ fun Tiramisu(
             // The artwork as the background of the widget
             Artwork(
                 data = item.artworkUri,
-                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,
-                    Modifier.sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0f))
+                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0f)}
                     .clip(TiramisuShape)
                     .foreground(colors.ring)
                     .foreground(Color.Black.copy(0.26f))
@@ -126,13 +125,12 @@ fun Tiramisu(
             ListTile(
                 color = Color.Transparent,
                 onColor = onColor,
-                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY,Modifier
-                    .sharedBounds(
-                        Glance.SHARED_BACKGROUND_ID,
-                        exit = fadeOut() + scaleOut(),
-                        enter = fadeIn() + scaleIn(),
-                        zIndexInOverlay = 1f
-                    )),
+                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(
+                    Glance.SHARED_BACKGROUND_ID,
+                    exit = fadeOut() + scaleOut(),
+                    enter = fadeIn() + scaleIn(),
+                    zIndexInOverlay = 1f
+                )},
                 centerAlign = true,
                 // title
                 subtitle = {

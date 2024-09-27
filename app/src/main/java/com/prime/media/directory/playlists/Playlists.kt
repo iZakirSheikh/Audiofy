@@ -39,7 +39,7 @@ import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.ContentPadding
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.preference
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.Action
@@ -217,11 +217,12 @@ fun Playlist(
             .then(modifier)
             .thenIf(
                 checked,
-                Modifier.border(
+            ){
+                border(
                     BorderStroke(2.dp, LocalContentColor.current),
                     AppTheme.shapes.compact
                 ).scale(0.85f)
-            ),
+            },
         verticalArrangement = Arrangement.spacedBy(ContentPadding.medium)
     ) {
         Neumorphic(

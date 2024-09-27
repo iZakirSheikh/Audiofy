@@ -64,6 +64,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 @Composable
+@Deprecated("use painter instead of this.")
 inline fun Artwork(
     data: Any?,
     modifier: Modifier = Modifier,
@@ -126,23 +127,6 @@ inline fun Placeholder(
     )
 }
 
-@ExperimentalAnimationApi
-@Composable
-@Deprecated("Doesn't required.", level = DeprecationLevel.HIDDEN)
-fun AnimatedVisibility(
-    visible: Boolean,
-    modifier: Modifier = Modifier,
-    enter: EnterTransition = fadeIn() + expandIn(),
-    exit: ExitTransition = fadeOut() + shrinkOut(),
-    initiallyVisible: Boolean,
-    content: @Composable () -> Unit
-) = AnimatedVisibility(visibleState = remember { MutableTransitionState(initiallyVisible) }.apply {
-    targetState = visible
-}, modifier = modifier, enter = enter, exit = exit
-) {
-    content()
-}
-
 /**
  * A composable function that delegates to [LottieAnimation] and behaves like [AndroidVectorDrawable].
  *
@@ -162,6 +146,7 @@ fun AnimatedVisibility(
  *                  the duration from the [LottieCompositionSpec] object.
  */
 @Composable
+@Deprecated("Use painter instead of this")
 inline fun LottieAnimation(
     @RawRes id: Int,
     modifier: Modifier = Modifier,
@@ -198,6 +183,7 @@ inline fun LottieAnimation(
  * @see LottieAnimation
  */
 @Composable
+@Deprecated("Use painter instead of this")
 inline fun LottieAnimation(
     @RawRes id: Int,
     modifier: Modifier = Modifier,
@@ -261,6 +247,7 @@ inline fun LottieAnimation(
  * @see IconButton for more details about how to create a button with an icon.
  */
 @Composable
+@Deprecated("construct button using painter instead of this.")
 inline fun LottieAnimButton(
     @RawRes id: Int,
     noinline onClick: () -> Unit,
@@ -311,6 +298,7 @@ inline fun LottieAnimButton(
  */
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
+@Deprecated("construct button using painter instead of this.")
 inline fun AnimatedIconButton(
     @DrawableRes id: Int,
     noinline onClick: () -> Unit,
@@ -332,64 +320,6 @@ inline fun AnimatedIconButton(
 }
 
 
-/**
- * Scales a composable by the specified factor while maintaining its aspect ratio.
- * This is useful for maintaining consistency in UI elements across different screen sizes
- * and resolutions.
- *
- * @param scale The scaling factor (0.0 to 1.0 for shrinking, > 1.0 for enlarging).
- * @param alignment The alignment of the scaled composable within its layout bounds.
- *                 Defaults to `Alignment.Center`.
- *
- * @return A modified composable with the specified scaling behavior.
- *
- * ### Why use this instead of directly creating a new layout?
- *
- * 1. **Consistent scaling:** This modifier ensures that all elements within the
- *    composable, including text, images, and other components, are scaled proportionally.
- *    This avoids issues like distorted text or uneven spacing that can occur when
- *    scaling individual elements manually.
- *
- * 2. **Ease of use:** This modifier provides a single point of control for
- *    scaling, making it easier to manage consistent scaling across your UI.
- *
- * 3. **Figma-like behavior:** This modifier mimics the scaling behavior in design tools
- *    like Figma, where elements maintain their aspect ratio when scaled.
-
- **Limitations:**
-
- * This modifier may not be suitable when you need to apply non-uniform scaling or
- *   specific layout adjustments beyond basic alignment.
- *
- * **Handling overflow:**
-
- * Currently, this modifier does not handle situations where the scaled content exceeds
- *   the available space.
-
- */
-fun Modifier.size(
-    @FloatRange(0.0) scale: Float,
-    alignment: Alignment = Alignment.Center
-) = if (scale == 1.0f) this else
-    this then Modifier
-        .layout { measurable, constraints ->
-            // Measure the composable with the provided constraints.
-            val placeable = measurable.measure(constraints)
-            // Calculate the scaled width and height based on the original size and the scale factor.
-            val sWidth = (placeable.width * scale).roundToInt()
-            val sHeight = (placeable.height * scale).roundToInt()
-            // Layout the composable with the scaled dimensions.
-            layout(sWidth, sHeight) {
-                val offset = alignment.align(
-                    IntSize(placeable.width, placeable.height),
-                    IntSize(sWidth, sHeight),
-                    layoutDirection
-                )
-                // Position the scaled composable.
-                placeable.place(offset)
-            }
-        }
-        .scale(scale)
 
 /**
  * Creates a header with an optional action.
@@ -400,6 +330,7 @@ fun Modifier.size(
  * @param contentPadding The padding to be applied around the header content.
  * @param action An optional composable function to display an action within the header.*/
 @Composable
+@Deprecated("Use Header from core-ui")
 inline fun Header(
     text: CharSequence,
     leading: @Composable (() -> Unit) = {},
@@ -433,6 +364,7 @@ inline fun Header(
 /**
  * @see Header
  */
+@Deprecated("Use Header from core-ui")
 @Composable
 inline fun Header(
     text: CharSequence,

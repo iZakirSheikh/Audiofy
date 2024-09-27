@@ -62,7 +62,7 @@ import com.zs.core_ui.MediumDurationMills
 import com.prime.media.common.Artwork
 import com.prime.media.common.LottieAnimButton
 import com.prime.media.common.marque
-import com.prime.media.common.thenIf
+import com.primex.core.thenIf
 import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.core.playback.subtitle
@@ -95,18 +95,15 @@ fun SnowCone(
     ListTile(
         onColor = colors.onBackground,
         modifier = modifier
-            .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedBounds(
+            .thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(
                 Glance.SHARED_BACKGROUND_ID,
                 exit = fadeOut() + scaleOut(),
                 enter = fadeIn() + scaleIn(),
-                )
-            )
+            )}
             .heightIn(max = 120.dp)
             .shadow(16.dp, SnowConeShape)
             .thenIf(
-                !colors.isLight,
-                Modifier.border(0.5.dp, colors.accent.copy(0.12f), SnowConeShape)
-            )
+                !colors.isLight){border(0.5.dp, colors.accent.copy(0.12f), SnowConeShape)}
             .background(AppTheme.colors.background(1.dp))
         ,
         // subtitle
@@ -132,8 +129,8 @@ fun SnowCone(
                 data = item.artworkUri,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                        .thenIf(item.mediaUri != Uri.EMPTY, Modifier.sharedElement(Glance.SHARED_ARTWORK_ID))
-                    .clip(DefaultArtworkShape),
+                        .thenIf(item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID)
+                            .clip(DefaultArtworkShape)}
             )
         },
         // control centre

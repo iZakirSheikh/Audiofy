@@ -50,7 +50,6 @@ fun WallpaperAccentColor(
     if (bitmap == null || bitmap.isRecycled || bitmap.width == 0 || bitmap.height == 0) {
         return default.toArgb()
     }
-
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
         WallpaperColors.fromBitmap(bitmap).primaryColor.toArgb()
     } else {

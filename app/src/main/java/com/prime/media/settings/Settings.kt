@@ -55,7 +55,6 @@ import com.zs.core_ui.NightMode
 import com.prime.media.common.Banner
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.common.None
 import com.primex.core.plus
 import com.primex.core.stringResource
 import com.primex.core.textResource
@@ -71,6 +70,7 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.None
 import com.zs.core_ui.adaptive.contentInsets
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
