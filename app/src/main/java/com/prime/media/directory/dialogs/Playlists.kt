@@ -22,7 +22,7 @@ import com.prime.media.R
 import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.ContentPadding
 import com.prime.media.common.util.DateUtils
-import com.prime.media.core.db.Playlist
+import com.zs.core.db.Playlist
 import com.primex.material2.*
 import com.primex.material2.dialog.PrimeDialog
 import com.primex.material2.neumorphic.Neumorphic

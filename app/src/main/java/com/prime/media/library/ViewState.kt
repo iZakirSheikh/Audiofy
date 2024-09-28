@@ -6,8 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prime.media.core.db.Audio
-import com.prime.media.core.db.Playlist
 import com.primex.core.Text
+import com.zs.core.db.Playlist
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -21,7 +21,7 @@ interface Library {
     /**
      * The recently played tracks.
      */
-    val recent: StateFlow<List<Playlist.Member>?>
+    val recent: StateFlow<List<Playlist.Track>?>
     val carousel: StateFlow<Long?>
     val newlyAdded: StateFlow<List<Audio>?>
 

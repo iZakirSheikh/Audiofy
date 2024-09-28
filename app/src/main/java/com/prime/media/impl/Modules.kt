@@ -2,7 +2,7 @@ package com.prime.media.impl
 
 import android.content.ContentResolver
 import android.content.Context
-import com.prime.media.core.db.Playlists
+import com.zs.core.db.Playlists2
 import com.primex.preferences.Preferences
 import com.zs.core_ui.toast.ToastHostState
 import dagger.Module
@@ -28,7 +28,7 @@ object SingletonModules {
     @Singleton
     @Provides
     fun playlists(@ApplicationContext context: Context) =
-        Playlists(context)
+        Playlists2(context)
 
     @Singleton
     @Provides

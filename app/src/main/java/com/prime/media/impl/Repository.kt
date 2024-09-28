@@ -11,12 +11,14 @@ import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import com.prime.media.core.db.*
-import com.prime.media.core.db.Playlist.Member
+import com.zs.core.db.Playlist.Track
 import com.prime.media.core.playback.Playback
 import com.prime.media.common.util.toMember
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
+import com.zs.core.db.Playlist
+import com.zs.core.db.Playlists2
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -54,7 +56,7 @@ private fun toAudioTrackUri(id: Long) =
  */
 @ActivityRetainedScoped
 class Repository @Inject constructor(
-    private val playlistz: Playlists,
+    private val playlistz: Playlists2,
     private val resolver: ContentResolver,
     private val preferences: Preferences
 ) {
@@ -154,7 +156,7 @@ class Repository @Inject constructor(
      */
     val favourite: Flow<List<String>>
         get() = playlistz
-            .observe2(Playback.PLAYLIST_FAVOURITE)
+            .observe2(name = Playback.PLAYLIST_FAVOURITE)
             .map { it.map { it.uri } }
 
     /**
@@ -175,7 +177,7 @@ class Repository @Inject constructor(
         playlistz.observe().map { playlists ->
             // drop private playlists.
             //playlists.dropWhile { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) == 0 }
-            playlists.filter { it.name.indexOf(Playlists.PRIVATE_PLAYLIST_PREFIX) != 0 }
+            playlists.filter { it.name.indexOf(Playlists2.PRIVATE_PLAYLIST_PREFIX) != 0 }
         }
 
     /**
@@ -508,7 +510,7 @@ class Repository @Inject constructor(
      *
      * @return A [Flow] of [Playlist.Member]s that belong to the playlist with the specified [id].
      */
-    fun playlist(id: Long): Flow<List<Member>> =
+    fun playlist(id: Long): Flow<List<Track>> =
         playlistz.observe2(id)
 
     /**
@@ -525,7 +527,7 @@ class Repository @Inject constructor(
      *
      * @return A [Flow] of [Playlist.Member]s that belong to the playlist with the specified [name].
      */
-    fun playlist(name: String): Flow<List<Member>> =
+    fun playlist(name: String): Flow<List<Track>> =
         playlistz.observe2(name)
 
     /**
@@ -693,7 +695,7 @@ class Repository @Inject constructor(
      * @since 1.0.0
      * @author Zakir Sheikh
      */
-    suspend fun delete(value: Member) = playlistz.delete(value) == 1
+    suspend fun delete(value: Track) = playlistz.delete(value) == 1
 
     /**
      * Utility function that checks if a song identified by [uri] is a favourite.
@@ -715,7 +717,7 @@ class Repository @Inject constructor(
      * @since 1.0.0
      * @Author [Author name]
      */
-    suspend fun isFavourite(uri: String) = exists(Playback.PLAYLIST_FAVOURITE, uri)
+    suspend fun isFavourite(uri: String) = exists(name = Playback.PLAYLIST_FAVOURITE, uri)
 
     @Deprecated("use method with uri.")
     suspend fun isFavourite(id: Long) = isFavourite(toAudioTrackUri(id).toString())
@@ -806,14 +808,14 @@ class Repository @Inject constructor(
      * @param uri the URI of the member to retrieve
      * @return the [Member] object if it exists in the playlist, null otherwise
      */
-    suspend fun getPlaylistMember(id: Long, uri: String): Member? {
+    suspend fun getPlaylistMember(id: Long, uri: String): Track? {
         return playlistz.get(id, uri)
     }
 
     /**
      * @see getPlaylistMember
      */
-    suspend fun getPlaylistMember(name: String, uri: String): Member? {
+    suspend fun getPlaylistMember(name: String, uri: String): Track? {
         val playlist = playlistz.get(name) ?: return null
         return playlistz.get(playlist.id, uri)
     }
@@ -857,7 +859,7 @@ class Repository @Inject constructor(
      * @author Zakir Sheikh
      */
     @Deprecated("Use simple insert")
-    suspend fun upsert(value: Member): Boolean {
+    suspend fun upsert(value: Track): Boolean {
         // if the item is already in playlist return false;
         // because we don't support same uri's in single playlist
         if (exists(value.playlistID, value.uri))
@@ -875,7 +877,7 @@ class Repository @Inject constructor(
      *
      * @see exists
      */
-    suspend fun insert(value: Member): Boolean {
+    suspend fun insert(value: Track): Boolean {
         val playlistsDb = playlistz
         // if the item is already in playlist return false;
         // because we don't support same uri's in single playlist
@@ -909,7 +911,7 @@ class Repository @Inject constructor(
      * @fixme What happens if the user has changed/updated the URI of the item?
      * @see exists
      */
-    suspend fun update(value: Member): Boolean {
+    suspend fun update(value: Track): Boolean {
         val playlistsDb = playlistz
         // if the item is not in playlist return false
         // FixMe: what happens if the user have changed/updated the uri of the item.

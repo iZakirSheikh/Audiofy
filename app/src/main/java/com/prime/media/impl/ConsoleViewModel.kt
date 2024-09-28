@@ -35,7 +35,7 @@ import com.prime.media.R
 import com.prime.media.console.Console
 import com.prime.media.console.TrackInfo
 import com.prime.media.console.Visibility
-import com.prime.media.core.db.Playlist
+import com.zs.core.db.Playlists2
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Playback.Companion.UNINITIALIZED_SLEEP_TIME_MILLIS
 import com.prime.media.core.playback.Remote
@@ -43,6 +43,7 @@ import com.prime.media.core.playback.artworkUri
 import com.prime.media.core.playback.mediaUri
 import com.primex.core.OrientRed
 import com.primex.core.withSpanStyle
+import com.zs.core.db.Playlist
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -66,14 +67,13 @@ private const val TAG = "ConsoleViewModel"
  * @return A new `Member` object with the given parameters.
  */
 private fun Member(from: MediaItem, playlistId: Long, order: Int) =
-    Playlist.Member(
-        playlistId,
-        from.mediaId,
-        order,
-        from.requestMetadata.mediaUri!!.toString(),
-        from.mediaMetadata.title.toString(),
-        from.mediaMetadata.subtitle.toString(),
-        from.mediaMetadata.artworkUri?.toString()
+    Playlist.Track(
+        playlistID = playlistId,
+        order = order,
+        uri = from.requestMetadata.mediaUri!!.toString(),
+        title = from.mediaMetadata.title.toString(),
+        subtitle = from.mediaMetadata.subtitle.toString(),
+        artwork = from.mediaMetadata.artworkUri?.toString()
     )
 
 /**

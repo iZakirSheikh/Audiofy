@@ -11,6 +11,7 @@ import android.content.Intent
 import android.media.audiofx.Equalizer
 import android.media.audiofx.Equalizer.Settings
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -30,8 +31,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.console.Widget
-import com.prime.media.core.db.Playlist
-import com.prime.media.core.db.Playlists
+import com.zs.core.db.Playlist
+import com.zs.core.db.Playlists2
 import com.prime.media.core.playback.Playback.Companion.UNINITIALIZED_SLEEP_TIME_MILLIS
 import com.primex.preferences.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +53,7 @@ import kotlin.toString
 import kotlin.with
 import androidx.media3.session.SessionCommand as Command
 import androidx.media3.session.SessionResult as Result
+import com.zs.core.db.Playlists2 as Playlists
 
 /**
  * @see [Result]
@@ -239,7 +241,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     lateinit var preferences: Preferences
 
     @Inject
-    lateinit var playlists: Playlists
+    lateinit var playlists: Playlists2
 
     // Create a coroutine scope tied to the service's lifecycle
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -333,7 +335,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
             // Set media items from the QUEUE playlist
             val items = withContext(Dispatchers.IO) {
-                playlists.getMembers(PLAYLIST_QUEUE).map(Playlist.Member::toMediaSource)
+                playlists.getMembers(PLAYLIST_QUEUE).map(Playlist.Track::toMediaSource)
             }
             setMediaItems(items)
 
@@ -397,7 +399,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         session: MediaLibrarySession, browser: ControllerInfo, mediaId: String
     ): ListenableFuture<LibraryResult<MediaItem>> {
         val item = player.mediaItems.find { it.mediaId == mediaId }
-        val result = if (item == null) LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+        val result = if (item == null) LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         else LibraryResult.ofItem(item, /* params = */ null)
         return Futures.immediateFuture(result)
     }
@@ -421,7 +423,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         val children = when (parentId) {
             ROOT_QUEUE -> player.queue
             else -> return Futures.immediateFuture(
-                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+                LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             )
         }
         session.notifyChildrenChanged(browser, parentId, children.size, params)
@@ -446,7 +448,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         val children = when (parentId) {
             ROOT_QUEUE -> player.queue
             else -> return Futures.immediateFuture(
-                LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+                LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             )
         }
         return Futures.immediateFuture(LibraryResult.ofItemList(children, params))
@@ -739,7 +741,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             }
 
                 // Handle unrecognized or unsupported commands.
-            else -> Futures.immediateFuture(Result(Result.RESULT_ERROR_UNKNOWN))
+            else -> Futures.immediateFuture(Result(SessionError.ERROR_UNKNOWN))
         }
     }
 
@@ -768,7 +770,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         super.onTaskRemoved(rootIntent)
         if (preferences.value(PREF_KEY_CLOSE_WHEN_REMOVED)){
             player.playWhenReady = false
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }

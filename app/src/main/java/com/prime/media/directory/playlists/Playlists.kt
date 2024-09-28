@@ -40,7 +40,7 @@ import com.zs.core_ui.ContentPadding
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.preference
 import com.primex.core.thenIf
-import com.prime.media.core.db.Playlist
+import com.zs.core.db.Playlist
 import com.prime.media.core.playback.Remote
 import com.prime.media.directory.Action
 import com.prime.media.directory.Directory

@@ -26,7 +26,7 @@ import com.prime.media.R
 import com.prime.media.common.Artwork
 import com.prime.media.common.composable
 import com.prime.media.core.*
-import com.prime.media.core.db.Playlist.Member
+import com.zs.core.db.Playlist.Track as Member
 import com.prime.media.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.common.util.addDistinct

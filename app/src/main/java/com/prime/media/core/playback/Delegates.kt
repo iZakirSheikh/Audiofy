@@ -20,8 +20,8 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.prime.media.R
-import com.prime.media.core.db.Playlist
-import com.prime.media.core.db.Playlists
+import com.zs.core.db.Playlist
+import com.zs.core.db.Playlists2
 import com.prime.media.common.util.Member
 import java.io.File
 import java.io.FileOutputStream
@@ -69,7 +69,7 @@ private fun Bold(value: CharSequence): CharSequence =
 /**
  * @see MediaSource
  */
-val Playlist.Member.toMediaSource
+val Playlist.Track.toMediaSource
     get() = MediaSource(Uri.parse(uri), Bold(title), subtitle, artwork?.let { Uri.parse(it) })
 
 /**
@@ -178,10 +178,10 @@ val MediaItem.mediaUri get() = requestMetadata.mediaUri
  * @see Playback
  */
 context(Playback)
-suspend fun Playlists.addToRecent(item: MediaItem, limit: Long) {
+suspend fun Playlists2.addToRecent(item: MediaItem, limit: Long) {
 
     val playlistId =
-        get(Playback.PLAYLIST_RECENT)?.id ?: insert(Playlist(name = Playback.PLAYLIST_RECENT))
+        get(name = Playback.PLAYLIST_RECENT)?.id ?: insert(Playlist(name = Playback.PLAYLIST_RECENT))
     // here two cases arise
     // case 1 the member already exists:
     // in this case we just have to update the order and nothing else
@@ -222,8 +222,8 @@ suspend fun Playlists.addToRecent(item: MediaItem, limit: Long) {
  * @see Playback
  */
 context(Playback)
-suspend fun Playlists.save(items: List<MediaItem>) {
-    val id = get(Playback.PLAYLIST_QUEUE)?.id ?: insert(
+suspend fun Playlists2.save(items: List<MediaItem>) {
+    val id = get(name = Playback.PLAYLIST_QUEUE)?.id ?: insert(
         Playlist(name = Playback.PLAYLIST_QUEUE)
     )
 

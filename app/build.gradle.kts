@@ -71,8 +71,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 139
-        versionName = "3.0.0-alpha04"
+        versionCode = 140
+        versionName = "3.0.0-alpha05"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -124,7 +124,6 @@ dependencies {
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.analytics)
     implementation(libs.bundles.hilt)
-    implementation(libs.bundles.room)
 
     implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
@@ -141,7 +140,6 @@ dependencies {
 
     // TODO - Replace these with ksp.
     kapt(libs.hilt.android.compiler)
-    kapt(libs.room.compiler)
     //
     implementation(project(":ads"))
     implementation(project(":core-ui"))
