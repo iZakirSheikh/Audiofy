@@ -1,7 +1,5 @@
 package com.prime.media.core.playback
 
-import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
@@ -16,13 +14,9 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.*
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import com.prime.media.R
-import com.zs.core.db.Playlist
-import com.zs.core.db.Playlists2
-import com.prime.media.common.util.Member
 import java.io.File
 import java.io.FileOutputStream
 
@@ -66,27 +60,6 @@ private fun Bold(value: CharSequence): CharSequence =
         setSpan(StyleSpan(Typeface.BOLD), 0, value.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
 
-/**
- * @see MediaSource
- */
-val Playlist.Track.toMediaSource
-    get() = MediaSource(Uri.parse(uri), Bold(title), subtitle, artwork?.let { Uri.parse(it) })
-
-/**
- * Composes and returns a [MediaSource] from this [MediaItem].
- *
- * Note: This [MediaItem] might be or might not be the actual [MediaSource].
- *
- * @return The [MediaSource] extracted from this [MediaItem].
- * @see MediaSource
- */
-val MediaItem.toMediaSource
-    get() = MediaSource(
-        requestMetadata.mediaUri!!,
-        Bold(mediaMetadata.title ?: ""),
-        mediaMetadata.subtitle ?: "",
-        mediaMetadata.artworkUri
-    )
 
 /**
  * returns the positions array from the [DefaultShuffleOrder]
@@ -162,77 +135,6 @@ val MediaItem.artworkUri get() = mediaMetadata.artworkUri
 val MediaItem.title get() = mediaMetadata.title
 val MediaItem.subtitle get() = mediaMetadata.subtitle
 val MediaItem.mediaUri get() = requestMetadata.mediaUri
-
-/**
- * Adds a [MediaItem] to the list of recent items.
- *
- * This extension function is designed to be used within the context of the [Playback] service
- * and should not be accessed externally.
- *
- * @receiver Playback: The playback service to which this function is scoped.
- * @param item The [MediaItem] to be added to the list of recent items.
- * @param limit The maximum number of recent items to retain.
- *
- * @throws IllegalArgumentException if [limit] is less than or equal to zero.
- *
- * @see Playback
- */
-context(Playback)
-suspend fun Playlists2.addToRecent(item: MediaItem, limit: Long) {
-
-    val playlistId =
-        get(name = Playback.PLAYLIST_RECENT)?.id ?: insert(Playlist(name = Playback.PLAYLIST_RECENT))
-    // here two cases arise
-    // case 1 the member already exists:
-    // in this case we just have to update the order and nothing else
-    // case 2 the member needs to be inserted.
-    // In both cases the playlist's dateModified needs to be updated.
-    val playlist = get(playlistId)!!
-    update(playlist = playlist.copy(dateModified = System.currentTimeMillis()))
-
-    val member = get(playlistId, item.requestMetadata.mediaUri.toString())
-
-    when (member != null) {
-        // exists
-        true -> {
-            //localDb.members.update(member.copy(order = 0))
-            // updating the member doesn't work as expected.
-            // localDb.members.delete(member)
-            update(member = member.copy(order = 0))
-        }
-
-        else -> {
-            // delete above member
-            delete(playlistId, limit)
-            insert(Member(item, playlistId, 0))
-        }
-    }
-}
-
-
-/**
- * Replaces the current queue with the provided list of [items].
- *
- * This extension function is designed to be used within the context of the [Playback] service
- * and should not be accessed externally.
- *
- * @receiver Playback: The playback service to which this function is scoped.
- * @param items The list of [MediaItem] to replace the current queue with.
- *
- * @see Playback
- */
-context(Playback)
-suspend fun Playlists2.save(items: List<MediaItem>) {
-    val id = get(name = Playback.PLAYLIST_QUEUE)?.id ?: insert(
-        Playlist(name = Playback.PLAYLIST_QUEUE)
-    )
-
-    // delete all old
-    delete(id, 0)
-    var order = 0
-    val members = items.map { Member(it, id, order++) }
-    insert(members)
-}
 
 /**
  * A function that returns the file name from a given URI
@@ -316,17 +218,3 @@ fun MediaItem(context: Context, uri: Uri): MediaItem {
     return MediaItem(uri, title, subtitle, artwork = imageUri)
 }
 
-/**
- * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
- *
- * @param context The application context.
- * @return A new instance of [DefaultRenderersFactory], or `null` if an error occurs.
- */
-@SuppressLint("UnsafeOptInUsageError")
-fun DynamicRendererFactory(context: Context): DefaultRenderersFactory? {
-    return com.primex.core.runCatching(TAG) {
-        val codexClass = Class.forName("com.prime.codex.CodexKt") // Assuming the functionis in a Kotlin file named Codex.kt
-        val codexMethod = codexClass.getDeclaredMethod("Codex", Context::class.java)
-        codexMethod.invoke(null, context) as? DefaultRenderersFactory // Static method, so first argument is null
-    }
-}

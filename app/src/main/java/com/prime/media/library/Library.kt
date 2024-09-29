@@ -51,7 +51,7 @@ import com.prime.media.common.Banner
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.LocalSystemFacade
 import com.zs.core_ui.LocalWindowSize
-import com.prime.media.core.playback.Playback
+import com.zs.core.playback.Playback
 import com.prime.media.directory.GroupBy
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.store.Audios

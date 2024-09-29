@@ -32,5 +32,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
-    implementation(libs.bundles.media3)
+    api(libs.bundles.media3)
+    api(libs.mp3agic)
 }

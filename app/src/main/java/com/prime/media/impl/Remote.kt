@@ -15,7 +15,7 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
-import com.prime.media.core.playback.Playback
+import com.zs.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.mediaUri
 import com.prime.media.common.util.await
@@ -90,7 +90,7 @@ private class RemoteImpl(val context: Context) : Remote, MediaBrowser.Listener {
         get() {
             val value =
                 if (field.isCancelled) context.browser(this)
-            else field
+                else field
             field = value
             return value
         }
@@ -480,7 +480,7 @@ private class RemoteImpl(val context: Context) : Remote, MediaBrowser.Listener {
         ).apply {
             enabled = args.extras.getBoolean(Playback.EXTRA_EQUALIZER_ENABLED)
             val properties = args.extras.getString(Playback.EXTRA_EQUALIZER_PROPERTIES)
-            if (properties != null)
+            if (!properties.isNullOrBlank())
                 setProperties(Equalizer.Settings(properties))
         }
     }

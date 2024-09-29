@@ -71,8 +71,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 140
-        versionName = "3.0.0-alpha05"
+        versionCode = 141
+        versionName = "3.0.0-alpha06"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -119,8 +119,6 @@ android {
 // Not moving these to libs.version.toml because i think this is redundant.
 dependencies {
     implementation(libs.androidx.activity.compose)
-
-    implementation(libs.bundles.media3)
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.analytics)
     implementation(libs.bundles.hilt)
@@ -128,14 +126,11 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.adaptive) // TODO - Replace this with custom impl.
-    implementation(libs.lottie.compose)
     implementation(libs.toolkit.preferences)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.navigation.compose)
-    implementation(libs.wavy.slider)
     implementation(libs.androidx.constraint.layout.compose)
     implementation (libs.material.view)
-    implementation(libs.mp3agic)
     implementation(libs.androidx.ui.text.google.fonts)
 
     // TODO - Replace these with ksp.

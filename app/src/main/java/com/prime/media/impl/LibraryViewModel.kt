@@ -15,7 +15,7 @@ import com.prime.media.R
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.db.uri
 import com.prime.media.core.playback.MediaItem
-import com.prime.media.core.playback.Playback
+import com.zs.core.playback.Playback
 import com.prime.media.core.playback.Remote
 import com.prime.media.common.util.toMediaItem
 import com.prime.media.library.Library

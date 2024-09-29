@@ -51,7 +51,7 @@ import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalNavController
 import com.zs.core_ui.shape.FolderShape
-import com.prime.media.core.playback.Playback
+import com.zs.core.playback.Playback
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.store.Artists
 import com.prime.media.directory.store.Audios

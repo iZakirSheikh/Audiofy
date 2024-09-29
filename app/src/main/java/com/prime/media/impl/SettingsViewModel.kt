@@ -87,7 +87,7 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
-    override val recentPlaylistLimit: Preference<Int> by with(preferences) {
+ /*   override val recentPlaylistLimit: Preference<Int> by with(preferences) {
         preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
             Preference(
                 title = Text(R.string.pref_recent_playlist_size),
@@ -96,7 +96,7 @@ class SettingsViewModel @Inject constructor(
             )
         }.asComposeState()
     }
-
+*/
     override val fetchArtworkFromMS: Preference<Boolean> by with(preferences) {
         preferences[Settings.USE_LEGACY_ARTWORK_METHOD].map {
             Preference(
@@ -154,7 +154,7 @@ class SettingsViewModel @Inject constructor(
             )
         }.asComposeState()
     }
-    override val crossfadeTime: Preference<Int> by with(preferences) {
+ /*   override val crossfadeTime: Preference<Int> by with(preferences) {
         preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
             Preference(
                 title = Text(R.string.pref_crossfade_time),
@@ -171,7 +171,7 @@ class SettingsViewModel @Inject constructor(
                 value = it
             )
         }.asComposeState()
-    }
+    }*/
     override val useInbuiltAudioFx by with(preferences) {
         preferences[Settings.USE_IN_BUILT_AUDIO_FX].map {
             Preference(

@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.zs.core_ui.NightMode
-import com.prime.media.core.playback.Playback
 import com.primex.core.Text
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
@@ -134,7 +133,7 @@ interface Settings : Blacklist {
          */
         val MIN_TRACK_LENGTH_SECS =
             intPreferenceKey(PREFIX + "_track_duration_", 30)
-        val RECENT_PLAYLIST_LIMIT = Playback.PREF_KEY_RECENT_PLAYLIST_LIMIT
+       // val RECENT_PLAYLIST_LIMIT = Playback.PREF_KEY_RECENT_PLAYLIST_LIMIT
 
         /**
          * The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
@@ -155,7 +154,7 @@ interface Settings : Blacklist {
          * If set to true, the playback will be closed when the task is removed.
          * If set to false, the playback will continue even if the task is removed.
          */
-        val CLOSE_WHEN_TASK_REMOVED = Playback.PREF_KEY_CLOSE_WHEN_REMOVED
+        //val CLOSE_WHEN_TASK_REMOVED = Playback.PREF_KEY_CLOSE_WHEN_REMOVED
 
         /**
          * Indicates whether to use the built-in audio effects or third-party audio effects.
@@ -247,13 +246,13 @@ interface Settings : Blacklist {
     val translucentSystemBars: Preference<Boolean>
     val immersiveView: Preference<Boolean>
     val minTrackLength: Preference<Int>
-    val recentPlaylistLimit: Preference<Int>
+    //val recentPlaylistLimit: Preference<Int>
     val fetchArtworkFromMS: Preference<Boolean>
     val enableTrashCan: Preference<Boolean>
     val excludedFiles: Preference<Set<String>?>
     val gaplessPlayback: Preference<Boolean>
-    val crossfadeTime: Preference<Int>
-    val closePlaybackWhenTaskRemoved: Preference<Boolean>
+   // val crossfadeTime: Preference<Int>
+    //val closePlaybackWhenTaskRemoved: Preference<Boolean>
     val useInbuiltAudioFx: Preference<Boolean>
     val fontScale: Preference<Float>
     val gridItemSizeMultiplier: Preference<Float>

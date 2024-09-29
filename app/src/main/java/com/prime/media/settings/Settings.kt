@@ -217,7 +217,7 @@ private inline fun General(
 
     // Recent Playlist Limit
     // The maximum number of recent files in the recent playlist.
-    val maxRecentSize = viewState.recentPlaylistLimit
+   /* val maxRecentSize = viewState.recentPlaylistLimit
     SliderPreference(
         title = stringResource(value = maxRecentSize.title),
         defaultValue = maxRecentSize.value.toFloat(),
@@ -242,7 +242,7 @@ private inline fun General(
         },
         modifier = Modifier
             .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
-    )
+    )*/
 
     // Use Inbuilt Audio FX
     // Whether to use inbuilt audio effects or inApp.
@@ -262,7 +262,7 @@ private inline fun General(
 
     // Close Playback When Task Removed
     // Whether to close the playback when the app is removed from recent tasks.
-    val closePlaybackWhenTaskRemoved = viewState.closePlaybackWhenTaskRemoved
+    /*val closePlaybackWhenTaskRemoved = viewState.closePlaybackWhenTaskRemoved
     SwitchPreference(
         title = stringResource(value = closePlaybackWhenTaskRemoved.title),
         checked = closePlaybackWhenTaskRemoved.value,
@@ -274,7 +274,7 @@ private inline fun General(
         icon = Icons.Outlined.HideSource,
         modifier = Modifier
             .background(AppTheme.colors.tileBackgroundColor, BottomTileShape)
-    )
+    )*/
 }
 
 context(ColumnScope)
