@@ -5,7 +5,6 @@ compose = "1.8.0-alpha02"
 media3 = "1.4.1"
 toolkit = "2.0.2-rc04"
 material_icons = "1.7.2"
-hilt-android = "2.52"
 room = "2.6.1"
 
 [plugins]
@@ -15,7 +14,6 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 android-library = { id = "com.android.library", version.ref = "agp" }
 google-service = { id = "com.google.gms.google-services", version = "4.4.2" }
 crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 ksp = {id = "com.google.devtools.ksp", version = "2.0.20-1.0.25" }
 
@@ -72,12 +70,6 @@ toolkit-core-ktx = { module = "com.github.prime-zs.toolkit:core-ktx", version.re
 toolkit-material2 = { module = "com.github.prime-zs.toolkit:material2", version.ref = "toolkit" }
 toolkit-preferences = { module = "com.github.prime-zs.toolkit:preferences", version.ref = "toolkit" }
 
-
-# Dependency Injection
-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
-
 # Room Runtime
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
@@ -109,5 +101,4 @@ media3 = ["androidx-media3-exoplayer", "androidx-media3-session", "androidx-medi
 play_services = ["play-app-review-ktx", "play-app-update-ktx", "play_feature_delivery"]
 analytics = ["firebase-analytics-ktx", "firebase-crashlytics-ktx"]
 room = ["room-runtime", "room-ktx"]
-hilt = ["hilt-navigation-compose", "hilt-android"]
 ad_network = ["iron_source", "iron_source_ad_qaulity", "unity-ads", "unity_adapter"]

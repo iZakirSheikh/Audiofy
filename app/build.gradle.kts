@@ -6,8 +6,6 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.service)
     alias(libs.plugins.crashanlytics)
-    alias(libs.plugins.hilt)
-    kotlin("kapt")
 }
 
 /**
@@ -71,8 +69,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 142
-        versionName = "3.0.0-alpha07"
+        versionCode = 143
+        versionName = "3.0.0-alpha08"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -93,7 +91,7 @@ android {
         // Add necessary changes to debug apk.
         debug {
             // makes it possible to install both release and debug versions in same device.
-            // applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug"
             resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }
@@ -121,7 +119,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.analytics)
-    implementation(libs.bundles.hilt)
 
     implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
@@ -133,8 +130,8 @@ dependencies {
     implementation (libs.material.view)
     implementation(libs.androidx.ui.text.google.fonts)
 
-    // TODO - Replace these with ksp.
-    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.startup.runtime)
+    implementation(libs.androidx.koin)
     //
     implementation(project(":ads"))
     implementation(project(":core-ui"))

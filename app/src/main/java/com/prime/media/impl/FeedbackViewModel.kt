@@ -36,10 +36,8 @@ import com.prime.media.R
 import com.prime.media.feedback.Feedback
 import com.prime.media.feedback.FeedbackViewState
 import com.primex.core.MetroGreen2
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 private const val TAG = "FeedbackViewModel"
 
@@ -75,8 +73,7 @@ private const val PARAM_TAG = "tag"
 private const val MAX_LINE_CHAR_SIZE = 100
 
 
-@HiltViewModel
-class FeedbackViewModel @Inject constructor(
+class FeedbackViewModel (
     delegate: SystemDelegate
 ) : ViewModel(), FeedbackViewState, SystemDelegate by delegate {
 

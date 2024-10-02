@@ -18,15 +18,15 @@ import coil.request.ImageRequest
 import com.prime.media.R
 import com.prime.media.core.playback.Remote
 import com.prime.media.core.playback.mediaUri
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 private const val TAG = "Widget"
 
@@ -50,10 +50,9 @@ private const val ACTION_SEEK_BACK_MILLS = "action_seek_back_mills"
 private const val ACTION_SEEK_NEXT = "action_seek_next"
 private const val ACTION_TOGGLE = "action_toggle"
 
-@AndroidEntryPoint
-class Widget : AppWidgetProvider() {
-    @Inject
-    lateinit var remote: Remote
+
+class Widget : AppWidgetProvider(), KoinComponent {
+    val remote: Remote by inject()
     // The current media item.
     private var current: MediaItem? = null
     // The artwork associated with current mediaItem.

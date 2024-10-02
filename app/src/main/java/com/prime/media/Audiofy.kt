@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -15,19 +14,17 @@ import coil.fetch.Fetcher.Factory
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.Options
-import coil.util.DebugLogger
 import com.prime.media.common.coil.MediaMetaDataArtFetcher
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.intPreferenceKey
 import com.primex.preferences.value
 import com.zs.ads.AdManager
-import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
 private const val TAG = "Audiofy"
 
-@HiltAndroidApp
+
 class Audiofy : Application(), ImageLoaderFactory {
 
     companion object {
@@ -78,8 +75,8 @@ class Audiofy : Application(), ImageLoaderFactory {
                 packageManager.getPackageInfo(packageName, 0)
         }
 
-    @Inject
-    lateinit var preferences: Preferences
+
+    private val preferences: Preferences by inject()
     private fun MediaMetaDataArtFactory() = object : Factory<Uri> {
         override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
             // Check if the provided Uri corresponds to an album art Uri within the MediaStore.

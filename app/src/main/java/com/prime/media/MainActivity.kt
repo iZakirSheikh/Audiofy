@@ -32,8 +32,6 @@ import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.zs.core.paymaster.ProductInfo as ProductDetails
-import com.zs.core.paymaster.Purchase
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
@@ -47,12 +45,8 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
-import com.zs.core.paymaster.Paymaster as BillingManager
-import com.zs.core.paymaster.purchased
 import com.prime.media.common.LocalSystemFacade
-import com.zs.core_ui.LocalWindowSize
 import com.prime.media.common.SystemFacade
-import com.zs.core_ui.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
@@ -71,22 +65,26 @@ import com.zs.ads.AdEventListener
 import com.zs.ads.AdManager
 import com.zs.ads.AdSize
 import com.zs.ads.Reward
+import com.zs.core.paymaster.Purchase
+import com.zs.core.paymaster.purchased
+import com.zs.core_ui.LocalWindowSize
+import com.zs.core_ui.calculateWindowSizeClass
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import com.zs.core.paymaster.Paymaster as BillingManager
+import com.zs.core.paymaster.ProductInfo as ProductDetails
 
 private const val TAG = "MainActivity"
 
@@ -190,7 +188,7 @@ private val KEY_AD_FREE_REWARD_MILLS =
     longPreferenceKey("ad_free_reward_millis", 0L)
 private val AD_FREE_TIME_REWARD = 1.days
 
-@AndroidEntryPoint
+
 class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
 
     private val advertiser by lazy {
@@ -286,14 +284,10 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     }
 
     // injectable code.
-    @Inject
-    lateinit var preferences: Preferences
+    val preferences: Preferences by inject()
+    val channel: ToastHostState by inject()
 
-    @Inject
-    lateinit var channel: ToastHostState
-
-    @Inject
-    lateinit var remote: Remote
+    val remote: Remote by inject()
 
     override fun loadBannerAd(size: AdSize) =
         advertiser.load(size)

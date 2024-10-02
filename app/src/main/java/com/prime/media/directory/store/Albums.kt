@@ -23,8 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
-import com.zs.core_ui.ContentElevation
-import com.zs.core_ui.ContentPadding
 import com.prime.media.common.Artwork
 import com.prime.media.common.LocalNavController
 import com.prime.media.core.db.Album
@@ -42,9 +40,10 @@ import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.textResource
 import com.primex.material2.Label
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -53,7 +52,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Locale
-import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
 
@@ -62,8 +60,8 @@ private val Album.firstTitleChar
 
 typealias Albums = AlbumsViewModel.Companion
 
-@HiltViewModel
-class AlbumsViewModel @Inject constructor(
+
+class AlbumsViewModel  (
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,

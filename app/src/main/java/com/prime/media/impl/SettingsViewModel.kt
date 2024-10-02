@@ -5,11 +5,9 @@ import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,19 +23,17 @@ import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import javax.inject.Inject
 
 context (Preferences, ViewModel)
 private fun <T> Flow<T>.asComposeState(): State<T> = asComposeState(runBlocking { first() })
 
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
+
+class SettingsViewModel(
     private val preferences: Preferences
 ) : ViewModel(), Settings {
 
@@ -76,7 +72,6 @@ class SettingsViewModel @Inject constructor(
     }
 
 
-
     override val minTrackLength: Preference<Int> by with(preferences) {
         preferences[Settings.MIN_TRACK_LENGTH_SECS].map {
             Preference(
@@ -87,16 +82,16 @@ class SettingsViewModel @Inject constructor(
         }.asComposeState()
     }
 
- /*   override val recentPlaylistLimit: Preference<Int> by with(preferences) {
-        preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
-            Preference(
-                title = Text(R.string.pref_recent_playlist_size),
-                summery = Text(R.string.pref_recent_playlist_size_summery),
-                value = it
-            )
-        }.asComposeState()
-    }
-*/
+    /*   override val recentPlaylistLimit: Preference<Int> by with(preferences) {
+           preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
+               Preference(
+                   title = Text(R.string.pref_recent_playlist_size),
+                   summery = Text(R.string.pref_recent_playlist_size_summery),
+                   value = it
+               )
+           }.asComposeState()
+       }
+   */
     override val fetchArtworkFromMS: Preference<Boolean> by with(preferences) {
         preferences[Settings.USE_LEGACY_ARTWORK_METHOD].map {
             Preference(
@@ -154,24 +149,25 @@ class SettingsViewModel @Inject constructor(
             )
         }.asComposeState()
     }
- /*   override val crossfadeTime: Preference<Int> by with(preferences) {
-        preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
-            Preference(
-                title = Text(R.string.pref_crossfade_time),
-                summery = Text(R.string.pref_crossfade_time_summery),
-                value = it
-            )
-        }.asComposeState()
-    }
-    override val closePlaybackWhenTaskRemoved by with(preferences) {
-        preferences[Settings.CLOSE_WHEN_TASK_REMOVED].map {
-            Preference(
-                title = Text(R.string.pref_stop_playback_when_task_removed),
-                summery = Text(R.string.pref_stop_playback_when_task_removed_summery),
-                value = it
-            )
-        }.asComposeState()
-    }*/
+
+    /*   override val crossfadeTime: Preference<Int> by with(preferences) {
+           preferences[Settings.RECENT_PLAYLIST_LIMIT].map {
+               Preference(
+                   title = Text(R.string.pref_crossfade_time),
+                   summery = Text(R.string.pref_crossfade_time_summery),
+                   value = it
+               )
+           }.asComposeState()
+       }
+       override val closePlaybackWhenTaskRemoved by with(preferences) {
+           preferences[Settings.CLOSE_WHEN_TASK_REMOVED].map {
+               Preference(
+                   title = Text(R.string.pref_stop_playback_when_task_removed),
+                   summery = Text(R.string.pref_stop_playback_when_task_removed_summery),
+                   value = it
+               )
+           }.asComposeState()
+       }*/
     override val useInbuiltAudioFx by with(preferences) {
         preferences[Settings.USE_IN_BUILT_AUDIO_FX].map {
             Preference(
@@ -192,6 +188,7 @@ class SettingsViewModel @Inject constructor(
             )
         }.asComposeState()
     }
+
     override fun <S, O> set(key: Key<S, O>, value: O) {
         viewModelScope.launch {
             preferences[key] = value
@@ -204,11 +201,16 @@ class SettingsViewModel @Inject constructor(
 
     override fun unblock(path: String, context: Context) {
         viewModelScope.launch {
-            val blacklist = preferences.value(Settings.BLACKLISTED_FILES)?.toMutableSet() ?: return@launch
+            val blacklist =
+                preferences.value(Settings.BLACKLISTED_FILES)?.toMutableSet() ?: return@launch
             val res = blacklist.remove(path)
             val name = PathUtils.name(path)
             if (res)
-                Toast.makeText(context, context.getString(R.string.msg_blacklist_item_remove_success_s, name), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.msg_blacklist_item_remove_success_s, name),
+                    Toast.LENGTH_SHORT
+                ).show()
             else
                 Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
             preferences[Settings.BLACKLISTED_FILES] = blacklist
@@ -219,7 +221,7 @@ class SettingsViewModel @Inject constructor(
 suspend fun Preferences.block(vararg path: String): Int {
     val preferences = this
     val list = preferences.value(Settings.BLACKLISTED_FILES)
-    if (path.isEmpty()) return  0
+    if (path.isEmpty()) return 0
     // it will automatically remove duplicates.
     if (list == null) {
         val items = path.toSet()

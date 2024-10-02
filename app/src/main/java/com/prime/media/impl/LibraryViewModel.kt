@@ -5,32 +5,25 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.C
-import com.prime.media.R
+import com.prime.media.common.util.toMediaItem
 import com.prime.media.core.db.toMediaItem
 import com.prime.media.core.db.uri
 import com.prime.media.core.playback.MediaItem
-import com.zs.core.playback.Playback
 import com.prime.media.core.playback.Remote
-import com.prime.media.common.util.toMediaItem
 import com.prime.media.library.Library
-import com.primex.core.DahliaYellow
-import com.primex.core.MetroGreen
 import com.primex.core.Rose
+import com.zs.core.playback.Playback
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 private const val TAG = "LibraryViewModel"
 
@@ -43,8 +36,8 @@ private val TimeOutPolicy = SharingStarted.Lazily
 
 private const val SHOW_CASE_MAX_ITEMS = 20
 
-@HiltViewModel
-class LibraryViewModel @Inject constructor(
+
+class LibraryViewModel(
     repository: Repository,
     private val remote: Remote,
     private val channel: ToastHostState

@@ -10,16 +10,15 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
-import com.prime.media.core.db.*
-import com.zs.core.db.Playlist.Track
-import com.zs.core.playback.Playback
 import com.prime.media.common.util.toMember
+import com.prime.media.core.db.*
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
 import com.zs.core.db.Playlist
+import com.zs.core.db.Playlist.Track
 import com.zs.core.db.Playlists2
-import dagger.hilt.android.scopes.ActivityRetainedScoped
+import com.zs.core.playback.Playback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 
 private const val TAG = "Repository"
@@ -54,8 +52,8 @@ private fun toAudioTrackUri(id: Long) =
  *
  * @constructor Creates a new `Repository2` object with the given `playlistz` and `resolver` objects.
  */
-@ActivityRetainedScoped
-class Repository @Inject constructor(
+
+class Repository  (
     private val playlistz: Playlists2,
     private val resolver: ContentResolver,
     private val preferences: Preferences

@@ -25,11 +25,10 @@ import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.common.Artwork
 import com.prime.media.common.composable
-import com.prime.media.core.*
-import com.zs.core.db.Playlist.Track as Member
-import com.prime.media.core.playback.Remote
 import com.prime.media.common.util.addDistinct
 import com.prime.media.common.util.toMediaItem
+import com.prime.media.core.*
+import com.prime.media.core.playback.Remote
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
 import com.prime.media.impl.Repository
@@ -40,13 +39,12 @@ import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
-import javax.inject.Inject
 import kotlin.random.Random
 import com.primex.core.Text.Companion as DataText
+import com.zs.core.db.Playlist.Track as Member
 import com.zs.core_ui.ContentPadding as C
 
 private const val TAG = "AlbumsViewModel"
@@ -56,8 +54,7 @@ typealias Members = MembersViewModel.Companion
 private val Member.firstTitleChar
     inline get() = title.uppercase()[0].toString()
 
-@HiltViewModel
-class MembersViewModel @Inject constructor(
+class MembersViewModel(
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,

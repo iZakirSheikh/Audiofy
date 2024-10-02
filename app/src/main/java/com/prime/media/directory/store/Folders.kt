@@ -24,11 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.zs.core_ui.ContentPadding
 import com.prime.media.common.LocalNavController
+import com.prime.media.common.util.PathUtils
 import com.prime.media.core.db.Folder
 import com.prime.media.core.db.name
-import com.prime.media.common.util.PathUtils
 import com.prime.media.directory.Action
 import com.prime.media.directory.Directory
 import com.prime.media.directory.DirectoryViewModel
@@ -44,9 +43,9 @@ import com.primex.core.Text
 import com.primex.material2.Label
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -55,7 +54,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Locale
-import javax.inject.Inject
 
 private const val TAG = "AlbumsViewModel"
 
@@ -65,8 +63,7 @@ typealias Folders = FoldersViewModel.Companion
 private val Folder.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
 
-@HiltViewModel
-class FoldersViewModel @Inject constructor(
+class FoldersViewModel (
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,

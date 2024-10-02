@@ -24,6 +24,37 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Splash">
 
+        <!--Initialize components here-->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+
+            <!--Firebase-->
+            <meta-data
+                android:name="com.prime.media.impl.FirebaseInitializer"
+                android:value="androidx.startup" />
+
+            <!--Crashlytics-->
+            <meta-data
+                android:name="com.prime.media.impl.CrashlyticsInitializer"
+                android:value="androidx.startup" />
+
+            <!-- Koin-->
+            <meta-data
+                android:name="com.prime.media.impl.KoinInitializer"
+                android:value="androidx.startup" />
+        </provider>
+
+        <!-- Disable FirebaseInitProvider -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            android:enabled="false"
+            android:exported="false"
+            tools:node="remove" />
+
         <!--Single Activity-->
         <activity
             android:name=".MainActivity"

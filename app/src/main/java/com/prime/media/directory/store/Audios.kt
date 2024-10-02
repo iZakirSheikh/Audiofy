@@ -35,20 +35,20 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.prime.media.R
-import com.prime.media.core.*
 import com.prime.media.common.Artwork
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.LottieAnimButton
-import com.prime.media.core.db.Audio
-import com.prime.media.core.db.albumUri
-import com.prime.media.core.db.key
-import com.prime.media.core.db.toMediaItem
-import com.prime.media.core.playback.Remote
 import com.prime.media.common.util.DateUtils
 import com.prime.media.common.util.PathUtils
 import com.prime.media.common.util.addDistinct
 import com.prime.media.common.util.share
 import com.prime.media.common.util.toMember
+import com.prime.media.core.*
+import com.prime.media.core.db.Audio
+import com.prime.media.core.db.albumUri
+import com.prime.media.core.db.key
+import com.prime.media.core.db.toMediaItem
+import com.prime.media.core.playback.Remote
 import com.prime.media.dialog.Properties
 import com.prime.media.directory.*
 import com.prime.media.directory.dialogs.Playlists
@@ -63,12 +63,10 @@ import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlin.random.Random.Default.nextInt
 import com.primex.core.Text.Companion as TextData
 import com.zs.core_ui.ContentElevation as E
@@ -80,8 +78,8 @@ private val Audio.firstTitleChar
 
 typealias Audios = AudiosViewModel.Companion
 
-@HiltViewModel
-class AudiosViewModel @Inject constructor(
+
+class AudiosViewModel  (
     handle: SavedStateHandle,
     private val repository: Repository,
     private val toaster: ToastHostState,

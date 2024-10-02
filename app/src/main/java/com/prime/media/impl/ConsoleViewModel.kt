@@ -44,14 +44,12 @@ import com.prime.media.core.playback.mediaUri
 import com.primex.core.OrientRed
 import com.primex.core.withSpanStyle
 import com.zs.core.db.Playlist
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToLong
@@ -240,8 +238,7 @@ private fun Player?.getSelectedTrack(
     return null // no selection is made or possible
 }
 
-@HiltViewModel
-class ConsoleViewModel @Inject constructor(
+class ConsoleViewModel constructor(
     private val remote: Remote,
     private val repository: Repository,
     private val delegate: SystemDelegate

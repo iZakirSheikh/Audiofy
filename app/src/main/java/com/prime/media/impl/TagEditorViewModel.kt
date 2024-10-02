@@ -29,19 +29,17 @@ import androidx.lifecycle.viewModelScope
 import com.mpatric.mp3agic.ID3v1Genres
 import com.mpatric.mp3agic.Mp3File
 import com.prime.media.R
+import com.prime.media.common.util.getActivityResult
 import com.prime.media.core.db.findAudio
 import com.prime.media.core.db.uri
-import com.prime.media.common.util.getActivityResult
 import com.prime.media.editor.TagEditor
 import com.primex.core.findActivity
 import com.primex.core.getText2
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
-import javax.inject.Inject
 
 private const val TAG = "TagEditorViewModel"
 
@@ -287,8 +285,8 @@ private var Mp3File.diskNumber: Int
         id3v2Tag?.partOfSet = "$value" + "/" + (parts.getOrNull(0) ?: "0")
     }
 
-@HiltViewModel
-class TagEditorViewModel @Inject constructor(
+
+class TagEditorViewModel constructor(
     handle: SavedStateHandle,
     private val resources: Resources,
     private val resolver: ContentResolver,

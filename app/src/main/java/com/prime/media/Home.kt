@@ -66,7 +66,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -83,25 +82,18 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
 import com.prime.media.about.AboutUs
+import com.prime.media.common.LocalNavController
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.Placeholder
+import com.prime.media.common.composable
+import com.prime.media.common.current
+import com.prime.media.common.preference
+import com.prime.media.common.util.getAlbumArt
 import com.prime.media.config.Personalize
 import com.prime.media.config.RoutePersonalize
 import com.prime.media.console.Console
-import com.zs.core_ui.Anim
-import com.zs.core_ui.ContentPadding
-import com.zs.core_ui.NightMode
-import com.prime.media.common.composable
-import com.prime.media.common.LocalNavController
-import com.prime.media.common.LocalSystemFacade
-import com.zs.core_ui.LocalWindowSize
-import com.prime.media.common.Placeholder
-import com.zs.core_ui.Range
-import com.zs.core_ui.WallpaperAccentColor
-import com.zs.core_ui.WindowSize
-import com.prime.media.common.current
-import com.prime.media.common.preference
 import com.prime.media.core.playback.MediaItem
 import com.prime.media.core.playback.artworkUri
-import com.prime.media.common.util.getAlbumArt
 import com.prime.media.directory.playlists.Members
 import com.prime.media.directory.playlists.MembersViewModel
 import com.prime.media.directory.playlists.Playlists
@@ -132,12 +124,18 @@ import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Glance
 import com.primex.core.BlueLilac
-import com.primex.core.SepiaBrown
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
+import com.zs.core_ui.LocalWindowSize
+import com.zs.core_ui.NightMode
+import com.zs.core_ui.Range
+import com.zs.core_ui.WallpaperAccentColor
+import com.zs.core_ui.WindowSize
 import com.zs.core_ui.adaptive.BottomNavItem
 import com.zs.core_ui.adaptive.NavRailItem
 import com.zs.core_ui.adaptive.NavigationItemDefaults
@@ -153,6 +151,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 private const val TAG = "Home"
 
@@ -465,62 +464,62 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
     }
     // Library
     composable(Library.route) {
-        val viewModel = hiltViewModel<LibraryViewModel>()
+        val viewModel = koinViewModel<LibraryViewModel>()
         Library(viewModel)
     }
     // Settings
     composable(Settings.route) {
-        val viewModel = hiltViewModel<SettingsViewModel>()
+        val viewModel = koinViewModel<SettingsViewModel>()
         Settings(viewModel)
     }
     // Albums
     composable(Albums.route) {
-        val viewModel = hiltViewModel<AlbumsViewModel>()
+        val viewModel = koinViewModel<AlbumsViewModel>()
         Albums(viewModel = viewModel)
     }
     // Artists
     composable(Artists.route) {
-        val viewModel = hiltViewModel<ArtistsViewModel>()
+        val viewModel = koinViewModel<ArtistsViewModel>()
         Artists(viewModel = viewModel)
     }
     // Audios
     composable(Audios.route) {
-        val viewModel = hiltViewModel<AudiosViewModel>()
+        val viewModel = koinViewModel<AudiosViewModel>()
         Audios(viewModel = viewModel)
     }
     // Folders
     composable(Folders.route) {
-        val viewModel = hiltViewModel<FoldersViewModel>()
+        val viewModel = koinViewModel<FoldersViewModel>()
         Folders(viewModel = viewModel)
     }
     // Genres
     composable(Genres.route) {
-        val viewModel = hiltViewModel<GenresViewModel>()
+        val viewModel = koinViewModel<GenresViewModel>()
         Genres(viewModel = viewModel)
     }
     // Playlists
     composable(Playlists.route) {
-        val viewModel = hiltViewModel<PlaylistsViewModel>()
+        val viewModel = koinViewModel<PlaylistsViewModel>()
         Playlists(viewModel = viewModel)
     }
     // Members
     composable(Members.route) {
-        val viewModel = hiltViewModel<MembersViewModel>()
+        val viewModel = koinViewModel<MembersViewModel>()
         Members(viewModel = viewModel)
     }
     // Tag Editor
     composable(TagEditor.route) {
-        val viewModel = hiltViewModel<TagEditorViewModel>()
+        val viewModel = koinViewModel<TagEditorViewModel>()
         TagEditor(state = viewModel)
     }
     // AudioFx
     dialog(AudioFx.route) {
-        val viewModel = hiltViewModel<AudioFxViewModel>()
+        val viewModel = koinViewModel<AudioFxViewModel>()
         AudioFx(state = viewModel)
     }
     // Console
     composable(Console.route) {
-        val viewModel = hiltViewModel<ConsoleViewModel>()
+        val viewModel = koinViewModel<ConsoleViewModel>()
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
             Console(state = viewModel)
         }
@@ -530,12 +529,12 @@ private val NavGraph: NavGraphBuilder.() -> Unit = {
         RouteFeedback.route,
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ){
-        val viewModel = hiltViewModel<FeedbackViewModel>()
+        val viewModel = koinViewModel<FeedbackViewModel>()
         Feedback(viewModel)
     }
     // ControlCentre
     composable(RoutePersonalize){
-        val viewModel = hiltViewModel<PersonalizeViewModel>()
+        val viewModel = koinViewModel<PersonalizeViewModel>()
         Personalize(viewModel)
     }
 }

@@ -9,10 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prime.media.core.playback.Remote
 import com.prime.media.effects.AudioFx
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.math.roundToInt
 
 private const val TAG = "AudioFxViewModel"
@@ -85,8 +83,8 @@ private suspend fun Remote.getEqualizerOrRetry(priority: Int): Equalizer? {
     return result
 }
 
-@HiltViewModel
-class AudioFxViewModel @Inject constructor(
+
+class AudioFxViewModel(
     private val remote: Remote,
 ) : ViewModel(), AudioFx {
 
