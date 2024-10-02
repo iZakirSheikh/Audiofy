@@ -11,14 +11,15 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.billingclient.api.ProductDetails
-import com.android.billingclient.api.Purchase
+import com.zs.core.paymaster.ProductInfo as ProductDetails
+import com.zs.core.paymaster.Purchase
 import com.prime.media.BuildConfig
 import com.primex.preferences.Key
 import com.zs.ads.AdSize
 import com.zs.core_ui.toast.Duration
 import com.zs.core_ui.toast.Toast
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * An interface defining the methods and properties needed for common app functionality,
@@ -59,7 +60,7 @@ interface SystemFacade {
     /**
      * @see com.prime.media.core.billing.BillingManager.details
      */
-    val inAppProductDetails: MutableStateFlow<Map<String, ProductDetails>>
+    val inAppProductDetails: StateFlow<Map<String, ProductDetails>>
 
     /**
      * This represents the time in milliseconds since the epoch when the ad-free period ends.

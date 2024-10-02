@@ -31,8 +31,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.DpSize
 import androidx.navigation.compose.rememberNavController
-import com.android.billingclient.api.ProductDetails
-import com.android.billingclient.api.Purchase
+import com.zs.core.paymaster.ProductInfo as ProductDetails
+import com.zs.core.paymaster.Purchase
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.WindowSize
 import com.primex.core.BlueLilac
@@ -44,6 +44,7 @@ import com.primex.preferences.observeAsState
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
     override val inAppUpdateProgress: Float = Float.NaN
@@ -69,7 +70,7 @@ private class FakeSystemFacade(private val prefs: Preferences) : SystemFacade {
         error("showAd Not Supported")
     }
 
-    override val inAppProductDetails: MutableStateFlow<Map<String, ProductDetails>>
+    override val inAppProductDetails: StateFlow<Map<String, ProductDetails>>
         = MutableStateFlow(emptyMap())
 
     override fun show(message: CharSequence, icon: ImageVector?, accent: Color, duration: Int) {

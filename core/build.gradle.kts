@@ -31,6 +31,8 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.bundles.room)
+    implementation(libs.google.billing.ktx)
+
     ksp(libs.room.compiler)
     api(libs.bundles.media3)
     api(libs.mp3agic)

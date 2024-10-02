@@ -40,10 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.billingclient.api.ProductDetails
+import com.zs.core.paymaster.ProductInfo as ProductDetails
 import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
-import com.prime.media.common.billing.purchased
+import com.zs.core.paymaster.purchased
 import com.prime.media.common.Header
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.purchase
@@ -100,7 +100,7 @@ private val widgets = mapOf(
  */
 private val ProductDetails.isFreemium: Boolean
     get() {
-        return when (productId) {
+        return when (id) {
             BuildConfig.IAP_PLATFORM_WIDGET_IPHONE, BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES -> true
             else -> false
         }
@@ -113,7 +113,7 @@ private val ProductDetails.isFreemium: Boolean
  */
 private val ProductDetails.isPurchasable: Boolean
     get() {
-        return when (productId) {
+        return when (id) {
             BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE -> false
             else -> true
         }
@@ -128,7 +128,7 @@ private val ProductDetails.isPurchasable: Boolean
 private val ProductDetails.formattedProductDetails
     get() = buildAnnotatedString {
         withSpanStyle(fontWeight = FontWeight.Bold) {
-            appendLine(name)
+            appendLine(title)
         }
         withStyle(SpanStyle(color = Color.Gray, fontSize = 13.sp)) {
             append(description)
@@ -177,7 +177,7 @@ fun LazyListScope.widgets(
                 // it will never be null
                 val info = details[group] ?: return@item
                 Header(
-                    text = info.name,
+                    text = info.title,
                     contentPadding = PaddingValues(bottom = ContentPadding.medium),
                     modifier = Modifier.drawHorizontalDivider(AppTheme.colors.onBackground.copy(ContentAlpha.Divider)),
                     action = {
@@ -193,7 +193,7 @@ fun LazyListScope.widgets(
                         val bundle by purchase(group)
                         if (!bundle.purchased)
                             Button(
-                                label = "Get - ${info.oneTimePurchaseOfferDetails?.formattedPrice}",
+                                label = "Get - ${info.formattedPrice}",
                                 onClick = { facade.launchBillingFlow(group) },
                             )
                     }
@@ -220,7 +220,7 @@ fun LazyListScope.widgets(
                 // hopefully it will not be null
                 val info = details[child] ?: return@item
                 Header(
-                    text = info.name,
+                    text = info.title,
                     contentPadding = PaddingValues(bottom = ContentPadding.normal),
                     style = AppTheme.typography.bodyMedium,
                     action = {
@@ -243,7 +243,7 @@ fun LazyListScope.widgets(
                             )
                         // get this for below price.
                         OutlinedButton(
-                            label = "Get - ${info.oneTimePurchaseOfferDetails?.formattedPrice}",
+                            label = "Get - ${info.formattedPrice}",
                             onClick = { facade.launchBillingFlow(child) },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = Color.Transparent,

@@ -72,7 +72,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Divider
-import com.prime.media.common.billing.purchased
+import com.zs.core.paymaster.purchased
 import com.prime.media.common.LocalNavController
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.purchase

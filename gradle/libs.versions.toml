@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.1"
+agp = "8.7.0"
 kotlin = "2.0.20"
 compose = "1.8.0-alpha02"
 media3 = "1.4.1"
@@ -51,8 +51,8 @@ accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive",
 
 
 # Firebase
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.1.0" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.2" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.2.0" }
 
 #Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
@@ -106,7 +106,7 @@ compose = ["androidx-animation-graphics", "androidx-material", "androidx-ui", "a
 compose-preview = ["ui-tooling", "ui-tooling-preview"]
 material-icons = ["androidx-material-icons-core", "androidx-material-icons-extended"]
 media3 = ["androidx-media3-exoplayer", "androidx-media3-session", "androidx-media3-ui"]
-play_services = ["play-app-review-ktx", "play-app-update-ktx", "google-billing-ktx", "play_feature_delivery"]
+play_services = ["play-app-review-ktx", "play-app-update-ktx", "play_feature_delivery"]
 analytics = ["firebase-analytics-ktx", "firebase-crashlytics-ktx"]
 room = ["room-runtime", "room-ktx"]
 hilt = ["hilt-navigation-compose", "hilt-android"]

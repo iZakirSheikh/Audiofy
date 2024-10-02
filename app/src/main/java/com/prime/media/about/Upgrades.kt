@@ -47,12 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.android.billingclient.api.ProductDetails
+import com.zs.core.paymaster.ProductInfo as ProductDetails
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
-import com.prime.media.common.billing.purchased
+import com.zs.core.paymaster.purchased
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.purchase
 import com.zs.core_ui.shimmer.shimmer
@@ -93,7 +93,7 @@ private inline fun provideIcon(id: String): ImageVector {
  * Checks if the product represents a dynamic feature.
  */
 private val ProductDetails.isDynamicFeature
-    inline get() = this.productId == BuildConfig.IAP_CODEX
+    inline get() = this.id == BuildConfig.IAP_CODEX
 
 /**
  * Returns the name of the dynamic module associated with the product.
@@ -101,9 +101,9 @@ private val ProductDetails.isDynamicFeature
  * @throws IllegalStateException if the product is not a dynamic module.
  */
 private val ProductDetails.dynamicModuleName
-    inline get() = when (productId) {
+    inline get() = when (id) {
         BuildConfig.IAP_CODEX -> ON_DEMAND_MODULE_CODEX
-        else -> error("$productId is not a dynamic module.")
+        else -> error("$id is not a dynamic module.")
     }
 
 /**
@@ -167,7 +167,7 @@ private fun Product(
                                 modifier = Modifier.size(16.dp)
                             )
                             Label(
-                                text = details.name,
+                                text = details.title,
                                 style = AppTheme.typography.caption,
                                 modifier = Modifier
                                     .weight(1f)
@@ -190,7 +190,7 @@ private fun Product(
                     )
                     // price row
                     Label(
-                        text = details.oneTimePurchaseOfferDetails?.formattedPrice ?: "N/A",
+                        text = details.formattedPrice ?: "N/A",
                         modifier = Modifier.padding(vertical = ContentPadding.medium),
                         style = AppTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Light
@@ -235,7 +235,7 @@ fun Upgrades(
                     when {
                         !state.purchased -> facade.launchBillingFlow(id)
                         else -> facade.show(
-                            "You already own ${details.name}! \nThanks for your support \uD83D\uDE0A"
+                            "You already own ${details.title}! \nThanks for your support \uD83D\uDE0A"
                         )
                     }
                 },

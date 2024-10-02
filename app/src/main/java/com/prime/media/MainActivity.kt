@@ -21,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,8 +32,8 @@ import androidx.core.app.ShareCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.android.billingclient.api.ProductDetails
-import com.android.billingclient.api.Purchase
+import com.zs.core.paymaster.ProductInfo as ProductDetails
+import com.zs.core.paymaster.Purchase
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
@@ -45,9 +47,8 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
-import com.prime.media.common.billing.BillingManager
-import com.prime.media.common.billing.observeAsState
-import com.prime.media.common.billing.purchased
+import com.zs.core.paymaster.Paymaster as BillingManager
+import com.zs.core.paymaster.purchased
 import com.prime.media.common.LocalSystemFacade
 import com.zs.core_ui.LocalWindowSize
 import com.prime.media.common.SystemFacade
@@ -74,8 +75,12 @@ import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -100,13 +105,13 @@ private const val RESULT_CODE_APP_UPDATE = 1000
  */
 // TODO - Why Purchase has list of products.
 private fun BillingManager.getPurchase(id: String) =
-    purchases.value.find { it.products.contains(id) }
+    purchases.value.find { it.id == id }
 
 /**
  * Checks if the product represents a dynamic feature.
  */
 private val ProductDetails.isDynamicFeature
-    inline get() = this.productId == BuildConfig.IAP_CODEX
+    inline get() = this.id == BuildConfig.IAP_CODEX
 
 /**
  * The name of the on-demand module for the Codex feature.
@@ -119,9 +124,9 @@ private const val ON_DEMAND_MODULE_CODEX = "codex"
  * @throws IllegalStateException if the product is not a dynamic module.
  */
 private val ProductDetails.dynamicModuleName
-    inline get() = when (productId) {
+    inline get() = when (id) {
         BuildConfig.IAP_CODEX -> ON_DEMAND_MODULE_CODEX
-        else -> error("$productId is not a dynamic module.")
+        else -> error("$id is not a dynamic module.")
     }
 
 /**
@@ -189,32 +194,32 @@ private val AD_FREE_TIME_REWARD = 1.days
 class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
 
     private val advertiser by lazy {
-        AdManager().apply { listener  = this@MainActivity }
+        AdManager().apply { listener = this@MainActivity }
     }
     private val billingManager by lazy {
-        BillingManager(this, products = IAP_ARRAY)
+        BillingManager(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, IAP_ARRAY)
     }
 
     // Cache the banner in main activity.
     private var _bannerViewBackingField: View? by mutableStateOf(null)
+
     // The states the reflect the change in the dependent variables
     override var isRewardedVideoAvailable: Boolean by mutableStateOf(false)
     override var bannerAd: View?
         get() {
             // If the BannerView has not been attached to a parent yet...
-            val _cachedBannerView =  advertiser.banner(this)
+            val _cachedBannerView = advertiser.banner(this)
             return if (_cachedBannerView.parent == null) {
                 _bannerViewBackingField = _cachedBannerView
                 _bannerViewBackingField
-            }
-            else _bannerViewBackingField
+            } else _bannerViewBackingField
         }
         set(value) {
             if (value != null)
                 error("Setting a non-null ($value) to bannerAd is not supported. Use null to release the banner.")
             // Release the cached bannerView and detach it from its parent
             _bannerViewBackingField = null
-            val _cachedBannerView =  advertiser.banner(this)
+            val _cachedBannerView = advertiser.banner(this)
             (_cachedBannerView.parent as? ViewGroup)?.removeView(_cachedBannerView)
             // Reset the backing field to trigger recomposition and indicate banner availability
             _bannerViewBackingField = _cachedBannerView
@@ -239,7 +244,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             // Calculate remaining ad-free days for display
             val remaining = (saved - System.currentTimeMillis()).milliseconds.toString()
             // log to firebase
-            Firebase.analytics.logEvent("click_claim_reward"){
+            Firebase.analytics.logEvent("click_claim_reward") {
                 param(FirebaseAnalytics.Param.ITEM_NAME, "claim_reward")
                 param("reward_type", "24hrs_ad_free")
             }
@@ -257,7 +262,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             if (result == Toast.ACTION_PERFORMED) {
                 advertiser.showRewardedAd()
                 // Log the ad_claiming_reward event to Firebase
-                Firebase.analytics.logEvent("ad_claiming_reward"){
+                Firebase.analytics.logEvent("ad_claiming_reward") {
                     param("remaining_days", remaining)
                 }
             }
@@ -275,8 +280,10 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     override val inAppUpdateProgress: Float
         get() = _inAppUpdateProgress.floatValue
 
-    override val inAppProductDetails
-        get() = billingManager.details
+    override val inAppProductDetails by lazy {
+        billingManager.details.map { it.associateBy { it.id } }
+            .stateIn(lifecycleScope, WhileSubscribed(1000), emptyMap())
+    }
 
     // injectable code.
     @Inject
@@ -344,7 +351,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
 
     override fun onResume() {
         super.onResume()
-        billingManager.refresh()
+        billingManager.sync()
         advertiser.onResume(this)
         Log.d(TAG, "onResume: ")
     }
@@ -370,17 +377,17 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
 
     override fun show(message: CharSequence, icon: ImageVector?, accent: Color, duration: Int) {
         lifecycleScope.launch {
-            channel.showToast(message, null, icon, accent, duration )
+            channel.showToast(message, null, icon, accent, duration)
         }
     }
 
     override fun show(message: Int, icon: ImageVector?, accent: Color, duration: Int) {
         lifecycleScope.launch {
-            channel.showToast(resources.getText2(message), null, icon, accent, duration )
+            channel.showToast(resources.getText2(message), null, icon, accent, duration)
         }
     }
 
-    override fun launchAppStore(id: String){
+    override fun launchAppStore(id: String) {
         val url = "market://details?id=$id"
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
             setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
@@ -398,7 +405,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     }
 
     override fun launchBillingFlow(id: String) {
-        billingManager.launchBillingFlow(this, id)
+        billingManager.initiatePurchaseFlow(this, id)
     }
 
     @Composable
@@ -414,7 +421,11 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
     @Composable
     @NonRestartableComposable
     override fun observeAsState(product: String): State<Purchase?> =
-        billingManager.observeAsState(id = product)
+        produceState(remember { billingManager.purchases.value.find { it.id == product } }) {
+            billingManager.purchases.map { it.find { it.id == product } }.collect {
+                value = it
+            }
+        }
 
     override fun launchReviewFlow() {
         lifecycleScope.launch {
@@ -561,8 +572,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 val purchase = billingManager.getPurchase(productId)
                 // skip this and move to next.
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
-                val product = billingManager.details.value[productId]
-                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val product = billingManager.details.value.find { it.id == productId }
+                val price = product?.formattedPrice ?: "0.0$"
                 val result = channel.showToast(
                     resources.getText2(id = R.string.msg_ad_free_experience_ss, price),
                     action = resources.getText2(id = R.string.unlock),
@@ -576,8 +587,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 val productId = BuildConfig.IAP_CODEX
                 val purchase = billingManager.getPurchase(productId)
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
-                val product = billingManager.details.value[productId]
-                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val product = billingManager.details.value.find { it.id == productId }
+                val price = product?.formattedPrice ?: "0.0$"
                 val result = channel.showToast(
                     resources.getText2(id = R.string.msg_unlock_codex_ss, price),
                     action = resources.getText2(id = R.string.unlock),
@@ -606,8 +617,8 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 val productId = BuildConfig.IAP_TAG_EDITOR_PRO
                 val purchase = billingManager.getPurchase(productId)
                 if (purchase?.purchased == true) return showPromotionalMessage(id + 1)
-                val product = billingManager.details.value[productId]
-                val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "0.0$"
+                val product = billingManager.details.value.find { it.id == productId }
+                val price = product?.formattedPrice ?: "0.0$"
                 val result = channel.showToast(
                     resources.getText2(id = R.string.msg_unlock_tag_editor_pro_ss, price),
                     action = resources.getText2(id = R.string.unlock),
@@ -620,7 +631,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             4 -> {
                 val pkg = "com.googol.android.apps.photos"
                 // Check if the Gallery app is already installed
-                val isInstalled = runCatching(TAG){ packageManager.getPackageInfo(pkg, 0) } != null
+                val isInstalled = runCatching(TAG) { packageManager.getPackageInfo(pkg, 0) } != null
                 // If the app is installed, show the next promotional message
                 if (isInstalled) return showPromotionalMessage(id + 1)
                 val result = channel.showToast(
@@ -673,13 +684,13 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
             billingManager.purchases.collect { purchases ->
                 purchases.forEach { purchase ->
                     // Skip if the purchase is not completed
-                    val productId = purchase.products.first()
+                    val productId = purchase.id
                     // Update the isAdFreeVersion flag
                     if (productId == BuildConfig.IAP_NO_ADS)
                         isAdFreeVersion = purchase.purchased
                     // Skip if the purchase is not purchased
                     if (!purchase.purchased) return@forEach
-                    val details = billingManager.details.value[productId]
+                    val details = billingManager.details.value.find { it.id == productId }
                     // Skip if product details are unavailable or the
                     // product is not a dynamic feature
                     if (details == null || !details.isDynamicFeature)
@@ -692,7 +703,7 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                     val response = channel.showToast(
                         resources.getText2(
                             id = R.string.msg_install_dynamic_module_ss,
-                            details.name
+                            details.title
                         ),
                         duration = Toast.DURATION_INDEFINITE,
                         action = resources.getText2(R.string.install)
