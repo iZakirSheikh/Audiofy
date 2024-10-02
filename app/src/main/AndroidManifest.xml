@@ -15,7 +15,7 @@
     <!--<uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY" />-->
 
     <application
-        android:name=".Audiofy"
+        android:name="com.prime.media.old.Audiofy"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/launcher_label"
@@ -33,17 +33,17 @@
 
             <!--Firebase-->
             <meta-data
-                android:name="com.prime.media.impl.FirebaseInitializer"
+                android:name="com.prime.media.old.impl.FirebaseInitializer"
                 android:value="androidx.startup" />
 
             <!--Crashlytics-->
             <meta-data
-                android:name="com.prime.media.impl.CrashlyticsInitializer"
+                android:name="com.prime.media.old.impl.CrashlyticsInitializer"
                 android:value="androidx.startup" />
 
             <!-- Koin-->
             <meta-data
-                android:name="com.prime.media.impl.KoinInitializer"
+                android:name="com.prime.media.old.impl.KoinInitializer"
                 android:value="androidx.startup" />
         </provider>
 
@@ -57,7 +57,7 @@
 
         <!--Single Activity-->
         <activity
-            android:name=".MainActivity"
+            android:name="com.prime.media.old.MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout"
             android:launchMode="singleTask">
@@ -96,7 +96,7 @@
 
         <!--App Widget-->
         <receiver
-            android:name=".console.Widget"
+            android:name="com.prime.media.old.console.Widget"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

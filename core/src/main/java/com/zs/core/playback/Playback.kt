@@ -428,7 +428,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
         // Retrieve widget IDs
         val ids = AppWidgetManager.getInstance(application)
-            .getAppWidgetIds(ComponentName(application, "com.prime.media.console.Widget"))
+            .getAppWidgetIds(ComponentName(application, "com.prime.media.old.console.Widget"))
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
 
         // Broadcast the intent to update the widget
