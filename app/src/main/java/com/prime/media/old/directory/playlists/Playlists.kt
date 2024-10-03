@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.preference
+import com.prime.media.common.preference
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.directory.Action
 import com.prime.media.old.directory.Directory
@@ -46,7 +46,7 @@ import com.prime.media.old.directory.Mapped
 import com.prime.media.old.directory.MetaData
 import com.prime.media.old.directory.ViewType
 import com.prime.media.old.impl.Repository
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.core.Rose
 import com.primex.core.Text
 import com.primex.core.thenIf

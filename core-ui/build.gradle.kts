@@ -38,6 +38,7 @@ android {
 dependencies {
     api(libs.bundles.compose)
     api(libs.bundles.material.icons)
+    api(libs.coil.compose)
     debugApi(libs.bundles.compose.preview)
 
     implementation(libs.androidx.core.ktx)

@@ -71,6 +71,21 @@ interface Paymaster {
      *  * Releasing any other acquired resources.
      */
     fun release()
+
+    /**
+     * Retrieves information about a specific product, including its details
+     * and purchase information.
+     *
+     * @param id The ID of the product to retrieve.
+     * @return A [Pair] containing the [ProductInfo] and an optional [Purchase]
+     *   object if the product has been purchased, or `null` if the product
+     *   is not found.
+     */
+    operator fun get(id: String): Pair<ProductInfo, Purchase?>?{
+        val info = details.value.find { it.id == id } ?: return null
+        val purchase = purchases.value.find { it.id == id }
+        return info to purchase
+    }
 }
 
 /**

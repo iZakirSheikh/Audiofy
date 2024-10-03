@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.prime.media.old.common.coil
+package com.zs.core_ui.coil
 
 import android.graphics.Bitmap
 import android.graphics.HardwareRenderer

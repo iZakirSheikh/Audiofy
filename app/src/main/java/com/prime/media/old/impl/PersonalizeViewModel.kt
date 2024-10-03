@@ -6,7 +6,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
 import com.prime.media.old.config.PersonalizeViewState
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 
 

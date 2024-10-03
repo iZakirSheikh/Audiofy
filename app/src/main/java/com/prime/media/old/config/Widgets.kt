@@ -45,8 +45,8 @@ import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
 import com.zs.core.paymaster.purchased
 import com.prime.media.old.common.Header
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.common.purchase
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.purchase
 import com.prime.media.old.core.playback.MediaItem
 import com.prime.media.old.widget.GoldenDust
 import com.prime.media.old.widget.GradientGroves
@@ -185,7 +185,7 @@ fun LazyListScope.widgets(
                         val facade = LocalSystemFacade.current
                         IconButton(
                             imageVector = Icons.Outlined.Info,
-                            onClick = { facade.show(info.formattedProductDetails) }
+                            onClick = { facade.showToast(info.formattedProductDetails) }
                         )
                         if (!info.isPurchasable)
                             return@Header
@@ -194,7 +194,7 @@ fun LazyListScope.widgets(
                         if (!bundle.purchased)
                             Button(
                                 label = "Get - ${info.formattedPrice}",
-                                onClick = { facade.launchBillingFlow(group) },
+                                onClick = { facade.initiatePurchaseFlow(group) },
                             )
                     }
                 )
@@ -228,7 +228,7 @@ fun LazyListScope.widgets(
                         val facade = LocalSystemFacade.current
                         IconButton(
                             imageVector = Icons.Outlined.Info,
-                            onClick = { facade.show(info.formattedProductDetails) }
+                            onClick = { facade.showToast(info.formattedProductDetails) }
                         )
 
                         val widget by purchase(child)
@@ -244,7 +244,7 @@ fun LazyListScope.widgets(
                         // get this for below price.
                         OutlinedButton(
                             label = "Get - ${info.formattedPrice}",
-                            onClick = { facade.launchBillingFlow(child) },
+                            onClick = { facade.initiatePurchaseFlow(child) },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = Color.Transparent,
                             ),

@@ -53,7 +53,11 @@ import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.NightMode
 import com.prime.media.common.Banner
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.SystemFacade
+import com.prime.media.settings.ColorizationStrategy
+import com.prime.media.settings.Settings
+import com.prime.media.settings.SettingsViewState
 import com.primex.core.plus
 import com.primex.core.stringResource
 import com.primex.core.textResource
@@ -131,7 +135,7 @@ private inline fun GroupHeader(
 context(ColumnScope)
 @Composable
 private inline fun General(
-    viewState: Settings
+    viewState: SettingsViewState
 ) {
     // Enable/Disable Trash Can
     val trashcan = viewState.enableTrashCan
@@ -279,7 +283,7 @@ private inline fun General(
 context(ColumnScope)
 @Composable
 private inline fun Appearance(
-    viewState: Settings
+    viewState: SettingsViewState
 ) {
     // Night Mode Strategy
     // The strategy to use for night mode.
@@ -437,7 +441,7 @@ private inline fun AboutUs(
         summery = "$version \nClick to check for updates.",
         icon = Icons.Outlined.TouchApp,
         modifier = Modifier
-            .clickable { provider.launchUpdateFlow(true) }
+            .clickable { provider.initiateUpdateFlow(true) }
             .background(AppTheme.colors.tileBackgroundColor, BottomTileShape),
     )
 }
@@ -474,9 +478,13 @@ private inline fun Feedback(
     )
 }
 
+private fun SystemFacade.shareApp(){
+//    TODO("Not Implemented yet!")
+}
+
 @Composable
 fun Settings(
-    viewState: Settings
+    viewState: SettingsViewState
 ) {
     val behavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val insets = WindowInsets.contentInsets

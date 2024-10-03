@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -47,7 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.prime.media.old.MainActivity
+import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.old.common.LocalNavController
 import com.zs.core_ui.shape.FolderShape
@@ -57,7 +55,6 @@ import com.prime.media.old.directory.store.Artists
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.Genres
 import com.primex.core.textResource
-import com.primex.material2.Divider
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 

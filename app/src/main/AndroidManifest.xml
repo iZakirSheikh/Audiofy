@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="ScopedStorage">
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Devices running Android 12L (API level 32) or lower  -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Required to access GPS Data of Media -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+
+    <!-- To handle the reselection within the app on devices running Android 14
+         or higher if your app targets Android 14 (API level 34) or higher.  -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
-    <!--Samsung permission-->
-    <!--<uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY" />-->
-
     <application
-        android:name="com.prime.media.old.Audiofy"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/launcher_label"
@@ -30,23 +38,25 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
-
             <!--Firebase-->
             <meta-data
-                android:name="com.prime.media.old.impl.FirebaseInitializer"
-                android:value="androidx.startup" />
-
-            <!--Crashlytics-->
-            <meta-data
-                android:name="com.prime.media.old.impl.CrashlyticsInitializer"
+                android:name="com.prime.media.impl.FirebaseInitializer"
                 android:value="androidx.startup" />
 
             <!-- Koin-->
             <meta-data
-                android:name="com.prime.media.old.impl.KoinInitializer"
+                android:name="com.prime.media.impl.KoinInitializer"
+                android:value="androidx.startup" />
+
+            <!--Coil ImageLoader-->
+            <meta-data
+                android:name="com.prime.media.impl.CoilInitializer"
+                android:value="androidx.startup" />
+
+            <meta-data
+                android:name="com.prime.media.impl.AdNetworkInitializer"
                 android:value="androidx.startup" />
         </provider>
-
         <!-- Disable FirebaseInitProvider -->
         <provider
             android:name="com.google.firebase.provider.FirebaseInitProvider"
@@ -57,9 +67,9 @@
 
         <!--Single Activity-->
         <activity
-            android:name="com.prime.media.old.MainActivity"
-            android:exported="true"
+            android:name="com.prime.media.MainActivity"
             android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="true"
             android:launchMode="singleTask">
 
             <!--Activity's Intent Filter-->
@@ -72,6 +82,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:scheme="file" />
                 <data android:scheme="content" />
                 <data android:mimeType="audio/*" />
@@ -83,8 +94,10 @@
             <!--Intent Filter for playing video files-->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:scheme=""
                     tools:ignore="AppLinkUrlError" /> <!-- External player compatibility in Kodi -->

@@ -18,8 +18,11 @@
 
 package com.prime.media.old.console
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.text.format.DateUtils.formatElapsedTime
 import android.util.Log
@@ -105,6 +108,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -130,6 +134,7 @@ import com.google.accompanist.adaptive.TwoPane
 import com.google.accompanist.adaptive.TwoPaneStrategy
 import com.google.accompanist.adaptive.VerticalTwoPaneStrategy
 import com.google.accompanist.adaptive.calculateDisplayFeatures
+import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.old.config.RoutePersonalize
 import com.zs.core_ui.Anim
@@ -139,7 +144,8 @@ import com.zs.core_ui.MediumDurationMills
 import com.prime.media.old.common.AnimatedIconButton
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.SystemFacade
 import com.zs.core_ui.LocalWindowSize
 import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.LottieAnimation
@@ -147,13 +153,15 @@ import com.prime.media.old.common.PlayerView
 import com.zs.core_ui.Range
 import com.zs.core_ui.WindowSize
 import com.prime.media.old.common.marque
-import com.prime.media.old.common.preference
+import com.prime.media.common.preference
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.core.playback.subtitle
 import com.prime.media.old.core.playback.title
 import com.prime.media.old.effects.AudioFx
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.DancingScriptFontFamily
+import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
+import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.findActivity
 import com.primex.core.plus
@@ -167,9 +175,28 @@ import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.toast.Toast
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
 private const val TAG = "ConsoleView"
+
+fun SystemFacade.launchEqualizer(id: Int) {
+    if (id == AudioEffect.ERROR_BAD_VALUE)
+        return showToast(R.string.msg_unknown_error)
+    val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
+        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+    }
+    val res = runCatching { launch(intent) }
+    if (!res.isFailure)
+        return
+    showToast(
+        message = R.string.msg_3rd_party_equalizer_not_found,
+        accent = Color.OrientRed,
+        duration = Toast.DURATION_SHORT
+    )
+}
 
 /**
  * Returns true if the system bars are required to be light-themed, false otherwise.
@@ -578,7 +605,7 @@ private inline fun Controls(
     val facade = LocalSystemFacade.current
     LottieAnimButton(
         id = R.raw.lt_shuffle_on_off,
-        onClick = { state.toggleShuffle(); facade.launchReviewFlow(); },
+        onClick = { state.toggleShuffle(); facade.initiateReviewFlow(); },
         atEnd = !shuffle,
         progressRange = 0f..0.8f,
         scale = 1.5f
@@ -587,7 +614,7 @@ private inline fun Controls(
     var enabled = !state.isFirst
     val onColor = LocalContentColor.current
     IconButton(
-        onClick = { state.skipToPrev(); facade.launchReviewFlow() },
+        onClick = { state.skipToPrev(); facade.initiateReviewFlow() },
         painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowLeft),
         contentDescription = null,
         enabled = enabled,
@@ -596,7 +623,7 @@ private inline fun Controls(
 
     // play_button
     PlayButton(
-        onClick = { state.togglePlay(); facade.launchReviewFlow() },
+        onClick = { state.togglePlay(); facade.initiateReviewFlow() },
         isPlaying = state.isPlaying,
         modifier = Modifier
             .padding(horizontal = ContentPadding.medium)
@@ -607,7 +634,7 @@ private inline fun Controls(
     // Skip to Next
     enabled = !state.isLast
     IconButton(
-        onClick = { state.skipToNext(); facade.launchReviewFlow() },
+        onClick = { state.skipToNext(); facade.initiateReviewFlow() },
         painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowRight),
         contentDescription = null,
         enabled = enabled,
@@ -618,7 +645,7 @@ private inline fun Controls(
     val mode = state.repeatMode
     AnimatedIconButton(
         id = R.drawable.avd_repeat_more_one_all,
-        onClick = { state.cycleRepeatMode(); facade.launchReviewFlow(); },
+        onClick = { state.cycleRepeatMode(); facade.initiateReviewFlow(); },
         atEnd = mode == Player.REPEAT_MODE_ALL,
         tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
     )
@@ -920,7 +947,7 @@ private fun Options(
     val facade = LocalSystemFacade.current
     LottieAnimButton(
         id = R.raw.lt_twitter_heart_filled_unfilled,
-        onClick = { state.toggleFav(); facade.launchReviewFlow() },
+        onClick = { state.toggleFav(); facade.initiateReviewFlow() },
         scale = 3.5f,
         progressRange = 0.13f..0.95f,
         duration = 800,
@@ -1135,7 +1162,7 @@ private fun MainContent(
         // Signature
         Text(
             text = stringResource(id = R.string.app_name),
-            fontFamily = Settings.DancingScriptFontFamily,
+            fontFamily = FontFamily.DancingScriptFontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 70.sp,
             modifier = Modifier.layoutId(Constraints.ID_SIGNATURE),
@@ -1307,6 +1334,7 @@ private const val TWO_PANE_RADIUS_PCT = 7
  */
 private const val DETAILS_OF_NONE = -1
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Console(state: Console) {
     // Get the current window size to adapt the UI accordingly

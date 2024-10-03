@@ -23,14 +23,17 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FixedThreshold
 import androidx.compose.material.FractionalThreshold
@@ -50,6 +53,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -62,8 +66,10 @@ import com.primex.core.composableOrNull
 import com.primex.core.thenIf
 import com.primex.core.verticalFadingEdge
 import com.primex.core.visualEffect
+import com.primex.material2.Button
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.primex.material2.OutlinedButton
 import com.primex.material2.TextButton
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
@@ -234,16 +240,18 @@ internal fun Toast(
     // State for swipe-to-dismiss gesture
     val dismissState = rememberDismissState(
         confirmStateChange = {
-            val confirm = !isExpanded // Dismiss only if not expanded
-            if (confirm) value.dismiss() // Execute action if confirmed
-            confirm
+            // Dismiss only if not expanded
+            if (isExpanded) return@rememberDismissState false
+            // Execute action if confirmed
+            if (it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) value.dismiss()
+            true
         }
     )
 
     // SwipeToDismiss composable for handling swipe gesture
     SwipeToDismiss(
         dismissState,
-        background = {},
+        background = { },
         dismissThresholds = { FixedThreshold(150.dp) },
         modifier = modifier
             .animateContentSize()
@@ -265,12 +273,15 @@ internal fun Toast(
                 },
                 // Trailing action button if available and not expanded
                 trailing = composableOrNull(value.action != null && !isExpanded) {
-                    TextButton(
+                    OutlinedButton(
                         label = value.action!!,
                         onClick = value::action,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = actionColor
-                        )
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = actionColor,
+                            backgroundColor = Color.Transparent,
+                        ),
+                        shape = CircleShape,
+                        modifier = Modifier.scale(0.9f)
                     )
                 },
                 // Toast message
@@ -300,10 +311,15 @@ internal fun Toast(
                             // Action button if available
                             val action = value.action
                             if (action != null)
-                                TextButton(
+                                Button(
                                     label = action,
                                     onClick = value::action,
-                                    colors = ButtonDefaults.textButtonColors(contentColor = actionColor),
+                                    colors = ButtonDefaults.buttonColors(
+                                        contentColor = actionColor,
+                                        backgroundColor = actionColor.copy(0.2f).compositeOver(
+                                            AppTheme.colors.background
+                                        )
+                                    ),
                                     modifier = Modifier.scale(0.9f),
                                     shape = AppTheme.shapes.compact,
                                     elevation = null
@@ -321,7 +337,7 @@ internal fun Toast(
                 },
                 modifier = Modifier
                     .padding(horizontal = 18.dp)
-                    .shadow(6.dp, shape, clip = false)
+                    .shadow(6.dp, shape, clip = true)
                     // Toggle expanded state on click
                     .clickable(indication = null, interactionSource = null) {
                         if (value.message.length < 100)
@@ -337,7 +353,7 @@ internal fun Toast(
                     }
                     .visualEffect(ImageBrush.NoiseBrush, 0.60f, overlay = true)
                     .background(backgroundColor)
-                    .clip(shape)
+                    //.clip(shape)
                     .sizeIn(360.dp, 56.dp, 400.dp, 340.dp)
             )
         }

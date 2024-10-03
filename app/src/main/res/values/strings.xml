@@ -285,10 +285,12 @@
     <string name="audios_scr_greater_than_10_mins">Greater than 10 Min</string>
 
     <!--===========================  Permission Screen ==========================================-->
-    <string name="permission_screen_title">Storage\nPermission</string>
-    <string name="permission_screen_desc">
-       This app lets you enjoy audio files from your device’s storage. To do that, it needs your
-        permission to access your storage
+    <string name="permission_screen_title">Storage Permission</string>
+    <string name="permission_screen_desc">For the best experience with <b><i>&appname;</i></b>, we need to access your device\'s files. This allows us to:
+        \n       • Seamlessly play your media
+        \n       • Optimize playback quality
+        \n       • Personalize app features
+        \nYour data <b>security</b> and <b>privacy</b> are our top priorities. Thank you for your support!
     </string>
 
     <!--============================ Blacklist Dialog  ====================================      -->
@@ -409,4 +411,5 @@
     </string>
     <string name="dive_in">Dive In!</string>
     <string name="home">Home</string>
+    <string name="msg_update_check_error"><b>Error</b>\nOops an unknown error occurred while checking for update.</string>
 </resources>

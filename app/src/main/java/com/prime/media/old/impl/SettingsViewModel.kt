@@ -16,9 +16,10 @@ import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.old.common.util.PathUtils
 import com.prime.media.old.common.util.asComposeState
-import com.prime.media.old.settings.ColorizationStrategy
-import com.prime.media.old.settings.Preference
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.ColorizationStrategy
+import com.prime.media.settings.Preference
+import com.prime.media.settings.Settings
+import com.prime.media.settings.SettingsViewState
 import com.primex.core.Text
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
@@ -35,7 +36,7 @@ private fun <T> Flow<T>.asComposeState(): State<T> = asComposeState(runBlocking 
 
 class SettingsViewModel(
     private val preferences: Preferences
-) : ViewModel(), Settings {
+) : ViewModel(), SettingsViewState {
 
     override val darkUiMode by with(preferences) {
         preferences[Settings.NIGHT_MODE].map {

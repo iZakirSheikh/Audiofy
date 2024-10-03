@@ -35,21 +35,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.prime.media.MainActivity
 import com.prime.media.R
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.common.preference
-import com.prime.media.old.settings.Settings
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.preference
+import com.prime.media.settings.Settings
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.toast.Toast
+import kotlinx.coroutines.flow.map
 
 private const val TAG = "Personalize"
 
@@ -76,7 +79,7 @@ private fun Toolbar(modifier: Modifier = Modifier) {
             IconButton(
                 Icons.TwoTone.Info,
                 onClick = {
-                    facade.show(
+                    facade.showToast(
                         R.string.msg_scr_personalize_customize_everywhere,
                         duration = Toast.DURATION_INDEFINITE
                     )
@@ -95,8 +98,12 @@ fun Personalize(viewState: PersonalizeViewState) {
     Scaffold(
         topBar = { Toolbar() },
         content = {
-            val facade = LocalSystemFacade.current
-            val details by facade.inAppProductDetails.collectAsState()
+            val facade = LocalSystemFacade.current as? MainActivity
+            if (facade ==null)
+                return@Scaffold
+            val details by remember() {
+                facade.paymaster.details.map { it.associateBy { it.id } }
+            }.collectAsState(emptyMap())
 
             // The selected Widget
             val selected by preference(Settings.GLANCE)

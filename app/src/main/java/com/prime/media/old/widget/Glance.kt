@@ -47,23 +47,23 @@ import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.BuildConfig
-import com.prime.media.old.MainActivity
+import com.prime.media.MainActivity
 import com.prime.media.R
-import com.prime.media.old.config.RoutePersonalize
-import com.prime.media.old.console.Console
-import com.zs.core_ui.ContentPadding
+import com.prime.media.common.preference
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.current
-import com.prime.media.old.common.preference
-import com.zs.core_ui.scale
+import com.prime.media.old.config.RoutePersonalize
+import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.core.foreground
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
+import com.zs.core_ui.scale
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import kotlinx.coroutines.Dispatchers
@@ -145,7 +145,8 @@ private fun MiniLayout(
         .sharedBounds(
             Glance.SHARED_BACKGROUND_ID,
             exit = fadeOut() + scaleOut(),
-            enter = fadeIn() + scaleIn()
+            enter = fadeIn() + scaleIn(),
+            zIndexInOverlay = 0.21f
         )
         .shadow(Glance.ELEVATION, CircleShape)
         .background(AppTheme.colors.background(1.dp))
@@ -158,7 +159,7 @@ private fun MiniLayout(
                 .border(1.dp, Color.White.copy(0.12f), CircleShape)
                 .aspectRatio(1.0f)
                 .foreground(Color.Black.copy(0.24f))
-                .sharedElement(Glance.SHARED_ARTWORK_ID)
+                .sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0.22f)
                 .clip(CircleShape),
         )
 
@@ -176,7 +177,7 @@ private fun MiniLayout(
             iterations = Int.MAX_VALUE,
             dynamicProperties = properties,
             modifier = Modifier
-                .sharedBounds(Glance.SHARED_PLAYING_BARS_ID)
+                .sharedBounds(Glance.SHARED_PLAYING_BARS_ID, zIndexInOverlay = 0.23f)
                 .requiredSize(24.dp),
             isPlaying = playing,
         )

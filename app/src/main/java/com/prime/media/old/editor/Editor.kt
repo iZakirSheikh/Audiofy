@@ -74,8 +74,8 @@ import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Divider
 import com.zs.core.paymaster.purchased
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.common.purchase
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.purchase
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.composableOrNull
@@ -251,7 +251,7 @@ private inline fun Artwork(
             when {
                 it == null -> return@rememberLauncherForActivityResult // just return.
                 purchase.purchased -> onRequestChange(it)
-                else -> facade.show(R.string.msg_upgrade_to_pro)
+                else -> facade.showToast(R.string.msg_upgrade_to_pro)
             }
         }
         IconButton(onClick = { launcher.launch(PickMediaRequest) }) {
@@ -287,7 +287,7 @@ private inline fun BuyMe() {
             footer = {
                 TextButton(
                     label = textResource(id = R.string.tag_editor_screen_buy_now_action),
-                    onClick = { facade.launchBillingFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
+                    onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
             },
             color = AppTheme.colors.background(1.dp),
             onColor = AppTheme.colors.onBackground,

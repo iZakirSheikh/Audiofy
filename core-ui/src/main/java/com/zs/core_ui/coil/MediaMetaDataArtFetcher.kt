@@ -1,5 +1,24 @@
-package com.prime.media.old.common.coil
+/*
+ * Copyright 2024 Zakir Sheikh
+ *
+ * Created by 2024 on 03-10-2024.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package com.zs.core_ui.coil
+
+import android.content.ContentResolver
 import android.content.ContentUris
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
@@ -7,6 +26,7 @@ import android.net.Uri
 import android.os.Build.VERSION.SDK_INT
 import android.provider.MediaStore
 import androidx.core.graphics.drawable.toDrawable
+import coil.ImageLoader
 import coil.decode.DataSource
 import coil.decode.DecodeUtils
 import coil.fetch.DrawableResult
@@ -14,30 +34,19 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.request.Options
 import coil.size.Dimension
-import com.prime.media.R
-import com.prime.media.old.core.db.query2
 
 private const val TAG = "MediaMetaDataArtFetcher"
 
-/**
- *  FixMe: Find Proper way to implement this thing.
- *
- * The default fetch result containing a default drawable to be used when there is an error
- * or failure in retrieving the actual image.
- * This is generated lazily.
-
- */
-private var DEFAULT_RESULT: FetchResult? = null
-
 /** [MediaMetadataRetriever] doesn't implement [AutoCloseable] until API 29. */
 private inline fun <T> MediaMetadataRetriever.use(block: (MediaMetadataRetriever) -> T): T {
-    try { return block(this) } finally {
+    try {
+        return block(this)
+    } finally {
         // We must call 'close' on API 29+ to avoid a strict mode warning.
         if (SDK_INT >= 29) close() else release()
     }
 }
 
-// TODO: Move this class to its proper place.
 /**
  * This class is responsible for fetching real album art from media using the [MediaMetadataRetriever].
  *
@@ -57,22 +66,27 @@ class MediaMetaDataArtFetcher(
     private val data: Uri,
     private val options: Options
 ) : Fetcher {
-    override suspend fun fetch(): FetchResult {
-        // Initialize the default fetcher only once.
-        // But why is this required, you might wonder?
-        // The necessity arises from the fact that if we simply return the default implementation
-        // of UriFetcher provided by Coil, it may return incorrect or invalid artwork for certain results.
-        // So, to ensure consistent and reliable default artwork behavior, we set up a DrawableResult
-        // representing the default artwork. This DrawableResult is then used as the fallback
-        // when fetching artwork for a particular result.
-        if (DEFAULT_RESULT == null) {
-            DEFAULT_RESULT = DrawableResult(
-                options.context.getDrawable(R.drawable.default_art)!!,
-                isSampled = false,
-                dataSource = DataSource.MEMORY
-            )
+    /**
+     * Creates a [Fetcher] for the given [Uri] if it is an album art URI.
+     */
+    class Factory : Fetcher.Factory<Uri> {
+        override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
+            // Check if the URI is a content URI (used for content providers like MediaStore).
+            // Check if the URI authority is MediaStore (indicates it's a media file).
+            if (data.authority != MediaStore.AUTHORITY || data.scheme != ContentResolver.SCHEME_CONTENT) return null
+            // Get the path segments of the URI.
+            val segments = data.pathSegments
+            val size = segments.size
+            // Check if the URI points to an album art image in MediaStore.
+            // If it's an album art URI, create a MediaMetaDataArtFetcher to handle it.
+            // Otherwise, return null (no fetcher available for this URI).
+            return if (size >= 3 && segments[size - 3] == "audio" && segments[size - 2] == "albums")
+                MediaMetaDataArtFetcher(data, options)
+            else null
         }
+    }
 
+    override suspend fun fetch(): FetchResult? {
         // The 'data[uri]' we receive above still represents the album art URI.
         // However, this URI format is not directly compatible with the MediaMetadataRetriever.
         // To work with MediaMetadataRetriever, we need to extract the album ID from this URI.
@@ -89,23 +103,22 @@ class MediaMetaDataArtFetcher(
         val parent = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
         // Query the data using the resolver with specified parameters.
-        val data = resolver.query2(parent, projection, selection, null, limit = 1).use {
+        val data = resolver.query(parent, projection, selection, null, null).use {
             // This section of code handles an unexpected scenario where the retrieval of album art data
             // encounters an issue. If this situation occurs, we should return the default artwork instead.
             // This is a fallback mechanism to ensure that even in the face of errors or missing data,
             // we can provide a default result.
             if (it == null || !it.moveToFirst())
-                return DEFAULT_RESULT!!
+                return null
             // At this point in the code, we expect that the path should not be null.
             // However, if somehow it is null, we again fall back to the default result.
-            it.getString(0) ?: return DEFAULT_RESULT!!
+            it.getString(0) ?: return null
         }
-
         // Initialize a MediaMetadataRetriever to work with the retrieved data.
         return MediaMetadataRetriever().use { retriever ->
             retriever.setDataSource(data)
             // fallback to default if null
-            val bytes = retriever.embeddedPicture ?: return DEFAULT_RESULT!!
+            val bytes = retriever.embeddedPicture ?: return null
             var isSampled: Boolean
             val bitmap = BitmapFactory.Options().let {
                 // Set inJustDecodeBounds to true to determine the image dimensions without loading it.
@@ -157,4 +170,3 @@ class MediaMetaDataArtFetcher(
         }
     }
 }
-

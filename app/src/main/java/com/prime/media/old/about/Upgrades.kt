@@ -53,8 +53,8 @@ import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
 import com.zs.core.paymaster.purchased
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.common.purchase
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.purchase
 import com.zs.core_ui.shimmer.shimmer
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -180,7 +180,7 @@ private fun Product(
                             IconButton(
                                 imageVector = Icons.Outlined.Info,
                                 onClick = {
-                                    facade.show(
+                                    facade.showToast(
                                         details.description,
                                         duration = Toast.DURATION_INDEFINITE
                                     )
@@ -233,8 +233,8 @@ fun Upgrades(
                 onClick = {
                     val isDynamicFeature = details.isDynamicFeature
                     when {
-                        !state.purchased -> facade.launchBillingFlow(id)
-                        else -> facade.show(
+                        !state.purchased -> facade.initiatePurchaseFlow(id)
+                        else -> facade.showToast(
                             "You already own ${details.title}! \nThanks for your support \uD83D\uDE0A"
                         )
                     }

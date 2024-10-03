@@ -36,7 +36,7 @@ import com.prime.media.old.directory.MetaData
 import com.prime.media.old.directory.ViewType
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.block
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.core.DahliaYellow
 import com.primex.core.Rose
 import com.primex.core.Text

@@ -42,6 +42,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
@@ -374,6 +375,11 @@ object AppTheme {
     val colors: Colors get() = Colors
     val padding get() = ContentPadding
     val elevation get() = ContentElevation
+
+    /**
+     * Represents an empty set of padding values.
+     */
+    val emptyPadding = PaddingValues(0.dp)
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     val sharedTransitionScope

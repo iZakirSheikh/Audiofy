@@ -54,7 +54,7 @@ import com.prime.media.old.directory.*
 import com.prime.media.old.directory.dialogs.Playlists
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.impl.Repository
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
 import com.primex.preferences.Preferences

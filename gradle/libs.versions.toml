@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.0"
 kotlin = "2.0.20"
-compose = "1.8.0-alpha02"
+compose = "1.8.0-alpha03"
 media3 = "1.4.1"
 toolkit = "2.0.2-rc04"
 material_icons = "1.7.2"

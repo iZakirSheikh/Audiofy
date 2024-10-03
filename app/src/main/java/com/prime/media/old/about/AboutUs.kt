@@ -41,33 +41,29 @@ import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ReplyAll
-import androidx.compose.material.icons.outlined.AlternateEmail
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Coffee
-import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
-import com.prime.media.old.MainActivity
+import com.prime.media.MainActivity
 import com.prime.media.R
-import com.zs.core_ui.ContentPadding
 import com.prime.media.common.Banner
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.DancingScriptFontFamily
 import com.primex.core.drawHorizontalDivider
 import com.primex.core.textResource
 import com.primex.material2.IconButton
@@ -79,8 +75,8 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
-import com.zs.core_ui.toast.Toast
-import kotlinx.coroutines.launch
+import com.zs.core_ui.ContentPadding
+import kotlinx.coroutines.flow.map
 
 private const val TAG = "AboutUs"
 
@@ -111,69 +107,69 @@ private fun TopAppBar(
             scrolledContentColor = AppTheme.colors.onBackground,
             containerColor = AppTheme.colors.background(0.1.dp)
         ),
-        actions = {
-            val facade = LocalSystemFacade.current as MainActivity
-            val scope = rememberCoroutineScope()
-            // Feedback
-            IconButton(
-                imageVector = Icons.Outlined.AlternateEmail,
-                onClick = {
-                    scope.launch {
-                        val res = facade.channel.showToast(
-                            message = "Something not working as expected? Share your feedback to help us improve.",
-                            action = "Proceed",
-                        )
-                        if (res == Toast.ACTION_PERFORMED)
-                            facade.launch(Settings.FeedbackIntent)
-                    }
-                },
-            )
+        /*  actions = {
+              val facade = LocalSystemFacade.current as MainActivity
+              val scope = rememberCoroutineScope()
+              // Feedback
+              IconButton(
+                  imageVector = Icons.Outlined.AlternateEmail,
+                  onClick = {
+                      scope.launch {
+                          val res = facade.channel.showToast(
+                              message = "Something not working as expected? Share your feedback to help us improve.",
+                              action = "Proceed",
+                          )
+                          if (res == Toast.ACTION_PERFORMED)
+                              facade.launch(Settings.FeedbackIntent)
+                      }
+                  },
+              )
 
-            // Star on Github
-            IconButton(
-                imageVector = Icons.Outlined.DataObject,
-                onClick = {
-                    scope.launch {
-                        val res = facade.channel.showToast(
-                            message = "Curious about the code? Check out our GitHub repository and don't forget to star us if you like it!",
-                            action = "View",
-                        )
-                        if (res == Toast.ACTION_PERFORMED)
-                            facade.launch(Settings.GithubIntent)
-                    }
-                },
-            )
+              // Star on Github
+              IconButton(
+                  imageVector = Icons.Outlined.DataObject,
+                  onClick = {
+                      scope.launch {
+                          val res = facade.channel.showToast(
+                              message = "Curious about the code? Check out our GitHub repository and don't forget to star us if you like it!",
+                              action = "View",
+                          )
+                          if (res == Toast.ACTION_PERFORMED)
+                              facade.launch(Settings.GithubIntent)
+                      }
+                  },
+              )
 
-            // Report Bugs on Github.
-            IconButton(
-                imageVector = Icons.Outlined.BugReport,
-                onClick = {
-                    scope.launch {
-                        val res = facade.channel.showToast(
-                            message = "Spot a bug, typo, or have a feature request? Let us know on GitHub!",
-                            action = "Proceed",
-                        )
-                        if (res == Toast.ACTION_PERFORMED)
-                            facade.launch(Settings.GitHubIssuesPage)
-                    }
-                },
-            )
+              // Report Bugs on Github.
+              IconButton(
+                  imageVector = Icons.Outlined.BugReport,
+                  onClick = {
+                      scope.launch {
+                          val res = facade.channel.showToast(
+                              message = "Spot a bug, typo, or have a feature request? Let us know on GitHub!",
+                              action = "Proceed",
+                          )
+                          if (res == Toast.ACTION_PERFORMED)
+                              facade.launch(Settings.GitHubIssuesPage)
+                      }
+                  },
+              )
 
-            // Join our telegram channel
-            IconButton(
-                imageVector = Icons.Outlined.SupportAgent,
-                onClick = {
-                    scope.launch {
-                        val res = facade.channel.showToast(
-                            message = "Join our Telegram community for support, discussions, and updates!",
-                            action = "Join",
-                        )
-                        if (res == Toast.ACTION_PERFORMED)
-                            facade.launch(Settings.TelegramIntent)
-                    }
-                },
-            )
-        }
+              // Join our telegram channel
+              IconButton(
+                  imageVector = Icons.Outlined.SupportAgent,
+                  onClick = {
+                      scope.launch {
+                          val res = facade.channel.showToast(
+                              message = "Join our Telegram community for support, discussions, and updates!",
+                              action = "Join",
+                          )
+                          if (res == Toast.ACTION_PERFORMED)
+                              facade.launch(Settings.TelegramIntent)
+                      }
+                  },
+              )
+          }*/
     )
 }
 
@@ -191,7 +187,7 @@ private fun AppInfoBanner(
                 text = textResource(id = R.string.app_name),
                 style = AppTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                fontFamily = Settings.DancingScriptFontFamily
+                fontFamily = FontFamily.DancingScriptFontFamily
             )
         },
         // Title
@@ -235,7 +231,7 @@ private fun AppInfoBanner(
 
                     // Donate
                     Button(
-                        onClick = { facade.launchBillingFlow(BuildConfig.IAP_BUY_ME_COFFEE) },
+                        onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_BUY_ME_COFFEE) },
                         modifier = buttonModifier,
                         colors = buttonColors,
                         shape = buttonShape,
@@ -247,7 +243,7 @@ private fun AppInfoBanner(
                             IconButton(
                                 imageVector = Icons.Outlined.Lightbulb,
                                 onClick = {
-                                    facade.show(
+                                    facade.showToast(
                                         message = R.string.msg_library_buy_me_a_coffee,
                                         icon = Icons.Outlined.Coffee
                                     )
@@ -272,7 +268,7 @@ private fun AppInfoBanner(
                             IconButton(
                                 imageVector = Icons.Outlined.Lightbulb,
                                 onClick = {
-                                    facade.show(
+                                    facade.showToast(
                                         message = R.string.msg_library_rate_us,
                                         icon = Icons.Outlined.Coffee
                                     )
@@ -346,7 +342,13 @@ fun AboutUs() {
                     )
 
                 // Upgrades
-                val products by facade.inAppProductDetails.collectAsState()
+                val activity = LocalSystemFacade.current as? MainActivity
+                if (activity == null)
+                    return@Column
+                val products by remember {
+                    activity.paymaster.details.map { it.associateBy { it.id } }
+                }.collectAsState(emptyMap())
+
                 if (products.isNotEmpty()) {
                     Header(text = "Upgrades")
                     Upgrades(

@@ -18,13 +18,14 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.UiComposable
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.toast.ToastHost
@@ -32,12 +33,12 @@ import com.zs.core_ui.toast.ToastHostState
 
 private const val TAG = "NavigationSuitScaffold"
 
-private val EmptyInsets = PaddingValues(0.dp)
+private val EmptyInsets = AppTheme.emptyPadding
 
 /**
  * The content insets for the screen under current [NavigationSuitScaffold]
  */
-private val LocalContentInsets =
+internal val LocalContentInsets =
     compositionLocalOf { EmptyInsets }
 
 /**
@@ -69,109 +70,108 @@ private const val INDEX_PROGRESS_BAR = 4
 private val MINI_PIXEL_SIZE = 60.dp
 
 /**
- * A flexible Scaffold that provides a structured layout for displaying content along with a navigation bar,
- * pixel element, snack bar, and progress bar. It supports both vertical and horizontal layouts.
+ * A flexible Scaffold for displaying content with a navigation bar, a dynamic "pixel" element
+ * (similar to iPhone's Dynamic Island), a toast, and a progress bar. Supports vertical and
+ * horizontal layouts, automatically managing window insets to avoid overlap with system bars.
  *
  * **Vertical Layout:**
- * - Navigation bar is displayed at the bottom of the screen.
- * - Pixel element, snack bar, and progress bar are also positioned at the bottom.
+ * - Navigation bar at the bottom.
+ * - "Widget", Toast, and ProgressBar also at the bottom.
  *
  * **Horizontal Layout:**
- * - A navigation rail (or sidebar) is used instead of a bottom navigation bar.
- * - Pixel element and snack bar are positioned at the end of the screen.
+ * - Navigation rail (sidebar) instead of a bottom bar.
+ * - "Window" and toast at the bottom center.
  *
- * **Key Features:**
- * - Automatic window padding management for the pixel element in both layouts.
- * - Customizable background and content colors.
- * - Support for displaying snack bar messages using a [Channel].
- * - Ability to show a determinate or indeterminate progress bar.
- * - Option to force hide the navigation bar.
- *
- * **Usage Recommendations:**
- * - For snack bars, a maximum length of 360 dp is suggested.
- *
- * @param vertical Determines the layout orientation (true for vertical, false for horizontal).
- * @param content The main content to be displayed within the Scaffold.
- * @param modifier Optional [Modifier] to be applied to the Scaffold.
- * @param pixel A composable representing the dynamic "pixel" element, similar to iPhone's Dynamic Island.
- * @param hideNavigationBar Set to true to force hide the navigation bar.
- * @param background The background color of the Scaffold.
- * @param contentColor The color of the content within the Scaffold.
- * @param channel A [Channel] for handling snackbar messages.
- * @param progress The progress value for the linear progress bar (Float.NaN to hide, -1 for indeterminate, 0-1 for determinate).
- * @param navBar A composable function that provides the navigation bar (for vertical layout) or navigation rail (for horizontal layout).
+ * @param vertical `true` for vertical layout, `false` for horizontal.
+ * @param content The screen's main content.
+ * @param modifier Modifier for the Scaffold.
+ * @param widget Composable for the dynamic "pixel" element.
+ * @param hideNavigationBar `true` to hide the navigation bar.
+ * @param background Background color.
+ * @param contentColor Content color.
+ * @param toastHostState A [ToastHostState] for handling toast messages.
+ * @param progress Progress value (`Float.NaN` to hide, `-1f` for indeterminate, `0f - 1f` for determinate).
+ * @param navBar Composable for the navigation bar or rail.
  */
 @Composable
 fun NavigationSuiteScaffold(
     vertical: Boolean,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    pixel: @Composable () -> Unit = {},
+    widget: @Composable () -> Unit = {},
     hideNavigationBar: Boolean = false,
-    shape: Shape = RectangleShape,
     background: Color = AppTheme.colors.background,
     contentColor: Color = contentColorFor(backgroundColor = background),
     toastHostState: ToastHostState = remember(::ToastHostState),
     @FloatRange(0.0, 1.0) progress: Float = Float.NaN,
     navBar: @Composable () -> Unit,
 ) {
-    val (insets, onNewInsets) = remember { mutableStateOf(EmptyInsets) }
-    // Compose all the individual elements of the Scaffold into a single composable
-    val composed = @Composable {
-        // Provide the content color for the main content
-        Box(modifier = Modifier.clip(shape)) {
+    val (insets, onNewInsets) =
+        remember { mutableStateOf(EmptyInsets) }
+    val navBarInsets = WindowInsets.navigationBars
+    Layout(
+        modifier = modifier
+            .background(background)
+            .fillMaxSize(),
+        measurePolicy = remember(vertical, navBarInsets) {
+            when {
+                vertical -> VerticalMeasurePolicy(navBarInsets, onNewInsets)
+                else -> HorizontalMeasurePolicy(navBarInsets, onNewInsets)
+            }
+        },
+        content = {
+            // Provide the content color for the main content
             CompositionLocalProvider(
                 LocalContentColor provides contentColor,
                 LocalContentInsets provides insets,
                 content = content
             )
+            // Conditionally display the navigation bar based on
+            // 'hideNavigationBar'
+            // Display the navigation bar (either bottom bar or navigation rail)
+            // Don't show anything.
+            when (hideNavigationBar) {
+                true -> Spacer(modifier = Modifier)
+                else -> navBar()
+            }
+            // Display the SnackBar using the provided channel
+            ToastHost(toastHostState)
+            // Display the pixel element
+            Box { widget() }
+            // Conditionally display the progress bar based on the 'progress' value
+            // Show an indeterminate progress bar when progress is -1
+            // Show a determinate progress bar when progress is between 0 and 1
+            when {
+                progress == -1f -> LinearProgressIndicator()
+                !progress.isNaN() -> LinearProgressIndicator(progress = progress)
+                else -> Spacer(modifier = Modifier)
+            }
         }
-
-        // Conditionally display the navigation bar based on
-        // 'hideNavigationBar'
-        // Display the navigation bar (either bottom bar or navigation rail)
-        // Don't show anything.
-        when (hideNavigationBar) {
-            true -> Spacer(modifier = Modifier)
-            else -> navBar()
-        }
-        // Display the SnackBar using the provided channel
-        ToastHost(toastHostState)
-        // Display the pixel element
-        Box { pixel() }
-        // Conditionally display the progress bar based on the 'progress' value
-        // Show an indeterminate progress bar when progress is -1
-        // Show a determinate progress bar when progress is between 0 and 1
-        when {
-            progress == -1f -> LinearProgressIndicator()
-            !progress.isNaN() -> LinearProgressIndicator(progress = progress)
-            else -> Spacer(modifier = Modifier)
-        }
-    }
-    // Apply background color and fill the available space with the Scaffold
-    val finalModifier = modifier
-        .background(background)
-        .fillMaxSize()
-    // Choose the layout based on 'vertical' flag
-    when (vertical) {
-        true -> Vertical(content = composed, onNewInsets, modifier = finalModifier)
-        else -> Horizontal(content = composed, onNewInsets, modifier = finalModifier)
-    }
+    )
 }
 
-@Composable
-private inline fun Vertical(
-    content: @UiComposable @Composable () -> Unit,
-    crossinline onNewInsets: (PaddingValues) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    // Insets for the system navigation bar. This will be used to adjust
-    // the position of elements when the navigation bar is hidden.
-    val systemNavBarInsets = WindowInsets.navigationBars
-    Layout(
-        content = content,
-        modifier = modifier,
-    ) { measurables, c ->
+/**
+ * A [MeasurePolicy] for the [NavigationSuiteScaffold] that arranges the content, navigation bar,
+ * floating widget, and toast in a vertical layout.
+ *
+ * This policy positions the navigation bar at the bottom of the screen. Content is displayed above the
+ * navigation bar and consumes the remaining available space. A floating widget is positioned above the
+ * center of the navigation bar. Toasts are displayed on top of all other elements, ensuring they are
+ * always visible.
+ *
+ * @param insets The [WindowInsets] to be applied to the toast and floating widget to prevent them
+ * from being obscured when the navigation bar is not visible.
+ * @param onNewInsets A lambda function that receives the [PaddingValues] to be applied to the content,
+ * ensuring it is not hidden behind the navigation bar.
+ */
+private class VerticalMeasurePolicy(
+    private val insets: WindowInsets,
+    private val onNewInsets: (PaddingValues) -> Unit
+) : MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        c: Constraints
+    ): MeasureResult {
         val width = c.maxWidth
         val height = c.maxHeight
         // Measure the size requirements of each child element, allowing
@@ -190,7 +190,7 @@ private inline fun Vertical(
         // Calculate the insets for the content.
         // and report through onNewIntent
         onNewInsets(PaddingValues(bottom = navBarPlaceable.height.toDp()))
-        layout(width, height) {
+        return layout(width, height) {
             // Place the main content at the top, filling the space up to the navigation bar
             contentPlaceable.placeRelative(0, 0)
             // Place navbar at the bottom of the screen.
@@ -203,7 +203,7 @@ private inline fun Vertical(
             // Add insets to pixel only if nav bar is hidden.
             val isNavBarHidden = navBarPlaceable.isZeroSized
             val insets =
-                if (isNavBarHidden) systemNavBarInsets.getBottom(density = this@Layout) else 0
+                if (isNavBarHidden) insets.getBottom(density = this@measure) else 0
             // Place Toast at the centre bottom of the screen
             // remove nav bar offset from it.
             x = width / 2 - snackBarPlaceable.width / 2   // centre
@@ -229,27 +229,38 @@ private inline fun Vertical(
             y =
                 if (isExpanded) height - navBarPlaceable.height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insets
                 // start centre of nav_bar
-                else height - navBarPlaceable.height + 16.dp.roundToPx()
+                else height - navBarPlaceable.height + 32.dp.roundToPx()
             pixelPlaceable.placeRelative(x, y)
         }
     }
 }
 
-@Composable
-private inline fun Horizontal(
-    content: @UiComposable @Composable () -> Unit,
-    crossinline onNewInsets: (PaddingValues) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Insets for the system navigation bar. This will be used to adjust
-    // the position of elements when the navigation bar is hidden.
-    val systemNavBarInsets = WindowInsets.navigationBars
-    // TODO - Maybe use this to update the insets?
-    onNewInsets(EmptyInsets)
-    Layout(
-        content = content,
-        modifier = modifier,
-    ) { measurables, c ->
+/**
+ * A [MeasurePolicy] for the [NavigationSuiteScaffold] that arranges the content, navigation bar,
+ * floating widget, and toast in a horizontal layout.
+ *
+ * This policy positions the navigation bar to the side of the screen. The content is displayed next
+ * to the navigation bar. The navigation bar can be a navigation rail or a wide navigation bar
+ * depending on the user's configuration.
+ *
+ * In this layout, the [onNewInsets] lambda returns [EmptyInsets] because the width of the navigation
+ * bar is already accounted for and deducted from the available space for the content.
+ *
+ * The floating widget and toast are positioned at the bottom center of the screen.
+ *
+ * @param insets The [WindowInsets] to be applied to the toast and floating widget to prevent them
+ * from being obscured when the navigation bar is not visible.
+ * @param onNewInsets A lambda function that provides [PaddingValues] to the content. In this case,
+ * it returns [EmptyInsets] as the navigation bar width is already excluded from the content's available space.
+ */
+private class HorizontalMeasurePolicy(
+    private val insets: WindowInsets,
+    private val onNewInsets: (PaddingValues) -> Unit
+) : MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        c: Constraints
+    ): MeasureResult {
         val width = c.maxWidth
         val height = c.maxHeight
         // Measure the size requirements of each child element
@@ -264,7 +275,9 @@ private inline fun Horizontal(
         val contentWidth = width - navBarPlaceable.width
         constraints = c.copy(minWidth = contentWidth, maxWidth = contentWidth)
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
-        layout(width, height) {
+        // reset new insets
+        onNewInsets(EmptyInsets)
+        return layout(width, height) {
             var x = 0
             var y = 0
             // place nav_bar from top at the start of the screen
@@ -278,7 +291,7 @@ private inline fun Horizontal(
             y = (height - progressBarPlaceable.height)
             progressBarPlaceable.placeRelative(x, y)
             // Place pixel above the system navigationBar at the centre of the screen.
-            val insetBottom = systemNavBarInsets.getBottom(density = this@Layout)
+            val insetBottom = insets.getBottom(density = this@measure)
             // Place SnackBar at the centre bottom of the screen
             // remove nav bar offset from it.
             x = width / 2 - snackBarPlaceable.width / 2   // centre
@@ -293,10 +306,10 @@ private inline fun Horizontal(
             // - Expanded: Anchor it to the bottom center of the entire screen.
             //- Collapsed: Align it to the bottom center of the navigation rail.
             // Additionally, suppress rendering if the navigation rail is not present.
-            x = if (isExpanded) width / 2 - pixelPlaceable.width / 2 else navBarPlaceable.width / 2 - pixelPlaceable.width / 2
+            x =
+                if (isExpanded) width / 2 - pixelPlaceable.width / 2 else navBarPlaceable.width / 2 - pixelPlaceable.width / 2
             y = height - pixelPlaceable.height - STANDARD_SPACING.roundToPx() - insetBottom
             pixelPlaceable.placeRelative(x, y)
         }
     }
 }
-

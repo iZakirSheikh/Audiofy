@@ -131,6 +131,7 @@ fun MediaItem(
             .build()
     ).build()
 
+@Deprecated("Needs to be replaced with something new.")
 val MediaItem.artworkUri get() = mediaMetadata.artworkUri
 val MediaItem.title get() = mediaMetadata.title
 val MediaItem.subtitle get() = mediaMetadata.subtitle
@@ -189,6 +190,7 @@ private fun Context.fileName(uri: Uri): String? {
  * @param uri The URI of the media item.
  * @return A [MediaItem] object representing the media item.
  */
+@Deprecated("Use the one from com.prime.media.common")
 fun MediaItem(context: Context, uri: Uri): MediaItem {
     // Create a MediaMetadataRetriever object and set the data source.
     // maybe it might cause crash; android is stupid.

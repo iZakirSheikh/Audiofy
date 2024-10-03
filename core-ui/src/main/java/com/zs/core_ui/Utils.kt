@@ -2,16 +2,22 @@ package com.zs.core_ui
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.view.Window
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.zs.core_ui.toast.Duration
 import com.zs.core_ui.toast.Toast
 import android.widget.Toast as AndroidWidgetToast
+
+private const val TAG = "core-ui-Utils"
+
 
 /**
  * Checks if a given permission is granted for the application in the current context.
@@ -61,7 +67,6 @@ fun Context.showPlatformToast(
     AndroidWidgetToast.makeText(this, message, toastDuration).show()
 }
 
-
 /**
  * Controls whether both the system status bars and navigation bars have a light appearance.
  *
@@ -97,6 +102,9 @@ var Window.systemBarsColor: Color
     }
     get() = error("Not supported!")
 
+/**
+ * Represents a set of window insets with all values set to 0.
+ */
 private val NoneWindowInsets = WindowInsets(0)
 
 /**
@@ -104,4 +112,15 @@ private val NoneWindowInsets = WindowInsets(0)
  */
 val WindowInsets.Companion.None get() =  NoneWindowInsets
 
-
+/**
+ * Gets the package info of this app using the package manager.
+ * @return a PackageInfo object containing information about the app, or null if an exception occurs.
+ * @see android.content.pm.PackageManager.getPackageInfo
+ */
+fun PackageManager.getPackageInfoCompat(pkgName: String) =
+    com.primex.core.runCatching(TAG + "_review") {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            getPackageInfo(pkgName, PackageManager.PackageInfoFlags.of(0))
+        else
+            getPackageInfo(pkgName, 0)
+    }

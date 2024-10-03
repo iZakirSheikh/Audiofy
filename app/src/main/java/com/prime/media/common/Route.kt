@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -115,3 +116,23 @@ fun NavGraphBuilder.composable(
  */
 fun <T> NavGraph.setStartDestination(route: Route) =
     setStartDestination(route.route)
+
+/**
+ * Extracts the domain portion from a [NavDestination]'s route.
+ *
+ * The domain is considered to be the part of the route before the first '/'.
+ * For example, for the route "settings/profile", the domain would be "settings".
+ *
+ * @return The domain portion of the route, or null if the route is null or does not contain a '/'.
+ */
+val NavDestination.domain: String?
+    get() {
+        // Get the route, or return null if it's not available.
+        val route = route ?: return null
+
+        // Find the index of the first '/' character.
+        val index = route.indexOf('/')
+
+        // Return the substring before the '/' if it exists, otherwise return the entire route.
+        return if (index == -1) route else route.substring(0, index)
+    }

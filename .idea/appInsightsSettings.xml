@@ -29,22 +29,13 @@
                   <option name="projectNumber" value="395273193376" />
                 </ConnectionSetting>
               </option>
-              <option name="signal" value="SIGNAL_UNSPECIFIED" />
-              <option name="timeIntervalDays" value="THIRTY_DAYS" />
-              <option name="versions">
+              <option name="failureTypes">
                 <list>
-                  <VersionSetting>
-                    <option name="buildVersion" value="143" />
-                    <option name="displayName" value="3.0.0-alpha08 (143)" />
-                    <option name="displayVersion" value="3.0.0-alpha08" />
-                    <option name="tracks">
-                      <list>
-                        <option value="INTERNAL" />
-                      </list>
-                    </option>
-                  </VersionSetting>
+                  <option value="ANR" />
                 </list>
               </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="THIRTY_DAYS" />
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>

@@ -21,11 +21,12 @@ package com.prime.media.common
 import android.util.Log
 import android.view.View
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.prime.media.old.common.LocalSystemFacade
+import com.prime.media.MainActivity
 import com.zs.ads.AdSize
 
 private const val TAG = "Banner"
@@ -41,43 +42,47 @@ private const val TAG = "Banner"
  * @param key An optional key to identify the ad placement. This is typically
  *             used to differentiate between different ad units in your app.
  */
-@Suppress("UNRESOLVED_REFERENCE")
 @Composable
 fun Banner(
     modifier: Modifier = Modifier,
     size: AdSize = AdSize.SMART,
     key: String? = null,
 ) {
-    val facade = LocalSystemFacade.current
-    val view = facade.bannerAd
-    val id = remember { View.generateViewId()}
+    val activity = LocalSystemFacade.current as? MainActivity
+    if (activity == null) {
+        Log.i(TAG, "Loading Banner Ad is not supported in preview mode.")
+        return Spacer(modifier)
+    }
+    val view = activity.bannerAd
+    val id = remember(View::generateViewId)
     // Check if the current AdView is either null or has a different ID
     // than the one generated for this composable. This indicates that
     // either it's the first time the Banner composable is being used or
     // the previous AdView is still attached and needs to be detached first.
     if (view == null || view.id != View.NO_ID && view.id != id) {
-        Log.d(TAG, "Banner: $view with id: $id ; either it is still attached; wait for it to get detached.")
-        return
+        Log.d(
+            TAG,
+            "Banner: $view with id: $id ; either it is still attached; wait for it to get detached."
+        )
+        return Spacer(modifier)
     }
 
+    // Attach the AdView to the Composable hierarchy
     AndroidView(
         factory = {
             Log.d(TAG, "Banner: attaching to AndroidView")
-            // Assign the generated ID to the AdView
-            view.id = id
+            view.id = id // Assign the generated ID to the AdView
             view
         },
         modifier = modifier.animateContentSize(), // Apply modifiers to the AndroidView
         update = {
-            facade.loadBannerAd(size)
+            activity.loadBannerAd(size)
             Log.d(TAG, "onUpdate Banner : $key $size ")
         },
         onRelease = {
             Log.d(TAG, "onRelease Banner : $key $size ")
-            // Reset the AdView's ID to indicate it's no longer attached
-            view.id = View.NO_ID
-            // Clear the reference to the AdView in the facade
-            facade.bannerAd = null
+            view.id = View.NO_ID  // Reset the AdView's ID to indicate it's no longer attached
+            activity.bannerAd = null // Clear the reference to the AdView in the facade
         }
     )
 }

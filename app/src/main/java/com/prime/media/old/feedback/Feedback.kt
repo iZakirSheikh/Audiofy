@@ -64,16 +64,16 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.zs.core_ui.ContentPadding
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
-import com.prime.media.old.settings.Settings
+import com.prime.media.settings.Settings
 import com.primex.core.TrafficYellow
 import com.primex.core.textResource
 import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.Text
+import com.zs.core_ui.ContentPadding
 
 @Composable
 private fun Toolbar(

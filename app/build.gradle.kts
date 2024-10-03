@@ -69,8 +69,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 144
-        versionName = "3.0.0-beta01"
+        versionCode = 145
+        versionName = "3.0.0-beta02"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -120,7 +120,6 @@ dependencies {
     implementation(libs.bundles.play.services)
     implementation(libs.bundles.analytics)
 
-    implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.adaptive) // TODO - Replace this with custom impl.
     implementation(libs.toolkit.preferences)

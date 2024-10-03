@@ -64,7 +64,7 @@ import com.zs.core_ui.Anim
 import com.zs.core_ui.LongDurationMills
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.common.LocalSystemFacade
+import com.prime.media.common.LocalSystemFacade
 import com.zs.core_ui.shimmer.pulsate
 import com.prime.media.old.feedback.RouteFeedback
 import com.prime.media.old.impl.Repository
@@ -221,7 +221,7 @@ private inline fun Actions() {
     // Buy full version button.
     OutlinedButton(
         label = textResource(R.string.library_ads),
-        onClick = { provider.launchBillingFlow(BuildConfig.IAP_NO_ADS) },
+        onClick = { provider.initiatePurchaseFlow(BuildConfig.IAP_NO_ADS) },
         icon = painterResource(id = R.drawable.ic_remove_ads),
         modifier = Modifier.scale(0.75f),
         colors = ButtonDefaults.outlinedButtonColors(

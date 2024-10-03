@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.common.Artwork
-import com.prime.media.old.common.LocalSystemFacade
+import com.prime.media.common.LocalSystemFacade
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 

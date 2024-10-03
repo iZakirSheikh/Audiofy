@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.State
@@ -27,11 +26,11 @@ import coil.request.SuccessResult
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
-import com.prime.media.old.Audiofy
 import com.prime.media.old.core.db.Audio
 import com.prime.media.old.core.db.albumUri
 import com.prime.media.old.core.db.uri
 import com.prime.media.old.core.playback.MediaItem
+import com.prime.media.settings.Settings
 import com.primex.core.runCatching
 import com.zs.core.db.Playlist
 import kotlinx.coroutines.CancellableContinuation
@@ -221,15 +220,15 @@ inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
 @Deprecated("Use the method from SystemFacade.")
 fun Context.launchPlayStore() {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.GOOGLE_STORE)).apply {
-            setPackage(Audiofy.PKG_GOOGLE_PLAY_STORE)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Settings.GOOGLE_STORE)).apply {
+            setPackage(Settings.PKG_GOOGLE_PLAY_STORE)
             addFlags(
                 Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
             )
         }
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Audiofy.FALLBACK_GOOGLE_STORE)))
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Settings.FALLBACK_GOOGLE_STORE)))
     }
 }
 
