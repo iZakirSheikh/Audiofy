@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
-package com.prime.media.old.about
+package com.prime.media.about
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,15 +77,15 @@ private fun App(
         modifier = modifier
             .clip(AppTheme.shapes.compact)
             .clickable(onClick = onClick)
-            .padding(ContentPadding.small),
+            .padding(ContentPadding.medium),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Artwork(
             data = value.second,
             modifier = Modifier
                 .shadow(4.dp, RoundedCornerShape(24), true)
-                .size(64.dp)
+                .size(60.dp)
         )
 
         Label(

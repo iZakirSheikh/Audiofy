@@ -109,7 +109,7 @@ private val TwoPaneStrategy.scrim get() =
  * this behavior by setting [scrim] to `Color.Transparent` and not providing an
  * `onDismissRequest` lambda.
  *
- * @param content The primary content to be displayed. This content occupies at least the
+ * @param primary The primary content to be displayed. This content occupies at least the
  *   fraction specified in the strategy when the details pane is visible. Otherwise, it
  *   fills the available space.
  * @param modifier Modifier to be applied to the layout.
@@ -120,7 +120,7 @@ private val TwoPaneStrategy.scrim get() =
  * @param onColor The content color of this layout, typically used for text or icons.
  * @param scrim The color of the scrim overlay applied to the `content` when details are
  *   visible. Set to `Color.Transparent` to disable the scrim.
- * @param details The optional details content to be displayed. When present, it occupies
+ * @param secondary The optional details content to be displayed. When present, it occupies
  *   at most the remaining space after the content pane's minimum allocation.
  * @param topBar The composable content of the top app bar.
  * @param floatingActionButton The composable content of the floating action button.
@@ -132,14 +132,14 @@ private val TwoPaneStrategy.scrim get() =
  */
 @Composable
 fun TwoPane(
-    content: @Composable () -> Unit,
+    primary: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     spacing: Dp = DEFAULT_SPACING,
     background: Color = AppTheme.colors.background,
     onColor: Color = AppTheme.colors.onBackground,
-    strategy: TwoPaneStrategy = VerticalTwoPaneStrategy(0.5f),
+    strategy: TwoPaneStrategy = SinglePaneStrategy,
     scrim: Color = strategy.scrim,
-    details: @Composable () -> Unit = { },
+    secondary: @Composable () -> Unit = { },
     topBar: @Composable () -> Unit = { },
     floatingActionButton: @Composable () -> Unit = { },
     onDismissRequest: (() -> Unit)? = null,
@@ -158,15 +158,16 @@ fun TwoPane(
                 CompositionLocalProvider(
                     LocalContentColor provides onColor,
                     LocalContentInsets provides indent,
-                    content = content
+                    content = primary
                 )
             }
             // Top Bar (index 1)
             Slot(topBar)
             // Floating Action Button (index 2)
             Slot(floatingActionButton)
+            if (strategy == SinglePaneStrategy) return@Layout
             // Details (index 3)
-            Slot(details)
+            Slot(secondary)
             // Scrim
             // Consume interactions to prevent clicks passing through the scrim
             Spacer(
@@ -182,6 +183,7 @@ fun TwoPane(
                 is VerticalTwoPaneStrategy -> TwoPaneVerticalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
                 is HorizontalTwoPaneStrategy -> TwoPaneHorizontalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
                 is StackedTwoPaneStrategy -> StackedMeasurePolicy(strategy, fabPosition, onIndentUpdated)
+                is SinglePaneStrategy -> OnePaneMeasurePolicy(fabPosition, onIndentUpdated)
             }
         }
     )
@@ -293,7 +295,7 @@ private data class TwoPaneHorizontalMeasurePolicy(
         // Others are restricted to the size of the remaining space.
         val contentAllocatedWidth = splitAtX - gapWidthPx / 2
         // if details has shorter width than suggested; then content will take that space.
-        val remaining = maxOf(contentAllocatedWidth, detailsPlaceable.measuredWidth + gapWidthPx /2)
+        val remaining = maxOf(contentAllocatedWidth, width - detailsPlaceable.measuredWidth - gapWidthPx)
         constraints = if (isDetailsAbsent) c else c.copy(maxWidth = remaining, minWidth = remaining)
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
         val scrimPlaceable = measurables[INDEX_SCRIM].measure(constraints)
@@ -384,6 +386,48 @@ private data class StackedMeasurePolicy(
             detailsPlaceable.placeRelative(
                 width / 2 - detailsPlaceable.width / 2,
                 y.coerceIn(0..height - detailsPlaceable.height)
+            )
+        }
+    }
+}
+
+/**
+ * A [MeasurePolicy] that places only primary pane; without secondary pane.
+ */
+private data class OnePaneMeasurePolicy(
+    private val fabPosition: FabPosition,
+    private val onUpdateIntent: (PaddingValues) -> Unit
+): MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        c: Constraints
+    ): MeasureResult {
+        val width = c.maxWidth;
+        val height = c.maxHeight
+        // measure content with original coordinates.
+        // Loose constraints for initial measurements
+        val contentPlaceable = measurables[INDEX_CONTENT].measure(c)
+        val constraints = c.copy(0, minHeight = 0)
+        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
+        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
+        // Update content insets to account for Top Bar height
+        onUpdateIntent(PaddingValues(top = topBarPlaceable.height.toDp()))
+        // since details is absent no need to further complicate things.
+        return layout(width, height){
+            // place the content at top
+            contentPlaceable.placeRelative(0, 0)
+            // place topBar at top the content
+            topBarPlaceable.placeRelative(0, 0)
+            // place fab according to fabPosition.
+            val fabSpacingPx = FabSpacing.roundToPx()
+            fabPlaceable.placeRelative(
+                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
+                x = when (fabPosition) {
+                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
+                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
+                    FabPosition.Start -> fabSpacingPx
+                    else -> error("Invalid fab position")
+                }
             )
         }
     }

@@ -131,6 +131,17 @@ value class StackedTwoPaneStrategy(
     }
 }
 
+/**
+ * A layout strategy representing a single-pane configuration.
+ *
+ * In this strategy, only the primary pane is displayed, and the secondary pane is hidden.
+ * This is typically used when the user wishes to show only one pane.
+ */
+object SinglePaneStrategy: TwoPaneStrategy {
+    override fun calculate(size: IntSize): Int {
+        error("Single pane strategy does not support this operation")
+    }
+}
 
 /**
  * The recommended details pane exit animation for the given [TwoPaneStrategy].
@@ -141,6 +152,7 @@ val TwoPaneStrategy.exitAnimation: ExitTransition
             is HorizontalTwoPaneStrategy -> fadeOut() + slideOutHorizontally(targetOffsetX = { it / 4 })
             is VerticalTwoPaneStrategy -> fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
             is StackedTwoPaneStrategy -> fadeOut() + scaleOut(targetScale = 0.95f)
+            is SinglePaneStrategy -> fadeOut()
         }
     }
 
@@ -152,6 +164,7 @@ val TwoPaneStrategy.enterAnimation: EnterTransition
         is HorizontalTwoPaneStrategy -> fadeIn() + slideInHorizontally(initialOffsetX = { it / 4 })
         is VerticalTwoPaneStrategy -> fadeIn() + slideInVertically(initialOffsetY = { it / 4 })
         is StackedTwoPaneStrategy -> fadeIn() + scaleIn(initialScale = 0.95f)
+        is SinglePaneStrategy -> fadeIn()
     }
 
 /**
@@ -163,6 +176,7 @@ inline val TwoPaneStrategy.padding: PaddingValues
         is HorizontalTwoPaneStrategy -> WindowInsets.systemBars.asPaddingValues()
         is VerticalTwoPaneStrategy -> WindowInsets.navigationBars.asPaddingValues()
         is StackedTwoPaneStrategy -> WindowInsets.systemBars.asPaddingValues()
+        is SinglePaneStrategy -> PaddingValues(0.dp)
     }
 
 /**
@@ -186,4 +200,5 @@ inline val TwoPaneStrategy.shape
         is HorizontalTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, bottomStartPercent = 8)
         is VerticalTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, topEndPercent = 8)
         is StackedTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, topEndPercent = 8, bottomStartPercent = 2, bottomEndPercent = 2)
+        is SinglePaneStrategy -> RoundedCornerShape(0.dp)
     }

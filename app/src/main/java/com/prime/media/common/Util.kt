@@ -22,6 +22,7 @@ package com.prime.media.common
 
 import android.content.Context
 import android.net.Uri
+import android.text.TextUtils
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.media3.common.MediaItem

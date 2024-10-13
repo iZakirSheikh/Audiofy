@@ -59,7 +59,8 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.old.about.AboutUs
+import com.prime.media.about.AboutUs
+import com.prime.media.about.RouteAboutUs
 import com.zs.core_ui.Anim
 import com.zs.core_ui.LongDurationMills
 import com.prime.media.old.common.Artwork
@@ -162,7 +163,7 @@ fun CarousalAppBar(
         val contentColor = lerp(LocalContentColor.current, Color.White, fraction)
         val navController = LocalNavController.current
         IconButton(
-            onClick = { navController.navigate(AboutUs.route) },
+            onClick = { navController.navigate(RouteAboutUs()) },
             painter = rememberVectorPainter(image = Icons.Filled.Info),
             contentDescription = "about us",
             modifier = Modifier

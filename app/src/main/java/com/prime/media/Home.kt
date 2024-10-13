@@ -3,8 +3,6 @@ package com.prime.media
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -64,7 +61,9 @@ import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.composable
-import com.prime.media.old.about.AboutUs
+import com.prime.media.about.AboutUs
+import com.prime.media.about.RouteAboutUs
+import com.prime.media.impl.SettingsViewModel
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.util.getAlbumArt
 import com.prime.media.old.config.Personalize
@@ -94,10 +93,8 @@ import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.PersonalizeViewModel
-import com.prime.media.old.impl.SettingsViewModel
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.old.library.Library
-import com.prime.media.old.settings.Settings
 import com.prime.media.old.widget.Glance
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
@@ -107,7 +104,6 @@ import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
-import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
 import com.zs.core_ui.LocalWindowSize
@@ -142,7 +138,6 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val DefaultColorSpec = tween<Color>(Anim.DefaultDurationMillis)
 private val LightAccentColor = Color.BlueLilac
 private val DarkAccentColor = Color(0xFFD8A25E)
 
@@ -339,7 +334,7 @@ private fun Permission() {
  */
 private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     //AboutUs
-    composable(AboutUs.route) {
+    composable(RouteAboutUs) {
         AboutUs()
     }
     //Permission
@@ -620,8 +615,7 @@ fun Home(
             NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         }
     }
-    val resolved by  resolveAccentColor(isDark)
-    val accent by animateColorAsState(resolved, animationSpec = DefaultColorSpec, label = "accent")
+    val accent by  resolveAccentColor(isDark)
     // Setup App Theme and provide necessary dependencies.
     // Provide the navController and window size class to child composable.
     AppTheme(

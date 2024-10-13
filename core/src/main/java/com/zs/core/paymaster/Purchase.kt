@@ -63,9 +63,9 @@ val Purchase?.purchased get() = if (this == null) false else isAcknowledged && s
  */
 @JvmInline
 value class ProductInfo internal constructor(internal val value: ProductDetails) {
-    val title get() = value.title
-    val description get() = value.description
-    val formattedPrice get() = value.oneTimePurchaseOfferDetails?.formattedPrice
+    val title get() = value.title.trim()
+    val description get() = value.description.trim()
+    val formattedPrice get() = value.oneTimePurchaseOfferDetails?.formattedPrice?.trim()
     val id get() = value.productId
 }
 

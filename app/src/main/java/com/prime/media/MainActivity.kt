@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Downloading
 import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
@@ -63,6 +64,7 @@ import com.primex.core.runCatching
 import com.primex.preferences.Key
 import com.primex.preferences.Preferences
 import com.primex.preferences.intPreferenceKey
+import com.primex.preferences.invoke
 import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.observeAsState
 import com.primex.preferences.value
@@ -634,6 +636,17 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 // Display the selected promotional message.
                 Log.d(TAG, "onCreate: id: $id counter: $counter")
                 showPromotionalMessage(id)
+            }
+            // show what's new message on click.
+            val versionCode = BuildConfig.VERSION_CODE
+            val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
+            if (savedVersionCode != versionCode) {
+                preferences[KEY_APP_VERSION_CODE] = versionCode
+                showToast(
+                    R.string.what_s_new_latest,
+                    duration = Toast.DURATION_INDEFINITE,
+                    icon = Icons.Outlined.Whatshot
+                )
             }
         }
         // Set up the window

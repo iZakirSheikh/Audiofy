@@ -37,7 +37,6 @@ import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.PersonalizeViewModel
 import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
-import com.prime.media.old.impl.SettingsViewModel
 import com.prime.media.old.impl.SystemDelegate
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.settings.Settings
@@ -87,7 +86,7 @@ private val KoinAppModules = module {
     factory() { SystemDelegate(get(), get()) }
     factory { androidContext().contentResolver }
     // ViewModels
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel() }
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }

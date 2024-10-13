@@ -35,7 +35,6 @@ import com.prime.media.old.directory.GroupBy
 import com.prime.media.old.directory.MetaData
 import com.prime.media.old.directory.ViewType
 import com.prime.media.old.impl.Repository
-import com.prime.media.old.impl.block
 import com.prime.media.settings.Settings
 import com.primex.core.DahliaYellow
 import com.primex.core.Rose
@@ -62,6 +61,11 @@ typealias Folders = FoldersViewModel.Companion
 
 private val Folder.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
+
+private fun Preferences.block(which: String): Int{
+    /*No-Op*/
+    return 0
+}
 
 class FoldersViewModel (
     handle: SavedStateHandle,

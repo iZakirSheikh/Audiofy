@@ -461,12 +461,13 @@ fun AppTheme(
     val background by animateColorAsState(
         targetValue = when {
             !isLight -> Color(0xFF0E0E0F)
-            else -> Color.White
+            else -> applyTonalElevation(accent, Color.White, 0.8.dp)
         },
         animationSpec = DefaultColorSpec, label = "background"
     )
+    val primary by animateColorAsState(accent, DefaultColorSpec, "accent")
     val colors = Colors(
-        accent = accent,
+        accent = primary,
         background = background,
         onBackground = if (isLight) Color.UmbraGrey else Color.SignalWhite,
         onAccent = Color.SignalWhite,

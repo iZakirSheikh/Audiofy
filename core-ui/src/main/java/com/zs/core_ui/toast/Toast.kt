@@ -21,6 +21,7 @@ package com.zs.core_ui.toast
 import androidx.annotation.IntDef
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -206,7 +207,6 @@ internal fun Toast.toMillis(
 
 
 private val EXPANDED_TOAST_SHAPE = RoundedCornerShape(8)
-private val TOAST_SHAPE = RoundedCornerShape(16)
 
 private inline val Colors.toastBackgroundColor
     @Composable
@@ -247,7 +247,7 @@ internal fun Toast(
             true
         }
     )
-
+    val colors = AppTheme.colors
     // SwipeToDismiss composable for handling swipe gesture
     SwipeToDismiss(
         dismissState,
@@ -351,6 +351,7 @@ internal fun Toast(
                             drawRect(color = actionColor, size = size.copy(width = 3.dp.toPx()))
                         }
                     }
+                    .thenIf(!colors.isLight) { border(0.5.dp, actionColor.copy(0.10f), shape) }
                     .visualEffect(ImageBrush.NoiseBrush, 0.60f, overlay = true)
                     .background(backgroundColor)
                     //.clip(shape)

@@ -1,11 +1,9 @@
 package com.prime.media.settings
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
@@ -13,7 +11,6 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.Route
-import com.primex.core.Text
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
 import com.primex.preferences.LongSaver
@@ -85,28 +82,10 @@ enum class ColorizationStrategy {
     Manual, Default, Wallpaper, Artwork
 }
 
-/**
- * Immutable data class representing a preference.
- *
- * @property value The value of the preference.
- * @property title The title text of the preference.
- * @property vector The optional vector image associated with the preference.
- * @property summery The optional summary text of the preference.
- * @param P The type of the preference value.
- */
-@Stable
-@Deprecated("Find better alternative. It seems redundant")
-data class Preference<out P>(
-    @JvmField val value: P,
-    @JvmField val title: Text,
-    @JvmField val vector: ImageVector? = null,
-    @JvmField val summery: Text? = null,
-)
-
 private val ColorSaver = object : LongSaver<Color> {
-        override fun restore(value: Long): Color = Color(value)
-        override fun save(value: Color): Long = value.value.toLong()
-    }
+    override fun restore(value: Long): Color = Color(value)
+    override fun save(value: Color): Long = value.value.toLong()
+}
 
 /**
  * ##### Settings
@@ -137,8 +116,7 @@ object Settings {
         putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
     }
     val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
-        data =
-            Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
+        data = Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
     }
     val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
@@ -148,6 +126,13 @@ object Settings {
     }
     val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
+    }
+    val JoinBetaIntent = Intent(Intent.ACTION_VIEW).apply {
+        data = Uri.parse("https://play.google.com/apps/testing/com.prime.player/join")
+    }
+    val ShareAppIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, "Hey, check out this cool app: [app link here]")
     }
 
     private const val PREFIX = "Audiofy"
@@ -219,30 +204,7 @@ object Settings {
 }
 
 @Stable
-interface Blacklist {
-    val values: Set<String>?
-    fun unblock(path: String, context: Context)
-}
-
-@Stable
-interface SettingsViewState : Blacklist {
-    val darkUiMode: Preference<NightMode>
-    val translucentSystemBars: Preference<Boolean>
-    val immersiveView: Preference<Boolean>
-    val minTrackLength: Preference<Int>
-    val fetchArtworkFromMS: Preference<Boolean>
-    val enableTrashCan: Preference<Boolean>
-    val excludedFiles: Preference<Set<String>?>
-    val gaplessPlayback: Preference<Boolean>
-    val useInbuiltAudioFx: Preference<Boolean>
-    val fontScale: Preference<Float>
-    val gridItemSizeMultiplier: Preference<Float>
-    val colorizationStrategy: Preference<ColorizationStrategy>
-
-    //val recentPlaylistLimit: Preference<Int>
-    // val crossfadeTime: Preference<Int>
-    //val closePlaybackWhenTaskRemoved: Preference<Boolean>
-
+interface SettingsViewState {
     fun <S, O> set(key: Key<S, O>, value: O)
 }
 

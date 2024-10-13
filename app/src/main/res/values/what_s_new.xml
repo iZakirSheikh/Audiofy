@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <string name="what_s_new_latest" translatable="false">
+        <b>What\'s new</b>
+        <font color='grey'>
+            \n🐞 Minor Bug Fixes
+            \n🐞 Resolved an issue causing the screen to dim during video playback mode.
+            \n🎥 Enjoy seamless <b>video playback</b> with our new in-app <b>media player!</b>
+            \n✨<b>Toasts</b> &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
+            \n\n<b>In Focus</b>
+            \n ⦿ General performance improvements
+            \n ⦿ Added support for in-app Video Browser and RecycleBin
+            \n ⦿ Enhanced with Noise Cancellation, Widgets, and more in-app Widgets
+        </font>
+    </string>
+
+    <!---->
+    <string-array name="what_s_new">
+        <!--first is always latest-->
+        <item>@string/what_s_new_latest</item>
+    </string-array>
+</resources>

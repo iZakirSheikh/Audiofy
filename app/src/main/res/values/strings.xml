@@ -225,8 +225,7 @@
     </string>
     <!--Enable Trash can-->
     <string name="pref_enable_trash_can">Enable trash can</string>
-    <string name="pref_enable_trash_can_summery">
-        <b><i>Only available on Android 11 and above</i></b>, when enabled, deleted tracks are moved
+    <string name="pref_enable_trash_can_summery"><b><i>Only available on Android 11 and above</i></b>, when enabled, deleted tracks are moved
         to a <b>Trash Can</b> folder instead of being permanently deleted.
     </string>
     <!--Blacklist-->
@@ -265,7 +264,7 @@
         We appreciate your support for the app. If you love it, please share it with your friends,
         family and WhatsApp groups. Remember, sharing is caring!
     </string>
-    <string name="pref_get_to_know_us_subttile_s">"v%1$s by &author;"</string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>&author;</i></b>"</string>
 
     <!--=====================            Media Library          =================================-->
     <!--Title to the audio library screen-->
