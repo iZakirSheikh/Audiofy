@@ -22,14 +22,18 @@ package com.prime.media.common
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.media3.common.MediaItem
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
+import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlin.text.appendLine
 
 /**
  * Creates a split install request for the module with [name]
@@ -100,3 +104,19 @@ inline fun <T> Flow<Iterable<T>>.onEachItem(crossinline action: suspend (T) -> U
  */
 fun MediaFile(context: Context, uri: Uri) =
     com.prime.media.old.core.playback.MediaItem(context, uri)
+
+/**
+ * Returns a formatted [AnnotatedString] representation of the product description.
+ *
+ * This property formats the product information by displaying the title in bold
+ * followed by the description on a new line. It uses an [AnnotatedString] for
+ * richer text representation.
+ *
+ * @return An [AnnotatedString] containing the formatted product description.
+ */
+val ProductInfo.richDesc get() =  buildAnnotatedString {
+    withSpanStyle(fontWeight = FontWeight.Bold){
+        appendLine(title)
+    }
+    append(description)
+}

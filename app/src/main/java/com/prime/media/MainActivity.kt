@@ -10,7 +10,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
+import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Downloading
+import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
@@ -48,9 +50,12 @@ import com.prime.media.common.dynamicModuleName
 import com.prime.media.common.isDynamicFeature
 import com.prime.media.common.isInstalled
 import com.prime.media.common.onEachItem
+import com.prime.media.common.richDesc
+import com.prime.media.old.config.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.settings.Settings
+import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.getText2
@@ -82,6 +87,7 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import com.zs.core_ui.showPlatformToast as showAndroidToast
 
@@ -137,6 +143,16 @@ private val IAPs = arrayOf(
     BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
     BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST,
 )
+
+/**
+ * The number of messages available to be displayed to the user.
+ *
+ * Each number from 0 until [MESSAGE_COUNT] represents a unique message ID. This can be used
+ * to randomly select a message after a fresh start (or a multiple of 3 fresh starts)
+ * and display an indefinite message to the user, such as prompting them to purchase
+ * a feature like an ad-free experience.
+ */
+private const val MESSAGE_COUNT = 6
 
 class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedListener,
     AdEventListener {
@@ -440,7 +456,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
 
     override fun onDestroy() {
         paymaster.release()
-        // FIXME - What if no-one called get on advertiser; in this case releaseing it actually
+        // FIXME - What if no-one called get on advertiser; in this case releasing it actually
         //  caused it to load ads. but since app is closing this might not be the issue
         advertiser.release()
         super.onDestroy()
@@ -468,6 +484,97 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         navController?.navigate(Console.direction())
     }
 
+    /**
+     *
+     */
+    private suspend fun showPromotionalMessage(id: Int) {
+        when (id) {
+            // promo message for ad-free version
+            0 -> {
+                val (info, purchase) = paymaster[BuildConfig.IAP_NO_ADS] ?: return showPromotionalMessage(id + 1)
+                // skip this and move to next.
+                if (purchase.purchased) return showPromotionalMessage(id + 1)
+                val result = toastHostState.showToast(
+                    info.richDesc,
+                    action = info.formattedPrice ?: "N/A",
+                    duration = Toast.DURATION_INDEFINITE
+                )
+                if (result == Toast.ACTION_PERFORMED)
+                    initiatePurchaseFlow(BuildConfig.IAP_NO_ADS)
+            }
+            // promo message for codex.
+            1 -> {
+                val (info, purchase) = paymaster[BuildConfig.IAP_CODEX] ?: return showPromotionalMessage(id + 1)
+                // skip this and move to next.
+                if (purchase.purchased) return showPromotionalMessage(id + 1)
+                val result = toastHostState.showToast(
+                    info.richDesc,
+                    action = info.formattedPrice ?: "N/A",
+                    duration = Toast.DURATION_INDEFINITE
+                )
+                if (result == Toast.ACTION_PERFORMED)
+                    initiatePurchaseFlow(BuildConfig.IAP_CODEX)
+            }
+            // promo message for buy me a coffee.
+            2 -> {
+                val (info, purchase) = paymaster[BuildConfig.IAP_BUY_ME_COFFEE] ?: return showPromotionalMessage(id + 1)
+                // skip this and move to next.
+                if (purchase.purchased) return showPromotionalMessage(id + 1)
+                val result = toastHostState.showToast(
+                    info.richDesc,
+                    action = info.formattedPrice ?: getText(R.string.abbr_not_available),
+                    duration = Toast.DURATION_INDEFINITE
+                )
+                if (result == Toast.ACTION_PERFORMED)
+                    initiatePurchaseFlow(BuildConfig.IAP_BUY_ME_COFFEE)
+            }
+            // promo message for tag editor
+            3 -> {
+                val (info, purchase) = paymaster[BuildConfig.IAP_TAG_EDITOR_PRO] ?: return showPromotionalMessage(id + 1)
+                // skip this and move to next.
+                if (purchase.purchased) return showPromotionalMessage(id + 1)
+                val result = toastHostState.showToast(
+                    info.richDesc,
+                    action = info.formattedPrice ?: getText(R.string.abbr_not_available),
+                    duration = Toast.DURATION_INDEFINITE
+                )
+                if (result == Toast.ACTION_PERFORMED)
+                    initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO)
+            }
+            // promo message for app.
+            4 -> {
+                val pkg = "com.googol.android.apps.photos"
+                // Check if the Gallery app is already installed
+                val isInstalled = runCatching(TAG) { packageManager.getPackageInfo(pkg, 0) } != null
+                // If the app is installed, show the next promotional message
+                if (isInstalled) return showPromotionalMessage(id + 1)
+                val result = toastHostState.showToast(
+                    resources.getText2(R.string.msg_promotion_gallery_app),
+                    action = resources.getText2(R.string.dive_in),
+                    duration = Toast.DURATION_INDEFINITE,
+                    accent = Color.Amber,
+                    icon = Icons.Outlined.GetApp
+                )
+                // If the user clicked the action button, launch the app store listing
+                if (result == Toast.ACTION_PERFORMED)
+                    launchAppStore(pkg)
+            }
+            // promo message for widgets.
+            5 -> {
+                val result = toastHostState.showToast(
+                    "Personalize your app now with in-app widgets!",
+                    duration = Toast.DURATION_INDEFINITE,
+                    accent = Color.MetroGreen,
+                    icon = Icons.Outlined.ColorLens,
+                    action = "View"
+                )
+                // If the user clicked the action button, launch the Personalization screen.
+                if (result == Toast.ACTION_PERFORMED)
+                    navController?.navigate(RoutePersonalize())
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
@@ -476,6 +583,59 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             savedInstanceState == null // A cold start occurs when there is no saved instance state.
         // Set up the splash screen
         initSplashScreen()
+        if (isColdStart){
+            // check for updates
+            initiateUpdateFlow()
+            // Handle pending intents after a brief delay to ensure UI readiness
+            // TODO: Replace this with new approach
+            lifecycleScope.launch {
+                // Introducing a delay of 1000 milliseconds (1 second) here is essential
+                // to ensure that the UI is fully prepared to receive the intent.
+                // This delay gives the UI components time to initialize and be ready
+                // to handle the incoming intent without any potential issues.
+                delay(1000)
+                onNewIntent(intent)
+            }
+            // show promo message
+            // update the state of variables dependent on payment master.
+            // Observe active purchases and prompt the user to install any purchased dynamic features.
+            val manager = SplitInstallManagerFactory.create(this@MainActivity)
+            paymaster.purchases.onEachItem { purchase ->
+                // Skip if the purchase is not purchased
+                if (!purchase.purchased) return@onEachItem
+                // Update the isAdFreeVersion flag
+                if (purchase.id == BuildConfig.IAP_NO_ADS) {
+                    isAdFreeVersion = purchase.purchased
+                    return@onEachItem
+                }
+                val details = paymaster.details.value.find { it.id == purchase.id }
+                // Skip if product details are unavailable or the product is not a dynamic feature
+                if (details == null || !details.isDynamicFeature) return@onEachItem
+                // Skip if the dynamic feature is already installed
+                if (manager.isInstalled(details.dynamicModuleName)) return@onEachItem
+                // Prompt the user to install the dynamic feature
+                val response = toastHostState.showToast(
+                    resources.getText2(
+                        id = R.string.msg_install_dynamic_module_ss,
+                        details.title
+                    ),
+                    duration = Toast.DURATION_INDEFINITE,
+                    action = resources.getText2(R.string.install)
+                )
+                if (response == Toast.ACTION_PERFORMED)
+                    manager.startInstall(details.dynamicFeatureRequest)
+            }.launchIn(lifecycleScope)
+            // Display promotional messages on every third cold start
+            lifecycleScope.launch {
+                val counter = preferences.value(Settings.KEY_LAUNCH_COUNTER) ?: 0
+                delay(10.seconds)
+                // Select and display a promotional message based on launch count
+                val id = counter % MESSAGE_COUNT
+                // Display the selected promotional message.
+                Log.d(TAG, "onCreate: id: $id counter: $counter")
+                showPromotionalMessage(id)
+            }
+        }
         // Set up the window
         // Window settings are likely handled in AppTheme already, but we ensure it here.
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -497,49 +657,5 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 }
             }
         }
-        // initialize other components
-        if (!isColdStart)
-            return
-        // check for updates
-        initiateUpdateFlow()
-        // Handle pending intents after a brief delay to ensure UI readiness
-        // TODO: Replace this with new approach
-        lifecycleScope.launch {
-            // Introducing a delay of 1000 milliseconds (1 second) here is essential
-            // to ensure that the UI is fully prepared to receive the intent.
-            // This delay gives the UI components time to initialize and be ready
-            // to handle the incoming intent without any potential issues.
-            delay(1000)
-            onNewIntent(intent)
-        }
-        // show promo message
-        // update the state of variables dependent on payment master.
-        // Observe active purchases and prompt the user to install any purchased dynamic features.
-        val manager = SplitInstallManagerFactory.create(this@MainActivity)
-        paymaster.purchases.onEachItem { purchase ->
-            // Skip if the purchase is not purchased
-            if (!purchase.purchased) return@onEachItem
-            // Update the isAdFreeVersion flag
-            if (purchase.id == BuildConfig.IAP_NO_ADS) {
-                isAdFreeVersion = purchase.purchased
-                return@onEachItem
-            }
-            val details = paymaster.details.value.find { it.id == purchase.id }
-            // Skip if product details are unavailable or the product is not a dynamic feature
-            if (details == null || !details.isDynamicFeature) return@onEachItem
-            // Skip if the dynamic feature is already installed
-            if (manager.isInstalled(details.dynamicModuleName)) return@onEachItem
-            // Prompt the user to install the dynamic feature
-            val response = toastHostState.showToast(
-                resources.getText2(
-                    id = R.string.msg_install_dynamic_module_ss,
-                    details.title
-                ),
-                duration = Toast.DURATION_INDEFINITE,
-                action = resources.getText2(R.string.install)
-            )
-            if (response == Toast.ACTION_PERFORMED)
-                manager.startInstall(details.dynamicFeatureRequest)
-        }.launchIn(lifecycleScope)
     }
 }

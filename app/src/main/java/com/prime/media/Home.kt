@@ -3,6 +3,7 @@ package com.prime.media
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
@@ -618,7 +620,8 @@ fun Home(
             NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         }
     }
-    val accent by resolveAccentColor(isDark)
+    val resolved by  resolveAccentColor(isDark)
+    val accent by animateColorAsState(resolved, animationSpec = DefaultColorSpec, label = "accent")
     // Setup App Theme and provide necessary dependencies.
     // Provide the navController and window size class to child composable.
     AppTheme(
@@ -637,7 +640,8 @@ fun Home(
             )
             // Observe the state of the IMMERSE_VIEW setting
             val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
-            SideEffect {
+            val translucentBg by activity.observeAsState(Settings.TRANSLUCENT_SYSTEM_BARS)
+            LaunchedEffect(immersiveView, style, isDark, translucentBg) {
                 // Get the WindowInsetsController for managing system bars
                 val window = activity.window
                 val controller = WindowCompat.getInsetsController(window, window.decorView)
@@ -662,7 +666,7 @@ fun Home(
                     val color = when (style.flagSystemBarBackground) {
                         WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> Color(0x20000000).toArgb()  // Translucent background
                         WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSPARENT -> Color.Transparent.toArgb()  // Transparent background
-                        else -> Color.Transparent.toArgb()  // Default to transparent background
+                        else ->  (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
                     }
                     // Set the status and navigation bar colors
                     statusBarColor = color

@@ -317,7 +317,7 @@ internal fun Toast(
                                     colors = ButtonDefaults.buttonColors(
                                         contentColor = actionColor,
                                         backgroundColor = actionColor.copy(0.2f).compositeOver(
-                                            AppTheme.colors.background
+                                            AppTheme.colors.toastBackgroundColor
                                         )
                                     ),
                                     modifier = Modifier.scale(0.9f),
