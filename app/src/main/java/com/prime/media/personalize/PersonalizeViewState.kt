@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 26-08-2024.
+ * Created by 2024 on 17-10-2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
  * limitations under the License.
  */
 
-package com.prime.media.old.config
+package com.prime.media.personalize
 
 import com.prime.media.common.Route
 
 object RoutePersonalize: Route
 
-interface PersonalizeViewState {
 
+interface PersonalizeViewState {
     /**
      * Sets the current widget to [id]
      */
     fun setInAppWidget(id: String)
-
 }

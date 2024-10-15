@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
 import com.prime.media.R
-import com.prime.media.old.config.RoutePersonalize
+import com.prime.media.personalize.RoutePersonalize
 import com.zs.core_ui.ContentPadding
 import com.prime.media.common.Banner
 import com.prime.media.old.common.LocalNavController

@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -76,10 +76,11 @@ import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Colors
 import com.zs.core_ui.sharedElement
 
 private val WidgetShape = RoundedCornerShape(16.dp)
-private val com.zs.core_ui.Colors.bg: Brush
+private val Colors.bg: Brush
     @Composable
     get() {
         val accent = accent.copy(0.85f)

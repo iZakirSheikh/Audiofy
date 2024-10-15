@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi

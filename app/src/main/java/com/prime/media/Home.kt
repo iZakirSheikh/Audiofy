@@ -66,8 +66,8 @@ import com.prime.media.about.RouteAboutUs
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.util.getAlbumArt
-import com.prime.media.old.config.Personalize
-import com.prime.media.old.config.RoutePersonalize
+import com.prime.media.personalize.Personalize
+import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.directory.playlists.Members
@@ -92,10 +92,9 @@ import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
-import com.prime.media.old.impl.PersonalizeViewModel
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.old.library.Library
-import com.prime.media.old.widget.Glance
+import com.prime.media.console.widget.Glance
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
@@ -270,7 +269,7 @@ private val SystemFacade.density: Density
 private val REQUIRED_PERMISSIONS = buildList {
     // For Android Tiramisu (33) and above, use media permissions for scoped storage
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
+        // this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
         // this += android.Manifest.permission.READ_MEDIA_VIDEO
         this += android.Manifest.permission.READ_MEDIA_AUDIO
     }
@@ -413,7 +412,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     }
     // ControlCentre
     composable(RoutePersonalize) {
-        val viewModel = koinViewModel<PersonalizeViewModel>()
+        val viewModel = koinViewModel<com.prime.media.impl.PersonalizeViewModel>()
         Personalize(viewModel)
     }
 }

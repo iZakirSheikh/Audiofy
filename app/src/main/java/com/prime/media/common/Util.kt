@@ -22,17 +22,15 @@ package com.prime.media.common
 
 import android.content.Context
 import android.net.Uri
-import android.text.TextUtils
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.media3.common.MediaItem
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlin.text.appendLine
 
@@ -115,9 +113,47 @@ fun MediaFile(context: Context, uri: Uri) =
  *
  * @return An [AnnotatedString] containing the formatted product description.
  */
-val ProductInfo.richDesc get() =  buildAnnotatedString {
-    withSpanStyle(fontWeight = FontWeight.Bold){
-        appendLine(title)
+val ProductInfo.richDesc
+    get() = buildAnnotatedString {
+        withSpanStyle(fontWeight = FontWeight.Bold) { appendLine(title.ellipsize(16)) }
+        withSpanStyle(Color.Gray) { append(description) }
     }
-    append(description)
-}
+
+private const val ELLIPSIS_NORMAL = "\u2026"; // HORIZONTAL ELLIPSIS (…)
+/**
+ * Ellipsizes this CharSequence, adding a horizontal ellipsis (…) if it is longer than [after] characters.
+ *
+ * @param after The maximum length of the CharSequence before it is ellipsized.
+ * @return The ellipsized CharSequence.
+ */
+fun CharSequence.ellipsize(after: Int): CharSequence =
+    if (this.length > after) this.substring(0, after) + ELLIPSIS_NORMAL else this
+
+/**
+ * @return - Indicates if the widget is free in the Play Console.
+ * Some widgets are listed for providing localized names and descriptions,
+ * but their price cannot be set to 0.
+ *
+ * **Note**: Developer need register any product for freemium
+ */
+val ProductInfo.isFreemium: Boolean
+    get() {
+        return when (id) {
+            BuildConfig.IAP_PLATFORM_WIDGET_IPHONE, BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES -> true
+            else -> false
+        }
+    }
+
+/**
+ * Controls whether this item should be showcased for purchase.
+ * Sometimes the group is not fully prepared and needs further improvements.
+ * This variable can be used to control whether to showcase this item for purchase.
+ */
+val ProductInfo.isPurchasable: Boolean
+    get() {
+        return when (id) {
+            BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE -> false
+            else -> true
+        }
+    }
+

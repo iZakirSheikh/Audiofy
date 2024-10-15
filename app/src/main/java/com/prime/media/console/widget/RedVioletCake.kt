@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import android.text.format.DateUtils
@@ -81,6 +81,7 @@ import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Colors
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -88,10 +89,10 @@ import kotlin.math.roundToLong
 
 private val WidgetShape = RoundedCornerShape(14)
 
-private val com.zs.core_ui.Colors.widgetBackground
+private val Colors.widgetBackground
     @Composable
     inline get() = background(2.dp)
-private val com.zs.core_ui.Colors.veil
+private val Colors.veil
     @Composable
     inline get() = Brush.horizontalGradient(
         0.0f to widgetBackground,

@@ -111,6 +111,7 @@ val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::g
  *
  * @see MediaSource
  */
+@Deprecated("Use the one from com.prime.media.common")
 fun MediaItem(
     uri: Uri,
     title: String,

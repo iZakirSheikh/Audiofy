@@ -2,7 +2,9 @@
 
 package com.prime.media.common
 
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.primex.preferences.Key
@@ -188,9 +191,53 @@ interface SystemFacade {
     fun <S, O> observeAsState(key: Key.Key2<S, O>): State<O>
 
     /**
-     * Restarts the current activity.
+     * Restarts either the entire application or just the current activity, based on the specified mode.
+     *
+     * If [global] is set to `true`, this method will restart the entire application by launching the main activity
+     * and terminating the current process. This results in a full app relaunch as if the user manually reopened the app.
+     *
+     * If `global` is set to `false`, only the current activity will be restarted. The activity is relaunched
+     * with a fresh instance, mimicking an activity lifecycle reset (similar to what happens after a configuration change).
+     *
+     * @param global Set to `true` to restart the entire application (default is `false`).
+     *               - `true`: Restarts the whole app by relaunching the main activity and terminating the current process.
+     *               - `false`: Restarts only the current activity, clearing the current instance and relaunching it.
+     *
+     *
+     * Example Usage:
+     * ```
+     * // Restart only the current activity
+     * restart()
+     *
+     * // Restart the entire app
+     * restart(global = true)
+     * ```
      */
-    fun restart()
+    fun restart(global: Boolean = false)
+
+    /**
+     * Requests to install the dynamic feature module identified by the given [id].
+     *
+     * This function initiates the installation process for the specified dynamic feature.
+     * The actual installation behavior may vary depending on the device and platform.
+     * The installation process might happen asynchronously, and there is no guarantee of completion.
+     *
+     * @param id The unique identifier of the dynamic feature module to install.
+     *           This ID should match the one declared in your app's manifest.
+     */
+    fun initiateFeatureInstall(request: SplitInstallRequest)
+
+    /**
+     * Checks if the dynamic feature module identified by [id] is currently installed.
+     *
+     * This function determines whether the specified dynamic feature is already installed and
+     * available for use within the application.
+     *
+     * @param id The unique identifier of the dynamic feature module to check.
+     *           This ID should match the one declared in your app's manifest.
+     * @return `true` if the dynamic feature is installed, `false` otherwise.
+     */
+    fun isInstalled(id: String): Boolean
 }
 
 /**

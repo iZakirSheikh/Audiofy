@@ -34,7 +34,7 @@ import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
-import com.prime.media.old.impl.PersonalizeViewModel
+import com.prime.media.impl.PersonalizeViewModel
 import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.SystemDelegate
@@ -90,7 +90,7 @@ private val KoinAppModules = module {
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }
-    viewModel() { PersonalizeViewModel(get()) }
+    viewModel() { PersonalizeViewModel() }
     viewModel() { ConsoleViewModel(get(), get(), get()) }
     viewModel { (h: Handle) -> TagEditorViewModel(h, get(), get(), get()) }
     viewModel { (h: Handle) -> MembersViewModel(h, get(), get(), get()) }

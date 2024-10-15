@@ -36,8 +36,13 @@ import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
+import com.google.android.play.core.ktx.status
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
+import com.google.android.play.core.splitinstall.SplitInstallSessionState
+import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
+import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
@@ -49,12 +54,11 @@ import com.prime.media.common.domain
 import com.prime.media.common.dynamicFeatureRequest
 import com.prime.media.common.dynamicModuleName
 import com.prime.media.common.isDynamicFeature
-import com.prime.media.common.isInstalled
 import com.prime.media.common.onEachItem
 import com.prime.media.common.richDesc
-import com.prime.media.old.config.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
+import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
 import com.primex.core.MetroGreen
@@ -171,6 +175,39 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
     val paymaster by lazy {
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, IAPs)
     }
+    val splitInstallManager by lazy {
+        SplitInstallManagerFactory.create(this@MainActivity).also {
+            it.registerListener(object : SplitInstallStateUpdatedListener {
+                override fun onStateUpdate(state: SplitInstallSessionState) {
+                    when(state.status){
+                        SplitInstallSessionStatus.DOWNLOADING -> {
+                            val percent = state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
+                            Log.d("SplitInstall", "Download progress: $percent%")
+                            inAppTaskProgress = percent
+                        }
+                        SplitInstallSessionStatus.INSTALLING -> {
+                            Log.d("SplitInstall", "Installing...")
+                        }
+                        SplitInstallSessionStatus.INSTALLED -> {
+                            Log.d("SplitInstall", "Module installed successfully!")
+                            // You can now access the dynamic feature module
+                        }
+                        SplitInstallSessionStatus.FAILED -> {
+                            Log.e("SplitInstall", "Installation failed with error code: ${state.errorCode()}")
+                        }
+                        SplitInstallSessionStatus.CANCELED -> {
+                            Log.d("SplitInstall", "Installation canceled")
+                        }
+
+                        SplitInstallSessionStatus.PENDING -> {
+                            inAppTaskProgress = -1f
+                        }
+                        else -> Log.d("SplitInstall", "Unknown status: ${state.status()}")
+                    }
+                }
+            })
+        }
+    }
 
     // Cache the banner in main activity.
     private var _bannerViewBackingField: View? by mutableStateOf(null)
@@ -233,8 +270,36 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
 
     override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
     override fun initiatePurchaseFlow(id: String) = paymaster.initiatePurchaseFlow(this, id)
-    override fun restart() {
-        TODO("Not yet implemented")
+
+    override fun restart(global: Boolean) {
+        // Get the launch intent for the app's main activity
+        val packageManager = packageManager
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+
+        // Ensure the intent is not null
+        if (intent == null) {
+            Log.e("AppRestart", "Unable to restart: Launch intent is null")
+            return
+        }
+        // restart just the current activity
+        if (!global){
+            // Restart just the current activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()  // Finish the current activity to ensure it is restarted
+            return
+        }
+        // Get the main component for the restart task
+        val componentName = intent.component
+        if (componentName == null){
+            Log.e("AppRestart", "Unable to restart: Component name is null")
+            return
+        }
+        // Create the main restart intent and start the activity
+        val mainIntent = Intent.makeRestartActivityTask(componentName)
+        startActivity(mainIntent)
+        // Terminate the current process to complete the restart
+        Runtime.getRuntime().exit(0)
     }
 
     @Composable
@@ -486,6 +551,14 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         navController?.navigate(Console.direction())
     }
 
+    override fun isInstalled(id: String): Boolean {
+        return splitInstallManager.installedModules.contains(id)
+    }
+
+    override fun initiateFeatureInstall(request: SplitInstallRequest) {
+        splitInstallManager.startInstall(request)
+    }
+
     /**
      *
      */
@@ -601,7 +674,6 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             // show promo message
             // update the state of variables dependent on payment master.
             // Observe active purchases and prompt the user to install any purchased dynamic features.
-            val manager = SplitInstallManagerFactory.create(this@MainActivity)
             paymaster.purchases.onEachItem { purchase ->
                 // Skip if the purchase is not purchased
                 if (!purchase.purchased) return@onEachItem
@@ -614,7 +686,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 // Skip if product details are unavailable or the product is not a dynamic feature
                 if (details == null || !details.isDynamicFeature) return@onEachItem
                 // Skip if the dynamic feature is already installed
-                if (manager.isInstalled(details.dynamicModuleName)) return@onEachItem
+                if (isInstalled(details.dynamicModuleName)) return@onEachItem
                 // Prompt the user to install the dynamic feature
                 val response = toastHostState.showToast(
                     resources.getText2(
@@ -625,7 +697,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                     action = resources.getText2(R.string.install)
                 )
                 if (response == Toast.ACTION_PERFORMED)
-                    manager.startInstall(details.dynamicFeatureRequest)
+                    initiateFeatureInstall(details.dynamicFeatureRequest)
             }.launchIn(lifecycleScope)
             // Display promotional messages on every third cold start
             lifecycleScope.launch {

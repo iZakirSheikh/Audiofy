@@ -136,7 +136,7 @@ import com.google.accompanist.adaptive.VerticalTwoPaneStrategy
 import com.google.accompanist.adaptive.calculateDisplayFeatures
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.old.config.RoutePersonalize
+import com.prime.media.personalize.RoutePersonalize
 import com.zs.core_ui.Anim
 import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.ContentPadding

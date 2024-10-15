@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -78,17 +78,18 @@ import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Colors
 import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
 private val TiramisuShape = RoundedCornerShape(14)
-private inline val com.zs.core_ui.Colors.ring
+private inline val Colors.ring
     @Composable
     get() =
         Brush.horizontalGradient(listOf(accent.copy(0.5f), Color.Transparent,  accent.copy(0.5f)))
-private inline val com.zs.core_ui.Colors.contentColor @Composable get() =
+private inline val Colors.contentColor @Composable get() =
     if (accent.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
 
 /**

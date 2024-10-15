@@ -126,15 +126,44 @@ value class WindowStyle(private val flags: Int = FLAG_STYLE_AUTO) {
         get() = (flags and APP_NAV_BAR_MASK)
 
     /**
-     * Performs a bitwise OR operation between the current [WindowStyle] and the provided flag.
+     * Adds a flag to the current window style, ensuring only relevant bits are set.
      *
-     * This operation combines the current flags with the specified flag using the bitwise OR operation.
-     *
-     * @param flag The integer flag to be combined with the current [WindowStyle].
-     * @return A new [WindowStyle] instance with the combined flags.
+     * @param flag The flag to be added.
+     * @throws IllegalArgumentException If the flag is not recognized.
+     * @return A new [WindowStyle] instance with the added flag.
      */
-    infix fun or(flag: Int): WindowStyle{
-        return WindowStyle(flags or flag)
+    operator fun plus(flag: Int): WindowStyle {
+        val mask = getMaskForFlag(flag)
+        return WindowStyle((flags and mask.inv()) or (flag and mask))
+    }
+
+    /**
+     * Removes a flag from the current window style, setting the relevant bits to automatic.
+     *
+     * @param flag The flag to be removed.
+     * @throws IllegalArgumentException If the flag is not recognized.
+     * @return A new [WindowStyle] instance with the removed flag.
+     */
+    operator fun minus(flag: Int): WindowStyle {
+        val mask = getMaskForFlag(flag)
+        return WindowStyle(flags and mask.inv())
+    }
+
+    /**
+     * Retrieves the mask corresponding to a given flag.
+     *
+     * @param flag The flag for which the mask is to be retrieved.
+     * @throws IllegalArgumentException If the flag is not recognized.
+     * @return The mask corresponding to the provided flag.
+     */
+    private fun getMaskForFlag(flag: Int): Int {
+        return when (flag) {
+            FLAG_SYSTEM_BARS_VISIBLE, FLAG_SYSTEM_BARS_HIDDEN, FLAG_SYSTEM_BARS_VISIBILITY_AUTO -> SYSTEM_BARS_VISIBILITY_MASK
+            FLAG_SYSTEM_BARS_APPEARANCE_LIGHT, FLAG_SYSTEM_BARS_APPEARANCE_DARK, FLAG_SYSTEM_BARS_APPEARANCE_AUTO -> SYSTEM_BARS_APPEARANCE_MASK
+            FLAG_SYSTEM_BARS_BG_TRANSPARENT, FLAG_SYSTEM_BARS_BG_TRANSLUCENT, FLAG_SYSTEM_BARS_BG_AUTO -> SYSTEM_BARS_BG_MASK
+            FLAG_APP_NAV_BAR_VISIBLE, FLAG_APP_NAV_BAR_HIDDEN, FLAG_APP_NAV_BAR_AUTO -> APP_NAV_BAR_MASK
+            else -> throw IllegalArgumentException("Unknown flag: $flag")
+        }
     }
 }
 

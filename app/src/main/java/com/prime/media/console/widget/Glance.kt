@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -54,7 +54,7 @@ import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.current
-import com.prime.media.old.config.RoutePersonalize
+import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.core.playback.artworkUri

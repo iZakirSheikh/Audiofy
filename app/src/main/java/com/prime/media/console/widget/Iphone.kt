@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterialApi::class, ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.old.widget
+package com.prime.media.console.widget
 
 import android.net.Uri
 import android.text.format.DateUtils
@@ -61,6 +61,7 @@ import com.primex.core.SignalWhite
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core_ui.AppTheme
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -83,7 +84,7 @@ fun Iphone(
     onSeek: (progress: Float) -> Unit = {},
     onAction: (action: String) -> Unit = {},
 ) {
-    val accent = com.zs.core_ui.AppTheme.colors.accent
+    val accent = AppTheme.colors.accent
     ListTile(
         onColor = Color.SignalWhite,
         modifier = modifier
@@ -100,7 +101,7 @@ fun Iphone(
         overline = {
             Label(
                 item.subtitle.toString(),
-                style = com.zs.core_ui.AppTheme.typography.caption,
+                style = AppTheme.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
         },
@@ -201,7 +202,7 @@ fun Iphone(
                             C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
                         },
-                        style = com.zs.core_ui.AppTheme.typography.caption,
+                        style = AppTheme.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
 
@@ -226,7 +227,7 @@ fun Iphone(
                             C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
                             else -> DateUtils.formatElapsedTime((duration / 1000))
                         },
-                        style = com.zs.core_ui.AppTheme.typography.caption,
+                        style = AppTheme.typography.caption,
                         color = LocalContentColor.current.copy(ContentAlpha.medium)
                     )
                     // control centre
