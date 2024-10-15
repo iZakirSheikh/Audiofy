@@ -12,12 +12,14 @@
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FiZakirSheikh%2FAudiofy&countColor=%23dce775&style=plastic&labelStyle=lower)
 
 ## Don't forget to ⭐ the repo
+
 ![GitHub stars](https://img.shields.io/github/stars/iZakirSheikh/Audiofy2?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/iZakirSheikh/Audiofy2?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/iZakirSheikh/Audiofy2?style=social)
 ![GitHub follow](https://img.shields.io/github/followers/iZakirSheikh?label=Follow&style=social)
 
 ## Contact
+
 <!--Contact-->
 [![Telegram Group](https://img.shields.io/badge/Telegram-Discussion-252850?color=orangered&logo=telegram)](https://telegram.dog/audiofy_support)
 ![Email Badge](https://badgen.net/badge/email/helpline.prime.zs%40gmail.com/blue?icon=mail)
@@ -29,9 +31,15 @@
 
 ## Description
 
-**Audiofy Media Player** is an open-source multimedia player app that lets you play music and videos on your Android device.
+**Audiofy Media Player** is an open-source multimedia player app that lets you play music and videos
+on your Android device.
 
-**Audiofy Media Player**  is a mulitmedia app that lets you enjoy various videos and audio formats on your Android device or Android TV. It uses the ffmpeg extension of Media3, a powerful media player library, to support common and special audio formats such as Vorbis, Opus, FLAC, MP3, AAC, DTS, etc. It also supports video formats such as H.264, H.265, VP8, VP9, AV1, etc. You can also sync audio and video tracks when using Bluetooth earphones or speaker, for a smooth viewing experience. It has a simple and minimalistic interface that lets you watch videos without any hassle..
+**Audiofy Media Player**  is a mulitmedia app that lets you enjoy various videos and audio formats
+on your Android device or Android TV. It uses the ffmpeg extension of Media3, a powerful media
+player library, to support common and special audio formats such as Vorbis, Opus, FLAC, MP3, AAC,
+DTS, etc. It also supports video formats such as H.264, H.265, VP8, VP9, AV1, etc. You can also sync
+audio and video tracks when using Bluetooth earphones or speaker, for a smooth viewing experience.
+It has a simple and minimalistic interface that lets you watch videos without any hassle..
 
 | Category            | Supported Formats                                                                                                                                                                              |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -53,37 +61,56 @@
 <img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/ea2cd0b0-e563-4f25-86be-831db851790f" width="65"> 
 <img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/cc4a358d-d64d-4ee5-ba67-68fd7c901b74" width="65">
 
-## Features
-* Audio/subtitle track selection
-* Playback speed control
-* Horizontal swipe and double tap to quickly seek
-* Vertical swipe to change brightness (left) / volume (right)
-* Pinch to zoom (Android 7+)
-* PiP (Picture in Picture) on Android 8+ (resizable on Android 11+) (Comming soon)
-* Resize (fit/crop)
-* Volume boost (Coming soon)
-* Auto frame rate matching on Android TV/boxes (Android 6+)
-* Post-playback actions (delete file/skip to next)
-* Touch lock (long tap)
-* 3rd party equalizer / audio processing support (e.g. [Wavelet](https://github.com/Pittvandewitt/Wavelet))
-* Media Session and Audio Focus support
-* Pause playback when disconnecting headphones
+## It has following features.
+
+- Beautiful and Practical UI
+- Seamless Adaptability: Automatically adjusts to any screen size for optimal experience.
+- Edit tags (metadata)
+- Full customizations
+- Fade in/Fade out music when pause/resume playback.
+- Light, dark, battery saver and system default theme support.
+- Sleep timer.
+- Replay gain support.
+- Inbuilt equalizer.
+- custom playlist support (No more worrying about playlists getting deleted automatically)
+- Folder View support.
+- Delightful animations, animated icons
+- Video(Beta) Playback support.
+- Music Widget (Supports Material3 theme.), resizable.
+- Tons of settings.
+- Multiple sorting options.
+- Touch lock (long tap)
+- 3rd party equalizer / audio processing support (e.g. Wavelet)
+- Pauses playback when disconnecting headphones
+- Post-playback actions (delete/trash file/skip to next)
+- Resize (fit/crop) - Playback speed control ( 0.5x to 2x)
+- Audio/subtitle track selection
+- Follows latest material design guidelines.
+- Just 5 MB in size
+
+Download Googol Audiofy now and redefine your media experience.
 
 ## 🧰 Build and run the project
-If you are a developer and want to build and run the Audiofy app from the source code, you need to follow these additional steps:
+
+If you are a developer and want to build and run the Audiofy app from the source code, you need to
+follow these additional steps:
 
 ### Prerequisites
-- Install Android Studio Alpha (Hedgehog) or above on your machine. You can download it from here: https://developer.android.com/studio/preview
+
+- Install Android Studio Alpha (Hedgehog) or above on your machine. You can download it from
+  here: https://developer.android.com/studio/preview
 - Install Git on your machine. You can download it from here: https://git-scm.com/downloads
 
 ### Steps
+
 To build the Audiofy app, follow these steps:
 
-1. Clone the repository: Open a terminal window and type the following command: `git clone https://github.com/iZakirSheikh/audiofy2.git`
+1. Clone the repository: Open a terminal window and type the following command:
+   `git clone https://github.com/iZakirSheikh/audiofy2.git`
 2. Open Android Studio and select Open an existing project.
 3. Navigate to the folder where you cloned or downloaded this repository and select it.
 4. Wait for Android Studio to sync the project and resolve the dependencies.
-65 Run the app on an emulator or a connected device by clicking the Run button.
+   65 Run the app on an emulator or a connected device by clicking the Run button.
 
 You have successfully built and run the Audiofy app from the source code. Enjoy!
 

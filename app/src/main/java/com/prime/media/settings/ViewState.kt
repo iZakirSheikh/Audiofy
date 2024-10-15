@@ -105,6 +105,9 @@ interface Settings : Blacklist {
         val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
             data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
         }
+        val JoinBetaIntent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://play.google.com/apps/testing/com.prime.player/join")
+        }
 
         private const val PREFIX = "Audiofy"
 

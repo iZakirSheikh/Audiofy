@@ -1,8 +1,8 @@
 [versions]
 # Plugins and Gradle configuration
 #--------
-agp = "8.6.1"  # Android Gradle Plugin for building Android apps
-kotlin = "2.0.20"  # Kotlin language version for code compilation
+agp = "8.7.1"  # Android Gradle Plugin for building Android apps
+kotlin = "2.0.21"  # Kotlin language version for code compilation
 firebase = "4.4.2"  # Firebase core library for integrating Firebase services
 crashlytics = "3.0.2"  # Crashlytics for crash reporting and analytics
 hilt-android = "2.52"  # Hilt for dependency injection in Android apps
@@ -10,7 +10,7 @@ hilt-android = "2.52"  # Hilt for dependency injection in Android apps
 # Library Versions
 room = "2.6.1"  # Room persistence library for SQLite database access
 media3 = "1.4.1"  # Media playback, including audio and video
-compose = "1.7.2"  # Core foundation for building declarative UI with Compose
+compose = "1.7.3"  # Core foundation for building declarative UI with Compose
 toolkit = "2.0.2-rc01"  # Collection of UI utilities and extensions
 accompanist = "0.36.0" # Accompanist is a labs like environment for new Compose APIs.
 junit = "4.13.2"
@@ -58,9 +58,9 @@ coil = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
 # Navigation Compose
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.1" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.2" }
 # Google Fonts
-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.2" }
+ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.3" }
 # Window
 window = { module = "androidx.window:window", version = "1.3.0" }
 # Constraint Layout Compose
@@ -99,13 +99,13 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 toolkit-preferences = { module = "com.github.prime-zs.toolkit:preferences", version.ref = "toolkit" }
 
 # Analytics
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.1.0" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.2" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.2.0" }
 
 # Google Play Services
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
 play-app-review-ktx = { module = "com.google.android.play:review-ktx", version = "2.0.1" }
-google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.0.0" }
+google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.1.1" }
 play_feature_delivery = { module = "com.google.android.play:feature-delivery-ktx", version = "2.1.0" }
 
 # ADS

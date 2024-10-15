@@ -12,6 +12,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.MarkUnreadChatAlt
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
@@ -56,6 +58,7 @@ import com.prime.media.core.compose.calculateWindowSizeClass
 import com.prime.media.core.playback.Remote
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
+import com.primex.core.DahliaYellow
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.OrientRed
@@ -161,7 +164,7 @@ private fun initSplashScreen(isColdStart: Boolean) {
  * and display an indefinite message to the user, such as prompting them to purchase
  * a feature like an ad-free experience.
  */
-private const val MESSAGE_COUNT = 5
+private const val MESSAGE_COUNT = 7
 
 private val IAP_ARRAY = arrayOf(
     BuildConfig.IAP_NO_ADS,
@@ -643,6 +646,28 @@ class MainActivity : ComponentActivity(), SystemFacade, AdEventListener {
                 // If the user clicked the action button, launch the app store listing
                 if (result == Channel.Result.ActionPerformed)
                     launchAppStore(pkg)
+            }
+            5-> {
+                val result = channel.show(
+                    "Join our beta program for exclusive features and early access!",
+                    action = "Join",
+                    duration = Duration.Indefinite,
+                    accent = Color.DahliaYellow,
+                    leading = Icons.Outlined.NewReleases
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launch(Settings.JoinBetaIntent)
+            }
+            6 -> {
+                val result = channel.show(
+                    "Join our Telegram group for exclusive discussions and updates!",
+                    action = "Join Now",
+                    duration = Duration.Indefinite,
+                    accent = Color.MetroGreen,
+                    leading = Icons.Outlined.MarkUnreadChatAlt
+                )
+                if (result == Channel.Result.ActionPerformed)
+                    launch(Settings.TelegramIntent)
             }
         }
     }
