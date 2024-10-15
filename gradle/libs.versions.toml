@@ -1,10 +1,10 @@
 [versions]
 agp = "8.7.1"
-kotlin = "2.0.20"
+kotlin = "2.0.21"
 compose = "1.8.0-alpha03"
 media3 = "1.4.1"
 toolkit = "2.0.2-rc04"
-material_icons = "1.7.2"
+material_icons = "1.7.3"
 room = "2.6.1"
 
 [plugins]

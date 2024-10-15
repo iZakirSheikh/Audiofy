@@ -270,7 +270,7 @@ private val SystemFacade.density: Density
 private val REQUIRED_PERMISSIONS = buildList {
     // For Android Tiramisu (33) and above, use media permissions for scoped storage
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
+        // this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
         // this += android.Manifest.permission.READ_MEDIA_VIDEO
         this += android.Manifest.permission.READ_MEDIA_AUDIO
     }
