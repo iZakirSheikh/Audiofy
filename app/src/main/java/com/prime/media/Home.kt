@@ -275,8 +275,8 @@ private val REQUIRED_PERMISSIONS = buildList {
         this += android.Manifest.permission.READ_MEDIA_AUDIO
     }
     // For Android Upside Down Cake (34) and above, add permission for user-selected visual media
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        this += android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+    /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        this += android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED*/
     // For Android versions below Tiramisu 10(29), request WRITE_EXTERNAL_STORAGE for
     // legacy storage access
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
