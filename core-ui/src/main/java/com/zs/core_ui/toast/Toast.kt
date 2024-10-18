@@ -210,7 +210,7 @@ private val EXPANDED_TOAST_SHAPE = RoundedCornerShape(8)
 
 private inline val Colors.toastBackgroundColor
     @Composable
-    get() = if (isLight) Color(0xFF0E0E0F) else AppTheme.colors.background(1.dp)
+    get() = if (isLight) accent.copy(0.1f).compositeOver(Color(0xFF0E0E0F)) else AppTheme.colors.background(1.dp)
 
 /**
  * A custom Toast composable that provides a richer experience compared to the standard Android Toast.
@@ -252,10 +252,10 @@ internal fun Toast(
     SwipeToDismiss(
         dismissState,
         background = { },
-        dismissThresholds = { FixedThreshold(150.dp) },
+        dismissThresholds = { FractionalThreshold(0.75f) },
         modifier = modifier
             .animateContentSize()
-            .renderInSharedTransitionScopeOverlay(1.0f),
+            .renderInSharedTransitionScopeOverlay(0.3f),
         dismissContent = {
             // Shape of the Toast based on expanded state
             val shape = if (isExpanded) EXPANDED_TOAST_SHAPE else AppTheme.shapes.small

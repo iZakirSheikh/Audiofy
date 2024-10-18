@@ -115,7 +115,7 @@ fun MediaFile(context: Context, uri: Uri) =
  */
 val ProductInfo.richDesc
     get() = buildAnnotatedString {
-        withSpanStyle(fontWeight = FontWeight.Bold) { appendLine(title.ellipsize(16)) }
+        withSpanStyle(fontWeight = FontWeight.Bold) { appendLine(title.ellipsize(22)) }
         withSpanStyle(Color.Gray) { append(description) }
     }
 

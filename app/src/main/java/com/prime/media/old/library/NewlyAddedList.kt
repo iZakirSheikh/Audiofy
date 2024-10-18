@@ -19,6 +19,7 @@
 package com.prime.media.old.library
 
 import android.net.Uri
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,6 +32,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.twotone.LocalPlay
 import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,12 +41,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable as savable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -60,6 +66,8 @@ import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.core.db.albumUri
 import com.primex.core.ImageBrush
+import com.primex.core.SignalWhite
+import com.primex.core.UmbraGrey
 import com.primex.core.foreground
 import com.primex.core.visualEffect
 import com.primex.material2.Label
@@ -67,6 +75,16 @@ import com.zs.core_ui.AppTheme
 import com.zs.core_ui.WallpaperAccentColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
+private val ColorSaver = object : androidx.compose.runtime.saveable.Saver<Color, Int> {
+    override fun restore(value: Int): Color? {
+        return Color(value)
+    }
+
+    override fun SaverScope.save(value: Color): Int? {
+        return value.toArgb()
+    }
+}
 
 /**
  * Composable function to create a clickable newly added item with image, label, and play icon.
@@ -83,81 +101,87 @@ private fun NewlyAddedItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     imageUri: Uri? = null,
-    alignment: Alignment = Alignment.Center,
 ) {
     Box(
         modifier = modifier
             .shadow(ContentElevation.low, AppTheme.shapes.compact) // Light shadow
             .clickable(onClick = onClick) // Enable clicking
             .size(224.dp, 132.dp), // Set minimum size
-        contentAlignment = Alignment.Center // Center content within the box
-    ) {
-
-        var accent by remember { mutableStateOf(Color.Unspecified) }
-        val context = LocalContext.current
-        val scope = rememberCoroutineScope()
-        val primary = AppTheme.colors.accent
-        Image(
-            contentDescription = null,
-            modifier = Modifier
-                .visualEffect(ImageBrush.NoiseBrush, 0.3f, true)
-                .foreground(
-                    Brush.horizontalGradient(
-                        listOf(
-                            accent.takeOrElse { primary },
-                            accent.takeOrElse { primary }.copy(0.5f),
-                            Color.Transparent,
+        contentAlignment = Alignment.Center, // Center content within the box
+        content = {
+            val primary = AppTheme.colors.accent
+            var savable by savable(
+                imageUri?.toString(),
+                stateSaver = ColorSaver,
+                init = { mutableStateOf(Color.Unspecified) })
+            val accent by animateColorAsState(
+                savable.takeOrElse { primary },
+                label = "accent-color"
+            )
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+            // Load image using Coil
+            Image(
+                contentDescription = null,
+                modifier = Modifier
+                    .visualEffect(ImageBrush.NoiseBrush, 0.3f, true)
+                    .foreground(
+                        Brush.horizontalGradient(
+                            0.0f to accent.copy(0.8f),
+                            0.3f to accent.copy(0.4f),
+                            1.0f to Color.Transparent,
                         )
-                    )
-                ) // Apply transparent-to-primary gradient
-                .foreground(Color.Black.copy(0.2f))
-                .background(AppTheme.colors.background(1.dp))
-                .matchParentSize(), // Fill available space,
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center,
-            painter = rememberAsyncImagePainter(
-                fallback = painterResource(id = R.drawable.default_art),
-                model = ImageRequest
-                    .Builder(context).apply {
-                        data(imageUri)
-                        allowHardware(false)
-                        crossfade(Anim.DefaultDurationMillis)
+                    ) // Apply transparent-to-primary gradient
+                    .foreground(Color.Black.copy(0.4f))
+                    .background(AppTheme.colors.background(1.dp))
+                    .matchParentSize(), // Fill available space,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                painter = rememberAsyncImagePainter(
+                    fallback = painterResource(id = R.drawable.default_art),
+                    model = ImageRequest
+                        .Builder(context).apply {
+                            data(imageUri)
+                            allowHardware(false)
+                            crossfade(Anim.DefaultDurationMillis)
+                        }
+                        .build(),
+                    onSuccess = {
+                        if (savable != Color.Unspecified) return@rememberAsyncImagePainter
+                        scope.launch(Dispatchers.IO) {
+                            val image = it.result.drawable.toBitmap()
+                            val value = WallpaperAccentColor(image, false, primary)
+                            savable = Color(value)
+                        }
                     }
-                    .build(),
-                onSuccess = {
-                    scope.launch(Dispatchers.IO) {
-                        val image = it.result.drawable.toBitmap()
-                        val value = WallpaperAccentColor(image, false, primary)
-                        accent = Color(value)
-                    }
-                }
-            ),
-        )
+                ),
+            )
 
-        // Label aligned to the left with padding and styling
-        Label(
-            text = label,
-            modifier = Modifier
-                .padding(horizontal = ContentPadding.normal) // Add horizontal padding
-                .fillMaxWidth(0.5f) // Take up half the available width
-                .align(Alignment.CenterStart), // Align to the left
-            style = AppTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 2, // Allow at most 2 lines for label
-            color = AppTheme.colors.accent, // Use contrasting text color
-        )
+            // Play icon aligned to the right with padding and size
+            Icon(
+                imageVector = Icons.Rounded.PlayArrow,
+                contentDescription = null, // Provide content description for accessibility
+                modifier = Modifier
+                    .align(Alignment.CenterStart) // Align to the right
+                    .padding(horizontal = ContentPadding.large) // Add horizontal padding
+                    .size(64.dp), // Set icon size
+                tint = Color.SignalWhite.copy(0.6f) // Use contrasting color
+            )
 
-        // Play icon aligned to the right with padding and size
-        Icon(
-            imageVector = Icons.TwoTone.PlayCircle,
-            contentDescription = null, // Provide content description for accessibility
-            modifier = Modifier
-                .align(Alignment.CenterEnd) // Align to the right
-                .padding(horizontal = ContentPadding.large) // Add horizontal padding
-                .size(40.dp, 40.dp), // Set icon size
-            tint = AppTheme.colors.onAccent // Use contrasting color
-        )
-    }
+            // Label aligned to the left with padding and styling
+            Label(
+                text = label,
+                modifier = Modifier
+                    .padding(horizontal = ContentPadding.medium) // Add horizontal padding
+                    .fillMaxWidth(0.5f) // Take up half the available width
+                    .align(Alignment.CenterEnd), // Align to the left
+                style = AppTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2, // Allow at most 2 lines for label
+                color = Color.SignalWhite, // Use contrasting text color
+            )
+        }
+    )
 }
 
 private val LargeListItemArrangement = Arrangement.spacedBy(16.dp)

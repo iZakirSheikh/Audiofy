@@ -34,15 +34,13 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
+import com.google.android.play.core.ktx.requestProgressFlow
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.ktx.status
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
-import com.google.android.play.core.splitinstall.SplitInstallSessionState
-import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
-import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
@@ -95,6 +93,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
+import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 import com.zs.core_ui.showPlatformToast as showAndroidToast
 
 private const val TAG = "MainActivity"
@@ -176,37 +175,47 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, IAPs)
     }
     val splitInstallManager by lazy {
-        SplitInstallManagerFactory.create(this@MainActivity).also {
-            it.registerListener(object : SplitInstallStateUpdatedListener {
-                override fun onStateUpdate(state: SplitInstallSessionState) {
-                    when(state.status){
-                        SplitInstallSessionStatus.DOWNLOADING -> {
-                            val percent = state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
-                            Log.d("SplitInstall", "Download progress: $percent%")
-                            inAppTaskProgress = percent
-                        }
-                        SplitInstallSessionStatus.INSTALLING -> {
-                            Log.d("SplitInstall", "Installing...")
-                        }
-                        SplitInstallSessionStatus.INSTALLED -> {
-                            Log.d("SplitInstall", "Module installed successfully!")
-                            // You can now access the dynamic feature module
-                        }
-                        SplitInstallSessionStatus.FAILED -> {
-                            Log.e("SplitInstall", "Installation failed with error code: ${state.errorCode()}")
-                        }
-                        SplitInstallSessionStatus.CANCELED -> {
-                            Log.d("SplitInstall", "Installation canceled")
-                        }
-
-                        SplitInstallSessionStatus.PENDING -> {
-                            inAppTaskProgress = -1f
-                        }
-                        else -> Log.d("SplitInstall", "Unknown status: ${state.status()}")
+        val manager = SplitInstallManagerFactory.create(this@MainActivity)
+        // Request progress updates for dynamic feature installation
+        manager.requestProgressFlow()
+            .onEach {state ->
+                when(state.status){
+                    Flag.DOWNLOADING -> {
+                        // Calculate the download progress as a percentage
+                        val percent = state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
+                        Log.d("SplitInstall", "Download progress: $percent%")
+                        // Update the progress indicator
+                        inAppTaskProgress = percent
+                    }
+                    Flag.INSTALLING, Flag.PENDING -> {
+                        // Set the progress to an indeterminate state
+                        inAppTaskProgress = -1f
+                        Log.d("SplitInstall", "Installing...")
+                    }
+                    Flag.INSTALLED -> {
+                        // Hide the progress bar
+                        inAppTaskProgress = Float.NaN
+                        Log.d("SplitInstall", "Module installed successfully!")
+                        // Show a toast message requesting the app restart
+                        val res = toastHostState.showToast(
+                            "Restart the app for changes to take effect.",
+                            "Restart",
+                            duration = Toast.DURATION_INDEFINITE
+                        )
+                        // Restart the app if the user chooses to
+                        if (res == Toast.ACTION_PERFORMED)
+                            restart(true)
+                        // The dynamic feature module can now be accessed
+                    }
+                    else -> {
+                        // Hide the progress bar for unknown statuses
+                        inAppTaskProgress = Float.NaN
+                        Log.d("SplitInstall", "Unknown status: ${state.status()}")
                     }
                 }
-            })
-        }
+            }
+            .launchIn(lifecycleScope)
+        manager
     }
 
     // Cache the banner in main activity.
@@ -282,7 +291,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             return
         }
         // restart just the current activity
-        if (!global){
+        if (!global) {
             // Restart just the current activity
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
@@ -291,7 +300,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         }
         // Get the main component for the restart task
         val componentName = intent.component
-        if (componentName == null){
+        if (componentName == null) {
             Log.e("AppRestart", "Unable to restart: Component name is null")
             return
         }
@@ -566,7 +575,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         when (id) {
             // promo message for ad-free version
             0 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_NO_ADS] ?: return showPromotionalMessage(id + 1)
+                val (info, purchase) = paymaster[BuildConfig.IAP_NO_ADS]
+                    ?: return showPromotionalMessage(id + 1)
                 // skip this and move to next.
                 if (purchase.purchased) return showPromotionalMessage(id + 1)
                 val result = toastHostState.showToast(
@@ -579,7 +589,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             }
             // promo message for codex.
             1 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_CODEX] ?: return showPromotionalMessage(id + 1)
+                val (info, purchase) = paymaster[BuildConfig.IAP_CODEX]
+                    ?: return showPromotionalMessage(id + 1)
                 // skip this and move to next.
                 if (purchase.purchased) return showPromotionalMessage(id + 1)
                 val result = toastHostState.showToast(
@@ -592,7 +603,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             }
             // promo message for buy me a coffee.
             2 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_BUY_ME_COFFEE] ?: return showPromotionalMessage(id + 1)
+                val (info, purchase) = paymaster[BuildConfig.IAP_BUY_ME_COFFEE]
+                    ?: return showPromotionalMessage(id + 1)
                 // skip this and move to next.
                 if (purchase.purchased) return showPromotionalMessage(id + 1)
                 val result = toastHostState.showToast(
@@ -605,7 +617,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             }
             // promo message for tag editor
             3 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_TAG_EDITOR_PRO] ?: return showPromotionalMessage(id + 1)
+                val (info, purchase) = paymaster[BuildConfig.IAP_TAG_EDITOR_PRO]
+                    ?: return showPromotionalMessage(id + 1)
                 // skip this and move to next.
                 if (purchase.purchased) return showPromotionalMessage(id + 1)
                 val result = toastHostState.showToast(
@@ -658,7 +671,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             savedInstanceState == null // A cold start occurs when there is no saved instance state.
         // Set up the splash screen
         initSplashScreen()
-        if (isColdStart){
+        if (isColdStart) {
             // check for updates
             initiateUpdateFlow()
             // Handle pending intents after a brief delay to ensure UI readiness
@@ -700,8 +713,12 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                     initiateFeatureInstall(details.dynamicFeatureRequest)
             }.launchIn(lifecycleScope)
             // Display promotional messages on every third cold start
+            // show what's new message on click.
+            val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
             lifecycleScope.launch {
                 val counter = preferences.value(Settings.KEY_LAUNCH_COUNTER) ?: 0
+                if (savedVersionCode == -1) // Don't show promo message on first launch
+                    return@launch
                 delay(10.seconds)
                 // Select and display a promotional message based on launch count
                 val id = counter % MESSAGE_COUNT
@@ -709,9 +726,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 Log.d(TAG, "onCreate: id: $id counter: $counter")
                 showPromotionalMessage(id)
             }
-            // show what's new message on click.
             val versionCode = BuildConfig.VERSION_CODE
-            val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
             if (savedVersionCode != versionCode) {
                 preferences[KEY_APP_VERSION_CODE] = versionCode
                 showToast(

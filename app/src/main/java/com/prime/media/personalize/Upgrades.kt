@@ -62,15 +62,16 @@ import com.primex.material2.Text
 import com.zs.core.paymaster.purchased
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.shape.NotchedCornerShape
 import com.zs.core_ui.toast.Toast
 import com.zs.core.paymaster.ProductInfo as Product
 import com.zs.core_ui.ContentPadding as CP
 
 private val Colors.border
     @Composable @ReadOnlyComposable
-    get() = BorderStroke(OutlinedBorderSize, background(5.dp))
+    get() = BorderStroke(1.dp, onBackground.copy(0.18f))
 
-private val ProductShape = CutCornerShape(10)
+private val ProductShape = NotchedCornerShape(14.dp)
 
 /**
  * Represents a product that can be purchased within the UI.
