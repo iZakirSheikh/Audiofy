@@ -94,6 +94,7 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.ads.AdSize
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.Colors
 import com.zs.core_ui.Header
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.NightMode
@@ -110,12 +111,8 @@ import com.primex.core.rememberVectorPainter as painter
 import com.primex.core.textResource as stringResource
 import com.zs.core_ui.ContentPadding as CP
 
-private val hPadding = CP.normal
-private val hPaddingValues = Padding(horizontal = hPadding)
-private val vPadding = CP.normal
-private val vPaddingValues = Padding(vertical = vPadding)
-
-private val SecondaryPaneMaxWidth = 300.dp
+// The max width of the secondary pane
+private val sPaneMaxWidth = 300.dp
 
 // Used to style individual items within a preference section.
 private val TopTileShape = Rounded(24.dp, 24.dp, 0.dp, 0.dp)
@@ -123,9 +120,11 @@ private val CentreTileShape = Rectangle
 private val BottomTileShape = Rounded(0.dp, 0.dp, 24.dp, 24.dp)
 private val SingleTileShape = Rounded(24.dp)
 
-private val com.zs.core_ui.Colors.tileBackgroundColor
+private val Colors.tileBackgroundColor
     @ReadOnlyComposable @Composable inline get() = background(elevation = 1.dp)
-private val TopAppBarShape = Rounded(15)
+
+// when topBar doesn't fill the screen; this is for that case.
+private val RoundedTopBarShape = Rounded(15)
 
 /**
  * Represents a Top app bar for this screen.
@@ -147,7 +146,7 @@ private fun TopAppBar(
     LargeTopAppBar(
         modifier = modifier.thenIf(shape != null) {
             windowInsetsPadding(insets)
-                .padding(hPaddingValues)
+                .padding(horizontal = CP.medium)
                 .clip(shape!!)
         },
         title = { Label(text = stringResource(id = R.string.about_us)) },
@@ -192,11 +191,13 @@ private fun TopAppBar(
     )
 }
 
+private val HeaderPadding = PaddingValues(horizontal = CP.large, vertical = CP.xLarge)
+
 @Composable
 private inline fun GroupHeader(
     text: CharSequence,
     modifier: Modifier = Modifier,
-    paddingValues: Padding = PaddingValues(CP.xLarge),
+    paddingValues: Padding = HeaderPadding,
 ) {
     Text(
         text = text,
@@ -480,22 +481,29 @@ private inline fun AboutUs() {
 @Composable
 fun Settings(viewState: SettingsViewState) {
     // Retrieve the current window size
-    val (wRange, _) = LocalWindowSize.current
+    val (width, _) = LocalWindowSize.current
     // Determine the two-pane strategy based on window width range
     // when in mobile portrait; we don't show second pane;
     val strategy = when {
-        wRange < Range.Large -> SinglePaneStrategy // Use stacked layout with bias to centre for small screens
+        width < Range.Medium -> SinglePaneStrategy // Use stacked layout with bias to centre for small screens
         else -> HorizontalTwoPaneStrategy(0.5f) // Use horizontal layout with 50% split for large screens
     }
-    // The layouts of the screen can be in only 2 modes: mobile portrait or landscape.
-    // The landscape mode is the general mode; it represents screens where width > large.
-    // In this mode, two panes are shown; otherwise, just one pane is shown.
-    val isMobilePortrait = strategy is SinglePaneStrategy
+    // Layout Modes:
+    // When the width exceeds the "Compact" threshold, the layout is no longer immersive.
+    // This is because a navigation rail is likely displayed, requiring content to be
+    // indented rather than filling the entire screen width.
+    //
+    // The threshold helps to dynamically adjust the UI for different device form factors
+    // and orientations, ensuring appropriate use of space. In non-compact layouts,
+    // elements like the navigation rail or side panels prevent an immersive, full-width
+    // layout, making the design more suitable for larger screens.
+    val immersive = width < Range.Medium
     // Define the scroll behavior for the top app bar
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     // obtain the padding of BottomNavBar/NavRail
     val navBarPadding = WindowInsets.contentInsets
     // Place the content
+    // FIXME: Width < 650dp then screen is single pane what if navigationBars are at end.
     TwoPane(
         spacing = CP.normal,
         strategy = strategy,
@@ -503,17 +511,18 @@ fun Settings(viewState: SettingsViewState) {
             TopAppBar(
                 behaviour = topAppBarScrollBehavior,
                 insets = WindowInsets.statusBars,
-                shape = if (isMobilePortrait) null else TopAppBarShape,
+                shape = if (immersive) null else RoundedTopBarShape,
             )
         },
         secondary = {
-            // in mobile port mode we don't show details pane.
-            if (isMobilePortrait) return@TwoPane
+            // this will not be called when in single pane mode
+            // this is just for decoration
+            if (strategy is SinglePaneStrategy) return@TwoPane
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .padding(top = CP.medium)
-                    .widthIn(max = SecondaryPaneMaxWidth)
+                    .widthIn(max = sPaneMaxWidth)
                     .systemBarsPadding()
                     .padding(navBarPadding),
                 content = {
@@ -533,21 +542,25 @@ fun Settings(viewState: SettingsViewState) {
             Column(
                 modifier = Modifier
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    // padding due to app bar
                     .padding(WindowInsets.contentInsets)
                     .fadeEdge(AppTheme.colors.background, scrollState, false)
                     .verticalScroll(scrollState)
+                    // the padding due to nav_bar
                     .padding(navBarPadding)
-                    .thenIf(isMobilePortrait) { navigationBarsPadding() }
-                    .padding(vertical = vPadding, horizontal = hPadding),
-                // verticalArrangement = Arrangement.spacedBy(CP.medium),
+                    .thenIf(immersive) { navigationBarsPadding() }
+                    // In immersive mode, add horizontal padding to prevent settings from touching the screen edges.
+                    // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
+                    // Non-immersive layouts only need vertical padding.
+                    .padding(vertical = CP.normal, horizontal = if (immersive) CP.large else CP.medium),
                 content = {
                     GroupHeader(
                         text = stringResource(id = R.string.general),
-                        paddingValues = PaddingValues(CP.xLarge, CP.small, CP.xLarge, CP.xLarge)
+                        paddingValues = PaddingValues(CP.normal, CP.small, CP.normal, CP.xLarge)
                     )
                     General(viewState = viewState)
                     // BannerAd
-                    // Load a Banner Ad if this is not AdFree
+                    // Load a banner ad if the app is not in AdFree mode.
                     val facade = LocalSystemFacade.current
                     if (!facade.isAdFree)
                         Banner(
@@ -561,7 +574,7 @@ fun Settings(viewState: SettingsViewState) {
                     Appearance(viewState = viewState)
                     // AboutUs
                     // Load AboutUs here if this is mobile port
-                    if (!isMobilePortrait)
+                    if (strategy !is SinglePaneStrategy)
                         return@TwoPane
                     Header(
                         stringResource(R.string.about_us),
@@ -573,8 +586,11 @@ fun Settings(viewState: SettingsViewState) {
                     AboutUs()
                 }
             )
-        }
+        },
     )
 }
+
+
+
 
 

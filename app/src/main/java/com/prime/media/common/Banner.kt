@@ -20,6 +20,7 @@ package com.prime.media.common
 
 import android.util.Log
 import android.view.View
+import android.widget.FrameLayout
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
@@ -72,6 +73,10 @@ fun Banner(
         factory = {
             Log.d(TAG, "Banner: attaching to AndroidView")
             view.id = id // Assign the generated ID to the AdView
+            view.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
             view
         },
         modifier = modifier.animateContentSize(), // Apply modifiers to the AndroidView

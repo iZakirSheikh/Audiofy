@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -210,7 +211,7 @@ private val EXPANDED_TOAST_SHAPE = RoundedCornerShape(8)
 
 private inline val Colors.toastBackgroundColor
     @Composable
-    get() = if (isLight) accent.copy(0.1f).compositeOver(Color(0xFF0E0E0F)) else AppTheme.colors.background(1.dp)
+    get() = if (isLight) Color(0xFF0E0E0F) else AppTheme.colors.background(1.dp)
 
 /**
  * A custom Toast composable that provides a richer experience compared to the standard Android Toast.

@@ -2,6 +2,7 @@ package com.prime.media.settings
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -146,8 +147,17 @@ object Settings {
                 override fun restore(value: String): NightMode = NightMode.valueOf(value)
             }
         )
+    // For Android versions below 10 (API level 29), this is true by default, meaning
+    // system bars are translucent and cannot be toggled.
+    //
+    // In Android 15 (API level 34), this preference is deprecated and no longer functional,
+    // as system bar translucency is managed by the system and cannot be customized.
+    //
+    // For intermediate versions (between Android 10 and Android 15), this setting is false
+    // by default but can be toggled to enable or disable translucent system bars based
+    // on user preferences.
     val TRANSLUCENT_SYSTEM_BARS =
-        booleanPreferenceKey(PREFIX + "_force_colorize", true)
+        booleanPreferenceKey(PREFIX + "_force_colorize", Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
     val IMMERSIVE_VIEW =
         booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
     val MIN_TRACK_LENGTH_SECS =

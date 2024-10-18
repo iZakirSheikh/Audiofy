@@ -193,6 +193,12 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                         Log.d("SplitInstall", "Installing...")
                     }
                     Flag.INSTALLED -> {
+                        // There is a known issue when observing the state of dynamic module installations.
+                        // If the user has requested the installation of the dynamic module during this session,
+                        // the inAppTaskProgress flag will not be NaN once the state is reached.
+                        // However, if inAppTaskProgress is NaN, it indicates that this callback was triggered due to an app restart,
+                        // and no installation request was made in the current session. Therefore, we can safely ignore this state.
+                        if (inAppTaskProgress.isNaN()) return@onEach
                         // Hide the progress bar
                         inAppTaskProgress = Float.NaN
                         Log.d("SplitInstall", "Module installed successfully!")

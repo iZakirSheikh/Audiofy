@@ -170,7 +170,7 @@ fun LazyListScope.widgets(
                 content = {
                     Header(
                         text = childInfo.title.ellipsize(30),
-                        contentPadding = PaddingValues(bottom = ContentPadding.normal),
+                        contentPadding = PaddingValues(bottom = ContentPadding.normal, start = ContentPadding.normal),
                         style = AppTheme.typography.bodyMedium,
                         action = {
                             // Show a toast with the child's rich description on click
