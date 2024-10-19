@@ -55,6 +55,7 @@ typealias Members = MembersViewModel.Companion
 private val Member.firstTitleChar
     inline get() = title.uppercase()[0].toString()
 
+@Deprecated("This will be removed shortly.")
 class MembersViewModel(
     handle: SavedStateHandle,
     private val repository: Repository,
@@ -124,15 +125,15 @@ class MembersViewModel(
                 }
         }
             .catch {
-            // any exception.
-            toaster.showToast(
-                "Some unknown error occured!.",
-                "Error",
-                icon = Icons.Outlined.Error,
-                accent = Color.Rose,
-                duration = Toast.DURATION_INDEFINITE
-            )
-        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+                // any exception.
+                toaster.showToast(
+                    "Some unknown error occured!.",
+                    "Error",
+                    icon = Icons.Outlined.Error,
+                    accent = Color.Rose,
+                    duration = Toast.DURATION_INDEFINITE
+                )
+            }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     override fun toggleViewType() {
         // we only currently support single viewType. Maybe in future might support more.
@@ -444,6 +445,7 @@ private fun Member(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@Deprecated("This will be removed shortly.")
 fun Members(viewModel: MembersViewModel) {
     val selected = viewModel.selected
     // The confirm is a stata variable
@@ -517,7 +519,7 @@ fun Members(viewModel: MembersViewModel) {
             actions = viewModel.actions,
             modifier = Modifier
                 .animateContentSize()
-               // .animateItemPlacement()
+                // .animateItemPlacement()
                 .combinedClickable(
                     onClick = {
                         when {

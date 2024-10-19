@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2024 Zakir Sheikh
  *
@@ -24,8 +23,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -37,8 +34,10 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
+import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import kotlin.math.roundToInt
 
@@ -57,6 +56,18 @@ sealed interface TwoPaneStrategy {
      *         For stacked strategies, the Y coordinate of the center of the details pane.
      */
     fun calculate(size: IntSize): Int
+}
+
+/**
+ * A layout strategy representing a single-pane configuration.
+ *
+ * In this strategy, only the primary pane is displayed, and the secondary pane is hidden.
+ * This is typically used when the user wishes to show only one pane.
+ */
+object SinglePaneStrategy : TwoPaneStrategy {
+    override fun calculate(size: IntSize): Int {
+        error("Single pane strategy does not support this operation")
+    }
 }
 
 /**
@@ -109,65 +120,6 @@ value class VerticalTwoPaneStrategy(
 }
 
 /**
- * A strategy for positioning the two panes in a stacked configuration, where the details pane
- * is displayed above the content pane. The details pane's vertical position is determined by
- * the given bias.
- *
- * @param bias The vertical bias of the details pane, ranging from 0.0 (top) to 1.0 (bottom).
- *             A value of 0.5 centers the details pane vertically.
- */
-@JvmInline
-value class StackedTwoPaneStrategy(
-    @FloatRange(from = 0.0, to = 1.0) val bias: Float
-) : TwoPaneStrategy {
-    /**
-     * Calculates the vertical position of the center of the details pane.
-     *
-     * @param size The total available screen height.
-     * @return The Y coordinate of the center of the details pane.
-     */
-    override fun calculate(size: IntSize): Int {
-        return (size.height * bias).roundToInt()
-    }
-}
-
-/**
- * A layout strategy representing a single-pane configuration.
- *
- * In this strategy, only the primary pane is displayed, and the secondary pane is hidden.
- * This is typically used when the user wishes to show only one pane.
- */
-object SinglePaneStrategy: TwoPaneStrategy {
-    override fun calculate(size: IntSize): Int {
-        error("Single pane strategy does not support this operation")
-    }
-}
-
-/**
- * The recommended details pane exit animation for the given [TwoPaneStrategy].
- */
-val TwoPaneStrategy.exitAnimation: ExitTransition
-    get() {
-        return when (this) {
-            is HorizontalTwoPaneStrategy -> fadeOut() + slideOutHorizontally(targetOffsetX = { it / 4 })
-            is VerticalTwoPaneStrategy -> fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
-            is StackedTwoPaneStrategy -> fadeOut() + scaleOut(targetScale = 0.95f)
-            is SinglePaneStrategy -> fadeOut()
-        }
-    }
-
-/**
- * @see exitAnimation
- */
-val TwoPaneStrategy.enterAnimation: EnterTransition
-    get() = when (this) {
-        is HorizontalTwoPaneStrategy -> fadeIn() + slideInHorizontally(initialOffsetX = { it / 4 })
-        is VerticalTwoPaneStrategy -> fadeIn() + slideInVertically(initialOffsetY = { it / 4 })
-        is StackedTwoPaneStrategy -> fadeIn() + scaleIn(initialScale = 0.95f)
-        is SinglePaneStrategy -> fadeIn()
-    }
-
-/**
  * The recommended details pane content padding for the given [TwoPaneStrategy].
  */
 inline val TwoPaneStrategy.padding: PaddingValues
@@ -175,8 +127,7 @@ inline val TwoPaneStrategy.padding: PaddingValues
     inline get() = when (this) {
         is HorizontalTwoPaneStrategy -> WindowInsets.systemBars.asPaddingValues()
         is VerticalTwoPaneStrategy -> WindowInsets.navigationBars.asPaddingValues()
-        is StackedTwoPaneStrategy -> WindowInsets.systemBars.asPaddingValues()
-        is SinglePaneStrategy -> PaddingValues(0.dp)
+        else -> ContentPadding.None
     }
 
 /**
@@ -184,21 +135,18 @@ inline val TwoPaneStrategy.padding: PaddingValues
  */
 inline val TwoPaneStrategy.margin: PaddingValues
     inline get() = when (this) {
-        is StackedTwoPaneStrategy -> PaddingValues(
-            horizontal = ContentPadding.large,
-            vertical = ContentPadding.normal
-        )
-
-        else -> PaddingValues(0.dp)
+        is VerticalTwoPaneStrategy -> PaddingValues(horizontal = ContentPadding.normal)
+        else -> ContentPadding.None
     }
 
 /**
  * The recommended details pane shape for the given [TwoPaneStrategy].
  */
 inline val TwoPaneStrategy.shape
-    inline get() = when(this){
-        is HorizontalTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, bottomStartPercent = 8)
-        is VerticalTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, topEndPercent = 8)
-        is StackedTwoPaneStrategy -> RoundedCornerShape(topStartPercent = 8, topEndPercent = 8, bottomStartPercent = 2, bottomEndPercent = 2)
-        is SinglePaneStrategy -> RoundedCornerShape(0.dp)
+    @ReadOnlyComposable @Composable
+    inline get() = when (this) {
+        is HorizontalTwoPaneStrategy -> RoundedCornerShape(4)
+        is VerticalTwoPaneStrategy -> RoundedCornerShape(4)
+        else -> RectangleShape
     }
+

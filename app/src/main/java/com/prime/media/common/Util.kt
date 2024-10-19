@@ -22,12 +22,16 @@ package com.prime.media.common
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
+import com.prime.media.old.common.util.PathUtils
 import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
 import kotlinx.coroutines.flow.Flow
@@ -156,4 +160,9 @@ val ProductInfo.isPurchasable: Boolean
             else -> true
         }
     }
+
+private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) = { GridItemSpan(maxLineSpan) }
+val LazyGridScope.fullLineSpan
+    get() = com.prime.media.common.fullLineSpan
+
 

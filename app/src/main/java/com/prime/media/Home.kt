@@ -70,10 +70,6 @@ import com.prime.media.personalize.Personalize
 import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.directory.playlists.Members
-import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.playlists.Playlists
-import com.prime.media.old.directory.playlists.PlaylistsViewModel
 import com.prime.media.old.directory.store.Albums
 import com.prime.media.old.directory.store.AlbumsViewModel
 import com.prime.media.old.directory.store.Artists
@@ -95,10 +91,23 @@ import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.old.library.Library
 import com.prime.media.console.widget.Glance
+import com.prime.media.impl.PlaylistViewModel
+import com.prime.media.impl.PlaylistsViewModel
+import com.prime.media.old.directory.playlists.Members
+import com.prime.media.old.directory.playlists.MembersViewModel
+import com.prime.media.playlists.Playlist
+import com.prime.media.playlists.Playlists
+import com.prime.media.playlists.RoutePlaylist
+import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.primex.core.BlueLilac
+import com.primex.core.MetroGreen
+import com.primex.core.MetroGreen2
+import com.primex.core.Orange
+import com.primex.core.RedViolet
+import com.primex.core.SepiaBrown
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -137,7 +146,7 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color.BlueLilac
+private val LightAccentColor = Color.MetroGreen2
 private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**
@@ -239,7 +248,7 @@ private fun NavController.toRoute(route: String) {
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), Folders.route, Albums.route, Playlists.route, Library.route)
+    arrayOf(RouteSettings(), Folders.route, Albums.route, RoutePlaylists(), Library.route)
 
 /**
  * Provides a [Density] object that reflects the user's preferred font scale.
@@ -376,14 +385,14 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Genres(viewModel = viewModel)
     }
     // Playlists
-    composable(Playlists.route) {
+    composable(RoutePlaylists) {
         val viewModel = koinViewModel<PlaylistsViewModel>()
-        Playlists(viewModel = viewModel)
+        Playlists(viewModel)
     }
     // Members
-    composable(Members.route) {
-        val viewModel = koinViewModel<MembersViewModel>()
-        Members(viewModel = viewModel)
+    composable(RoutePlaylist) {
+        val viewModel = koinViewModel<PlaylistViewModel>()
+        Playlist(viewModel)
     }
     // Tag Editor
     composable(TagEditor.route) {
@@ -414,6 +423,12 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RoutePersonalize) {
         val viewModel = koinViewModel<com.prime.media.impl.PersonalizeViewModel>()
         Personalize(viewModel)
+    }
+
+    // Members
+    composable(MembersViewModel.route){
+        val viewModel = koinViewModel<MembersViewModel>()
+        Members(viewModel)
     }
 }
 
@@ -491,8 +506,8 @@ private fun NavigationBar(
         NavItem(
             label = { Label(text = textResource(R.string.playlists)) },
             icon = { Icon(imageVector = Icons.Outlined.PlaylistPlay, contentDescription = null) },
-            checked = route == Playlists.route,
-            onClick = { navController.toRoute(Playlists.direction()); facade.initiateReviewFlow() },
+            checked = route == RoutePlaylists(),
+            onClick = { navController.toRoute(RoutePlaylists()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )

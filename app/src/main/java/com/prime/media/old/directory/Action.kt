@@ -19,6 +19,7 @@ import com.primex.core.Text
  * @since 2023
  */
 @Stable
+@Deprecated("Use Action from common instead")
 sealed class Action(val id: String, val title: Text, val icon: ImageVector) {
     /**
      * Constructor to create an `Action` instance from a string title.

@@ -42,6 +42,7 @@ typealias Mapped<T> = Map<Text, List<T>>
  *     processData(listData, metadata)
  * ```
  */
+@Deprecated("Use MetaData from common instead")
 data class MetaData(
     val title: Text,
     val artwork: String? = null,

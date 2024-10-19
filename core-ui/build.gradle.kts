@@ -48,6 +48,7 @@ dependencies {
     // TODO - Revert these to impl once old code is removed from the project.
     api(libs.wavy.slider)
     api(libs.lottie.compose)
+
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

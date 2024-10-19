@@ -22,15 +22,11 @@
 package com.zs.core_ui.adaptive
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.FabPosition
 import androidx.compose.material.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -44,29 +40,29 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.primex.core.thenIf
 import com.zs.core_ui.AppTheme
 import kotlin.contracts.ExperimentalContracts
+import androidx.compose.foundation.layout.PaddingValues as Padding
+import androidx.compose.runtime.CompositionLocalProvider as Provider
+import com.zs.core_ui.ContentPadding as CP
 
 private const val TAG = "TwoPane"
 
 /**
  * The empty top-padding
  */
-private val PaddingNone = PaddingValues(0.dp)
+private val PaddingNone = CP.None
+private val DEFAULT_SPACING = 0.dp
 
 // The indexes of the content slots
 private const val INDEX_CONTENT = 0
 private const val INDEX_TOP_BAR = 1
 private const val INDEX_FAB = 2
 private const val INDEX_DETAILS = 3
-private const val INDEX_SCRIM = 4
+private const val INDEX_DIALOG = 4
 
 // FAB spacing above the bottom bar / bottom of the Scaffold
 private val FabSpacing = 16.dp
-
-private val DEFAULT_SPACING = 0.dp
-private val DEFAULT_SCRIM_COLOR = Color(0xB3000000)
 
 /**
  * A simple slot for holding content within the TwoPane layout.
@@ -74,61 +70,27 @@ private val DEFAULT_SCRIM_COLOR = Color(0xB3000000)
  * @param content The composable content to be displayed within the slot.
  */
 @Composable
-private inline fun Slot(content: @Composable () -> Unit) =
-    Box(content = { content() })
-
-
-private val TwoPaneStrategy.scrim get() =
-    if (this is StackedTwoPaneStrategy) DEFAULT_SCRIM_COLOR else Color.Transparent
+private inline fun Slot(content: @Composable () -> Unit) = Box(content = { content() })
 
 /**
- * A two-pane layout that displays content and details using a configurable strategy.
+ * A composable function that represents a layout for organizing screen components.
  *
- * This component offers a flexible approach to displaying content and details within a
- * two-pane structure. It's particularly useful in situations where traditional shared
- * element transitions with dialogs are not suitable, such as when using a
- * [StackedTwoPaneStrategy].
+ * This layout provides a flexible structure for displaying primary content,
+ * secondary content (optional), dialogs (optional), a top app bar (optional),
+ * and a floating action button (optional). It adapts to different screen sizes
+ * and orientations using the provided `TwoPaneStrategy`.
  *
- * **Adaptive Layout:**
- * The layout dynamically adjusts based on the presence of details content. If `details`
- * has a size of 0, it is not rendered, optimizing the layout for single-pane scenarios.
- *
- * **Seamless Integration:**
- * - Supports a top app bar, automatically applying its indent to the content via
- *   [WindowInsets.Companion.contentInsets].
- * - Includes a floating action button (FAB) with customizable positioning relative to
- *   the `content` using [fabPosition].
- *
- * **Customization:**
- * Offers various options for customization, including spacing, background color, content
- * color, scrim color, and FAB position.
- *
- * **Dismissal:**
- * Provides an `onDismissRequest` callback for handling clicks outside the details pane.
- * This callback is only active when details are visible. You can effectively disable
- * this behavior by setting [scrim] to `Color.Transparent` and not providing an
- * `onDismissRequest` lambda.
- *
- * @param primary The primary content to be displayed. This content occupies at least the
- *   fraction specified in the strategy when the details pane is visible. Otherwise, it
- *   fills the available space.
- * @param modifier Modifier to be applied to the layout.
- * @param spacing The spacing between the main content and details pane for horizontal or
- *   vertical strategies. This parameter is ignored for stacked strategies or when no
- *   details are present.
- * @param background The background color of the layout.
- * @param onColor The content color of this layout, typically used for text or icons.
- * @param scrim The color of the scrim overlay applied to the `content` when details are
- *   visible. Set to `Color.Transparent` to disable the scrim.
- * @param secondary The optional details content to be displayed. When present, it occupies
- *   at most the remaining space after the content pane's minimum allocation.
- * @param topBar The composable content of the top app bar.
- * @param floatingActionButton The composable content of the floating action button.
- * @param fabPosition The position of the floating action button relative to the content.
- * @param strategy The strategy to use for positioning the details pane relative to the
- *   content.
- * @param onDismissRequest Called when the user clicks outside the details pane. This
- *   callback is only invoked when details are visible.
+ * @param primary The primary content to be displayed within the layout.
+ * @param modifier The modifier to be applied to the layout. Defaults to `Modifier`.
+ * @param spacing The spacing between layout elements. Defaults to `DEFAULT_SPACING`.
+ * @param background The background color of the layout. Defaults to `AppTheme.colors.background`.
+ * @param onColor The color of content displayed on the background. Defaults to `AppTheme.colors.onBackground`.
+ * @param strategy The strategy to use for displaying content in different panes. Defaults to `SinglePaneStrategy`.
+ * @param secondary The secondary content to be displayed, if applicable. Defaults to an empty composable function.
+ * @param dialog An optional composable function representing a dialog to be displayed. Defaults to `null`.
+ * @param topBar An optional composable function representing the top app bar. Defaults to an empty composable function.
+ * @param floatingActionButton An optional composable function representing the floating action button. Defaults to an empty composable function.
+ * @param fabPosition The position of the floating action button. Defaults to `FabPosition.End`.
  */
 @Composable
 fun TwoPane(
@@ -138,24 +100,30 @@ fun TwoPane(
     background: Color = AppTheme.colors.background,
     onColor: Color = AppTheme.colors.onBackground,
     strategy: TwoPaneStrategy = SinglePaneStrategy,
-    scrim: Color = strategy.scrim,
     secondary: @Composable () -> Unit = { },
+    dialog: @Composable (() -> Unit)? = null,
     topBar: @Composable () -> Unit = { },
     floatingActionButton: @Composable () -> Unit = { },
-    onDismissRequest: (() -> Unit)? = null,
     fabPosition: FabPosition = FabPosition.End,
 ) {
     // The indent propagated through window.contentIndent
     // The removes its old value; which means child has access to only topBar indent.
-    val (indent, onIndentUpdated) = remember { mutableStateOf(PaddingNone) }
+    val (indent, onIndentUpdated) = remember { mutableStateOf(CP.None) }
+    //
     Layout(
-        modifier = modifier
-            .background(background)
-            .fillMaxSize(),
+        modifier = modifier.background(background).fillMaxSize(),
+        measurePolicy = remember(strategy) {
+            when (strategy) {
+                is SinglePaneStrategy -> OnePaneMeasurePolicy(fabPosition, onIndentUpdated)
+                is VerticalTwoPaneStrategy -> TwoPaneVerticalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
+                is HorizontalTwoPaneStrategy -> TwoPaneHorizontalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
+                else -> TODO("Add more strategies")
+            }
+        },
         content = {
             // Content (index 0)
             Slot {
-                CompositionLocalProvider(
+                Provider(
                     LocalContentColor provides onColor,
                     LocalContentInsets provides indent,
                     content = primary
@@ -165,245 +133,29 @@ fun TwoPane(
             Slot(topBar)
             // Floating Action Button (index 2)
             Slot(floatingActionButton)
-            if (strategy == SinglePaneStrategy) return@Layout
-            // Details (index 3)
-            Slot(secondary)
-            // Scrim
-            // Consume interactions to prevent clicks passing through the scrim
-            Spacer(
-                Modifier
-                    .thenIf(onDismissRequest != null) {
-                        clickable(null, null, onClick = onDismissRequest!!)
-                    }
-                    .background(scrim)
-            )
-        },
-        measurePolicy = remember(strategy) {
-            when (strategy) {
-                is VerticalTwoPaneStrategy -> TwoPaneVerticalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
-                is HorizontalTwoPaneStrategy -> TwoPaneHorizontalMeasurePolicy(strategy, fabPosition, spacing, onIndentUpdated)
-                is StackedTwoPaneStrategy -> StackedMeasurePolicy(strategy, fabPosition, onIndentUpdated)
-                is SinglePaneStrategy -> OnePaneMeasurePolicy(fabPosition, onIndentUpdated)
+            if (strategy == SinglePaneStrategy) {
+                // dialog at 3 - If using SinglePaneStrategy, display the dialog here
+                dialog?.invoke()
+                return@Layout
             }
+            // Details (index 3) -  The details pane (for multi-pane layouts)
+            Slot(secondary)
+            // Dialog (index 4) - The dialog (for multi-pane layouts)
+            dialog?.invoke()
         }
     )
 }
 
-/**
- * A [MeasurePolicy] That places details below content if available
- */
-private data class TwoPaneVerticalMeasurePolicy(
-    private val strategy: VerticalTwoPaneStrategy,
-    private val fabPosition: FabPosition,
-    private val spacing: Dp,
-    private val onUpdateIntent: (PaddingValues) -> Unit
-) : MeasurePolicy {
-    override fun MeasureScope.measure(
-        measurables: List<Measurable>,
-        c: Constraints
-    ): MeasureResult {
-        val width = c.maxWidth;
-        val height = c.maxHeight
-        // measure content with original coordinates.
-        // Loose constraints for initial measurements
-        var constraints = c.copy(0, minHeight = 0)
-        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
-        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
-        // Determine the vertical split point for the layout.
-        // Both content and details will have half of the gapWidth subtracted from their maximum heights
-        // to ensure proper spacing.
-        val splitAtY = strategy.calculate(IntSize(width, height))
-        val gapWidthPx = spacing.roundToPx()
-        // Measure Details Pane (if present), limiting its maximum height to the space below the split point
-        val detailsMaxHeight = height - splitAtY + gapWidthPx / 2
-        constraints = c.copy(minWidth = 0, minHeight = 0, maxHeight = detailsMaxHeight)
-        val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
-        // Check if details pane is effectively absent (null or zero height)
-        val isDetailsAbsent = detailsPlaceable.height == 0
-        // Measure Content, dynamically allocating space based on the presence and size of the details pane.
-        // If details are absent, content gets the full available space.
-        // If details are present, content height is limited to either the space above the split
-        // or the actual height of the details pane, whichever is greater.
-        // This ensures content fills the available space efficiently, even if the details pane
-        // doesn't fully utilize its allocated area.
-        val contentAllocatedWidth = splitAtY - gapWidthPx / 2
-        val detailsMeasured = detailsPlaceable.height + gapWidthPx / 2
-        val remaining = maxOf(contentAllocatedWidth, height - detailsMeasured)
-        constraints = if (isDetailsAbsent) c else
-            c.copy(minHeight = remaining, maxHeight = remaining)
-        val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
-        val scrimPlaceable = measurables[INDEX_SCRIM].measure(constraints)
-
-        // Update content insets to account for Top Bar height
-        onUpdateIntent(PaddingValues(top = topBarPlaceable.height.toDp()))
-        return layout(width, height) {
-            // place the content at top
-            contentPlaceable.placeRelative(0, 0)
-            // place topBar at top the content
-            topBarPlaceable.placeRelative(0, 0)
-            // place fab according to fabPosition.
-            val fabSpacingPx = FabSpacing.roundToPx()
-            fabPlaceable.placeRelative(
-                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
-                x = when (fabPosition) {
-                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
-                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
-                    FabPosition.Start -> fabSpacingPx
-                    else -> error("Invalid fab position")
-                }
-            )
-            if (isDetailsAbsent) return@layout
-            // overlay content with scrim
-            scrimPlaceable.placeRelative(0, 0)
-            // after the gap place the details at the bottom of the content
-            detailsPlaceable.placeRelative(
-                width / 2 - detailsPlaceable.width / 2,
-                height - detailsPlaceable.height
-            )
-        }
-    }
-}
-
-/**
- * A [MeasurePolicy] That places details to the right of content if available
- */
-private data class TwoPaneHorizontalMeasurePolicy(
-    private val strategy: HorizontalTwoPaneStrategy,
-    private val fabPosition: FabPosition,
-    private val spacing: Dp,
-    private val onUpdateIntent: (PaddingValues) -> Unit
-) : MeasurePolicy {
-    override fun MeasureScope.measure(
-        measurables: List<Measurable>,
-        c: Constraints
-    ): MeasureResult {
-        val width = c.maxWidth;
-        val height = c.maxHeight
-        // Determine the horizontal split point for the layout.
-        // Both content and details will have half of the gapWidth subtracted from their maximum widths
-        // to ensure proper spacing.
-        val splitAtX = strategy.calculate(IntSize(width, height))
-        val gapWidthPx = spacing.roundToPx()
-        // measure details first
-        // Measure Details Pane (if present), limiting its maximum height to the space below the split point
-        val detailsMaxWidth = width - splitAtX + gapWidthPx / 2
-        var constraints = c.copy(0, minHeight = 0, maxWidth = detailsMaxWidth)
-        val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
-        // Check if details pane is effectively absent (null or zero height)
-        val isDetailsAbsent = detailsPlaceable.height == 0
-        // measure others
-        // Others are restricted to the size of the remaining space.
-        val contentAllocatedWidth = splitAtX - gapWidthPx / 2
-        // if details has shorter width than suggested; then content will take that space.
-        val remaining = maxOf(contentAllocatedWidth, width - detailsPlaceable.measuredWidth - gapWidthPx)
-        constraints = if (isDetailsAbsent) c else c.copy(maxWidth = remaining, minWidth = remaining)
-        val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
-        val scrimPlaceable = measurables[INDEX_SCRIM].measure(constraints)
-        constraints = constraints.copy(minHeight = 0, minWidth = 0)
-        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
-        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
-        // Update content insets to account for Top Bar height
-        onUpdateIntent(PaddingValues(top = topBarPlaceable.height.toDp()))
-        return layout(width, height){
-            // place the content at top
-            contentPlaceable.placeRelative(0, 0)
-            // place topBar at top the content
-            topBarPlaceable.placeRelative(0, 0)
-            // place fab according to fabPosition.
-            val fabSpacingPx = FabSpacing.roundToPx()
-            fabPlaceable.placeRelative(
-                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
-                x = when (fabPosition) {
-                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
-                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
-                    FabPosition.Start -> fabSpacingPx
-                    else -> error("Invalid fab position")
-                }
-            )
-            if (isDetailsAbsent) return@layout
-            // overlay content with scrim
-            scrimPlaceable.placeRelative(0, 0)
-            // after the gap place the details at the bottom of the content
-            detailsPlaceable.placeRelative(
-                contentPlaceable.width + gapWidthPx / 2,
-                0
-            )
-        }
-    }
-}
-
-/**
- * A [MeasurePolicy] That places details stacked on top of content.
- */
-private data class StackedMeasurePolicy(
-    private val strategy: StackedTwoPaneStrategy,
-    private val fabPosition: FabPosition,
-    private val onUpdateIntent: (PaddingValues) -> Unit
-) : MeasurePolicy {
-    override fun MeasureScope.measure(
-        measurables: List<Measurable>,
-        c: Constraints
-    ): MeasureResult {
-        val width = c.maxWidth;
-        val height = c.maxHeight
-        // measure content with original coordinates.
-        // Loose constraints for initial measurements
-        val contentPlaceable = measurables[INDEX_CONTENT].measure(c)
-        val scrimPlaceable = measurables[INDEX_SCRIM].measure(c)
-        val constraints = c.copy(0, minHeight = 0)
-        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
-        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
-        val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
-        // Check if details pane is effectively absent (null or zero height)
-        val isDetailsAbsent = detailsPlaceable.height == 0
-        // Update content insets to account for Top Bar height
-        onUpdateIntent(PaddingValues(top = topBarPlaceable.height.toDp()))
-        // since details is stacked on top of content; hence it will not affect anyone
-        // here strategy is only used to find where details need to be placed
-        // Update content insets to account for Top Bar height
-        return layout(width, height){
-            // place the content at top
-            contentPlaceable.placeRelative(0, 0)
-            // place topBar at top the content
-            topBarPlaceable.placeRelative(0, 0)
-            // place fab according to fabPosition.
-            val fabSpacingPx = FabSpacing.roundToPx()
-            fabPlaceable.placeRelative(
-                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
-                x = when (fabPosition) {
-                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
-                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
-                    FabPosition.Start -> fabSpacingPx
-                    else -> error("Invalid fab position")
-                }
-            )
-
-            if (isDetailsAbsent) return@layout
-            // overlay content with scrim
-            scrimPlaceable.placeRelative(0, 0)
-            // after the gap place the details at the bottom of the content
-            val y = strategy.calculate(IntSize(width, height)) - detailsPlaceable.height / 2
-            detailsPlaceable.placeRelative(
-                width / 2 - detailsPlaceable.width / 2,
-                y.coerceIn(0..height - detailsPlaceable.height)
-            )
-        }
-    }
-}
 
 /**
  * A [MeasurePolicy] that places only primary pane; without secondary pane.
  */
 private data class OnePaneMeasurePolicy(
     private val fabPosition: FabPosition,
-    private val onUpdateIntent: (PaddingValues) -> Unit
-): MeasurePolicy {
-    override fun MeasureScope.measure(
-        measurables: List<Measurable>,
-        c: Constraints
-    ): MeasureResult {
-        val width = c.maxWidth;
-        val height = c.maxHeight
+    private val onUpdateIntent: (Padding) -> Unit
+) : MeasurePolicy {
+    override fun MeasureScope.measure(measurables: List<Measurable>, c: Constraints): MeasureResult {
+        val width = c.maxWidth; val height = c.maxHeight
         // measure content with original coordinates.
         // Loose constraints for initial measurements
         val contentPlaceable = measurables[INDEX_CONTENT].measure(c)
@@ -411,7 +163,9 @@ private data class OnePaneMeasurePolicy(
         val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
         val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
         // Update content insets to account for Top Bar height
-        onUpdateIntent(PaddingValues(top = topBarPlaceable.height.toDp()))
+        onUpdateIntent(Padding(top = topBarPlaceable.height.toDp()))
+        // measure dialog with original coordinates.
+        val dialogPlaceable  = measurables.getOrNull(3)?.measure(c)
         // since details is absent no need to further complicate things.
         return layout(width, height){
             // place the content at top
@@ -429,6 +183,136 @@ private data class OnePaneMeasurePolicy(
                     else -> error("Invalid fab position")
                 }
             )
+            // place dialog over every-one
+            dialogPlaceable?.placeRelative(0, 0)
+        }
+    }
+}
+
+/**
+ * A [MeasurePolicy] That places details below content if available
+ */
+private data class TwoPaneVerticalMeasurePolicy(
+    private val strategy: VerticalTwoPaneStrategy,
+    private val fabPosition: FabPosition,
+    private val spacing: Dp,
+    private val onUpdateIntent: (Padding) -> Unit
+) : MeasurePolicy {
+    override fun MeasureScope.measure(measurables: List<Measurable>, c: Constraints): MeasureResult {
+        val width = c.maxWidth; val height = c.maxHeight
+        // measure content with original coordinates.
+        // Loose constraints for initial measurements
+        var constraints = c.copy(0, minHeight = 0)
+        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
+        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
+        // Determine the vertical split point for the layout.
+        // Both content and details will have half of the gapWidth subtracted from their maximum heights
+        // to ensure proper spacing.
+        val splitAtY = strategy.calculate(IntSize(width, height))
+        val gapWidthPx = spacing.roundToPx()
+        // Measure Details Pane (if present), limiting its maximum height to the space below the split point
+        val detailsMaxHeight = height - splitAtY + gapWidthPx / 2
+        constraints = c.copy(minWidth = 0, minHeight = 0, maxHeight = detailsMaxHeight)
+        val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
+        // Measure Content, dynamically allocating space based on the size of the details pane.
+        // If details are absent, content gets the full available space.
+        // If details are present, content height is limited to either the space above the split
+        // or the actual height of the details pane, whichever is greater.
+        // This ensures content fills the available space efficiently, even if the details pane
+        // doesn't fully utilize its allocated area.
+        val contentAllocatedWidth = splitAtY - gapWidthPx / 2
+        val detailsMeasured = detailsPlaceable.height + gapWidthPx / 2
+        val remaining = maxOf(contentAllocatedWidth, height - detailsMeasured)
+        constraints = c.copy(minHeight = remaining, maxHeight = remaining)
+        val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
+        // measure dialog
+        val dialogPlaceable = measurables.getOrNull(INDEX_DIALOG)?.measure(c)
+        // Update content insets to account for Top Bar height
+        onUpdateIntent(Padding(top = topBarPlaceable.height.toDp()))
+        return layout(width, height) {
+            // place the content at top
+            contentPlaceable.placeRelative(0, 0)
+            // place topBar at top the content
+            topBarPlaceable.placeRelative(0, 0)
+            // place fab according to fabPosition.
+            val fabSpacingPx = FabSpacing.roundToPx()
+            fabPlaceable.placeRelative(
+                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
+                x = when (fabPosition) {
+                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
+                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
+                    FabPosition.Start -> fabSpacingPx
+                    else -> error("Invalid fab position")
+                }
+            )
+            // after the gap place the details at the bottom of the content
+            detailsPlaceable.placeRelative(
+                width / 2 - detailsPlaceable.width / 2,
+                height - detailsPlaceable.height
+            )
+            // place dialog
+            dialogPlaceable?.placeRelative(0, 0)
+        }
+    }
+}
+
+/**
+ * A [MeasurePolicy] That places details to the right of content if available
+ */
+private data class TwoPaneHorizontalMeasurePolicy(
+    private val strategy: HorizontalTwoPaneStrategy,
+    private val fabPosition: FabPosition,
+    private val spacing: Dp,
+    private val onUpdateIntent: (Padding) -> Unit
+) : MeasurePolicy {
+    override fun MeasureScope.measure(measurables: List<Measurable>, c: Constraints): MeasureResult {
+        val width = c.maxWidth; val height = c.maxHeight
+        // Determine the horizontal split point for the layout.
+        // Both content and details will have half of the gapWidth subtracted from their maximum widths
+        // to ensure proper spacing.
+        val splitAtX = strategy.calculate(IntSize(width, height))
+        val gapWidthPx = spacing.roundToPx()
+        // measure details first
+        // Measure Details Pane (if present), limiting its maximum height to the space below the split point
+        val detailsMaxWidth = width - splitAtX + gapWidthPx / 2
+        var constraints = c.copy(0, minHeight = 0, maxWidth = detailsMaxWidth)
+        val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
+        // measure others
+        // Others are restricted to the size of the remaining space.
+        val contentAllocatedWidth = splitAtX - gapWidthPx / 2
+        // if details has shorter width than suggested; then content will take that space.
+        val remaining = maxOf(contentAllocatedWidth, width - detailsPlaceable.measuredWidth - gapWidthPx)
+        constraints = c.copy(maxWidth = remaining, minWidth = remaining)
+        val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
+        val dialogPlaceable = measurables.getOrNull(INDEX_DIALOG)?.measure(constraints)
+        constraints = constraints.copy(minHeight = 0, minWidth = 0)
+        val topBarPlaceable = measurables[INDEX_TOP_BAR].measure(constraints)
+        val fabPlaceable = measurables[INDEX_FAB].measure(constraints)
+        // Update content insets to account for Top Bar height
+        onUpdateIntent(Padding(top = topBarPlaceable.height.toDp()))
+        return layout(width, height){
+            // place the content at top
+            contentPlaceable.placeRelative(0, 0)
+            // place topBar at top the content
+            topBarPlaceable.placeRelative(0, 0)
+            // place fab according to fabPosition.
+            val fabSpacingPx = FabSpacing.roundToPx()
+            fabPlaceable.placeRelative(
+                y = contentPlaceable.height - fabPlaceable.height - fabSpacingPx,
+                x = when (fabPosition) {
+                    FabPosition.End -> contentPlaceable.width - fabPlaceable.width - fabSpacingPx
+                    FabPosition.Center -> (contentPlaceable.width - fabPlaceable.width) / 2
+                    FabPosition.Start -> fabSpacingPx
+                    else -> error("Invalid fab position")
+                }
+            )
+            // after the gap place the details at the bottom of the content
+            detailsPlaceable.placeRelative(
+                contentPlaceable.width + gapWidthPx / 2,
+                0
+            )
+            // overlay content with scrim
+            dialogPlaceable?.placeRelative(0, 0)
         }
     }
 }

@@ -117,4 +117,5 @@ internal abstract class Realm : RoomDatabase() {
      *
      */
     abstract val playlists: Playlists2
+    abstract val playlistsNew: Playlists
 }

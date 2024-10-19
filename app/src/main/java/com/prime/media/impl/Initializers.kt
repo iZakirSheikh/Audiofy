@@ -23,8 +23,8 @@ import android.util.Log
 import androidx.startup.Initializer
 import coil.Coil
 import com.prime.media.BuildConfig
+import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.playlists.PlaylistsViewModel
 import com.prime.media.old.directory.store.AlbumsViewModel
 import com.prime.media.old.directory.store.ArtistsViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
@@ -34,7 +34,6 @@ import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
-import com.prime.media.impl.PersonalizeViewModel
 import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.SystemDelegate
@@ -43,6 +42,7 @@ import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.Preferences.Companion.invoke
 import com.primex.preferences.invoke
+import com.zs.core.db.Playlists
 import com.zs.core.db.Playlists2
 import com.zs.core.db.Playlists2.Companion.invoke
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
@@ -53,6 +53,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import androidx.lifecycle.SavedStateHandle as Handle
 import coil.ImageLoader.Builder as ImageLoader
@@ -79,23 +80,25 @@ private val KoinAppModules = module {
     }
     single { Playlists2(get()) }
     single { Repository(get(), get(), get()) }
-    single { Remote(get()) }
+    single<Remote> { Remote(get()) }
     singleOf(::ToastHostState)
+    single { Playlists(get()) }
 
     factory { androidContext().resources }
     factory() { SystemDelegate(get(), get()) }
     factory { androidContext().contentResolver }
     // ViewModels
-    viewModel { SettingsViewModel() }
+    viewModelOf(::SettingsViewModel)
+    viewModelOf(::MembersViewModel) // remove this later
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }
     viewModel() { PersonalizeViewModel() }
     viewModel() { ConsoleViewModel(get(), get(), get()) }
     viewModel { (h: Handle) -> TagEditorViewModel(h, get(), get(), get()) }
-    viewModel { (h: Handle) -> MembersViewModel(h, get(), get(), get()) }
-    viewModel { (h: Handle) -> PlaylistsViewModel(h, get(), get(), get()) }
-    viewModel { (h: Handle) -> AlbumsViewModel(h, get(), get(), get()) }
+    viewModelOf(::PlaylistViewModel)
+    viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
+    viewModelOf(::AlbumsViewModel)
     viewModel { (h: Handle) -> ArtistsViewModel(h, get(), get(), get()) }
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
     viewModel { (h: Handle) -> GenresViewModel(h, get(), get(), get()) }

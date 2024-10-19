@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Zakir Sheikh
  *
- * Created by 2024 on 28-09-2024.
+ * Created by 2024 on 19-10-2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,74 +19,41 @@
 package com.zs.core.db
 
 import android.content.Context
-import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.ForeignKey.Companion.CASCADE
-import androidx.room.Index
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import com.zs.core.db.Playlist.Track
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
 
-/**
- * Representing a playlist.
- *
- * @property name The name of the playlist.
- * @property id The unique ID of the playlist (auto-generated).
- * @property desc The description of the playlist (optional).
- * @property dateCreated The timestamp when the playlist was created.
- * @property dateModified The timestamp when the playlist was last modified.
- */
-@Entity(tableName = "tbl_playlists")
-data class Playlist(
-    @JvmField val name: String,
-    @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "playlist_id") val id: Long = 0,
-    @ColumnInfo(defaultValue = "") val desc: String = "",
-    @JvmField @ColumnInfo(name = "date_created") val dateCreated: Long = System.currentTimeMillis(),
-    @JvmField @ColumnInfo(name = "date_modified") val dateModified: Long = System.currentTimeMillis(),
-) {
-    /**
-     * Representing a member (media file) within a playlist.
-     *
-     * @property playlistID The ID of the playlist this member belongs to.
-     * @property order The playback order of this member within the playlist.
-     * @property uri The URI of the media file.
-     * @property title The title of the media file.
-     * @property subtitle The subtitle of the media file.
-     * @property artwork The artwork associated with the media file (optional).
-     * @property mimeType The MIME type of the media file.
-     */
-    @Entity(
-        tableName = "tbl_playlist_members",
-        primaryKeys = ["playlist_id", "uri"],
-        foreignKeys = [ForeignKey(
-            entity = Playlist::class,
-            parentColumns = ["playlist_id"],
-            childColumns = ["playlist_id"],
-            onDelete = CASCADE
-        )],
-        indices = [Index(value = ["playlist_id", "uri"], unique = false)]
-    )
-    data class Track(
-        @JvmField @ColumnInfo(name = "playlist_id") val playlistID: Long,
-        @JvmField @ColumnInfo(name = "play_order") val order: Int,
-        @JvmField @ColumnInfo(name = "uri") val uri: String,
-        @JvmField val title: String,
-        @JvmField val subtitle: String,
-        @JvmField @ColumnInfo(name = "artwork_uri") val artwork: String? = null,
-        @JvmField @ColumnInfo(name = "mime_type") val mimeType: String? = null,
-    )
-}
+// Two new fields have been added to the Playlist API:
+// - count: Represents the number of items in the playlist.
+// - artwork: Represents the artwork of the last item in the playlist.
+
+// Several approaches were considered for updating these fields:
+
+// 1. Schema Update with Trigger: Add the fields to the database schema
+//    and use a trigger to automatically update them.
+//    This seems too expensive and hence dropped.
+// 2. Room's @Ignore with Query: Mark the fields with `@Ignore` and
+//    use a separate query to fetch and update them. This approach was
+//    tested, but Room currently drops ignored fields during updates.
+//    Future Room versions might provide a way to update ignored fields.
+// 3. Manual Update Methods: Define dedicated methods to update the
+//    fields. While this approach requires additional methods, it
+//    currently appears to be the most reliable and preferred solution.
+
+// For future reference
+// @Query("SELECT p.*, COUNT(m.uri) AS count, (SELECT artwork_uri FROM tbl_playlist_members
+// WHERE playlist_id = p.playlist_id ORDER BY play_order DESC LIMIT 1) AS artwork
+// FROM tbl_playlists p LEFT JOIN tbl_playlist_members m ON p.playlist_id = m.playlist_id
+// WHERE p.playlist_id = :id GROUP BY p.playlist_id")
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Dao
-interface Playlists2 {
+interface Playlists {
 
     companion object {
         /**
@@ -94,89 +61,45 @@ interface Playlists2 {
          */
         const val PRIVATE_PLAYLIST_PREFIX = '_'
 
-        //language=RoomSql
-        internal const val TRIGGER_BEFORE_INSERT =
-            "CREATE TRIGGER IF NOT EXISTS trigger_reorder_insert BEFORE INSERT ON tbl_playlist_members " +
-                    "BEGIN UPDATE tbl_playlist_members SET play_order = play_order + 1 " +
-                    "WHERE new.playlist_id == playlist_id AND play_order >= new.play_order;" +
-                    "END;"
-
-        //language=RoomSql
-        internal const val TRIGGER_AFTER_DELETE =
-            "CREATE TRIGGER IF NOT EXISTS trigger_reorder_delete AFTER DELETE ON tbl_playlist_members " +
-                    "BEGIN UPDATE tbl_playlist_members SET play_order = play_order - 1 " +
-                    "WHERE old.playlist_id == playlist_id AND old.play_order < play_order;" +
-                    "END;"
-
-        operator fun invoke(context: Context) = Realm(context).playlists
+        /**
+         * @return an instance of [Playlists]
+         */
+        operator fun invoke(context: Context) = Realm(context).playlistsNew
     }
 
-    // playlists
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(playlist: Playlist): Long
+    /**
+     * @return the cardinality of playlists stored in the table playlist
+     */
+    @Query("SELECT COUNT(*) FROM tbl_playlists")
+    suspend fun count(): Int
 
-
-    @Query("SELECT MAX(play_order) FROM tbl_playlist_members WHERE playlist_id = :playlistId")
-    suspend fun lastPlayOrder(playlistId: Long): Int?
+    @Query("SELECT COUNT(*) FROM tbl_playlist_members WHERE playlist_id = :id")
+    suspend fun count(id: Long): Int
 
     /**
-     * Update the playlist with new details.
-     * Note: Please Provide [Playlist.dateModified] and [Playlist.dateCreated].
+     * @return artwork of the last item in the playlist represented by [id]
      */
-    @Update
-    suspend fun update(playlist: Playlist): Int
+    @Query("SELECT artwork_uri FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order DESC LIMIT 1")
+    @Deprecated("For internal use only")
+    suspend fun _artwork(id: Long): String?
 
-    @Delete
-    suspend fun delete(playlist: Playlist): Int
+    @Query("SELECT * FROM tbl_playlists WHERE playlist_id = :id")
+    @Deprecated("For internal use only")
+    suspend fun _get(id: Long): Playlist?
 
-    @Delete
-    suspend fun delete(playlists: List<Playlist>): Int
+    suspend operator fun get(id: Long): Playlist? = _get(id)?.apply{
+        count = count(id)
+        artwork = _artwork(id)
+    }
 
-    /**
-     * @return [Playlist] represented by [id]
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE playlist_id == :id")
-    suspend fun get(id: Long): Playlist?
+    @Query("SELECT * FROM tbl_playlists WHERE name = :name")
+    @Deprecated("For internal use only")
+    suspend fun _get(name: String): Playlist?
 
-    /**
-     * @return [Playlist] represented by [id]
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE name == :name")
-    suspend fun get(name: String): Playlist?
-
-    /**
-     * @return All [Flow][Playlist]s matched by the query.
-     */
-    @Query("SELECT * FROM tbl_playlists WHERE :query IS NULL OR name LIKE '%' || :query || '%'")
-    fun observe(query: String? = null): Flow<List<Playlist>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(member: Track): Long
-
-    // members
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(members: List<Track>): List<Long>
-
-    /**
-     * This is not the recommended way to do it.
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(member: Track): Long
-
-    @Delete
-    suspend fun delete(member: Track): Int
-
-    @Delete
-    suspend fun delete(members: ArrayList<Track>): Int
-
-    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
-    suspend fun get(playlistId: Long, uri: String): Track?
-
-    /**
-     * Check if the [Playlist.Member] exits in [Playlist]
-     */
-    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri)")
-    suspend fun exists(playlistId: Long, uri: String): Boolean
+    suspend operator fun get(name: String): Playlist? = _get(name)?.apply{
+        count = count(id)
+        artwork = _artwork(id)
+    }
 
     /**
      * Checks if [Playlist] [name] exits
@@ -184,43 +107,34 @@ interface Playlists2 {
     @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlists WHERE name == :name)")
     suspend fun exists(name: String): Boolean
 
-    suspend fun exists(name: String, uri: String): Boolean {
-        val id = get(name)?.id ?: 0
-        return exists(id, uri)
+    @Query("SELECT * FROM tbl_playlists WHERE (:query IS NULL OR name LIKE '%' || :query || '%') AND name NOT GLOB '_*'")
+    @Deprecated("For internal use only")
+    fun _observe(query: String? = null): Flow<List<Playlist>>
+
+    fun observe(query: String? = null) = _observe(query).onEach { playlists ->
+        playlists.onEach { playlist ->
+            playlist.count = count(playlist.id)
+            playlist.artwork = _artwork(playlist.id)
+        }
     }
 
-    /**
-     * Delete the [Playlist.Member] from the [Playlist]
-     */
-    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
-    suspend fun delete(playlistId: Long, uri: String): Int
+    @Insert
+    suspend fun insert(playlist: Playlist): Long
 
+    @Query("DELETE FROM tbl_playlists WHERE playlist_id == :id")
+    suspend fun delete(id: Long): Int
 
-    /**
-     * Delete the [Playlist.Member] where [Playlist.Member.order] > [order]
-     */
-    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND play_order >= :order")
-    suspend fun delete(playlistId: Long, order: Long): Int
-
-    /**
-     * @return [List][Audio]s of [Playlist] represented by [playlistId]
-     */
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :playlistId ORDER BY play_order ASC")
-    fun observe2(playlistId: Long): Flow<List<Track>>
+    @Update
+    suspend fun update(playlist: Playlist): Int
 
     /**
      * Observes the [Playlist] spacified by the name.
      */
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM tbl_playlist_members LEFT JOIN tbl_playlists ON tbl_playlist_members.playlist_id == tbl_playlists.playlist_id WHERE tbl_playlists.name == :name ORDER BY tbl_playlist_members.play_order ASC")
-    fun observe2(name: String): Flow<List<Track>>
+    @Query("SELECT * FROM tbl_playlist_members LEFT JOIN tbl_playlists ON tbl_playlist_members.playlist_id == tbl_playlists.playlist_id WHERE tbl_playlists.name == :name AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY tbl_playlist_members.play_order ASC")
+    fun observer(name: String, query: String? = null): Flow<List<Track>>
 
-    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order ASC")
-    suspend fun getMembers(id: Long): List<Track>
-
-    suspend fun getMembers(name: String): List<Track> {
-        val x = get(name) ?: return emptyList()
-        return getMembers(x.id)
-    }
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY play_order ASC ")
+    fun observe(id: Long, query: String? = null): Flow<List<Track>>
 }

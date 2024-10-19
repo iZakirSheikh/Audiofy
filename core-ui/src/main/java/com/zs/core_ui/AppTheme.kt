@@ -317,6 +317,8 @@ object ContentPadding {
     val normal: Dp = 16.dp
     val large: Dp = 22.dp
     val xLarge: Dp = 32.dp
+
+    val None = PaddingValues(0.dp)
 }
 
 /**
@@ -350,7 +352,6 @@ val ContentAlpha.Indication
     get() = com.zs.core_ui.Indication
 private const val Indication = 0.1f
 
-
 /**
  * Provides a standard interface to interact with the underlying theme, offering a unified and
  * consistent visual experience across the application. Insteadof using [MaterialTheme] directly,
@@ -379,6 +380,7 @@ object AppTheme {
     /**
      * Represents an empty set of padding values.
      */
+    @Deprecated("Use ContentPadding.None instead.")
     val emptyPadding = PaddingValues(0.dp)
 
     @OptIn(ExperimentalSharedTransitionApi::class)

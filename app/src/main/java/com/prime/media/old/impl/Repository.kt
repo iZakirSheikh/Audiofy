@@ -77,7 +77,8 @@ class Repository  (
         GlobalScope.launch {
             if (!playlistz.exists(Playback.PLAYLIST_FAVOURITE)) playlistz.insert(
                 Playlist(
-                    Playback.PLAYLIST_FAVOURITE
+                    Playback.PLAYLIST_FAVOURITE,
+                    desc = "",
                 )
             )
         }
@@ -762,7 +763,7 @@ class Repository  (
         val playlist = playlistsDb.get(name) ?: return false
         val key = toAudioTrackUri(audioID).toString()
         val count = playlistsDb.delete(playlist.id, key).also {
-            if (it == 1) playlistsDb.update(playlist.copy(dateModified = System.currentTimeMillis()))
+            if (it == 1) playlistsDb.update(playlist.clone())
         }
         return count == 1
     }
@@ -894,7 +895,7 @@ class Repository  (
             // here this should not be null
             // but we should play safe
             val old = playlistsDb.get(value.playlistID) ?: return true
-            update(old.copy(dateModified = System.currentTimeMillis()))
+            update(old.clone())
         }
         return success
     }
@@ -928,7 +929,7 @@ class Repository  (
             // here this should not be null
             // but we should play safe
             val old = playlistsDb.get(value.playlistID) ?: return true
-            update(old.copy(dateModified = System.currentTimeMillis()))
+            update(old.clone())
         }
         return success
     }

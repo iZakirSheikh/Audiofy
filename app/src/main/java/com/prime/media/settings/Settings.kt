@@ -149,7 +149,7 @@ private fun TopAppBar(
                 .padding(horizontal = CP.medium)
                 .clip(shape!!)
         },
-        title = { Label(text = stringResource(id = R.string.about_us)) },
+        title = { Label(text = stringResource(id = R.string.settings)) },
         navigationIcon = {
             val navController = LocalNavController.current
             IconButton(

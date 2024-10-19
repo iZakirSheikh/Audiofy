@@ -3,16 +3,22 @@
      <string name="what_s_new_latest" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
+            \n <b>New Features</b>
+            \n✨<b>Toasts</b> &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
+            \n✨ New <b>Playlists</b>, <b>Personalization</b>, <b>Settings</b> etc. screens.
+            \n\n<b>Bug Fixes:</b>
             \n🐞 Minor Bug Fixes
             \n🐞 Resolved an issue causing the screen to dim during video playback mode.
             \n🎥 Enjoy seamless <b>video playback</b> with our new in-app <b>media player!</b>
-            \n✨<b>Toasts</b> &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
             \n\n<b>In Focus</b>
             \n ⦿ General performance improvements
             \n ⦿ Added support for in-app Video Browser and RecycleBin
             \n ⦿ Enhanced with Noise Cancellation, Widgets, and more in-app Widgets
         </font>
+         \nPlease keep supporting by sponsoring us or rating us in <b>Playstore</b>.
+         \nThanks Team <b><i>Audiofy</i></b>.
     </string>
+
 
     <!---->
     <string-array name="what_s_new">
