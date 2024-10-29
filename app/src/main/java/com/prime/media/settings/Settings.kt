@@ -368,7 +368,7 @@ private inline fun Appearance(
         title = stringResource(R.string.pref_grid_item_size_multiplier),
         summery = stringResource(R.string.pref_grid_item_size_multiplier_summery),
         valueRange = 0.6f..2f,
-        steps = 7, // (2.0 - 0.7) / 0.1 = 13 steps
+        steps = 14, // (2.0 - 0.7) / 0.1 = 13 steps
         icon = Icons.Outlined.Dashboard,
         preview = {
             Label(

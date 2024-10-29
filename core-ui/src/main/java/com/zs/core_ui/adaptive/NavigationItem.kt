@@ -82,7 +82,7 @@ private val DefaultIconSpacing = 4.dp
 /**
  * The content padding used by a Item when it's unchecked.
  */
-private val UnCheckedPadding = PaddingValues(10.dp)
+private val UnCheckedPadding = PaddingValues(8.dp)
 
 @Composable
 fun BottomNavItem(
@@ -175,7 +175,7 @@ fun NavRailItem(
             if (!checked) return@Column
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
-                    value = AppTheme.typography.overline,
+                    value = AppTheme.typography.caption2,
                     label
                 )
             }

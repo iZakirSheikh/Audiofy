@@ -18,44 +18,39 @@
 
 package com.prime.media.playlists
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlaylistPlay
+import androidx.compose.material.icons.twotone.CheckCircle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
+import coil.compose.AsyncImagePainter
+import com.prime.media.R
+import com.primex.core.SignalWhite
 import com.primex.core.foreground
 import com.primex.core.thenIf
 import com.primex.material2.Label
 import com.zs.core.db.Playlist
 import com.zs.core_ui.AppTheme
-import coil.compose.rememberAsyncImagePainter as coilImagePainter
+import coil.compose.rememberAsyncImagePainter as ImagePainter
+import coil.request.ImageRequest.Builder as ImageRequest
 import com.zs.core_ui.ContentPadding as CP
 
 private val ForegroundBrush = Brush.horizontalGradient(
@@ -64,6 +59,7 @@ private val ForegroundBrush = Brush.horizontalGradient(
     endX = 0f
 )
 private val ArtworkShape = RoundedCornerShape(6.dp)
+
 /**
  * Represents an item of [Playlists] screen
  */
@@ -77,66 +73,81 @@ fun PlaylistItem(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(CP.medium),
         content = {
-            // Top section containing the artwork and count
-            // and showcases a scaling animation if focused
-            val artworkShape = ArtworkShape
+            // TopSection: Contains the artwork, play icon, track count, and focus indicator.
             Box(
-                Modifier
-                    .thenIf(focused) {
-                        val infiniteTransition = rememberInfiniteTransition(label = value.name)
-                        val animation by infiniteTransition.animateFloat(
-                            initialValue = 0.0f,
-                            targetValue = 1.0f,
-                            animationSpec = infiniteRepeatable(
-                                animation = tween(durationMillis = 750, easing = LinearEasing),
-                                repeatMode = RepeatMode.Reverse
-                            ), label = value.name
-                        )
-                        graphicsLayer {
-                            val scale = com.primex.core.lerp(1.0f, 0.8f, animation)
-                            scaleX = scale
-                            scaleY = scale
-                        }.border(2.dp, Color.White, artworkShape)
-                    }
-                    .shadow(0.dp, artworkShape, true)
-                    .aspectRatio(1.76f),
+                modifier = Modifier
+                    .clip(ArtworkShape) // Clips the box to the desired artwork shape.
+                  //  .background(AppTheme.colors.background(1.dp)) // Applies a background color.
+                    .aspectRatio(1.76f), // Sets the aspect ratio of the artwork.
                 content = {
+                    // Artwork: Displays the playlist artwork.
+                    val painter = ImagePainter(
+                        ImageRequest(LocalContext.current).data(value.artwork)
+                            .error(R.drawable.default_art) // Sets a default image if artwork loading fails.
+                            .build()
+                    )
+                    val isError =
+                        painter.state is AsyncImagePainter.State.Error // Checks if artwork loading failed.
+                    val onColor =
+                        if (isError) AppTheme.colors.onBackground else Color.SignalWhite // Sets the appropriate color based on artwork loading status.
                     Image(
-                        coilImagePainter(value.artwork),
+                        painter,
                         contentDescription = null,
                         modifier = Modifier
-                            .foreground(ForegroundBrush)
-                            .matchParentSize(),
-                        contentScale = ContentScale.Crop
+                            .thenIf(!isError) { foreground(ForegroundBrush) } // Applies a foreground brush if artwork loading is successful.
+                            .matchParentSize(), // Makes the image fill the parent's size.
+                        contentScale = ContentScale.Crop // Crops the image to fit the container.
                     )
 
+                    // Play Icon: Displays a play icon on top of the artwork.
                     Icon(
                         Icons.Default.PlaylistPlay,
                         contentDescription = null,
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(CP.medium),
-                        tint = Color.White
+                            .align(Alignment.TopEnd) // Aligns the icon to the top end.
+                            .padding(CP.medium), // Adds padding around the icon.
+                        tint = onColor // Sets the icon tint color.
                     )
 
+                    // Track Count Label: Displays the number of tracks in the playlist.
                     Label(
                         "${value.count}",
                         style = AppTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = onColor,
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = CP.medium, end = CP.normal)
+                            .align(Alignment.BottomEnd) // Aligns the label to the bottom end.
+                            .padding(
+                                bottom = CP.medium,
+                                end = CP.normal
+                            ) // Adds padding around the label.
+                    )
+
+                    // Focus Indicator: Displays a checkmark icon when the item is focused.
+                    if (!focused) return@Box // If not focused, skip displaying the focus indicator.
+                    Spacer(
+                        modifier = Modifier
+                            .background(onColor.copy(0.35f)) // Applies a semi-transparent background.
+                            .matchParentSize() // Makes the spacer fill the parent's size.
+                    )
+
+                    Icon(
+                        Icons.TwoTone.CheckCircle,
+                        contentDescription = "",
+                        Modifier
+                            .align(Alignment.Center) // Aligns the icon to the center.
+                            .size(45.dp), // Sets the icon size.
+                        tint = onColor // Sets the icon tint color.
                     )
                 }
             )
-            // Bottom section containing the playlist name
+            // Bottom (Label): Displays the playlist name.
             Label(
                 value.name,
-                maxLines = 2,
+                maxLines = 2, // Limits the number of lines for the playlist name.
                 style = AppTheme.typography.caption,
-                modifier = Modifier.padding(horizontal = CP.normal)
+                modifier = Modifier.padding(horizontal = CP.normal) // Adds horizontal padding.
             )
         }
     )
 }
+

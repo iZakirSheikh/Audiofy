@@ -391,7 +391,7 @@ class AudiosViewModel  (
 
             // you can;t just add to playlist using the keys.
             val audios = list.mapNotNull {
-                repository.findAudio(it.toLongOrNull() ?: 0)?.toMember(playlist.id, order++)
+                repository.findAudio(it.toLongOrNull() ?: 0)?.toMember(playlist.id, ++order)
             }
 
             var count = 0

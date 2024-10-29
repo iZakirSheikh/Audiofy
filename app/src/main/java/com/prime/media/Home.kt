@@ -108,6 +108,7 @@ import com.primex.core.MetroGreen2
 import com.primex.core.Orange
 import com.primex.core.RedViolet
 import com.primex.core.SepiaBrown
+import com.primex.core.SkyBlue
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -146,7 +147,7 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color.MetroGreen2
+private val LightAccentColor = Color.SepiaBrown
 private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**

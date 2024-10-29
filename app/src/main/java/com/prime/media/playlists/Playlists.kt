@@ -309,6 +309,7 @@ fun Playlists(viewState: PlaylistsViewState) {
                                         onClick = {
                                             when {
                                                 focused -> highlighted = null // If already focused, unfocused it
+                                                highlighted != null -> highlighted = playlist // make it move focus
                                                 else -> navController.navigate(Members.direction(playlist.name)) // Navigate to the playlist details
                                             }
                                         }

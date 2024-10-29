@@ -204,34 +204,38 @@ inline fun LottieAnimation(
     contentScale: ContentScale = ContentScale.Fit,
     clipToCompositionBounds: Boolean = true,
     fontMap: Map<String, Typeface>? = null,
-    asyncUpdates: AsyncUpdates = AsyncUpdates.AUTOMATIC
+    asyncUpdates: AsyncUpdates = AsyncUpdates.AUTOMATIC,
+    safeMode: Boolean = false,
 ) {
     val composition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(id)
     )
     LottieAnimation(
-        composition,
-        Modifier
+        composition = composition,
+        modifier = Modifier
             .size(24.dp)
             .scale(scale)
             .then(modifier),
-        isPlaying,
-        restartOnPlay,
-        clipSpec,
-        speed,
-        iterations,
-        outlineMasksAndMattes,
-        applyOpacityToLayers,
-        enableMergePaths,
-        renderMode,
-        reverseOnRepeat,
-        maintainOriginalImageBounds,
-        dynamicProperties,
-        alignment,
-        contentScale,
-        clipToCompositionBounds,
+        isPlaying = isPlaying,
+        restartOnPlay = restartOnPlay,
+        clipSpec = clipSpec,
+        speed = speed,
+        iterations = iterations,
+        outlineMasksAndMattes = outlineMasksAndMattes,
+        applyShadowToLayers = applyOpacityToLayers,
+        enableMergePaths = enableMergePaths,
+        renderMode = renderMode,
+        reverseOnRepeat = reverseOnRepeat,
+        maintainOriginalImageBounds = maintainOriginalImageBounds,
+        dynamicProperties = dynamicProperties,
+        alignment = alignment,
+        contentScale = contentScale,
+        clipTextToBoundingBox = clipToCompositionBounds,
+        clipToCompositionBounds = true,
         fontMap = fontMap,
-        asyncUpdates = asyncUpdates
+        asyncUpdates = asyncUpdates,
+        safeMode = safeMode,
+        applyOpacityToLayers = true
     )
 }
 

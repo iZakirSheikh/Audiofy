@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.core.graphics.ColorUtils
 import com.primex.core.MetroGreen2
@@ -300,6 +301,7 @@ object Typography {
     val caption @Composable @ReadOnlyComposable inline get() = MaterialTheme.typography.caption
     val overline @Composable @ReadOnlyComposable inline get() = MaterialTheme.typography.overline
     val button @Composable @ReadOnlyComposable inline get() = MaterialTheme.typography.button
+    val caption2 @Composable @ReadOnlyComposable inline get() = MaterialTheme.typography.overline.copy(letterSpacing = 0.4.sp)
 }
 
 /**
