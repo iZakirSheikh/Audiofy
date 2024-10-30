@@ -57,21 +57,25 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.prime.media.about.AboutUs
+import com.prime.media.about.RouteAboutUs
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.composable
-import com.prime.media.about.AboutUs
-import com.prime.media.about.RouteAboutUs
+import com.prime.media.console.widget.Glance
+import com.prime.media.impl.AlbumsViewModel
+import com.prime.media.impl.PlaylistViewModel
+import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
+import com.prime.media.local.albums.Albums
+import com.prime.media.local.albums.RouteAlbums
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.util.getAlbumArt
-import com.prime.media.personalize.Personalize
-import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.directory.store.Albums
-import com.prime.media.old.directory.store.AlbumsViewModel
+import com.prime.media.old.directory.playlists.Members
+import com.prime.media.old.directory.playlists.MembersViewModel
 import com.prime.media.old.directory.store.Artists
 import com.prime.media.old.directory.store.ArtistsViewModel
 import com.prime.media.old.directory.store.Audios
@@ -90,11 +94,8 @@ import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.old.library.Library
-import com.prime.media.console.widget.Glance
-import com.prime.media.impl.PlaylistViewModel
-import com.prime.media.impl.PlaylistsViewModel
-import com.prime.media.old.directory.playlists.Members
-import com.prime.media.old.directory.playlists.MembersViewModel
+import com.prime.media.personalize.Personalize
+import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.playlists.Playlist
 import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylist
@@ -103,12 +104,7 @@ import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.primex.core.BlueLilac
-import com.primex.core.MetroGreen
-import com.primex.core.MetroGreen2
-import com.primex.core.Orange
-import com.primex.core.RedViolet
 import com.primex.core.SepiaBrown
-import com.primex.core.SkyBlue
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -147,7 +143,7 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color.SepiaBrown
+private val LightAccentColor = Color.BlueLilac
 private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**
@@ -249,7 +245,7 @@ private fun NavController.toRoute(route: String) {
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), Folders.route, Albums.route, RoutePlaylists(), Library.route)
+    arrayOf(RouteSettings(), Folders.route, RouteAlbums(), RoutePlaylists(), Library.route)
 
 /**
  * Provides a [Density] object that reflects the user's preferred font scale.
@@ -361,9 +357,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Settings(viewModel)
     }
     // Albums
-    composable(Albums.route) {
+    composable(RouteAlbums) {
         val viewModel = koinViewModel<AlbumsViewModel>()
-        Albums(viewModel = viewModel)
+        Albums(viewState = viewModel)
     }
     // Artists
     composable(Artists.route) {
@@ -427,7 +423,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     }
 
     // Members
-    composable(MembersViewModel.route){
+    composable(MembersViewModel.route) {
         val viewModel = koinViewModel<MembersViewModel>()
         Members(viewModel)
     }
@@ -497,8 +493,8 @@ private fun NavigationBar(
         NavItem(
             label = { Label(text = textResource(R.string.albums)) },
             icon = { Icon(imageVector = Icons.Filled.Album, contentDescription = null) },
-            checked = route == Albums.route,
-            onClick = { navController.toRoute(Albums.direction()); facade.initiateReviewFlow() },
+            checked = route == RouteAlbums(),
+            onClick = { navController.toRoute(RouteAlbums()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -630,7 +626,7 @@ fun Home(
             NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         }
     }
-    val accent by  resolveAccentColor(isDark)
+    val accent by resolveAccentColor(isDark)
     // Setup App Theme and provide necessary dependencies.
     // Provide the navController and window size class to child composable.
     AppTheme(
@@ -675,7 +671,7 @@ fun Home(
                     val color = when (style.flagSystemBarBackground) {
                         WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> Color(0x20000000).toArgb()  // Translucent background
                         WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSPARENT -> Color.Transparent.toArgb()  // Transparent background
-                        else ->  (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
+                        else -> (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
                     }
                     // Set the status and navigation bar colors
                     statusBarColor = color

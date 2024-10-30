@@ -31,9 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
+import com.prime.media.common.menu.Action
 import com.prime.media.old.common.util.PathUtils
 import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
+import com.zs.core.store.Album
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlin.text.appendLine
@@ -165,4 +167,18 @@ private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) = { GridIte
 val LazyGridScope.fullLineSpan
     get() = com.prime.media.common.fullLineSpan
 
+/**
+ * Represents a sorting order and associated grouping or ordering action.
+ *
+ * @property first Specifies whether the sorting is ascending or descending.
+ * @property second Specifies the action to group by or order by.
+ */
+typealias Filter = Pair<Boolean, Action>
+
+/**
+ * Represents a mapping from a string key to a list of items of type T.
+ *
+ * @param T The type of items in the list.
+ */
+typealias Mapped<T> = Map<String, List<T>>
 

@@ -59,8 +59,8 @@ enum class Range {
 private fun fromWidth(width: Dp): Range {
     require(width >= 0.dp) { "Width must not be negative" }
     return when {
-        width <= 400.dp -> Range.Compact
-        width <= 650.dp -> Range.Medium
+        width <= 500.dp -> Range.Compact
+        width <= 700.dp -> Range.Medium
         width <= 900.dp -> Range.Large
         else -> Range.xLarge
     }
@@ -75,8 +75,8 @@ private fun fromWidth(width: Dp): Range {
 private fun fromHeight(height: Dp): Range {
     require(height >= 0.dp) { "Height must not be negative" }
     return when {
-        height <= 480.dp -> Range.Compact
-        height <= 650.dp -> Range.Medium
+        height <= 500.dp -> Range.Compact
+        height <= 700.dp -> Range.Medium
         height <= 900.dp -> Range.Large
         else -> Range.xLarge
     }

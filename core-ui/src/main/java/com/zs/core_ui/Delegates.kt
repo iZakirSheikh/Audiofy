@@ -241,7 +241,7 @@ inline fun Header(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) = Label(
     text = text,
-    modifier
+    modifier = modifier
         .padding(contentPadding)
         .fillMaxWidth()
         .thenIf(drawDivider){

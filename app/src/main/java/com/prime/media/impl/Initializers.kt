@@ -25,7 +25,6 @@ import coil.Coil
 import com.prime.media.BuildConfig
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.store.AlbumsViewModel
 import com.prime.media.old.directory.store.ArtistsViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.directory.store.FoldersViewModel
@@ -45,6 +44,7 @@ import com.primex.preferences.invoke
 import com.zs.core.db.Playlists
 import com.zs.core.db.Playlists2
 import com.zs.core.db.Playlists2.Companion.invoke
+import com.zs.core.store.MediaProvider
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
 import com.zs.core_ui.toast.ToastHostState
 import org.koin.android.ext.koin.androidContext
@@ -83,6 +83,7 @@ private val KoinAppModules = module {
     single<Remote> { Remote(get()) }
     singleOf(::ToastHostState)
     single { Playlists(get()) }
+    singleOf(::MediaProvider)
 
     factory { androidContext().resources }
     factory() { SystemDelegate(get(), get()) }
