@@ -18,6 +18,7 @@ import androidx.compose.material.BottomAppBar
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.material.NavigationRail
 import androidx.compose.material.SelectableChipColors
@@ -63,6 +64,7 @@ import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.composable
+import com.prime.media.common.preference
 import com.prime.media.console.widget.Glance
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.PlaylistViewModel
@@ -103,8 +105,7 @@ import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
-import com.primex.core.BlueLilac
-import com.primex.core.SepiaBrown
+import com.primex.core.AzureBlue
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -143,7 +144,7 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color.BlueLilac
+private val LightAccentColor = Color.AzureBlue
 private val DarkAccentColor = Color(0xFFD8A25E)
 
 /**
@@ -204,21 +205,6 @@ private fun resolveAccentColor(
 }
 
 /**
- * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
- *
- * @param rail Boolean indicating whether to consume the navigation rail width.
- * @return [WindowSize] with the specified dimension consumed.
- */
-private fun WindowSize.consume(rail: Boolean) =
-    if (rail) consume(width = NAV_RAIL_MIN_WIDTH) else consume(height = BOTTOM_NAV_MIN_HEIGHT)
-
-/**
- * @return if preferred orientation of layout is portrait
- */
-private inline val WindowSize.portrait
-    get() = widthRange < Range.Medium
-
-/**
  *Navigates to the specified route, managing the back stack for a seamless experience.
  * Pops up to the start destination and uses launchSingleTop to prevent duplicate destinations.
  *
@@ -241,37 +227,12 @@ private fun NavController.toRoute(route: String) {
 }
 
 /**
- * The set of domains that require the navigation bar to be shown.
- * For other domains, the navigation bar will be hidden.
- */
-private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), Folders.route, RouteAlbums(), RoutePlaylists(), Library.route)
-
-/**
- * Provides a [Density] object that reflects the user's preferred font scale.
- *
- * This extension function on [Preferences] observes the `KEY_FONT_SCALE` preference
- * and returns a modified [Density] object if the user has set a custom font scale.
- * If the font scale is set to -1 (default), the current [LocalDensity] is returned.
- *
- * @return A [Density] object with the appropriate font scale applied.
- */
-private val SystemFacade.density: Density
-    @NonRestartableComposable
-    @Composable
-    get() {
-        // Observe font scale preference and create a modified Density if necessary
-        val fontScale by observeAsState(key = Settings.FONT_SCALE)
-        val density = LocalDensity.current
-        return if (fontScale == -1f) density else Density(density.density, fontScale)
-    }
-
-/**
  * List of permissions required to run the app.
  *
  * This list is constructed based on the device's Android version to ensure
  * compatibility with scoped storage and legacy storage access.
  */
+@SuppressLint("BuildListAdds")
 private val REQUIRED_PERMISSIONS = buildList {
     // For Android Tiramisu (33) and above, use media permissions for scoped storage
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -451,7 +412,7 @@ private val NavRailShape = EndConcaveShape(16.dp)
 /**
  * A composable function that represents a navigation bar, combining both rail and bottom bar elements.
  *
- * @param type Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
+ * @param typeRail Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
  * @param navController The NavController to manage navigation within the navigation bar.
  * @param modifier The modifier for styling and layout customization of the navigation bar.
  */
@@ -463,10 +424,15 @@ private fun NavigationBar(
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
+    val useAccent by preference(Settings.USE_ACCENT_IN_NAV_BAR)
     val routes = @Composable {
         // Get the current navigation destination from NavController
         val current by navController.currentBackStackEntryAsState()
-        val colors = NavigationItemDefaults.navigationItemColors()
+        val color = LocalContentColor.current
+        val colors = NavigationItemDefaults.navigationItemColors(
+            selectedContentColor = color,
+            selectedBackgroundColor = color.copy(0.12f)
+        )
         val route = current?.destination?.route
         val facade = LocalSystemFacade.current
         // Home
@@ -478,7 +444,6 @@ private fun NavigationBar(
             typeRail = typeRail,
             colors = colors
         )
-
         // Folders
         NavItem(
             label = { Label(text = textResource(R.string.folders)) },
@@ -521,14 +486,15 @@ private fun NavigationBar(
     }
     // Get the current theme colors
     val colors = AppTheme.colors
-    when (typeRail) {
-        true -> NavigationRail(
+    //
+    when {
+        typeRail -> NavigationRail(
             modifier = modifier
                 .clip(NavRailShape)
                 .widthIn(NAV_RAIL_MIN_WIDTH),
             windowInsets = WindowInsets.statusBars,
-            contentColor = colors.onBackground,
-            backgroundColor = colors.background(1.dp),
+            contentColor = if (useAccent) colors.onAccent else colors.onBackground,
+            backgroundColor = if (useAccent) colors.accent else colors.background(2.dp),
             elevation = 0.dp,
             content = {
                 // Display routes at the top of the navRail.
@@ -540,8 +506,8 @@ private fun NavigationBar(
 
         else -> BottomAppBar(
             windowInsets = WindowInsets.navigationBars,
-            backgroundColor = colors.background(1.dp),
-            contentColor = colors.onBackground,
+            contentColor = if (useAccent) colors.onAccent else colors.onBackground,
+            backgroundColor = if (useAccent) colors.accent else colors.background(2.dp),
             elevation = 0.dp,
             contentPadding = PaddingValues(
                 horizontal = AppTheme.padding.normal,
@@ -563,6 +529,41 @@ private fun NavigationBar(
     }
 }
 
+/**
+ * The set of domains that require the navigation bar to be shown.
+ * For other domains, the navigation bar will be hidden.
+ */
+private val DOMAINS_REQUIRING_NAV_BAR =
+    arrayOf(RouteSettings(), Folders.route, RouteAlbums(), RoutePlaylists(), Library.route)
+
+/**
+ * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
+ *
+ * @param rail Boolean indicating whether to consume the navigation rail width.
+ * @return [WindowSize] with the specified dimension consumed.
+ */
+private fun WindowSize.consume(rail: Boolean) =
+    if (rail) consume(width = NAV_RAIL_MIN_WIDTH) else consume(height = BOTTOM_NAV_MIN_HEIGHT)
+
+/**
+ * Provides a [Density] object that reflects the user's preferred font scale.
+ *
+ * This extension function on [Preferences] observes the `KEY_FONT_SCALE` preference
+ * and returns a modified [Density] object if the user has set a custom font scale.
+ * If the font scale is set to -1 (default), the current [LocalDensity] is returned.
+ *
+ * @return A [Density] object with the appropriate font scale applied.
+ */
+private val SystemFacade.density: Density
+    @NonRestartableComposable
+    @Composable
+    get() {
+        // Observe font scale preference and create a modified Density if necessary
+        val fontScale by observeAsState(key = Settings.FONT_SCALE)
+        val density = LocalDensity.current
+        return if (fontScale == -1f) density else Density(density.density, fontScale)
+    }
+
 @Composable
 fun Home(
     toastHostState: ToastHostState,
@@ -572,21 +573,19 @@ fun Home(
     val activity = LocalView.current.context as MainActivity
     val clazz = calculateWindowSizeClass(activity = activity)
     val current by navController.currentBackStackEntryAsState()
-
-    // variables
+    // properties
     val style = (activity as SystemFacade).style
     val requiresNavBar = when (style.flagAppNavBar) {
         WindowStyle.FLAG_APP_NAV_BAR_HIDDEN -> false
         WindowStyle.FLAG_APP_NAV_BAR_VISIBLE -> true
-        // auto
-        else -> current?.destination?.route in DOMAINS_REQUIRING_NAV_BAR
+        else -> current?.destination?.route in DOMAINS_REQUIRING_NAV_BAR   // Auto
     }
     // Determine the screen orientation.
     // This check assesses whether to display NavRail or BottomBar.
     // BottomBar appears only if the window size suits a mobile screen.
     // Consider this scenario: a large screen that fits the mobile description, like a desktop screen in portrait mode.
     // In this case, showing the BottomBar is preferable!
-    val portrait = clazz.portrait
+    val portrait = clazz.widthRange < Range.Medium
     // The navHost
     val content = @Composable {
         NavigationSuiteScaffold(
@@ -643,44 +642,45 @@ fun Home(
                 LocalWindowSize provides if (!requiresNavBar) clazz else clazz.consume(!portrait),
                 content = content
             )
-            // Observe the state of the IMMERSE_VIEW setting
-            val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
-            val translucentBg by activity.observeAsState(Settings.TRANSLUCENT_SYSTEM_BARS)
-            LaunchedEffect(immersiveView, style, isDark, translucentBg) {
-                // Get the WindowInsetsController for managing system bars
-                val window = activity.window
-                val controller = WindowCompat.getInsetsController(window, window.decorView)
-
-                // Determine the visibility of system bars based on the current style settings
-                val visible = when (style.flagSystemBarVisibility) {
-                    WindowStyle.FLAG_SYSTEM_BARS_HIDDEN -> false  // Hide system bars
-                    WindowStyle.FLAG_SYSTEM_BARS_VISIBLE -> true  // Show system bars
-                    else -> !immersiveView  // If not explicitly set, use the immersiveView setting
-                }
-                // Apply the visibility setting to the system bars
-                if (!visible) controller.hide(WindowInsetsCompat.Type.systemBars())
-                else controller.show(WindowInsetsCompat.Type.systemBars())
-                // Determine the appearance of system bars (dark or light) based on the current style settings
-                controller.isAppearanceLightSystemBars = when (style.flagSystemBarAppearance) {
-                    WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_DARK -> false  // Use dark system bars appearance
-                    WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_LIGHT -> true  // Use light system bars appearance
-                    else -> !isDark  // If not explicitly set, use the isDark setting
-                }
-                // Configure the system bars background color based on the current style settings
-                window.apply {
-                    val color = when (style.flagSystemBarBackground) {
-                        WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> Color(0x20000000).toArgb()  // Translucent background
-                        WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSPARENT -> Color.Transparent.toArgb()  // Transparent background
-                        else -> (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
-                    }
-                    // Set the status and navigation bar colors
-                    statusBarColor = color
-                    navigationBarColor = color
-                }
-            }
         }
     )
+    // Observe the state of the IMMERSE_VIEW setting
+    val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
+    val translucentBg by activity.observeAsState(Settings.TRANSLUCENT_SYSTEM_BARS)
+    LaunchedEffect(immersiveView, style, isDark, translucentBg) {
+        // Get the WindowInsetsController for managing system bars
+        val window = activity.window
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+
+        // Determine the visibility of system bars based on the current style settings
+        val visible = when (style.flagSystemBarVisibility) {
+            WindowStyle.FLAG_SYSTEM_BARS_HIDDEN -> false  // Hide system bars
+            WindowStyle.FLAG_SYSTEM_BARS_VISIBLE -> true  // Show system bars
+            else -> !immersiveView  // If not explicitly set, use the immersiveView setting
+        }
+        // Apply the visibility setting to the system bars
+        if (!visible) controller.hide(WindowInsetsCompat.Type.systemBars())
+        else controller.show(WindowInsetsCompat.Type.systemBars())
+        // Determine the appearance of system bars (dark or light) based on the current style settings
+        controller.isAppearanceLightSystemBars = when (style.flagSystemBarAppearance) {
+            WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_DARK -> false  // Use dark system bars appearance
+            WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_LIGHT -> true  // Use light system bars appearance
+            else -> !isDark  // If not explicitly set, use the isDark setting
+        }
+        // Configure the system bars background color based on the current style settings
+        window.apply {
+            val color = when (style.flagSystemBarBackground) {
+                WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> Color(0x20000000).toArgb()  // Translucent background
+                WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSPARENT -> Color.Transparent.toArgb()  // Transparent background
+                else -> (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
+            }
+            // Set the status and navigation bar colors
+            statusBarColor = color
+            navigationBarColor = color
+        }
+    }
 }
+
 
 
 

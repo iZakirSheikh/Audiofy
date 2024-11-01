@@ -205,6 +205,8 @@ object Settings {
         stringPreferenceKey("${PREFIX}_glance", BuildConfig.IAP_PLATFORM_WIDGET_IPHONE)
     val KEY_LAUNCH_COUNTER =
         intPreferenceKey("Audiofy_launch_counter")
+    val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", false)
+
     const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
     const val FALLBACK_GOOGLE_STORE =
         "http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID

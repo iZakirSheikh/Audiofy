@@ -24,12 +24,17 @@ import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
 import com.prime.media.personalize.PersonalizeViewState
 import com.prime.media.settings.Settings
+import com.primex.preferences.Key
 
-class PersonalizeViewModel: KoinViewModel(), PersonalizeViewState {
+class PersonalizeViewModel : KoinViewModel(), PersonalizeViewState {
     override fun setInAppWidget(id: String) {
         preferences[Settings.GLANCE] = id
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_ITEM){
+        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_ITEM) {
             param(FirebaseAnalytics.Param.ITEM_ID, id)
         }
+    }
+
+    override fun <S, O> set(key: Key<S, O>, value: O) {
+        preferences[key] = value
     }
 }

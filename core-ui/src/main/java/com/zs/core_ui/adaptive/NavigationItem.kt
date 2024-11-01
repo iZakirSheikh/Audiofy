@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import com.primex.core.thenIf
 import com.zs.core_ui.AppTheme
 
 private val DefaultNavItemShape = RoundedCornerShape(20)
@@ -155,12 +157,14 @@ fun NavRailItem(
         selected = checked,
         onClick = onClick,
         shape = shape,
-        modifier = modifier.animateContentSize(alignment = Alignment.TopCenter),
+        modifier = modifier.animateContentSize(alignment = Alignment.Center),
         color = backgroundColor,
         contentColor = contentColor,
     ) {
         Column(
-            Modifier.padding(UnCheckedPadding),
+            Modifier
+                .padding(UnCheckedPadding)
+                .thenIf(checked) { defaultMinSize(48.dp) },
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = if (!checked) Arrangement.spacedBy(DefaultIconSpacing) else Arrangement.Center,
         ) {

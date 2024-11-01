@@ -339,7 +339,7 @@ internal fun Toast(
                     .padding(horizontal = 18.dp)
                     .shadow(6.dp, shape, clip = true)
                     // Toggle expanded state on click
-                    .clickable(indication = com.zs.core_ui.scale(), interactionSource = null, enabled = value.message.length > 100) {
+                    .clickable(indication = null, interactionSource = null, enabled = value.message.length > 100) {
                         isExpanded = !isExpanded
                     }
                     // Apply border and visual effect if dark theme

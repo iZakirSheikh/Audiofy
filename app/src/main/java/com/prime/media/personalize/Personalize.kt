@@ -151,7 +151,7 @@ private fun TopAppBar(
         ),
         background = {
             Image(
-                painter = lottieAnimationPainter(R.raw.lt_bg_baloon_in_air),
+                painter = lottieAnimationPainter(if (AppTheme.colors.isLight) R.raw.lt_bg_blur else R.raw.lt_bg_baloon_in_air),
                 modifier = Modifier.fillMaxSize(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
@@ -226,6 +226,19 @@ fun Personalize(viewState: ViewState) {
                     )
                     item("upgrades", content = { Upgrades(data) })
                 }
+                // Tweaks
+                item() {
+                    Header(
+                        "Fine Tuning",
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                }
+                item(){ Tweaks(viewState) }
+
+                // Widgets
                 item() {
                     Header(
                         "Widgets",
@@ -235,8 +248,10 @@ fun Personalize(viewState: ViewState) {
                         contentPadding = HeaderPadding
                     )
                 }
+
                 // emit widgets
                 widgets(selected, data, onRequestApply = viewState::setInAppWidget)
+
             }
         },
         secondary = {

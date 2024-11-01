@@ -46,10 +46,6 @@ private fun ApplicationDefaultConfig.init() {
     // A widget name can be anything; it might represent where from the widget got inspired.
     //
     // Available widget within group IAP_WIDGETS_PLATFORM:
-    // - IAP_PLATFORM_WIDGET_IPHONE: Inspired by the notification design on iPhone 15.
-    // - IAP_PLATFORM_WIDGET_SNOW_CONE: Inspired by the weather app widget on my phone.
-    // - IAP_PLATFORM_WIDGET_TIRAMISU: Inspired by Android 13 notification design.
-    // - IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE: Inspired by Android 11 notification design.
     buildConfigField("IAP_WIDGETS_PLATFORM", "widgets_platform") // group
     buildConfigField("IAP_PLATFORM_WIDGET_IPHONE", "platform_widget_iphone")
     buildConfigField("IAP_PLATFORM_WIDGET_TIRAMISU", "platform_widget_tiramisu")
@@ -69,8 +65,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 156
-        versionName = "3.0.0-rc02"
+        versionCode = 157
+        versionName = "3.0.0-rc03"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.

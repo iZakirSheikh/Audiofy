@@ -6,14 +6,14 @@ import com.prime.media.common.Mapped
 import com.prime.media.common.Route
 import com.prime.media.common.menu.Action
 import com.zs.core.store.Album
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 object RouteAlbums : Route
 
 
 interface AlbumsViewState {
     val orders: List<Action>
-    val data: Flow<Mapped<Album>?>
+    val data: StateFlow<Mapped<Album>?>
 
     // filter.
     val query: TextFieldState

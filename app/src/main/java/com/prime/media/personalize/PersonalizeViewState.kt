@@ -19,6 +19,7 @@
 package com.prime.media.personalize
 
 import com.prime.media.common.Route
+import com.primex.preferences.Key
 
 object RoutePersonalize: Route
 
@@ -28,4 +29,9 @@ interface PersonalizeViewState {
      * Sets the current widget to [id]
      */
     fun setInAppWidget(id: String)
+
+    /**
+     * Sets the [key] to [value]
+     */
+    operator fun <S, O> set(key: Key<S, O>, value: O)
 }

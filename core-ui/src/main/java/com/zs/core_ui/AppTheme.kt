@@ -58,6 +58,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
@@ -474,7 +475,7 @@ fun AppTheme(
         accent = primary,
         background = background,
         onBackground = if (isLight) Color.UmbraGrey else Color.SignalWhite,
-        onAccent = Color.SignalWhite,
+        onAccent = if (primary.luminance() > 0.45f) Color.Black else Color.SignalWhite,
         error = Color.OrientRed,
         onError = Color.SignalWhite,
         isLight = isLight,

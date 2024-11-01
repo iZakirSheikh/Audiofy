@@ -4,19 +4,21 @@
         <b>What\'s new</b>
         <font color='grey'>
             \n <b>New Features</b>
-            \n✨<b>Toasts</b> &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
-            \n✨ New <b>Playlists</b>, <b>Personalization</b>, <b>Settings</b> etc. screens.
+            ✨ Added a feature allowing users to make the <b>navigation bar</b> use <b>accent</b> color.
+            ✨ Toasts &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
+            ✨ New <b>Playlists, Personalization, Settings, Albums</b> and other screens.
             \n\n<b>Bug Fixes:</b>
             \n🐞 Minor Bug Fixes
+            \n🐞 Fixed a <b>bug</b> causing <b>albums</b> to lose state once navigated away from them.
             \n🐞 Resolved an issue causing the screen to dim during video playback mode.
-            \n🎥 Enjoy seamless <b>video playback</b> with our new in-app <b>media player!</b>
             \n\n<b>In Focus</b>
             \n ⦿ General performance improvements
-            \n ⦿ Added support for in-app Video Browser and RecycleBin
-            \n ⦿ Enhanced with Noise Cancellation, Widgets, and more in-app Widgets
+            \n ⦿ Added support for in-app <b>Video Browser</b> and <b>RecycleBin</b>
+            \n ⦿ Enhanced with <b>Noise Cancellation, Widgets,</b> and more <b>in-app Widgets</b>
+            \nPlease keep supporting by sponsoring us or rating us in <b>Playstore</b>.
+            \n\nThanks Team <b><i>Audio</i></b>.
         </font>
-         \nPlease keep supporting by sponsoring us or rating us in <b>Playstore</b>.
-         \nThanks Team <b><i>Audiofy</i></b>.
+
     </string>
 
 

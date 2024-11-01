@@ -330,7 +330,7 @@ fun Albums(viewState: AlbumsViewState) {
         primary = {
             // Collect the data from the viewState, initially null representing loading state.
             // Get the grid item size multiplier from user preferences.
-            val data by viewState.data.collectAsState(null)
+            val data by viewState.data.collectAsState()
             val multiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
             val navController = LocalNavController.current
             LazyVerticalGrid(

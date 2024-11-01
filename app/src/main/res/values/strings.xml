@@ -418,4 +418,5 @@
     <string name="scr_playlist_date_modified_s"><font size = '9' color = 'grey'>%1$s</font>\nLast updated</string>
     <string name="scr_playlist_delete">Delete Playlist</string>
     <string name="search">Search</string>
+    <string name="scr_personalize_accent_nav">ColorNav\n<font color = 'grey'>Use vibrant color to paint navigation bar.</font></string>
 </resources>

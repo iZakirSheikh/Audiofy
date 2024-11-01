@@ -22,6 +22,7 @@ import com.zs.core_ui.toast.Toast
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -77,5 +78,5 @@ class AlbumsViewModel(provider: MediaProvider) : KoinViewModel(), AlbumsViewStat
                 Firebase.crashlytics.recordException(it)
         }
         // make sure the flow is released after sometime.
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000L), null)
+        .stateIn(viewModelScope, WhileSubscribed(), null)
 }
