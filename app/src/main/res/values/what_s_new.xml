@@ -3,22 +3,16 @@
      <string name="what_s_new_latest" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
-            \n <b>New Features</b>
-            ✨ Added a feature allowing users to make the <b>navigation bar</b> use <b>accent</b> color.
-            ✨ Toasts &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
-            ✨ New <b>Playlists, Personalization, Settings, Albums</b> and other screens.
+            \n <b>Celebrating </b> Our Exciting 3.0.0 Release!💐
+            \n\n <b>New Features</b>
+            \n✨ Added a feature allowing users to make the <b>navigation bar</b> use <b>accent</b> color.
+            \n✨ Toasts &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
+            \n✨ New <b>Playlists, Personalization, Settings, Albums</b> and other screens.
             \n\n<b>Bug Fixes:</b>
-            \n🐞 Minor Bug Fixes
+            \n🐞 Fixed some bugs causing crashes in some devices.
             \n🐞 Fixed a <b>bug</b> causing <b>albums</b> to lose state once navigated away from them.
             \n🐞 Resolved an issue causing the screen to dim during video playback mode.
-            \n\n<b>In Focus</b>
-            \n ⦿ General performance improvements
-            \n ⦿ Added support for in-app <b>Video Browser</b> and <b>RecycleBin</b>
-            \n ⦿ Enhanced with <b>Noise Cancellation, Widgets,</b> and more <b>in-app Widgets</b>
-            \nPlease keep supporting by sponsoring us or rating us in <b>Playstore</b>.
-            \n\nThanks Team <b><i>Audio</i></b>.
         </font>
-
     </string>
 
 

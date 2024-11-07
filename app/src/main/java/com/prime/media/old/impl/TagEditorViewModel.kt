@@ -362,8 +362,11 @@ class TagEditorViewModel constructor(
     init {
         viewModelScope.launch {
             // requires new name
-            file = Mp3File(path ?: throw IllegalArgumentException("$path must not be null"))
-            val result = runCatching { initialize() }
+            //file = Mp3File(path ?: throw IllegalArgumentException("$path must not be null"))
+            val result = runCatching {
+                file = Mp3File(path ?: error("path must not be null"))
+                initialize()
+            }
             // show error message if there happened an error during initializing phase
             if (result.isFailure)
                 snackbar.showToast("${result.exceptionOrNull()?.message}")
