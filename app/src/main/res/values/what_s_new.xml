@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <string name="what_s_new_toast" translatable="false">
+        <b>What\'s new</b>
+        <font color='grey'>
+           \n🐞 Resolved a critical issue causing crashes on devices running Android 7 and below.
+        </font>
+    </string>
+
      <string name="what_s_new_latest" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
@@ -9,6 +17,7 @@
             \n✨ Toasts &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
             \n✨ New <b>Playlists, Personalization, Settings, Albums</b> and other screens.
             \n\n<b>Bug Fixes:</b>
+            \n🐞 Resolved a critical issue causing crashes on devices running Android 7 and below
             \n🐞 Fixed some bugs causing crashes in some devices.
             \n🐞 Fixed a <b>bug</b> causing <b>albums</b> to lose state once navigated away from them.
             \n🐞 Resolved an issue causing the screen to dim during video playback mode.

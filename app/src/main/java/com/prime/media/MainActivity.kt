@@ -736,7 +736,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             if (savedVersionCode != versionCode) {
                 preferences[KEY_APP_VERSION_CODE] = versionCode
                 showToast(
-                    R.string.what_s_new_latest,
+                    R.string.what_s_new_toast,
                     duration = Toast.DURATION_INDEFINITE,
                     icon = Icons.Outlined.Whatshot
                 )
