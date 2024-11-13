@@ -24,7 +24,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.old.common.Artwork
-import com.prime.media.common.composable
 import com.prime.media.old.common.composable
 import com.prime.media.old.common.util.addDistinct
 import com.prime.media.old.common.util.toMediaItem
@@ -131,7 +130,7 @@ class MembersViewModel(
                     "Error",
                     icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_HIGH
                 )
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 

@@ -69,7 +69,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
                 action = "Delete",
                 icon = Icons.Outlined.FolderDelete,
                 accent = Color.RedViolet,
-                duration = Toast.DURATION_INDEFINITE
+                priority = Toast.PRIORITY_HIGH
             )
             if (result != Toast.ACTION_PERFORMED) return@launch
             // Attempt to delete the playlist from the data source (e.g., database).

@@ -5,14 +5,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.view.Window
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.zs.core_ui.toast.Duration
+import com.zs.core_ui.toast.Priority
 import com.zs.core_ui.toast.Toast
 import android.widget.Toast as AndroidWidgetToast
 
@@ -40,15 +38,15 @@ fun Context.checkSelfPermissions(values: List<String>) =
  * This function uses the standard Android Toast class to display a short message to the user.
  *
  * @param message The text message to display in the Toast.
- * @param duration The duration of the Toast. Must be either [Toast.DURATION_SHORT] or [Toast.DURATION_LONG].
+ * @param priority The duration of the Toast. Must be either [Toast.PRIORITY_LOW] or [Toast.PRIORITY_MEDIUM].
  */
-fun Context.showPlatformToast(message: String, @Duration duration: Int = Toast.DURATION_SHORT) {
+fun Context.showPlatformToast(message: String, @Priority priority: Int = Toast.PRIORITY_LOW) {
     // Ensure the duration is valid
-    require(duration == Toast.DURATION_SHORT || duration == Toast.DURATION_LONG) {
+    require(priority == Toast.PRIORITY_LOW || priority == Toast.PRIORITY_MEDIUM) {
         "Duration must be either Toast.DURATION_SHORT or Toast.DURATION_LONG"
     }
     // Create and show the Toast
-    val toastDuration = if (duration == Toast.DURATION_SHORT) AndroidWidgetToast.LENGTH_SHORT else AndroidWidgetToast.LENGTH_LONG
+    val toastDuration = if (priority == Toast.PRIORITY_LOW) AndroidWidgetToast.LENGTH_SHORT else AndroidWidgetToast.LENGTH_LONG
     AndroidWidgetToast.makeText(this, message, toastDuration).show()
 }
 
@@ -57,13 +55,13 @@ fun Context.showPlatformToast(message: String, @Duration duration: Int = Toast.D
  */
 fun Context.showPlatformToast(
     @StringRes message: Int,
-    @Duration duration: Int = Toast.DURATION_SHORT
+    @Priority priority: Int = Toast.PRIORITY_LOW
 ) {
-    require(duration == Toast.DURATION_SHORT || duration == Toast.DURATION_LONG) {
+    require(priority == Toast.PRIORITY_LOW || priority == Toast.PRIORITY_MEDIUM) {
         "Duration must be either Toast.DURATION_SHORT or Toast.DURATION_LONG"
     }
     // Create and show the Toast
-    val toastDuration = if (duration == Toast.DURATION_SHORT) AndroidWidgetToast.LENGTH_SHORT else AndroidWidgetToast.LENGTH_LONG
+    val toastDuration = if (priority == Toast.PRIORITY_LOW) AndroidWidgetToast.LENGTH_SHORT else AndroidWidgetToast.LENGTH_LONG
     AndroidWidgetToast.makeText(this, message, toastDuration).show()
 }
 

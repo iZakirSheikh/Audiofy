@@ -4,7 +4,6 @@ package com.prime.media.common
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -24,7 +23,7 @@ import com.prime.media.MainActivity
 import com.primex.preferences.Key
 import com.zs.core.paymaster.Purchase
 import com.zs.core_ui.WindowStyle
-import com.zs.core_ui.toast.Duration
+import com.zs.core_ui.toast.Priority
 import com.zs.core_ui.toast.Toast
 import kotlinx.coroutines.flow.map
 
@@ -126,7 +125,7 @@ interface SystemFacade {
         message: CharSequence,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = Toast.DURATION_SHORT,
+        @Priority priority: Int = Toast.PRIORITY_LOW,
     )
 
     /**
@@ -136,7 +135,7 @@ interface SystemFacade {
         @StringRes message: Int,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = Toast.DURATION_SHORT,
+        @Priority priority: Int = Toast.PRIORITY_LOW,
     )
 
     /**
@@ -161,12 +160,12 @@ interface SystemFacade {
     /**
      * @see com.zs.core_ui.showPlatformToast
      */
-    fun showPlatformToast(message: String, @Duration duration: Int = Toast.DURATION_SHORT)
+    fun showPlatformToast(message: String, @Priority priority: Int = Toast.PRIORITY_LOW)
 
     /**
      * @see com.zs.core_ui.showPlatformToast
      */
-    fun showPlatformToast(@StringRes message: Int, @Duration duration: Int = Toast.DURATION_SHORT)
+    fun showPlatformToast(@StringRes message: Int, @Priority priority: Int = Toast.PRIORITY_LOW)
 
     /**
      * Returns the handle to a system-level service by name.

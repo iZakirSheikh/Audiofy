@@ -411,12 +411,13 @@
     <string name="dive_in">Dive In!</string>
     <string name="home">Home</string>
     <string name="msg_update_check_error"><b>Error</b>\nOops an unknown error occurred while checking for update.</string>
-    <string name="scr_new_playlists_title">Playlist\n<font size = '11' color = 'grey'><b>Craft</b> your own playlist or <b>edit</b> an existing one.</font></string>
+    <string name="scr_new_playlists_title">Playlist\n<font color='grey' size='11'><b>Craft</b> your own playlist or <b>edit</b> an existing one.</font></string>
     <string name="remove">Remove</string>
     <string name="play_order">Play order</string>
     <string name="scr_playlist_files_d"><font color='grey' size="11">%1$d\n</font>Files</string>
-    <string name="scr_playlist_date_modified_s"><font size = '9' color = 'grey'>%1$s</font>\nLast updated</string>
+    <string name="scr_playlist_date_modified_s"><font color='grey' size='9'>%1$s</font>\nLast updated</string>
     <string name="scr_playlist_delete">Delete Playlist</string>
     <string name="search">Search</string>
-    <string name="scr_personalize_accent_nav">ColorNav\n<font color = 'grey'>Use vibrant color to paint navigation bar.</font></string>
+    <string name="scr_personalize_accent_nav">ColorNav\n<font color='grey'>Use vibrant color to paint navigation bar.</font></string>
+    <string name="msg_promo_personalize">Personalize<font color='grey'>\nCustomize your app with in-app <b>widgets</b> and change the nav bar <b>accent</b> color. More features coming soon—stay tuned!</font></string>
 </resources>

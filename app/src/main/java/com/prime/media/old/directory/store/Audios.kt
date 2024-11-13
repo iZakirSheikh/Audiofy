@@ -260,7 +260,7 @@ class AudiosViewModel  (
                     "Error\nSome unknown error occured!. $it",
                     icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_HIGH
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
@@ -509,10 +509,10 @@ class AudiosViewModel  (
                             "Delete",
                             icon = Icons.Outlined.WarningAmber,
                             accent = Color.Rose,
-                            Toast.DURATION_INDEFINITE
+                            Toast.PRIORITY_HIGH
                         )
                         // check if user is interested in deleting the files or not.
-                        if (res == Toast.RESULT_DISMISSED)
+                        if (res == Toast.ACTION_DISMISSED)
                             return@launch
                         // return
                         repository.delete(activity, *uris.toTypedArray(), trash = false)

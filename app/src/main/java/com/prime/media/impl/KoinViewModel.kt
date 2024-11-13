@@ -37,7 +37,7 @@ import com.primex.core.OrientRed
 import com.primex.core.getText2
 import com.primex.core.withSpanStyle
 import com.primex.preferences.Preferences
-import com.zs.core_ui.toast.Duration
+import com.zs.core_ui.toast.Priority
 import com.zs.core_ui.toast.Result
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
@@ -62,34 +62,34 @@ abstract class KoinViewModel : ScopeViewModel() {
 
     fun showPlatformToast(
         @StringRes message: Int,
-        @Duration duration: Int = Toast.DURATION_SHORT
-    ) = context.showAndroidToast(message, duration)
+        @Priority priority: Int = Toast.PRIORITY_LOW
+    ) = context.showAndroidToast(message, priority)
 
     fun showPlatformToast(
         message: String,
-        @Duration duration: Int = Toast.DURATION_SHORT
-    ) = context.showAndroidToast(message, duration)
+        @Priority priority: Int = Toast.PRIORITY_LOW
+    ) = context.showAndroidToast(message, priority)
 
     suspend fun showToast(
         message: CharSequence,
         action: CharSequence? = null,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = if (action == null) Toast.DURATION_SHORT else Toast.DURATION_INDEFINITE
-    ): @Result Int = toastHostState.showToast(message, action, icon, accent, duration)
+        @Priority priority: Int = if (action == null) Toast.PRIORITY_LOW else Toast.PRIORITY_HIGH
+    ): @Result Int = toastHostState.showToast(message, action, icon, accent, priority)
 
     suspend fun showToast(
         @StringRes message: Int,
         @StringRes action: Int = ResourcesCompat.ID_NULL,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = if (action == ResourcesCompat.ID_NULL) Toast.DURATION_SHORT else Toast.DURATION_INDEFINITE
+        @Priority priority: Int = if (action == ResourcesCompat.ID_NULL) Toast.PRIORITY_LOW else Toast.PRIORITY_HIGH
     ): @Result Int = showToast(
         message = resources.getText2(message),
         action = if (action == ResourcesCompat.ID_NULL) null else resources.getText2(action),
         icon = icon,
         accent = accent,
-        duration = duration
+        priority = priority
     )
 
     fun getText(@StringRes id: Int): CharSequence = resources.getText2(id)
@@ -109,7 +109,7 @@ abstract class KoinViewModel : ScopeViewModel() {
         action = "REPORT",
         icon = Icons.Outlined.Error,
         accent = Color.OrientRed,
-        duration = Toast.DURATION_LONG
+        priority = Toast.PRIORITY_MEDIUM
     )
 
     /**

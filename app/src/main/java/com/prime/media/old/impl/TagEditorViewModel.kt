@@ -377,7 +377,7 @@ class TagEditorViewModel constructor(
         viewModelScope.launch {
             val action =
                 snackbar.showToast("Resetting the file will discard all the changes", action = "Proceed")
-            if (action == Toast.RESULT_DISMISSED)
+            if (action == Toast.ACTION_DISMISSED)
                 return@launch
             // else reset/reinitialize
             initialize()
@@ -441,7 +441,7 @@ class TagEditorViewModel constructor(
                 "Saving the file will overwrite the original",
                 action = "Proceed"
             )
-            if (action == Toast.RESULT_DISMISSED)
+            if (action == Toast.ACTION_DISMISSED)
                 return@launch
             val result = runCatching {
                 val cacheDir = ctx.cacheDir.path

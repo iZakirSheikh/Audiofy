@@ -194,7 +194,7 @@ fun SystemFacade.launchEqualizer(id: Int) {
     showToast(
         message = R.string.msg_3rd_party_equalizer_not_found,
         accent = Color.OrientRed,
-        duration = Toast.DURATION_SHORT
+        priority = Toast.PRIORITY_LOW
     )
 }
 

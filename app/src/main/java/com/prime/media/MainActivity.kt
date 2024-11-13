@@ -206,7 +206,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                         val res = toastHostState.showToast(
                             "Restart the app for changes to take effect.",
                             "Restart",
-                            duration = Toast.DURATION_INDEFINITE
+                            priority = Toast.PRIORITY_HIGH
                         )
                         // Restart the app if the user chooses to
                         if (res == Toast.ACTION_PERFORMED)
@@ -266,20 +266,15 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getDeviceService(name: String): T = getSystemService(name) as T
-    override fun showToast(
-        message: CharSequence,
-        icon: ImageVector?,
-        accent: Color,
-        duration: Int
-    ) {
+    override fun showToast(message: CharSequence, icon: ImageVector?, accent: Color, priority: Int) {
         lifecycleScope.launch {
-            toastHostState.showToast(message, null, icon, accent, duration)
+            toastHostState.showToast(message, null, icon, accent, priority)
         }
     }
 
-    override fun showToast(message: Int, icon: ImageVector?, accent: Color, duration: Int) {
+    override fun showToast(message: Int, icon: ImageVector?, accent: Color, priority: Int) {
         lifecycleScope.launch {
-            toastHostState.showToast(resources.getText2(id = message), null, icon, accent, duration)
+            toastHostState.showToast(resources.getText2(id = message), null, icon, accent, priority)
         }
     }
 
@@ -357,7 +352,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                     val res = toastHostState.showToast(
                         message = resources.getText2(R.string.msg_new_update_downloaded),
                         action = resources.getText2(R.string.install),
-                        duration = Toast.DURATION_INDEFINITE,
+                        priority = Toast.PRIORITY_HIGH,
                         accent = Color.MetroGreen,
                         icon = Icons.Outlined.Downloading
                     )
@@ -484,7 +479,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 ),
                 icon = Icons.Outlined.AdsClick,
                 action = getString(R.string.claim).uppercase(),
-                duration = Toast.DURATION_INDEFINITE,
+                priority = Toast.PRIORITY_HIGH,
                 accent = Color.MetroGreen2
             )
             if (result == Toast.ACTION_PERFORMED) {
@@ -518,7 +513,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 remaining
             ),
             icon = Icons.Outlined.AdsClick,
-            duration = Toast.DURATION_INDEFINITE,
+            priority = Toast.PRIORITY_HIGH,
             accent = Color.MetroGreen,
         )
     }
@@ -588,7 +583,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 val result = toastHostState.showToast(
                     info.richDesc,
                     action = info.formattedPrice ?: "N/A",
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_CRITICAL
                 )
                 if (result == Toast.ACTION_PERFORMED)
                     initiatePurchaseFlow(BuildConfig.IAP_NO_ADS)
@@ -602,7 +597,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 val result = toastHostState.showToast(
                     info.richDesc,
                     action = info.formattedPrice ?: "N/A",
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_CRITICAL
                 )
                 if (result == Toast.ACTION_PERFORMED)
                     initiatePurchaseFlow(BuildConfig.IAP_CODEX)
@@ -616,7 +611,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 val result = toastHostState.showToast(
                     info.richDesc,
                     action = info.formattedPrice ?: getText(R.string.abbr_not_available),
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_CRITICAL
                 )
                 if (result == Toast.ACTION_PERFORMED)
                     initiatePurchaseFlow(BuildConfig.IAP_BUY_ME_COFFEE)
@@ -630,7 +625,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 val result = toastHostState.showToast(
                     info.richDesc,
                     action = info.formattedPrice ?: getText(R.string.abbr_not_available),
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_CRITICAL
                 )
                 if (result == Toast.ACTION_PERFORMED)
                     initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO)
@@ -645,7 +640,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 val result = toastHostState.showToast(
                     resources.getText2(R.string.msg_promotion_gallery_app),
                     action = resources.getText2(R.string.dive_in),
-                    duration = Toast.DURATION_INDEFINITE,
+                    priority = Toast.PRIORITY_CRITICAL,
                     accent = Color.Amber,
                     icon = Icons.Outlined.GetApp
                 )
@@ -656,8 +651,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             // promo message for widgets.
             5 -> {
                 val result = toastHostState.showToast(
-                    "Personalize your app now with in-app widgets!",
-                    duration = Toast.DURATION_INDEFINITE,
+                    resources.getText2(R.string.msg_promo_personalize),
+                    priority = Toast.PRIORITY_CRITICAL,
                     accent = Color.MetroGreen,
                     icon = Icons.Outlined.ColorLens,
                     action = "View"
@@ -712,7 +707,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                         id = R.string.msg_install_dynamic_module_ss,
                         details.title
                     ),
-                    duration = Toast.DURATION_INDEFINITE,
+                    priority = Toast.PRIORITY_HIGH,
                     action = resources.getText2(R.string.install)
                 )
                 if (response == Toast.ACTION_PERFORMED)
@@ -737,7 +732,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                 preferences[KEY_APP_VERSION_CODE] = versionCode
                 showToast(
                     R.string.what_s_new_toast,
-                    duration = Toast.DURATION_INDEFINITE,
+                    priority = Toast.PRIORITY_HIGH,
                     icon = Icons.Outlined.Whatshot
                 )
             }

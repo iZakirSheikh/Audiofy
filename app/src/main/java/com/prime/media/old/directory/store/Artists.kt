@@ -126,7 +126,7 @@ class ArtistsViewModel (
                     "Error\nSome unknown error occured!.",
                     icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_HIGH
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())

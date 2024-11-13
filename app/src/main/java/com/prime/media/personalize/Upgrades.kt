@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material.ButtonDefaults.OutlinedBorderSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
@@ -119,7 +117,7 @@ private fun Upgrade(
                             onClick = {
                                 facade.showToast(
                                     value.richDesc,
-                                    duration = Toast.DURATION_INDEFINITE
+                                    priority = Toast.PRIORITY_HIGH
                                 )
                             },
                          //   modifier = Modifier.scale(0.9f)

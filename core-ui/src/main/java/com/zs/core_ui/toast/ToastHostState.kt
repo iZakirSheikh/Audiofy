@@ -53,7 +53,7 @@ class ToastHostState {
      * @param action Optional label for an action button to be shown in the Toast.
      * @param icon Optional leading icon to be displayed in the Toast.
      * @param accent The accent color to be used for this Toast.
-     * @param duration The duration for which the Toast should be displayed.
+     * @param priority The duration for which the Toast should be displayed.
      * @return A[Result] code indicating whether the Toast was dismissed or its action was performed.
      */
     suspend fun showToast(
@@ -61,12 +61,12 @@ class ToastHostState {
         action: CharSequence? = null,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = if (action == null) Toast.DURATION_SHORT else Toast.DURATION_INDEFINITE
+        @Priority priority: Int = if (action == null) Toast.PRIORITY_LOW else Toast.PRIORITY_HIGH
     ): @Result Int {
         mutex.withLock {
             try {
                 return suspendCancellableCoroutine { continuation ->
-                    current = Data(icon, message, duration, action, accent, continuation)
+                    current = Data(icon, message, priority, action, accent, continuation)
                 }
             } finally {
                 current = null

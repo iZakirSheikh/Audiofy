@@ -120,7 +120,7 @@ class FoldersViewModel (
                     "Error\nSome unknown error occured!. ${it.message}",
                     icon = Icons.Outlined.Error,
                     accent = Color.Rose,
-                    duration = Toast.DURATION_INDEFINITE
+                    priority = Toast.PRIORITY_HIGH
                 )
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
@@ -134,9 +134,9 @@ class FoldersViewModel (
                     "Warning\nYou are about to block folder $name",
                     icon = Icons.Outlined.Block,
                    accent =  Color.DahliaYellow,
-                    duration = Toast.DURATION_INDEFINITE,
+                    priority = Toast.PRIORITY_HIGH,
                 )
-                if (response == Toast.RESULT_DISMISSED)
+                if (response == Toast.ACTION_DISMISSED)
                     return@launch
                 val result = preferences.block(path)
                 if (result > 0)
@@ -144,7 +144,7 @@ class FoldersViewModel (
                         "$name has been added to block list",
                         icon = Icons.Outlined.Block,
                         accent = Color.Rose,
-                        duration = Toast.DURATION_SHORT,
+                        priority = Toast.PRIORITY_LOW,
                     )
                 else
                     showToast("Oops! some unknown error has occurred.")

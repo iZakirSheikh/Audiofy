@@ -7,11 +7,10 @@ import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.core.content.res.ResourcesCompat
 import com.primex.core.getQuantityText2
 import com.primex.core.getText2
-import com.zs.core_ui.toast.Duration
+import com.zs.core_ui.toast.Priority
 import com.zs.core_ui.toast.Result
 import com.zs.core_ui.toast.ToastHostState
 
@@ -58,7 +57,7 @@ interface SystemDelegate {
         action: CharSequence? = null,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = if (action == null) com.zs.core_ui.toast.Toast.DURATION_SHORT else com.zs.core_ui.toast.Toast.DURATION_INDEFINITE
+        @Priority priority: Int = if (action == null) com.zs.core_ui.toast.Toast.PRIORITY_LOW else com.zs.core_ui.toast.Toast.PRIORITY_HIGH
     ): @Result Int
 
     suspend fun showSnackbar(
@@ -66,13 +65,13 @@ interface SystemDelegate {
         @StringRes action: Int = ResourcesCompat.ID_NULL,
         icon: ImageVector? = null,
         accent: Color = Color.Unspecified,
-        @Duration duration: Int = if (action == ResourcesCompat.ID_NULL) com.zs.core_ui.toast.Toast.DURATION_SHORT else com.zs.core_ui.toast.Toast.DURATION_INDEFINITE
+        @Priority priority: Int = if (action == ResourcesCompat.ID_NULL) com.zs.core_ui.toast.Toast.PRIORITY_LOW else com.zs.core_ui.toast.Toast.PRIORITY_HIGH
     ): @Result Int = showSnackbar(
         message = resources.getText2(message),
         action = if (action == ResourcesCompat.ID_NULL) null else resources.getText2(action),
         icon = icon,
         accent = accent,
-        duration = duration
+        priority = priority
     )
 }
 
