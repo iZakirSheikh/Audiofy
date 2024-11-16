@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
@@ -30,6 +32,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ReplyAll
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
@@ -100,7 +103,7 @@ private fun TopAppBar(
         navigationIcon = {
             val navController = LocalNavController.current
             IconButton(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ReplyAll,
                 onClick = navController::navigateUp
             )
         },
@@ -238,7 +241,9 @@ private inline fun Filters(
             colors = ChipDefaults.chipColors(
                 backgroundColor = AppTheme.colors.accent,
                 contentColor = AppTheme.colors.onAccent
-            )
+            ),
+            modifier = Modifier.defaultMinSize(minHeight = 37.dp).padding(end = CP.medium),
+            shape = AppTheme.shapes.compact
         )
         // Rest of the chips for selecting filter options
         val colors = ChipDefaults.filterChipColors(

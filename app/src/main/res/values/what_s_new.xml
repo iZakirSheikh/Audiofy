@@ -4,6 +4,7 @@
     <string name="what_s_new_toast" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
+           \n Some minor tweaks.
            \n🐞 Resolved a critical issue causing crashes on devices running Android 7 and below.
         </font>
     </string>

@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.2"
 kotlin = "2.0.21"
-compose = "1.8.0-alpha05"
+compose = "1.8.0-alpha06"
 media3 = "1.4.1"
 toolkit = "2.1.0"
 material_icons = "1.7.5"
@@ -38,7 +38,7 @@ androidx-constraint-layout-compose = { module = "androidx.constraintlayout:const
 material_view = { module = "com.google.android.material:material", version = "1.12.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.3" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.4" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.0" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }
@@ -86,7 +86,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.0" }
-chrisbanes-haze = {module= "dev.chrisbanes.haze:haze", version = "1.0.0"}
+chrisbanes-haze = {module= "dev.chrisbanes.haze:haze", version = "1.0.1"}
 
 # Google Play Services
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }

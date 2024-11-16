@@ -600,7 +600,7 @@ fun Modifier.sharedElement(
     val sharedTransitionScope = LocalSharedTransitionScope.current
     with(sharedTransitionScope) {
         sharedElement(
-            state = sharedContentState,
+            sharedContentState = sharedContentState,
             placeHolderSize = placeHolderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
