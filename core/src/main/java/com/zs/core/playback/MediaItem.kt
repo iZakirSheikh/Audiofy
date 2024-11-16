@@ -27,6 +27,7 @@ import android.text.Spanned
 import android.text.style.StyleSpan
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaMetadata.Builder
 import com.zs.core.db.Playlist
 
 /**
@@ -148,7 +149,7 @@ internal val MediaItem.asMediaSource
 /**
  * @see MediaSource
  */
-val Playlist.Track.toMediaSource
+internal val Playlist.Track.toMediaSource
     get() = MediaSource(
         uri = Uri.parse(uri),
         title = Bold(title),
@@ -157,4 +158,40 @@ val Playlist.Track.toMediaSource
         mimeType = mimeType
     )
 
+/**
+ * Creates a playable [MediaItem]
+ * @see MediaSource
+ */
+@JvmInline
+value class MediaFile internal constructor(internal val value: MediaItem) {
+    constructor(
+        uri: Uri,
+        title: String,
+        subtitle: String,
+        artwork: Uri? = null,
+        mimeType: String? = null,
+    ) : this(
+        MediaItem.Builder()
+            .setMediaId("no-media-id")
+            .setMimeType(mimeType)
+            .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
+            .setMediaMetadata(
+                Builder()
+                    .setArtworkUri(artwork)
+                    .setTitle(title)
+                    .setSubtitle(subtitle)
+                    .setExtras(Bundle().apply { putString(MEDIA_ITEM_EXTRA_MIME_TYPE, mimeType) })
+                    .setIsBrowsable(false)
+                    .setIsPlayable(true)
+                    .build()
+            ).build()
+    )
+
+    val mediaUri get() = value.mediaUri
+    val title get() = value.title?.toString()
+    val subtitle get() = value.subtitle?.toString()
+    val artworkUri get() = value.artworkUri
+    val mimeType get() = value.mimeType
+
+}
 

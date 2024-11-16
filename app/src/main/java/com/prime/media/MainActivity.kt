@@ -552,7 +552,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         lifecycleScope.launch {
             // Construct a MediaItem using the obtained parameters.
             // (Currently, details about playback queue setup are missing.)
-            val item = MediaFile(this@MainActivity, data)
+            val item = MediaFile(this@MainActivity, data, intent.type)
             // Play the media item by replacing the existing queue.
             remote.set(listOf(item))
             remote.play()

@@ -16,9 +16,12 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.prime.media.common
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -70,6 +73,9 @@ inline fun <T> LazyGridScope.emit(
     return data?.takeIf { it.isNotEmpty() }
 }
 
+/**
+ * @see emit
+ */
 inline fun <T> LazyGridScope.emit(
     data: Mapped<T>?
 ): Mapped<T>? {
@@ -91,6 +97,45 @@ inline fun <T> LazyGridScope.emit(
         // empty means empty
         data.isEmpty() -> item(
             span = fullLineSpan,
+            key = "key_empty_placeholder...",
+            content = {
+                Placeholder(
+                    title = stringResource(R.string.empty),
+                    iconResId = R.raw.lt_empty_box,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .animateItem()
+                )
+            },
+            contentType = "data_empty_placeholder"
+        )
+    }
+    // return if non-empty else return null
+    return data?.takeIf { it.isNotEmpty() }
+}
+
+/**
+ * @see emit
+ */
+inline fun <T> LazyListScope.emit(
+    data: Mapped<T>?
+): Mapped<T>? {
+    when {
+        // null means loading
+        data == null -> item(
+            key = "key_loading_placeholder",
+            contentType = "data_loading_placeholder",
+            content = {
+                Placeholder(
+                    title = stringResource(R.string.loading),
+                    iconResId = R.raw.loading_hand,
+                    modifier = Modifier.fillMaxSize().animateItem()
+                )
+            }
+        )
+
+        // empty means empty
+        data.isEmpty() -> item(
             key = "key_empty_placeholder...",
             content = {
                 Placeholder(

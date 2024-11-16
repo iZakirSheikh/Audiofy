@@ -46,6 +46,7 @@ import com.zs.core.db.Playlists2
 import com.zs.core.db.Playlists2.Companion.invoke
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
+import com.zs.core_ui.coil.VideoThumbnailFetcher
 import com.zs.core_ui.toast.ToastHostState
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
@@ -61,6 +62,10 @@ import com.google.firebase.FirebaseApp.initializeApp as FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance as Crashlytics
 import com.zs.ads.AdManager.Companion.initialize as AdManager
 import kotlin.also as then
+import com.prime.media.R
+import com.zs.core.playback.PlaybackController
+import com.zs.core.playback.PlaybackController.Companion.invoke as PlaybackController
+import com.zs.core_ui.Anim
 
 private const val TAG = "Initializers"
 
@@ -84,12 +89,14 @@ private val KoinAppModules = module {
     singleOf(::ToastHostState)
     single { Playlists(get()) }
     singleOf(::MediaProvider)
+    singleOf(::PlaybackController)
 
     factory { androidContext().resources }
     factory() { SystemDelegate(get(), get()) }
     factory { androidContext().contentResolver }
     // ViewModels
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::VideosViewModel)
     viewModelOf(::MembersViewModel) // remove this later
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
@@ -147,9 +154,12 @@ class CoilInitializer : Initializer<Unit> {
         // Build the ImageLoader with the MediaMetaDataArtFetcher.Factory if the user hasn't opted for the legacy method.
         val imageLoader =
             ImageLoader(context)
+                .error(R.drawable.default_art)
+                .crossfade(Anim.DefaultDurationMillis)
                 .components {
                     if (!preference(Settings.USE_LEGACY_ARTWORK_METHOD))
                         add(MediaMetaDataArtFetcher.Factory())
+                    add(VideoThumbnailFetcher.Factory())
                 }
         // Set the created ImageLoader as the default for Coil.
         Coil.setImageLoader(imageLoader.build())

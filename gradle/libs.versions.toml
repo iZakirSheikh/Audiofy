@@ -86,7 +86,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.0" }
-chrisbanes-haze = {module= "dev.chrisbanes.haze:haze", version = "1.0.1"}
+chrisbanes-haze = {module= "dev.chrisbanes.haze:haze", version = "1.0.2"}
 
 # Google Play Services
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }

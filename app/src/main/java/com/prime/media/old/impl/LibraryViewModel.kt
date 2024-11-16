@@ -1,7 +1,5 @@
 package com.prime.media.old.impl
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.material.icons.Icons
@@ -12,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.prime.media.old.common.util.toMediaItem
 import com.prime.media.old.core.db.toMediaItem
 import com.prime.media.old.core.db.uri
-import com.prime.media.old.core.playback.MediaItem
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.library.Library
 import com.primex.core.Rose
@@ -125,18 +122,6 @@ class LibraryViewModel(
             // seek to the item
             remote.seekTo(item.uri)
             // play it
-            remote.play(true)
-        }
-    }
-
-    override fun onRequestPlayVideo(uri: Uri, context: Context) {
-        viewModelScope.launch {
-            context.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            val item = MediaItem(context, uri)
-            remote.set(item)
             remote.play(true)
         }
     }

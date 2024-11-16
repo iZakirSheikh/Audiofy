@@ -107,8 +107,8 @@ inline fun <T> Flow<Iterable<T>>.onEachItem(crossinline action: suspend (T) -> U
 /**
  * @see com.prime.media.old.core.playback.MediaItem
  */
-fun MediaFile(context: Context, uri: Uri) =
-    com.prime.media.old.core.playback.MediaItem(context, uri)
+fun MediaFile(context: Context, uri: Uri, mimeType: String?) =
+    com.prime.media.old.core.playback.MediaItem(context, uri, mimeType)
 
 /**
  * Returns a formatted [AnnotatedString] representation of the product description.
@@ -180,5 +180,5 @@ typealias Filter = Pair<Boolean, Action>
  *
  * @param T The type of items in the list.
  */
-typealias Mapped<T> = Map<String, List<T>>
+typealias Mapped<T> = Map<CharSequence, List<T>>
 

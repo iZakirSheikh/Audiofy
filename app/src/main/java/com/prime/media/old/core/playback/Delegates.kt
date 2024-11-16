@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.text.SpannableStringBuilder
@@ -21,6 +22,8 @@ import java.io.File
 import java.io.FileOutputStream
 
 private const val TAG = "Delegates"
+
+private const val MEDIA_ITEM_EXTRA_MIME_TYPE = "media_item_extra_mime_type"
 
 /**
  * Constructs a media source from the provided parameters.
@@ -109,7 +112,6 @@ val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::g
  * @param artwork The URI of the artwork for the media item. Defaults to null.
  * @return The new [MediaItem] instance.
  *
- * @see MediaSource
  */
 @Deprecated("Use the one from com.prime.media.common")
 fun MediaItem(
@@ -118,8 +120,10 @@ fun MediaItem(
     subtitle: String,
     id: String = "non_empty",
     artwork: Uri? = null,
+    mimeType: String? = null
 ) = MediaItem.Builder()
     .setMediaId(id)
+    .setMimeType(mimeType)
     .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
     .setMediaMetadata(
         Builder()
@@ -128,6 +132,7 @@ fun MediaItem(
             .setSubtitle(subtitle)
             .setIsBrowsable(false)
             .setIsPlayable(true)
+            .setExtras(Bundle().apply { putString(MEDIA_ITEM_EXTRA_MIME_TYPE, mimeType) })
             // .setExtras(bundleOf(ARTIST_ID to artistId, ALBUM_ID to albumId))
             .build()
     ).build()
@@ -192,7 +197,7 @@ private fun Context.fileName(uri: Uri): String? {
  * @return A [MediaItem] object representing the media item.
  */
 @Deprecated("Use the one from com.prime.media.common")
-fun MediaItem(context: Context, uri: Uri): MediaItem {
+fun MediaItem(context: Context, uri: Uri, mimeType: String?): MediaItem {
     // Create a MediaMetadataRetriever object and set the data source.
     // maybe it might cause crash; android is stupid.
     val retriever = com.primex.core.runCatching(TAG) {
@@ -218,6 +223,6 @@ fun MediaItem(context: Context, uri: Uri): MediaItem {
         ?: context.getString(R.string.unknown)
     // Construct a MediaItem using the obtained parameters.
     // (Currently, details about playback queue setup are missing.)
-    return MediaItem(uri, title, subtitle, artwork = imageUri)
+    return MediaItem(uri, title, subtitle, artwork = imageUri, mimeType = mimeType)
 }
 

@@ -18,6 +18,7 @@
 
 package com.zs.core.store
 
+import android.content.ContentUris
 import android.database.Cursor
 import android.provider.MediaStore
 import com.zs.core.util.PathUtils
@@ -51,6 +52,12 @@ interface File {
     val dateAdded: Long
     val dateModified: Long
     val size: Long
+
+
+    val contentUri get() =  when(this){
+        is Video -> ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+        else -> error("Type(${this.javaClass.simpleName}) not registered")
+    }
 }
 
 
@@ -163,7 +170,7 @@ data class Video(
         dateAdded = cursor.getLong(4) * 1000,
         dateModified = cursor.getLong(5) * 1000,
         size = cursor.getLong(6),
-        duration = cursor.getLong(7) * 1000,
+        duration = cursor.getLong(7),
         width = cursor.getInt(8),
         height = cursor.getInt(9),
         orientation = cursor.getInt(10)

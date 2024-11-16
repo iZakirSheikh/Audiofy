@@ -18,9 +18,6 @@
 
 package com.prime.media.old.library
 
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,22 +39,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.prime.media.MainActivity
 import com.prime.media.R
+import com.prime.media.local.videos.RouteVideos
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.playlists.Members
-import com.zs.core_ui.shape.FolderShape
-import com.zs.core.playback.Playback
 import com.prime.media.old.directory.store.Artists
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.Genres
-import com.prime.media.playlists.RoutePlaylist
 import com.primex.core.textResource
 import com.primex.material2.Label
+import com.zs.core.playback.Playback
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.shape.FolderShape
 
 /**
  * Composable function to create a clickable shortcut with an icon and label.
@@ -150,19 +145,9 @@ fun Shortcuts(
                 label = textResource(id = R.string.artists),
             )
 
-            // Shortcut for Albums navigation
-            val context = LocalContext.current as MainActivity
-            val launcher =
-                rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-                    if (it == null) return@rememberLauncherForActivityResult
-                    val intnet = Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(it, "video/*")
-                        this.`package` = context.packageName
-                    }
-                    context.startActivity(intnet)
-                }
+            // Shortcut for Video Library
             Shortcut(
-                onAction = { launcher.launch(arrayOf("video/*")) },
+                onAction = { navigator.navigate(RouteVideos()) },
                 icon = Icons.Outlined.VideoLibrary,
                 label = textResource(id = R.string.videos),
             )
