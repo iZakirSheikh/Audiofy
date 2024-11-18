@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,10 +18,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.ExperimentalMaterialApi
@@ -71,6 +70,7 @@ import com.zs.core_ui.AppTheme.colors
 import com.zs.core_ui.None
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.contentInsets
+import com.zs.core_ui.stickyHeader
 import dev.chrisbanes.haze.HazeStyle
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.PaddingValues as Padding
@@ -172,13 +172,14 @@ private fun FloatingTopAppBar(
 private val GRID_ITEM_SPACING = Arrangement.spacedBy(CP.small)
 private fun LazyGridScope.content(
     navController: NavHostController,
+    state: LazyGridState,
     data: Mapped<Album>
 ) {
     for ((header, values) in data) {
         if (header.isNotBlank()) // only show this if non-blank.
-            item(
+            stickyHeader(
+                state,
                 header,
-                span = fullLineSpan,
                 contentType = "header",
                 content = {
                     Box(
@@ -339,7 +340,7 @@ fun Albums(viewState: AlbumsViewState) {
                     )
 
                     // Rest of the items
-                    content(navController, values)
+                    content(navController, state,  values)
                 }
             )
         }

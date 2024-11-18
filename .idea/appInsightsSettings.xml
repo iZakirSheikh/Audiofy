@@ -31,11 +31,25 @@
               </option>
               <option name="failureTypes">
                 <list>
-                  <option value="FATAL" />
+                  <option value="NON_FATAL" />
                 </list>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="versions">
+                <list>
+                  <VersionSetting>
+                    <option name="buildVersion" value="162" />
+                    <option name="displayName" value="3.1.0-alpha01-debug (162)" />
+                    <option name="displayVersion" value="3.1.0-alpha01-debug" />
+                    <option name="tracks">
+                      <list>
+                        <option value="INTERNAL" />
+                      </list>
+                    </option>
+                  </VersionSetting>
+                </list>
+              </option>
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>

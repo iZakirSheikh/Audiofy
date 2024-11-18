@@ -544,7 +544,7 @@ fun Settings(viewState: SettingsViewState) {
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                     // padding due to app bar
                     .padding(WindowInsets.contentInsets)
-                    .fadeEdge(AppTheme.colors.background, scrollState, false)
+                    .fadeEdge(AppTheme.colors.background(2.dp), scrollState, false)
                     .verticalScroll(scrollState)
                     // the padding due to nav_bar
                     .padding(navBarPadding)

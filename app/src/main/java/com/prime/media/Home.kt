@@ -493,8 +493,8 @@ private fun NavigationBar(
                         listOf(
                             Color.Transparent,
                             Color.Transparent,
-                            if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
-                            if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
+                            Color.Gray.copy(if (colors.isLight) 0.16f else 0.24f),
+                             Color.Transparent,
                         )
                     ),
                     NavRailShape
@@ -611,7 +611,7 @@ fun Home(
     // In this case, showing the BottomBar is preferable!
     val portrait = clazz.widthRange < Range.Medium
     val provider = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && portrait -> backdropProvider()
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> backdropProvider()
         else -> null
     }
     // The navHost
@@ -626,17 +626,18 @@ fun Home(
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val useAccent by preference(Settings.USE_ACCENT_IN_NAV_BAR)
+                val colors = AppTheme.colors
                 NavigationBar(
                     !portrait,
-                    if (useAccent) AppTheme.colors.onAccent else AppTheme.colors.onBackground,
+                    if (useAccent) colors.onAccent else colors.onBackground,
                     navController,
                     when {
-                        useAccent -> Modifier.background(AppTheme.colors.accent)
+                        useAccent -> Modifier.background(colors.accent)
                         else -> Modifier.dynamicBackdrop(
-                            provider,
-                            HazeStyle.Regular(AppTheme.colors.background),
-                            AppTheme.colors.background,
-                            AppTheme.colors.accent
+                            if (!portrait) null else provider,
+                            HazeStyle.Regular(colors.background, if (colors.isLight) 0.48f else 0.63f),
+                            colors.background,
+                            colors.accent
                         )
                     }.renderInSharedTransitionScopeOverlay(0.2f),
                 )

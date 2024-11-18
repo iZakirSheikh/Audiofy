@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.takeOrElse
@@ -348,7 +349,18 @@ internal fun Toast(
                             drawRect(color = actionColor, size = size.copy(width = 3.dp.toPx()))
                         }
                     }
-                    .thenIf(!colors.isLight) { border(0.5.dp, actionColor.copy(0.11f), shape) }
+                    .thenIf(!colors.isLight) { border(
+                        1.dp,
+                        Brush.linearGradient(
+                            listOf(
+                                Color.Gray.copy(0.24f),
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Gray.copy(0.24f)
+                            )
+                        ),
+                        shape
+                    ) }
                     .visualEffect(ImageBrush.NoiseBrush, 0.60f, overlay = true)
                     .background(backgroundColor)
                     //.clip(shape)
