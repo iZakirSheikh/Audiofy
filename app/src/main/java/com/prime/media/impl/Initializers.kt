@@ -46,7 +46,6 @@ import com.zs.core.db.Playlists2
 import com.zs.core.db.Playlists2.Companion.invoke
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
-import com.zs.core_ui.coil.VideoThumbnailFetcher
 import com.zs.core_ui.toast.ToastHostState
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
@@ -66,6 +65,7 @@ import com.prime.media.R
 import com.zs.core.playback.PlaybackController
 import com.zs.core.playback.PlaybackController.Companion.invoke as PlaybackController
 import com.zs.core_ui.Anim
+import com.zs.core_ui.coil.ThumbnailFetcher
 
 private const val TAG = "Initializers"
 
@@ -159,7 +159,7 @@ class CoilInitializer : Initializer<Unit> {
                 .components {
                     if (!preference(Settings.USE_LEGACY_ARTWORK_METHOD))
                         add(MediaMetaDataArtFetcher.Factory())
-                    add(VideoThumbnailFetcher.Factory())
+                    add(ThumbnailFetcher.Factory())
                 }
         // Set the created ImageLoader as the default for Coil.
         Coil.setImageLoader(imageLoader.build())

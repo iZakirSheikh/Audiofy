@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 16-11-2024.
+ * Created by Zakir Sheikh on 19-11-2024.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,31 @@ import coil.size.pxOrElse
 import kotlin.math.roundToInt
 import android.util.Size as ThumbnailSize
 
-private const val TAG = "VideoThumbnailFetcher"
+private const val TAG = "ThumbnailFetcher"
 
-class VideoThumbnailFetcher(
+/**
+ * Enables or disables the use of android's cached thumbnails for this request.
+ *
+ * If enabled and a cached thumbnail is available, Coil will use it instead of
+ * generating a thumbnail from the image's URI. This can improve performance,
+ * especially for large images.
+ *
+ * By default, this is enabled.
+ *
+ * @param value True to use cached thumbnails if available, false otherwise.
+ */
+fun ImageRequest.Builder.preferCachedThumbnail(value: Boolean)
+        =  setParameter("coil#preferCachedThumbnail", value)
+
+/**
+ * Whether to use cached thumbnails for this request.
+ *
+ * @see preferCachedThumbnail
+ */
+private val Options.preferCachedThumbnail: Boolean
+    get() = parameters.value("coil#preferCachedThumbnail") ?: true
+
+class ThumbnailFetcher(
     private val data: Uri,
     private val options: Options
 ) : Fetcher {
@@ -66,17 +88,25 @@ class VideoThumbnailFetcher(
             // Early exit if the URI is not a content URI
             if (data.scheme != ContentResolver.SCHEME_CONTENT) return null
 
+            // Early exit if the request is
+            // because we only support loading thumbnails from this that too of images and videos
+            // that android automatically generated.
+            if (!options.preferCachedThumbnail) {
+                Log.d(TAG, "preferCachedThumbnail: ${options.preferCachedThumbnail}")
+                return null
+            }
+
             val context = options.context
             // Retrieve the MIME type of the content
             val mimeType = context.contentResolver.getType(data) ?: return null
 
             // Check if the MIME type is supported (image or video)
-            if (!mimeType.startsWith("video/")) {
+            if (/*!mimeType.startsWith("image/") && */!mimeType.startsWith("video/")) {
                 return null
             }
 
             // Create and return a ThumbnailFetcher instance
-            return VideoThumbnailFetcher(data, options)
+            return ThumbnailFetcher(data, options)
         }
     }
 

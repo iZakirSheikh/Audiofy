@@ -19,6 +19,8 @@
         <b>What\'s new</b>
         <font color='grey'>
             \n <b>Celebrating </b> Our Exciting 3.0.0 Release!💐
+            \n 🐞 <b>Fixed high memory usage bug:</b> Fixed a bug that caused high memory usage
+            after adding video browsing support.
             \n 🚀 <b>Introduced a Brand-New In-App Video Browser Screen</b>: Seamlessly browse and play
             videos directly within the app.
             \n 🛠 <b>Squashed the Video Surface Delay Bug</b>: Fixed an old issue that caused the video

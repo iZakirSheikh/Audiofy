@@ -349,18 +349,18 @@ internal fun Toast(
                             drawRect(color = actionColor, size = size.copy(width = 3.dp.toPx()))
                         }
                     }
-                    .thenIf(!colors.isLight) { border(
+                    .border(
                         1.dp,
                         Brush.linearGradient(
                             listOf(
-                                Color.Gray.copy(0.24f),
+                                Color.Gray.copy(if(!colors.isLight) 0.24f else 0.48f),
                                 Color.Transparent,
                                 Color.Transparent,
-                                Color.Gray.copy(0.24f)
+                                Color.Gray.copy(if(!colors.isLight) 0.24f else 0.48f),
                             )
                         ),
                         shape
-                    ) }
+                    )
                     .visualEffect(ImageBrush.NoiseBrush, 0.60f, overlay = true)
                     .background(backgroundColor)
                     //.clip(shape)
