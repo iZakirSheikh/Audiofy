@@ -67,7 +67,7 @@ import com.zs.core_ui.ContentPadding as CP
 
 private val Colors.border
     @Composable @ReadOnlyComposable
-    get() = BorderStroke(1.dp, onBackground.copy(0.18f))
+    get() = BorderStroke(1.dp, background(15.dp))
 
 private val ProductShape = NotchedCornerShape(14.dp)
 
