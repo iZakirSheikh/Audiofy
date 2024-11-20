@@ -420,4 +420,5 @@
     <string name="search">Search</string>
     <string name="scr_personalize_accent_nav">ColorNav\n<font color='grey'>Use vibrant color to paint navigation bar.</font></string>
     <string name="msg_promo_personalize">Personalize<font color='grey'>\nCustomize your app with in-app <b>widgets</b> and change the nav bar <b>accent</b> color. More features coming soon—stay tuned!</font></string>
+    <string name="rename">Rename</string>
 </resources>
