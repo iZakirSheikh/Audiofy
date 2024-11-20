@@ -185,6 +185,7 @@ fun Filters(
 ) {
     // Early return if values are empty.
     if (values.isEmpty()) return
+    // TODO - Migrate to LazyRow
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -212,8 +213,8 @@ fun Filters(
                     )
                 },
                 colors = ChipDefaults.chipColors(
-                    backgroundColor = AppTheme.colors.accent,
-                    contentColor = AppTheme.colors.onAccent
+                    backgroundColor = AppTheme.colors.background(10.dp),
+                    contentColor = AppTheme.colors.onBackground
                 ),
                 modifier = Modifier
                     .defaultMinSize(minHeight = 37.dp)
@@ -243,7 +244,8 @@ fun Filters(
                     border = if (!selected) null else BorderStroke(
                         Dp.Hairline,
                         AppTheme.colors.accent
-                    )
+                    ),
+                    shape = AppTheme.shapes.compact
                 )
             }
         }

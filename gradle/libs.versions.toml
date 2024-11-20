@@ -77,7 +77,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 
 # AdNetwork
 unity-ads = { module = "com.unity3d.ads:unity-ads", version = "4.12.1" }
-iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.3.0" }
+iron_source = { module = "com.ironsource.sdk:mediationsdk", version = "8.4.0" }
 iron_source_ad_qaulity = { module = "com.ironsource:adqualitysdk", version = "7.20.1" }
 unity_adapter = { module = "com.ironsource.adapters:unityadsadapter", version = "4.3.40" }
 
