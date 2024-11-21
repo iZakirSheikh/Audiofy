@@ -28,6 +28,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -116,7 +117,7 @@ inline fun Placeholder(
  * Item header.
  * //TODO: Handle padding in parent composable.
  */
-private val HEADER_MARGIN = Padding(0.dp, CP.xLarge, 0.dp, CP.normal)
+private val HEADER_MARGIN = Padding(0.dp, CP.xLarge, 0.dp, CP.medium)
 private val CHAR_HEADER_SHAPE = RoundedCornerShape(50, 25, 25, 25)
 
 /**
@@ -199,22 +200,16 @@ fun Filters(
             val padding = Padding(vertical = 6.dp)
             Chip(
                 onClick = { onRequest(null) },
-                leadingIcon = {
+                content = {
                     Icon(
                         Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = "ascending",
                         modifier = Modifier.rotate(if (ascending) 0f else 180f)
                     )
                 },
-                content = {
-                    Label(
-                        if (ascending) "Ascending" else "Descending",
-                        modifier = Modifier.padding(padding)
-                    )
-                },
                 colors = ChipDefaults.chipColors(
-                    backgroundColor = AppTheme.colors.background(30.dp),
-                    contentColor = AppTheme.colors.onBackground
+                    backgroundColor = AppTheme.colors.background(5.dp),
+                    contentColor = AppTheme.colors.accent
                 ),
                 modifier = Modifier
                     .padding(end = CP.medium),

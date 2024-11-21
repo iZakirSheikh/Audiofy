@@ -65,7 +65,7 @@ import com.prime.media.R
 import com.zs.core.playback.PlaybackController
 import com.zs.core.playback.PlaybackController.Companion.invoke as PlaybackController
 import com.zs.core_ui.Anim
-import com.zs.core_ui.coil.ThumbnailFetcher
+import com.zs.core_ui.coil.VideoThumbnailFetcher as ThumbnailFetcher
 
 private const val TAG = "Initializers"
 

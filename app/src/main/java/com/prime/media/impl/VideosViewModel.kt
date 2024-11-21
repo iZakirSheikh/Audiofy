@@ -20,9 +20,18 @@
 
 package com.prime.media.impl
 
+import android.app.Activity
+import android.content.Intent
+import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateUtils
+import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.NearbyError
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -36,6 +45,11 @@ import com.prime.media.common.Mapped
 import com.prime.media.common.menu.Action
 import com.prime.media.common.menu.Action.Companion.invoke
 import com.prime.media.local.videos.VideosViewState
+import com.prime.media.local.videos.VideosViewState.Companion.ACTION_DELETE
+import com.prime.media.local.videos.VideosViewState.Companion.ACTION_SHARE
+import com.primex.core.Rose
+import com.primex.core.findActivity
+import com.primex.core.runCatching
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.PlaybackController
 import com.zs.core.store.MediaProvider
@@ -55,6 +69,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.koin.android.ext.koin.androidContext
 import java.util.Locale
 
 private const val TAG = "VideosViewModel"
@@ -69,10 +84,11 @@ private val ORDER_BY_DATE_MODIFIED =
     Action(R.string.date_modified, id = MediaStore.Video.Media.DATE_MODIFIED)
 private val ORDER_BY_DURATION = Action(R.string.duration, id = MediaStore.Video.Media.DURATION)
 
+
 private inline val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }
 
 class VideosViewModel(
-    provider: MediaProvider,
+    private val provider: MediaProvider,
     private val controller: PlaybackController
 ) : KoinViewModel(), VideosViewState {
 
@@ -80,6 +96,69 @@ class VideosViewModel(
         listOf(ORDER_BY_NONE, ORDER_BY_TITLE, ORDER_BY_FOLDER, ORDER_BY_DATE_MODIFIED)
     override val query: TextFieldState = TextFieldState()
     override var order: Filter by mutableStateOf(true to ORDER_BY_FOLDER)
+
+    override val actions: List<Action> = listOf(ACTION_DELETE, ACTION_SHARE)
+
+    override fun delete(activity: Activity, video: Video) {
+        viewModelScope.launch {
+            val result = runCatching(TAG) {
+                // For Android R and above, use the provider's delete function directly
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                    return@runCatching provider.trash(activity, video.id)
+                // For versions below Android R, show a confirmation toast
+                // If the user performs the action, proceed with deletion
+                // Otherwise, return -3 to indicate user cancellation
+                val action = showToast(
+                    message = R.string.msg_files_deletion_confirm,
+                    action = R.string.delete,
+                    icon = Icons.Outlined.NearbyError,
+                    accent = androidx.compose.ui.graphics.Color.Rose,
+                    priority = Toast.PRIORITY_HIGH
+                )
+                // Delete the selected items
+                // else return -3 to indicate user cancellation
+                if (action == Toast.ACTION_PERFORMED)
+                    return@runCatching provider.delete(video.id)
+                // else return user cancelled
+                -3
+            }
+            // Display a message based on the result of the deletion operation.
+            if (result == null || result == 0 || result == -1)
+                showToast(R.string.msg_files_delete_unknown_error)// General error
+        }
+    }
+
+    override fun share(activity: Activity, file: Video) {
+        viewModelScope.launch {
+            // Create an intent to share the selected items
+            val intent = Intent().apply {
+                // Map selected IDs to content URIs.
+                // TODO - Construct custom content uri.
+                val uri = arrayListOf(file.contentUri)
+                // Set the action to send multiple items.
+                action = Intent.ACTION_SEND_MULTIPLE
+                // Add the URIs as extras.
+                putParcelableArrayListExtra(
+                    Intent.EXTRA_STREAM,
+                    uri
+                )
+                // Grant read permission to the receiving app.
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // Set the MIME type to allow sharing of various file types.
+                type = file.mimeType
+                // Specify supported MIME types.
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(file.mimeType))
+            }
+            // Start the sharing activity with a chooser.
+            try {
+                activity.startActivity(Intent.createChooser(intent, "Sharing Files"))
+            } catch (e: Exception) {
+                // Handle exceptions and display an error message.
+                showToast(R.string.msg_error_sharing_files)
+                Log.d(TAG, "share: ${e.message}")
+            }
+        }
+    }
 
     override fun filter(ascending: Boolean, order: Action) {
         if (order == this.order.second && this.order.first == ascending)

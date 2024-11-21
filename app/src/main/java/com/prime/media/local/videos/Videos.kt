@@ -20,7 +20,6 @@
 
 package com.prime.media.local.videos
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -29,6 +28,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -37,14 +37,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.common.Filters
 import com.prime.media.common.ListHeader
 import com.prime.media.common.Mapped
 import com.prime.media.common.emit
+import com.prime.media.common.menu.Action
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
 import com.primex.core.drawHorizontalDivider
+import com.primex.core.fadeEdge
+import com.primex.core.findActivity
 import com.primex.core.plus
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -95,13 +100,13 @@ private fun TopBar(
     )
 }
 
-
 /**
  * The actaul content of the list
  */
 private fun LazyListScope.content(
     data: Mapped<Video>,
-    onItemClick: (video: Video) -> Unit
+    actions: List<Action>,
+    onAction: (action: Action?, video: Video) -> Unit,
 ) {
     for ((header, values) in data) {
         if (header.isNotBlank()) // only show this if non-blank.
@@ -123,9 +128,9 @@ private fun LazyListScope.content(
             itemContent = {
                 Video(
                     value = it,
-                    modifier = Modifier
-                        .animateItem()
-                        .clickable { onItemClick(it) },
+                    modifier = Modifier.animateItem(),
+                    actions = actions,
+                    onAction = onAction
                 )
             }
         )
@@ -147,13 +152,29 @@ fun Videos(viewState: VideosViewState) {
             // Collect the data from the viewState, initially null representing loading state.
             // Get the grid item size multiplier from user preferences.
             val data by viewState.data.collectAsState()
+            val context = LocalContext.current
             val navController = LocalNavController.current
+            val state = rememberLazyListState()
+            val onAction = { action: Action?, video: Video ->
+                when (action) {
+                    VideosViewState.ACTION_DELETE -> viewState.delete(context.findActivity(), video)
+                    VideosViewState.ACTION_SHARE -> viewState.share(context.findActivity(), video)
+                    null -> {
+                        viewState.play(video)
+                        navController.navigate(Console.route)
+                    }
+
+                    else -> TODO("$action not implemented!!")
+                }
+            }
             LazyColumn(
+                state = state,
                 // Apply padding for content insets and in-app navigation bar.
                 contentPadding = Padding(CP.normal) + WindowInsets.navigationBars.asPaddingValues(),
-                modifier = Modifier.padding(WindowInsets.contentInsets),
+                modifier = Modifier
+                    .padding(WindowInsets.contentInsets)
+                    .fadeEdge(AppTheme.colors.background, state, false, 16.dp),
                 content = {
-                    // Emit state: Get the album data, if null, return from LazyVerticalGrid content.
                     val values = emit(data) ?: return@LazyColumn
                     // Filters: Display the filters section.
                     item(
@@ -174,13 +195,7 @@ fun Videos(viewState: VideosViewState) {
                     )
 
                     // Rest of the items
-                    content(
-                        values,
-                        onItemClick = {
-                            viewState.play(it)
-                            navController.navigate(Console.route)
-                        }
-                    )
+                    content(values, viewState.actions, onAction)
                 }
             )
         }

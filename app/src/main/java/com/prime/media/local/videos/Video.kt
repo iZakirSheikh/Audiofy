@@ -19,18 +19,30 @@
 package com.prime.media.local.videos
 
 import android.text.format.Formatter
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -39,14 +51,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.prime.media.common.menu.Action
 import com.primex.core.SignalWhite
+import com.primex.core.rememberVectorPainter
+import com.primex.core.textResource
 import com.primex.core.withSpanStyle
+import com.primex.material2.DropDownMenuItem
 import com.primex.material2.Label
 import com.primex.material2.ListTile
 import com.primex.material2.Text
+import com.primex.material2.menu.DropDownMenu2
 import com.zs.core.store.Video
 import com.zs.core.util.PathUtils
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.AppTheme.colors
 import coil.compose.rememberAsyncImagePainter as AsyncPainter
 import com.zs.core_ui.ContentPadding as CP
 
@@ -61,6 +79,8 @@ private val THUMBNAIL_SIZE = DpSize(128.dp, 72.dp)
 @Composable
 fun Video(
     value: Video,
+    actions: List<Action>,
+    onAction: (action: Action?, value: Video) -> Unit,
     modifier: Modifier = Modifier
 ) {
     ListTile(
@@ -91,20 +111,21 @@ fun Video(
                 if (AppTheme.colors.isLight) AppTheme.colors.accent else AppTheme.colors.onBackground
             Label(
                 buildAnnotatedString {
-                    withSpanStyle(color, background = color.copy(0.12f)) {
+                    withSpanStyle(color.copy(ContentAlpha.medium), background = color.copy(0.12f)) {
                         append(" ${Formatter.formatShortFileSize(ctx, value.size)} ")
                     }
                     append("  ")
-                    withSpanStyle(color, background = color.copy(0.12f)) {
+                    withSpanStyle(color.copy(ContentAlpha.medium), background = color.copy(0.12f)) {
                         append(" ${value.height}p ")
                     }
                 },
                 fontWeight = FontWeight.SemiBold,
-                style = AppTheme.typography.caption
+                style = AppTheme.typography.caption2
             )
         },
         modifier = Modifier
             .clip(AppTheme.shapes.small)
+            .clickable { onAction(null, value) }
             .then(modifier),
         padding = ITEM_PADDING,
         leading = {
@@ -136,6 +157,40 @@ fun Video(
                     )
                 }
             )
+        },
+        trailing = {
+            var expanded by remember { mutableStateOf(false) }
+            IconButton(onClick = { expanded = !expanded }) {
+                // icon
+                Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                // menu
+                DropDownMenu2(
+                    expanded,
+                    onDismissRequest = { expanded = false },
+                    shape = AppTheme.shapes.compact,
+                    elevation = 9.dp,
+                    modifier = Modifier.scale(0.95f),
+                    //  backgroundColor = Color.Transparent,
+                    border = if (AppTheme.colors.isLight) null else BorderStroke(
+                        0.5.dp,
+                        colors.background(20.dp)
+                    ),
+                    content = {
+                        actions.forEach { action ->
+                            DropDownMenuItem(
+                                title = textResource(action.label),
+                                icon = rememberVectorPainter(action.icon!!),
+                                enabled = action.enabled,
+                                modifier = Modifier.widthIn(min = 170.dp),
+                                onClick = {
+                                    onAction(action, value)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                )
+            }
         }
     )
 }

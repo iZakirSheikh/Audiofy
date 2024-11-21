@@ -421,4 +421,11 @@
     <string name="scr_personalize_accent_nav">ColorNav\n<font color='grey'>Use vibrant color to paint navigation bar.</font></string>
     <string name="msg_promo_personalize">Personalize<font color='grey'>\nCustomize your app with in-app <b>widgets</b> and change the nav bar <b>accent</b> color. More features coming soon—stay tuned!</font></string>
     <string name="rename">Rename</string>
+    <string name="msg_files_deletion_confirm"><b>Delete</b>
+        <font color='grey'>\nAre you sure you want to delete this? You won\'t be able to get it back
+        </font>
+    </string>
+    <string name="msg_files_delete_unknown_error">Oops, something went wrong while deleting the file(s). Please try again.</string>
+    <string name="msg_error_sharing_files">Oops, something went wrong while sharing the files. Please try again.</string>
+
 </resources>

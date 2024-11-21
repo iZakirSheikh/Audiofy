@@ -18,7 +18,13 @@
 
 package com.prime.media.local.videos
 
+import android.app.Activity
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Share
+import com.prime.media.R
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.Route
@@ -28,15 +34,51 @@ import kotlinx.coroutines.flow.StateFlow
 
 object RouteVideos : Route
 
+/**
+ * Represents the view state for the Videos screen.
+ *
+ * @property data The state flow containing mapped video data.
+ * @property query The current text field state for filtering videos.
+ * @property order The current filter applied to the video list.
+ * @property actions The list of available actions that can be performed.
+ * @property orders The list of possible orderings for the video list.
+ */
 interface VideosViewState {
-    val orders: List<Action>
-    val data: StateFlow<Mapped<Video>?>
 
-    // filter.
+    companion object {
+        val ACTION_RENAME = Action(R.string.rename, Icons.Outlined.Edit)
+        val ACTION_DELETE = Action(R.string.delete,Icons.Outlined.Delete)
+        val ACTION_SHARE = Action(R.string.share,  Icons.Outlined.Share)
+    }
+
+    val data: StateFlow<Mapped<Video>?>
     val query: TextFieldState
     val order: Filter
+    val actions: List<Action>
+    val orders: List<Action>
 
-    // actions
+    /**
+     * Filters the video list based on the given ascending flag and order action.
+     *
+     * @param ascending Whether the videos should be ordered in ascending order.
+     * @param order The action representing the order to apply.
+     */
     fun filter(ascending: Boolean = this.order.first, order: Action = this.order.second)
+
+    /**
+     *
+     */
+    fun delete(activity: Activity, video: Video)
+
+    /**
+     *
+     */
+    fun share(activity: Activity, file: Video)
+
+    /**
+     * Plays the specified video.
+     *
+     * @param video The video to be played.
+     */
     fun play(video: Video)
 }
