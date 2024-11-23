@@ -10,9 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
-import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Downloading
-import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -53,12 +51,9 @@ import com.prime.media.common.dynamicFeatureRequest
 import com.prime.media.common.dynamicModuleName
 import com.prime.media.common.isDynamicFeature
 import com.prime.media.common.onEachItem
-import com.prime.media.common.richDesc
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
-import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.settings.Settings
-import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.getText2
@@ -91,7 +86,6 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 import com.zs.core_ui.showPlatformToast as showAndroidToast
@@ -569,101 +563,6 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         splitInstallManager.startInstall(request)
     }
 
-    /**
-     *
-     */
-    private suspend fun showPromotionalMessage(id: Int) {
-        when (id) {
-            // promo message for ad-free version
-            0 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_NO_ADS]
-                    ?: return showPromotionalMessage(id + 1)
-                // skip this and move to next.
-                if (purchase.purchased) return showPromotionalMessage(id + 1)
-                val result = toastHostState.showToast(
-                    info.richDesc,
-                    action = info.formattedPrice ?: "N/A",
-                    priority = Toast.PRIORITY_CRITICAL
-                )
-                if (result == Toast.ACTION_PERFORMED)
-                    initiatePurchaseFlow(BuildConfig.IAP_NO_ADS)
-            }
-            // promo message for codex.
-            1 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_CODEX]
-                    ?: return showPromotionalMessage(id + 1)
-                // skip this and move to next.
-                if (purchase.purchased) return showPromotionalMessage(id + 1)
-                val result = toastHostState.showToast(
-                    info.richDesc,
-                    action = info.formattedPrice ?: "N/A",
-                    priority = Toast.PRIORITY_CRITICAL
-                )
-                if (result == Toast.ACTION_PERFORMED)
-                    initiatePurchaseFlow(BuildConfig.IAP_CODEX)
-            }
-            // promo message for buy me a coffee.
-            2 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_BUY_ME_COFFEE]
-                    ?: return showPromotionalMessage(id + 1)
-                // skip this and move to next.
-                if (purchase.purchased) return showPromotionalMessage(id + 1)
-                val result = toastHostState.showToast(
-                    info.richDesc,
-                    action = info.formattedPrice ?: getText(R.string.abbr_not_available),
-                    priority = Toast.PRIORITY_CRITICAL
-                )
-                if (result == Toast.ACTION_PERFORMED)
-                    initiatePurchaseFlow(BuildConfig.IAP_BUY_ME_COFFEE)
-            }
-            // promo message for tag editor
-            3 -> {
-                val (info, purchase) = paymaster[BuildConfig.IAP_TAG_EDITOR_PRO]
-                    ?: return showPromotionalMessage(id + 1)
-                // skip this and move to next.
-                if (purchase.purchased) return showPromotionalMessage(id + 1)
-                val result = toastHostState.showToast(
-                    info.richDesc,
-                    action = info.formattedPrice ?: getText(R.string.abbr_not_available),
-                    priority = Toast.PRIORITY_CRITICAL
-                )
-                if (result == Toast.ACTION_PERFORMED)
-                    initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO)
-            }
-            // promo message for app.
-            4 -> {
-                val pkg = "com.googol.android.apps.photos"
-                // Check if the Gallery app is already installed
-                val isInstalled = runCatching(TAG) { packageManager.getPackageInfo(pkg, 0) } != null
-                // If the app is installed, show the next promotional message
-                if (isInstalled) return showPromotionalMessage(id + 1)
-                val result = toastHostState.showToast(
-                    resources.getText2(R.string.msg_promotion_gallery_app),
-                    action = resources.getText2(R.string.dive_in),
-                    priority = Toast.PRIORITY_CRITICAL,
-                    accent = Color.Amber,
-                    icon = Icons.Outlined.GetApp
-                )
-                // If the user clicked the action button, launch the app store listing
-                if (result == Toast.ACTION_PERFORMED)
-                    launchAppStore(pkg)
-            }
-            // promo message for widgets.
-            5 -> {
-                val result = toastHostState.showToast(
-                    resources.getText2(R.string.msg_promo_personalize),
-                    priority = Toast.PRIORITY_CRITICAL,
-                    accent = Color.MetroGreen,
-                    icon = Icons.Outlined.ColorLens,
-                    action = "View"
-                )
-                // If the user clicked the action button, launch the Personalization screen.
-                if (result == Toast.ACTION_PERFORMED)
-                    navController?.navigate(RoutePersonalize())
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
@@ -716,17 +615,6 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
             // Display promotional messages on every third cold start
             // show what's new message on click.
             val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
-            lifecycleScope.launch {
-                val counter = preferences.value(Settings.KEY_LAUNCH_COUNTER) ?: 0
-                if (savedVersionCode == -1) // Don't show promo message on first launch
-                    return@launch
-                delay(10.seconds)
-                // Select and display a promotional message based on launch count
-                val id = counter % MESSAGE_COUNT
-                // Display the selected promotional message.
-                Log.d(TAG, "onCreate: id: $id counter: $counter")
-                showPromotionalMessage(id)
-            }
             val versionCode = BuildConfig.VERSION_CODE
             if (savedVersionCode != versionCode) {
                 preferences[KEY_APP_VERSION_CODE] = versionCode

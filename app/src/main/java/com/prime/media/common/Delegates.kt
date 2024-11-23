@@ -208,8 +208,8 @@ fun Filters(
                     )
                 },
                 colors = ChipDefaults.chipColors(
-                    backgroundColor = AppTheme.colors.background(5.dp),
-                    contentColor = AppTheme.colors.accent
+                    backgroundColor = AppTheme.colors.accent,
+                    contentColor = AppTheme.colors.onAccent
                 ),
                 modifier = Modifier
                     .padding(end = CP.medium),

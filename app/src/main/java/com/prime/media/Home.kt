@@ -531,7 +531,7 @@ private fun NavigationBar(
                             if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
                             Color.Transparent,
                             Color.Transparent,
-                            if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
+                            Color.Transparent,
                         )
                     ),
                     BottomNavShape

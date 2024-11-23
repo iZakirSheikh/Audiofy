@@ -229,7 +229,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     player.seekTo(index, preferences[PREF_KEY_BOOKMARK, C.TIME_UNSET])
                     // Now if the currentMediaItem is 3rd party uri.
                     // just remove it.
-                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true)
+                    // FIXME - Disable video from appearing in history once app restarts;
+                    //  This is because of the unknown ANR.
+                    //  Once the ANR is fixed this must be removed.
+                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true || player.currentMediaItem?.mimeType?.startsWith("video") == true)
                         player.removeMediaItem(index)
                 }
             }
