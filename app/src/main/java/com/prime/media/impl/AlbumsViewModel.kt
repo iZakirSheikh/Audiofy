@@ -16,6 +16,7 @@ import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.menu.Action
 import com.prime.media.local.albums.AlbumsViewState
+import com.primex.core.castTo
 import com.zs.core.store.Album
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.toast.Toast
@@ -65,11 +66,13 @@ class AlbumsViewModel(provider: MediaProvider) : KoinViewModel(), AlbumsViewStat
     ).flatMapLatest { (query, filter, order) ->
         provider.observer(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI).map {
             val albums = provider.fetchAlbums(query, order.id, filter)
-            when (order) {
+            val x = when (order) {
                 ORDER_BY_TITLE -> albums.groupBy { it.firstTitleChar }
                 ORDER_BY_ARTIST -> albums.groupBy { it.artist }
                 else -> albums.groupBy { "" }
             }
+            // This should be safe
+            castTo(x) as Mapped<Album>
         }
     }// catch any errors.
         .catch {

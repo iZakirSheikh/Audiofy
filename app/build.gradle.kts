@@ -65,8 +65,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 161
-        versionName = "3.0.3"
+        versionCode = 175
+        versionName = "3.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -127,6 +127,7 @@ dependencies {
 
     implementation(libs.androidx.startup.runtime)
     implementation(libs.androidx.koin)
+    implementation(libs.chrisbanes.haze)
     //
     implementation(project(":ads"))
     implementation(project(":core-ui"))

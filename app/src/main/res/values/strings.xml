@@ -338,9 +338,11 @@
 
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
     <string name="title_codex">Media Codecs Extensions for Audiofy Media Player</string>
-    <string name="msg_library_rate_us"><!--Title-->
-        <b>Rate Our App and Help Us Improve</b>\n<!--Message Body-->
-        <font color='grey'>If you\'re enjoying our app, please consider leaving us a 5-star rating on the Play Store. Your positive feedback helps us grow and improve our app for everyone.
+    <string name="msg_library_rate_us"><b>Rate Our App and Help Us Improve</b>
+        <!--Message Body-->
+        <font color='grey'>\nIf you\'re enjoying our app, please consider leaving us a 5-star
+            rating on the Play Store. Your positive feedback helps us grow and improve our
+            app for everyone.
         </font>
     </string>
     <string name="rate_us">Rate Us</string>
@@ -420,4 +422,21 @@
     <string name="search">Search</string>
     <string name="scr_personalize_accent_nav">ColorNav\n<font color='grey'>Use vibrant color to paint navigation bar.</font></string>
     <string name="msg_promo_personalize">Personalize<font color='grey'>\nCustomize your app with in-app <b>widgets</b> and change the nav bar <b>accent</b> color. More features coming soon—stay tuned!</font></string>
+    <string name="rename">Rename</string>
+    <string name="msg_files_deletion_confirm"><b>Delete</b>
+        <font color='grey'>\nAre you sure you want to delete this? You won\'t be able to get it back
+        </font>
+    </string>
+    <string name="msg_files_delete_unknown_error">Oops, something went wrong while deleting the file(s). Please try again.</string>
+    <string name="msg_error_sharing_files">Oops, something went wrong while sharing the files. Please try again.</string>
+
+    <string name="sponsor">Sponsor</string>
+    <string name="msg_library_join_us"><b>Enjoying the app? Join our community</b>
+    <font color='grey'>\nConnect with us on <b>GitHub, Reddit, and Telegram</b> for the latest
+        news, tips, and discussions!
+    </font>
+    </string>
+    <string name="telegram">Telegram</string>
+
+
 </resources>

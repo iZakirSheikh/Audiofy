@@ -135,9 +135,21 @@ private class RemoteImpl(val context: Context) : Remote, MediaBrowser.Listener {
         get() = browser?.isCurrentMediaItemSeekable ?: false
     override val player: Player?
         get() = browser
-    override val isCurrentMediaItemVideo: Boolean
-        get() = player?.currentTracks?.groups?.find { it.type == C.TRACK_TYPE_VIDEO } != null
 
+    override val isCurrentMediaItemVideo: Boolean
+        get() {
+            // Note: This is internal in playback, so keep an eye on this implementation
+            // Retrieve the MIME type from the current media item's metadata extras
+            val mimeType = current?.mediaMetadata?.extras?.get("media_item_extra_mime_type") as? String
+
+            // If the MIME type is not null, check if it starts with "video"
+            if (mimeType != null)
+                return mimeType.startsWith("video")
+
+            // If MIME type is null, fall back to checking current track groups for video type
+            // This approach is less efficient but ensures a video track type is properly identified
+            return player?.currentTracks?.groups?.find { it.type == C.TRACK_TYPE_VIDEO } != null
+        }
 
     @OptIn(DelicateCoroutinesApi::class)
     override val events: Flow<Player.Events?> =

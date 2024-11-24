@@ -4,8 +4,13 @@
     <string name="what_s_new_toast" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
-           \n Some minor tweaks.
-           \n🐞 Resolved a critical issue causing crashes on devices running Android 7 and below.
+            \n Revamped Promotions UI for a more streamlined user experience.
+            \n Fixed the NavBar issue causing a white line to appear at the bottom of the screen.
+            \n Resolved the ANR (Application Not Responding) issue
+            \n 🚀 <b>Introduced a Brand-New In-App Video Browser Screen</b>: Seamlessly browse and play
+            videos directly within the app.
+            \n 🛠 <b>Squashed the Video Surface Delay Bug</b>: Fixed an old issue that caused the video
+            surface to appear with a delay when playing videos.
         </font>
     </string>
 
@@ -13,15 +18,16 @@
         <b>What\'s new</b>
         <font color='grey'>
             \n <b>Celebrating </b> Our Exciting 3.0.0 Release!💐
-            \n\n <b>New Features</b>
-            \n✨ Added a feature allowing users to make the <b>navigation bar</b> use <b>accent</b> color.
-            \n✨ Toasts &amp; <b>SnackBars</b> got a boost! Swipe to dismiss, expand for more info, and enjoy smoother interactions.
-            \n✨ New <b>Playlists, Personalization, Settings, Albums</b> and other screens.
-            \n\n<b>Bug Fixes:</b>
-            \n🐞 Resolved a critical issue causing crashes on devices running Android 7 and below
-            \n🐞 Fixed some bugs causing crashes in some devices.
-            \n🐞 Fixed a <b>bug</b> causing <b>albums</b> to lose state once navigated away from them.
-            \n🐞 Resolved an issue causing the screen to dim during video playback mode.
+            \n 🐞 <b>Fixed high memory usage bug:</b> Fixed a bug that caused high memory usage
+            after adding video browsing support.
+            \n 🚀 <b>Introduced a Brand-New In-App Video Browser Screen</b>: Seamlessly browse and play
+            videos directly within the app.
+            \n 🛠 <b>Squashed the Video Surface Delay Bug</b>: Fixed an old issue that caused the video
+            surface to appear with a delay when playing videos.
+            \n ✨ <b>Enhanced Visuals with New Blur Surface</b>: Added a sleek Blur Surface feature to
+            elevate the  app’s aesthetic appeal, making it look even cooler.
+            \n 🐞 <b>Resolved Critical Crash Issue on Older Devices</b>: Fixed a major bug causing crashes
+            on devices running Android 7 and below, ensuring a more stable experience for all users.
         </font>
     </string>
 

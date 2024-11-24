@@ -45,24 +45,23 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.google.accompanist.adaptive.TwoPane
 import com.prime.media.R
-import com.prime.media.personalize.RoutePersonalize
-import com.zs.core_ui.ContentPadding
 import com.prime.media.common.Banner
-import com.prime.media.old.common.LocalNavController
 import com.prime.media.common.LocalSystemFacade
-import com.zs.core_ui.LocalWindowSize
-import com.zs.core.playback.Playback
+import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.GroupBy
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.store.Audios
-import com.prime.media.playlists.RoutePlaylist
+import com.prime.media.personalize.RoutePersonalize
 import com.primex.core.blend
 import com.primex.core.textResource
 import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
 import com.primex.material2.Text
 import com.primex.material2.appbar.TopAppBarDefaults
+import com.zs.core.playback.Playback
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.None
 import com.zs.core_ui.adaptive.contentInsets
 
@@ -222,8 +221,12 @@ fun Library(state: Library) {
                 modifier = Modifier.padding(vertical = ContentPadding.medium)
             )
 
-            // Resents.
+            // Promotions
+            Promotions(
+                modifier = Modifier.padding(DefaultContentPadding).fillMaxWidth(),
+            )
 
+            // Resents.
             Header(
                 modifier = Modifier.fillMaxWidth(),
                 text = textResource(R.string.library_history),

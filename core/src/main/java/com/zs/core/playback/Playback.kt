@@ -217,8 +217,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 player.setMediaItems(items)
                 // Restore the saved shuffle order
                 val orders by runCatching {
-                  val value =   preferences[PREF_KEY_ORDERS, ""].split(LIST_ITEM_DELIMITER)
-                  if (value.isEmpty()) null else value.map(String::toInt).toIntArray()
+                    val value = preferences[PREF_KEY_ORDERS, ""].split(LIST_ITEM_DELIMITER)
+                    if (value.isEmpty()) null else value.map(String::toInt).toIntArray()
                 }
                 (player as ExoPlayer).setShuffleOrder(
                     DefaultShuffleOrder(orders ?: IntArray(0), Random.nextLong())
@@ -229,7 +229,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     player.seekTo(index, preferences[PREF_KEY_BOOKMARK, C.TIME_UNSET])
                     // Now if the currentMediaItem is 3rd party uri.
                     // just remove it.
-                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true)
+                    // FIXME - Disable video from appearing in history once app restarts;
+                    //  This is because of the unknown ANR.
+                    //  Once the ANR is fixed this must be removed.
+                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true || player.currentMediaItem?.mimeType?.startsWith("video") == true)
                         player.removeMediaItem(index)
                 }
             }
@@ -354,11 +357,15 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // Add the media item to the "recent" playlist if the mediaItem is not null
         // and its media URI is not from a third-party source. Third-party content URIs
         // are unplayable after an app reboot.
-        if (mediaItem != null && mediaItem.mediaUri?.isThirdPartyUri == false) {
-            val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
-            scope.launch(Dispatchers.IO) { playlists.addToRecent(mediaItem, limit.toLong()) }
-            session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
-        }
+        // FIXME - Disabling saving of videos in history for now.
+        if (mediaItem == null || mediaItem.mediaUri?.isThirdPartyUri == true)
+            return
+        if (mediaItem.mimeType?.startsWith("video/") == true)
+            return
+        // else save file in history
+        val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
+        scope.launch(Dispatchers.IO) { playlists.addToRecent(mediaItem, limit.toLong()) }
+        session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
     }
 
     /**
@@ -527,7 +534,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         if (equalizer == null || audioSessionId != -1) {
             equalizer?.release()
             // TODO: Find the real reason why equalizer is not init when calling from onCreate.
-            equalizer = runCatching{
+            equalizer = runCatching {
                 Equalizer(0, (player as ExoPlayer).audioSessionId)
             }.getOrNull()
         }
@@ -648,7 +655,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.playWhenReady = false
-        if (preferences[PREF_KEY_CLOSE_WHEN_REMOVED, false]){
+        if (preferences[PREF_KEY_CLOSE_WHEN_REMOVED, false]) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
                 stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
