@@ -117,7 +117,7 @@ inline fun Placeholder(
  * Item header.
  * //TODO: Handle padding in parent composable.
  */
-private val HEADER_MARGIN = Padding(0.dp, CP.xLarge, 0.dp, CP.medium)
+private val HEADER_MARGIN = Padding(0.dp, CP.normal, 0.dp, CP.medium)
 private val CHAR_HEADER_SHAPE = RoundedCornerShape(50, 25, 25, 25)
 
 /**
@@ -142,7 +142,7 @@ fun ListHeader(
             style = AppTheme.typography.headlineLarge,
             modifier = modifier
                 .padding(HEADER_MARGIN)
-                .border(0.5.dp, AppTheme.colors.background(20.dp), CHAR_HEADER_SHAPE)
+                .border(0.5.dp, AppTheme.colors.background(30.dp), CHAR_HEADER_SHAPE)
                 .background(AppTheme.colors.background(1.dp), CHAR_HEADER_SHAPE)
                 .padding(horizontal = CP.large, vertical = CP.medium),
         )
@@ -157,7 +157,7 @@ fun ListHeader(
             modifier = modifier
                 .padding(HEADER_MARGIN)
                 .widthIn(max = 220.dp)
-                .border(0.5.dp, AppTheme.colors.background(20.dp), CircleShape)
+                .border(0.5.dp, AppTheme.colors.background(30.dp), CircleShape)
                 .background(AppTheme.colors.background(1.dp), CircleShape)
                 .padding(horizontal = CP.normal, vertical = CP.small)
         )

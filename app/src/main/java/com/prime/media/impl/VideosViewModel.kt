@@ -95,7 +95,7 @@ class VideosViewModel(
     override val orders: List<Action> =
         listOf(ORDER_BY_NONE, ORDER_BY_TITLE, ORDER_BY_FOLDER, ORDER_BY_DATE_MODIFIED)
     override val query: TextFieldState = TextFieldState()
-    override var order: Filter by mutableStateOf(true to ORDER_BY_FOLDER)
+    override var order: Filter by mutableStateOf(false to ORDER_BY_DATE_MODIFIED)
 
     override val actions: List<Action> = listOf(ACTION_DELETE, ACTION_SHARE)
 
@@ -180,7 +180,8 @@ class VideosViewModel(
                     DateUtils.getRelativeTimeSpanString(
                         it.dateModified,
                         System.currentTimeMillis(),
-                        DateUtils.HOUR_IN_MILLIS,
+                        DateUtils.MINUTE_IN_MILLIS,
+                        DateUtils.FORMAT_ABBREV_RELATIVE
                     )
                 }
 

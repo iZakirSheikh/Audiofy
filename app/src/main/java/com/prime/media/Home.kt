@@ -610,8 +610,10 @@ fun Home(
     // Consider this scenario: a large screen that fits the mobile description, like a desktop screen in portrait mode.
     // In this case, showing the BottomBar is preferable!
     val portrait = clazz.widthRange < Range.Medium
+    // TODO - This is only for tests for now and will be moved to its rightful place in next version.
+    val useAccent by (activity as SystemFacade).observeAsState(Settings.USE_ACCENT_IN_NAV_BAR)
     val provider = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> backdropProvider()
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !useAccent -> backdropProvider()
         else -> null
     }
     // The navHost
@@ -625,7 +627,6 @@ fun Home(
             widget = { Glance() },
             // Set up the navigation bar using the NavBar composable
             navBar = {
-                val useAccent by preference(Settings.USE_ACCENT_IN_NAV_BAR)
                 val colors = AppTheme.colors
                 NavigationBar(
                     !portrait,
@@ -635,7 +636,7 @@ fun Home(
                         useAccent -> Modifier.background(colors.accent)
                         else -> Modifier.dynamicBackdrop(
                             if (!portrait) null else provider,
-                            HazeStyle.Regular(colors.background, if (colors.isLight) 0.48f else 0.63f),
+                            HazeStyle.Regular(colors.background, if (colors.isLight) 0.30f else 0.63f),
                             colors.background,
                             colors.accent
                         )

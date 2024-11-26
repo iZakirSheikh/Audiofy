@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -39,7 +38,6 @@ import com.primex.core.visualEffect
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 
 private const val TAG = "Backdrop"
@@ -57,11 +55,11 @@ fun rememberHazeState() = remember(::HazeState)
  */
 fun HazeStyle.Companion.Regular(
     containerColor: Color,
-    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.63f else 0.24f
+    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.52f else 0.24f
 ) = HazeStyle(
-    blurRadius = if (containerColor.luminance() >= 0.5f) 24.dp else 50.dp,
+    blurRadius = if (containerColor.luminance() >= 0.5f) 28.dp else 50.dp,
     backgroundColor = containerColor,
-    noiseFactor = if (containerColor.luminance() >= 0.5f) 0.4f else 0.25f,
+    noiseFactor = if (containerColor.luminance() >= 0.5f) 0.35f else 0.25f,
     tint = HazeTint(containerColor.copy(alpha = tintAlpha)),
 )
 
@@ -80,7 +78,7 @@ private val MistCachedPaint = Paint().apply {
  * @return A Modifier with the applied mist effect.
  */
 private fun Modifier.mist(containerColor: Color, accent: Color) =
-    this then drawBehind {
+    drawBehind {
         // Determine if the container color is light based on its luminance.
         val isLight = containerColor.luminance() >= 0.5f
 
@@ -90,7 +88,7 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // Get the width and height of the drawing area and calculate the diameter for circles.
         val (w, h) = size
         val vertical = w < h
-        val dp = if (vertical) h / 8  else w / 8
+        val dp = if (vertical) h / 8 else w / 8
         val paint = MistCachedPaint
 
         // Set the paint color to accent and adjust the stroke width.
@@ -100,7 +98,7 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         var x = if (!vertical) 2 * dp else size.center.x
         var y = if (!vertical) size.center.y else 2 * dp
         this.drawContext.canvas.drawCircle(
-            Offset(x, y ),
+            Offset(x, y),
             dp,
             paint
         )
@@ -108,10 +106,10 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // Change the paint color based on whether the container color is light or dark.
         paint.color = if (isLight) Color.Black else Color.White.copy(0.5f)
         // Draw the second circle with the modified color.
-         x = if (!vertical) 3 * dp else size.center.x
-         y = if (!vertical) size.center.y else 3 * dp
+        x = if (!vertical) 3 * dp else size.center.x
+        y = if (!vertical) size.center.y else 3 * dp
         this.drawContext.canvas.drawCircle(
-            Offset(x, y ),
+            Offset(x, y),
             dp,
             paint
         )
@@ -119,10 +117,10 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // Set the paint color to a slightly transparent version of the accent color.
         paint.color = accent.copy(0.7f)
         // Draw the third circle with the adjusted accent color.
-         x = if (!vertical) 5 * dp else size.center.x
-         y = if (!vertical) size.center.y else 5 * dp
+        x = if (!vertical) 5 * dp else size.center.x
+        y = if (!vertical) size.center.y else 5 * dp
         this.drawContext.canvas.drawCircle(
-            Offset(x, y ),
+            Offset(x, y),
             dp,
             paint
         )
@@ -131,10 +129,10 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         paint.color = accent
 
         // Draw the fourth circle with the accent color.
-         x = if (!vertical) 8 * dp else size.center.x
-         y = if (!vertical) size.center.y else 8 * dp
+        x = if (!vertical) 8 * dp else size.center.x
+        y = if (!vertical) size.center.y else 8 * dp
         this.drawContext.canvas.drawCircle(
-            Offset(x, y ),
+            Offset(x, y),
             dp,
             paint
         )
@@ -142,10 +140,10 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // Set the paint color to black.
         paint.color = Color.Black
         // Draw the fifth circle with black color.
-         x = if (!vertical) 10 * dp else size.center.x
-         y = if (!vertical) size.center.y else 10 * dp
+        x = if (!vertical) 10 * dp else size.center.x
+        y = if (!vertical) size.center.y else 10 * dp
         this.drawContext.canvas.drawCircle(
-            Offset(x, y ),
+            Offset(x, y),
             dp,
             paint
         )
@@ -169,7 +167,7 @@ fun Modifier.dynamicBackdrop(
     style: HazeStyle,
     fallbackContainerColor: Color,
     fallbackAccent: Color,
-) =  when (state) {
+) = when (state) {
     null -> mist(fallbackContainerColor, fallbackAccent)
     else -> hazeChild(state, style, { blurEnabled = true })
 }

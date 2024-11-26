@@ -183,12 +183,8 @@ private fun LazyGridScope.content(
                 contentType = "header",
                 content = {
                     Box(
-                        content = {
-                            ListHeader(
-                                header,
-                                modifier = Modifier.animateItem()
-                            )
-                        }
+                        modifier = Modifier.animateItem().padding(horizontal = 6.dp),
+                        content = { ListHeader(header) }
                     )
                 }
             )
@@ -340,7 +336,7 @@ fun Albums(viewState: AlbumsViewState) {
                     )
 
                     // Rest of the items
-                    content(navController, state,  values)
+                    content(navController, state, values)
                 }
             )
         }

@@ -4,19 +4,20 @@
     <string name="what_s_new_toast" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
+            \n Bug fixes and performance improvements
             \n Revamped Promotions UI for a more streamlined user experience.
             \n Fixed the NavBar issue causing a white line to appear at the bottom of the screen.
             \n Resolved the ANR (Application Not Responding) issue
             \n 🚀 <b>Introduced a Brand-New In-App Video Browser Screen</b>: Seamlessly browse and play
             videos directly within the app.
-            \n 🛠 <b>Squashed the Video Surface Delay Bug</b>: Fixed an old issue that caused the video
-            surface to appear with a delay when playing videos.
         </font>
     </string>
 
      <string name="what_s_new_latest" translatable="false">
         <b>What\'s new</b>
         <font color='grey'>
+            \n Fixed the NavBar issue causing a white line to appear at the bottom of the screen.
+            \n Resolved the ANR (Application Not Responding) issue
             \n <b>Celebrating </b> Our Exciting 3.0.0 Release!💐
             \n 🐞 <b>Fixed high memory usage bug:</b> Fixed a bug that caused high memory usage
             after adding video browsing support.

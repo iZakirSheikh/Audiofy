@@ -124,7 +124,7 @@ private fun Promotion(
             Icon(
                 imageVector = icon ?: Icons.Outlined.Info,
                 contentDescription = null,
-                tint = AppTheme.colors.accent,
+                tint = accent,
                 modifier = Modifier.padding(vertical = CP.small)
             )
         },
@@ -367,9 +367,11 @@ fun Promotions(
             // Apply small
             if (current != ID_NONE) delay(STANDARD_DELAY)
             // Update the current promotion index if not in expanded state.
-            // If it's the last promotion, reset to ID_NONE; otherwise, move to the next.
             if (!expanded)
-                current = Random.nextInt(PROMOTIONS_COUNT)
+                current = when(current){
+                    ID_NONE -> Random.nextInt(PROMOTIONS_COUNT)
+                    else -> (current + 1) % PROMOTIONS_COUNT
+                }
         }
     }
 }

@@ -23,7 +23,6 @@ package com.zs.core.playback
 import android.annotation.SuppressLint
 import android.app.*
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -46,8 +45,6 @@ import androidx.media3.session.MediaSession.ControllerInfo
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.zs.core.component1
-import com.zs.core.component2
 import com.zs.core.db.Playlist
 import com.zs.core.get
 import com.zs.core.getValue
@@ -212,7 +209,13 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 player.repeatMode = preferences[PREF_KEY_REPEAT_MODE, Player.REPEAT_MODE_OFF]
                 // Set media items from the QUEUE playlist
                 val items = withContext(Dispatchers.IO) {
-                    playlists.getMembers(PLAYLIST_QUEUE).map(Playlist.Track::toMediaSource)
+                    val data = playlists.getMembers(PLAYLIST_QUEUE)
+                    // FIXME - Disable video from appearing in history once app restarts;
+                    //  This is because of the unknown ANR.
+                    //  Once the ANR is fixed this must be removed.
+                    if (data.any { it.mimeType?.startsWith("video") == true })
+                        error("restoring video queue is not supported!!")
+                    data.map(Playlist.Track::toMediaSource)
                 }
                 player.setMediaItems(items)
                 // Restore the saved shuffle order
@@ -229,10 +232,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     player.seekTo(index, preferences[PREF_KEY_BOOKMARK, C.TIME_UNSET])
                     // Now if the currentMediaItem is 3rd party uri.
                     // just remove it.
-                    // FIXME - Disable video from appearing in history once app restarts;
-                    //  This is because of the unknown ANR.
-                    //  Once the ANR is fixed this must be removed.
-                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true || player.currentMediaItem?.mimeType?.startsWith("video") == true)
+                    if (player.currentMediaItem?.mediaUri?.isThirdPartyUri == true)
                         player.removeMediaItem(index)
                 }
             }
