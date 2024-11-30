@@ -66,7 +66,6 @@ import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
-import com.prime.media.common.preference
 import com.prime.media.console.widget.Glance
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.PlaylistViewModel
@@ -277,14 +276,14 @@ private fun Permission() {
     // Once granted set different route like folders as start.
     // Navigate from here to there.
     val permission = Permissions(permissions = REQUIRED_PERMISSIONS) {
-            if (!it.all { (_, state) -> state }) return@Permissions
-            controller.graph.setStartDestination(Library.route)
-            controller.navigate(Library.route) {
-                popUpTo(RoutePermission()) {
-                    inclusive = true
-                }
+        if (!it.all { (_, state) -> state }) return@Permissions
+        controller.graph.setStartDestination(Library.route)
+        controller.navigate(Library.route) {
+            popUpTo(RoutePermission()) {
+                inclusive = true
             }
         }
+    }
     // If the permissions are not granted, show the permission screen.
     com.prime.media.common.Placeholder(
         iconResId = R.raw.lt_permission,
@@ -481,9 +480,8 @@ private fun NavigationBar(
             colors = colors
         )
     }
-    // Get the current theme colors
     val colors = AppTheme.colors
-    //
+    // Actual Layouts
     when {
         typeRail -> NavigationRail(
             modifier = Modifier
@@ -494,7 +492,7 @@ private fun NavigationBar(
                             Color.Transparent,
                             Color.Transparent,
                             Color.Gray.copy(if (colors.isLight) 0.16f else 0.24f),
-                             Color.Transparent,
+                            Color.Transparent,
                         )
                     ),
                     NavRailShape
@@ -513,7 +511,6 @@ private fun NavigationBar(
                 Spacer(modifier = Modifier.weight(1f))
             },
         )
-
         else -> BottomAppBar(
             windowInsets = WindowInsets.navigationBars,
             contentColor = contentColor,
@@ -587,12 +584,14 @@ private val SystemFacade.density: Density
         return if (fontScale == -1f) density else Density(density.density, fontScale)
     }
 
+/**
+ * Represents the main entry to the UI
+ */
 @Composable
-fun Home(
+fun App(
     toastHostState: ToastHostState,
     navController: NavHostController
 ) {
-    // dependencies
     val activity = LocalView.current.context as MainActivity
     val clazz = calculateWindowSizeClass(activity = activity)
     val current by navController.current()
@@ -610,10 +609,9 @@ fun Home(
     // Consider this scenario: a large screen that fits the mobile description, like a desktop screen in portrait mode.
     // In this case, showing the BottomBar is preferable!
     val portrait = clazz.widthRange < Range.Medium
-    // TODO - This is only for tests for now and will be moved to its rightful place in next version.
-    val useAccent by (activity as SystemFacade).observeAsState(Settings.USE_ACCENT_IN_NAV_BAR)
+    // Create only backdrop provider for android 12 onwards
     val provider = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !useAccent -> backdropProvider()
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> backdropProvider()
         else -> null
     }
     // The navHost
@@ -628,6 +626,7 @@ fun Home(
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val colors = AppTheme.colors
+                val useAccent by (activity as SystemFacade).observeAsState(Settings.USE_ACCENT_IN_NAV_BAR)
                 NavigationBar(
                     !portrait,
                     if (useAccent) colors.onAccent else colors.onBackground,
@@ -666,6 +665,7 @@ fun Home(
             NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         }
     }
+
     val accent by resolveAccentColor(isDark)
     // Setup App Theme and provide necessary dependencies.
     // Provide the navController and window size class to child composable.
@@ -685,10 +685,11 @@ fun Home(
             )
         }
     )
+
     // Observe the state of the IMMERSE_VIEW setting
     val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
-    val translucentBg by activity.observeAsState(Settings.TRANSLUCENT_SYSTEM_BARS)
-    LaunchedEffect(immersiveView, style, isDark, translucentBg) {
+    val transparentSystemBars by activity.observeAsState(Settings.TRANSPARENT_SYSTEM_BARS)
+    LaunchedEffect(immersiveView, style, isDark, transparentSystemBars) {
         // Get the WindowInsetsController for managing system bars
         val window = activity.window
         val controller = WindowCompat.getInsetsController(window, window.decorView)
@@ -709,11 +710,13 @@ fun Home(
             else -> !isDark  // If not explicitly set, use the isDark setting
         }
         // Configure the system bars background color based on the current style settings
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            return@LaunchedEffect // No supported from here.
         window.apply {
             val color = when (style.flagSystemBarBackground) {
                 WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> Color(0x20000000).toArgb()  // Translucent background
                 WindowStyle.FLAG_SYSTEM_BARS_BG_TRANSPARENT -> Color.Transparent.toArgb()  // Transparent background
-                else -> (if (translucentBg) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
+                else -> (if (!transparentSystemBars) Color(0x20000000) else Color.Transparent).toArgb()// automate using the setting
             }
             // Set the status and navigation bar colors
             statusBarColor = color

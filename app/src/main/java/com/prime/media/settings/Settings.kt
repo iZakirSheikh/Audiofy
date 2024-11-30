@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 /*
  * Copyright 2024 Zakir Sheikh
  *
@@ -16,11 +18,8 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package com.prime.media.settings
 
-import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +37,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -67,9 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
@@ -78,6 +76,7 @@ import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
 import com.primex.core.fadeEdge
+import com.primex.core.textArrayResource
 import com.primex.core.thenIf
 import com.primex.material2.Button
 import com.primex.material2.DropDownPreference
@@ -104,8 +103,8 @@ import com.zs.core_ui.adaptive.HorizontalTwoPaneStrategy
 import com.zs.core_ui.adaptive.SinglePaneStrategy
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.contentInsets
+import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.PaddingValues as Padding
-import androidx.compose.foundation.shape.RoundedCornerShape as Rounded
 import androidx.compose.ui.graphics.RectangleShape as Rectangle
 import com.primex.core.rememberVectorPainter as painter
 import com.primex.core.textResource as stringResource
@@ -115,16 +114,16 @@ import com.zs.core_ui.ContentPadding as CP
 private val sPaneMaxWidth = 300.dp
 
 // Used to style individual items within a preference section.
-private val TopTileShape = Rounded(24.dp, 24.dp, 0.dp, 0.dp)
+private val TopTileShape = RoundedCornerShape(24.dp, 24.dp, 0.dp, 0.dp)
 private val CentreTileShape = Rectangle
-private val BottomTileShape = Rounded(0.dp, 0.dp, 24.dp, 24.dp)
-private val SingleTileShape = Rounded(24.dp)
+private val BottomTileShape = RoundedCornerShape(0.dp, 0.dp, 24.dp, 24.dp)
+private val SingleTileShape = RoundedCornerShape(24.dp)
 
 private val Colors.tileBackgroundColor
     @ReadOnlyComposable @Composable inline get() = background(elevation = 1.dp)
 
 // when topBar doesn't fill the screen; this is for that case.
-private val RoundedTopBarShape = Rounded(15)
+private val RoundedTopBarShape = RoundedCornerShape(15)
 
 /**
  * Represents a Top app bar for this screen.
@@ -193,6 +192,9 @@ private fun TopAppBar(
 
 private val HeaderPadding = PaddingValues(horizontal = CP.large, vertical = CP.xLarge)
 
+/**
+ * Represents the group header of [Preference]s
+ */
 @Composable
 private inline fun GroupHeader(
     text: CharSequence,
@@ -216,13 +218,13 @@ private inline fun GroupHeader(
 private inline fun General(
     viewState: SettingsViewState
 ) {
+    val facade = LocalSystemFacade.current
+
     // Enable/Disable Trash Can
     val trashcan by preference(Settings.TRASH_CAN_ENABLED)
-    val facade = LocalSystemFacade.current
     SwitchPreference(
-        title = stringResource(R.string.pref_enable_trash_can),
+        text = stringResource(R.string.pref_enable_trash_can),
         checked = trashcan,
-        summery = stringResource(R.string.pref_enable_trash_can_summery),
         onCheckedChange = {
             viewState.set(Settings.TRASH_CAN_ENABLED, it)
             facade.showAd(true)
@@ -234,9 +236,8 @@ private inline fun General(
     // Legacy Artwork Method
     val legacyArtwork by preference(Settings.USE_LEGACY_ARTWORK_METHOD)
     SwitchPreference(
-        title = stringResource(R.string.pref_fetch_artwork_from_media_store),
+        text = stringResource(R.string.pref_fetch_artwork_from_media_store),
         checked = legacyArtwork,
-        summery = stringResource(R.string.pref_fetch_artwork_from_media_store_summery),
         onCheckedChange = {
             viewState.set(Settings.USE_LEGACY_ARTWORK_METHOD, it)
             facade.showAd(true)
@@ -249,35 +250,29 @@ private inline fun General(
     // The duration from which below tracks are excluded from the library.
     val excludeTrackDuration by preference(Settings.MIN_TRACK_LENGTH_SECS)
     SliderPreference(
-        title = stringResource(R.string.pref_minimum_track_length),
-        defaultValue = excludeTrackDuration.toFloat(),
-        summery = stringResource(R.string.pref_minimum_track_length_summery),
-        onValueChange = { viewState.set(Settings.MIN_TRACK_LENGTH_SECS, it.toInt()) },
+        text = stringResource(R.string.pref_minimum_track_length),
+        value = excludeTrackDuration.toFloat(),
+        onRequestChange = { viewState.set(Settings.MIN_TRACK_LENGTH_SECS, it.toInt()) },
         valueRange = 0f..100f,
         steps = 5,
         icon = Icons.Outlined.Straighten,
         preview = {
-            Text(
-                text = "${excludeTrackDuration}s",
-                style = AppTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
+            Label(
+                text = stringResource(R.string.postfix_s_d, it.roundToInt()),
                 modifier = Modifier
                     .size(60.dp)
-                    .wrapContentSize(Alignment.Center),
-                textAlign = TextAlign.Center
+                    .wrapContentSize(Alignment.Center)
             )
         },
-        modifier = Modifier
-            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
+        modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, CentreTileShape),
     )
 
     // Use Inbuilt Audio FX
     // Whether to use inbuilt audio effects or inApp.
     val useInbuiltAudioFx by preference(Settings.USE_IN_BUILT_AUDIO_FX)
     SwitchPreference(
-        title = stringResource(R.string.pref_use_inbuilt_audio_effects),
+        text = stringResource(R.string.pref_use_inbuilt_audio_effects),
         checked = useInbuiltAudioFx,
-        summery = stringResource(R.string.pref_use_inbuilt_audio_effects_summery),
         onCheckedChange = {
             viewState.set(Settings.USE_IN_BUILT_AUDIO_FX, it)
             facade.showAd(true)
@@ -287,13 +282,6 @@ private inline fun General(
     )
 }
 
-private val Resources.entriesNightMode
-    get() = listOf(
-        "Dark" to NightMode.YES,
-        "Light" to NightMode.NO,
-        "Sync with System" to NightMode.FOLLOW_SYSTEM
-    )
-
 /**
  * Represents the appearance section.
  */
@@ -301,57 +289,53 @@ private val Resources.entriesNightMode
 private inline fun Appearance(
     viewState: SettingsViewState
 ) {
+    val facade = LocalSystemFacade.current
     // Night Mode Strategy
     // The strategy to use for night mode.
-    val facade = LocalSystemFacade.current
     val nightModeStrategy by preference(Settings.NIGHT_MODE)
+    val entries = textArrayResource(R.array.pref_night_mode_entries)
     DropDownPreference(
-        title = stringResource(R.string.pref_app_theme),
-        defaultValue = nightModeStrategy,
+        text = stringResource(R.string.pref_app_theme_s, entries[nightModeStrategy.ordinal]),
+        value = nightModeStrategy,
         icon = Icons.Default.LightMode,
-        entries = LocalContext.current.resources.entriesNightMode,
+        entries = entries,
         onRequestChange = {
             viewState.set(Settings.NIGHT_MODE, it)
             facade.showAd(force = true)
         },
-        modifier = Modifier
-            .background(AppTheme.colors.tileBackgroundColor, TopTileShape)
+        values = NightMode.values(),
+        modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, TopTileShape)
     )
-
     // Colorization Strategy
     val colorizationStrategy by preference(Settings.COLORIZATION_STRATEGY)
     SwitchPreference(
         checked = colorizationStrategy == ColorizationStrategy.Artwork,
-        title = stringResource(R.string.pref_colorization_strategy),
-        summery = stringResource(R.string.pref_colorization_strategy_summery),
+        text = stringResource(R.string.pref_colorization_strategy),
         onCheckedChange = { should: Boolean ->
             val strategy =
                 if (should) ColorizationStrategy.Artwork else ColorizationStrategy.Default
             viewState.set(Settings.COLORIZATION_STRATEGY, strategy)
             facade.showAd(force = true)
         },
-        modifier = Modifier
-            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
+        modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // App font scale
     // The font scale to use for the app if -1 is used, the system font scale is used.
     val scale by preference(Settings.FONT_SCALE)
     SliderPreference(
-        defaultValue = scale,
-        title = stringResource(R.string.pref_font_scale),
-        summery = stringResource(R.string.pref_font_scale_summery),
+        value = scale,
+        text = stringResource(R.string.pref_font_scale),
         valueRange = 0.7f..2f,
-        // (2.0 - 0.7) / 0.1 = 13 steps
-        steps = 13,
+        steps = 13,   // (2.0 - 0.7) / 0.1 = 13 steps
         icon = Icons.Outlined.FormatSize,
         preview = {
             Label(
-                text = if (scale == -1f) "System" else "%.1fx".format(scale),
+                text = if (it < 0.76f) stringResource(R.string.system) else stringResource(R.string.postfix_x_f, it),
                 fontWeight = FontWeight.Bold
             )
         },
-        onValueChange = { value: Float ->
+        onRequestChange = { value: Float ->
             val newValue = if (value < 0.76f) -1f else value
             viewState.set(Settings.FONT_SCALE, newValue)
             facade.showAd(force = true)
@@ -364,36 +348,32 @@ private inline fun Appearance(
     // The multiplier increases/decreases the size of the grid item from 0.6 to 2f
     val gridItemSizeMultiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
     SliderPreference(
-        defaultValue = gridItemSizeMultiplier,
-        title = stringResource(R.string.pref_grid_item_size_multiplier),
-        summery = stringResource(R.string.pref_grid_item_size_multiplier_summery),
+        value = gridItemSizeMultiplier,
+        text = stringResource(R.string.pref_grid_item_size_multiplier),
         valueRange = 0.6f..2f,
         steps = 14, // (2.0 - 0.7) / 0.1 = 13 steps
         icon = Icons.Outlined.Dashboard,
         preview = {
             Label(
-                text = "%.1fx".format(gridItemSizeMultiplier),
+                text = stringResource(R.string.postfix_x_f, it),
                 fontWeight = FontWeight.Bold
             )
         },
-        onValueChange = { value: Float ->
+        onRequestChange = { value: Float ->
             viewState.set(Settings.GRID_ITEM_SIZE_MULTIPLIER, value)
             facade.showAd(force = true)
         },
-        modifier = Modifier
-            .background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
+        modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
     )
 
     // Translucent System Bars
     // Whether System Bars are rendered as translucent or Transparent.
-    val translucentSystemBars by preference(Settings.TRANSLUCENT_SYSTEM_BARS)
+    val translucentSystemBars by preference(Settings.TRANSPARENT_SYSTEM_BARS)
     SwitchPreference(
         checked = translucentSystemBars,
-        title = stringResource(R.string.pref_translucent_system_bars),
-        summery = stringResource(R.string.pref_translucent_system_bars_summery),
+        text = stringResource(R.string.pref_translucent_system_bars),
         onCheckedChange = { should: Boolean ->
-            viewState.set(Settings.TRANSLUCENT_SYSTEM_BARS, should)
-            viewState.set(Settings.TRANSLUCENT_SYSTEM_BARS, should)
+            viewState.set(Settings.TRANSPARENT_SYSTEM_BARS, should)
             facade.showAd(force = true)
         },
         modifier = Modifier
@@ -405,8 +385,7 @@ private inline fun Appearance(
     val immersiveView by preference(Settings.IMMERSIVE_VIEW)
     SwitchPreference(
         checked = immersiveView,
-        title = stringResource(R.string.pref_immersive_view),
-        summery = stringResource(R.string.pref_immersive_view_summery),
+        text = stringResource(R.string.pref_immersive_view),
         onCheckedChange = { should: Boolean ->
             viewState.set(Settings.IMMERSIVE_VIEW, should)
             facade.showAd(force = true)
@@ -421,15 +400,16 @@ private inline fun AboutUs() {
     // The app version and check for updates.
     val facade = LocalSystemFacade.current
     ListTile(
-        headline = { Label("Audiofy Version", fontWeight = FontWeight.Bold) },
-        subtitle = { Label("Version: ${BuildConfig.VERSION_NAME}") },
+        headline = { Label(stringResource(R.string.version), fontWeight = FontWeight.Bold) },
+        subtitle = { Label(
+            stringResource(R.string.version_info_s, BuildConfig.VERSION_NAME)) },
         footer = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(CP.medium)
             ) {
-                TextButton("Update Audiofy", onClick = { facade.initiateUpdateFlow(true) })
-                TextButton("Join the Beta", onClick = { facade.launch(Settings.JoinBetaIntent) })
+                TextButton(stringResource(R.string.update_audiofy), onClick = { facade.initiateUpdateFlow(true) })
+                TextButton(stringResource(R.string.join_the_beta), onClick = { facade.launch(Settings.JoinBetaIntent) })
             }
         },
         leading = { Icon(imageVector = Icons.Outlined.NewReleases, contentDescription = null) },
@@ -437,8 +417,7 @@ private inline fun AboutUs() {
 
     // Privacy Policy
     Preference(
-        title = stringResource(R.string.pref_privacy_policy),
-        summery = stringResource(R.string.pref_privacy_policy_summery),
+        text = stringResource(R.string.pref_privacy_policy),
         icon = Icons.Outlined.PrivacyTip,
         modifier = Modifier
             .clip(AppTheme.shapes.medium)
@@ -450,7 +429,7 @@ private inline fun AboutUs() {
         horizontalArrangement = Arrangement.spacedBy(CP.medium)
     ) {
         Button(
-            label = "Rate App",
+            label = stringResource(R.string.rate_us),
             icon = painter(Icons.Outlined.Star),
             onClick = facade::launchAppStore,
             colors = ButtonDefaults.buttonColors(
@@ -462,7 +441,7 @@ private inline fun AboutUs() {
         )
 
         Button(
-            label = "Share with Friends",
+            label = stringResource(R.string.share_app_label),
             icon = painter(Icons.Outlined.Share),
             onClick = { facade.launch(Settings.ShareAppIntent) },
             colors = ButtonDefaults.buttonColors(
@@ -552,7 +531,10 @@ fun Settings(viewState: SettingsViewState) {
                     // In immersive mode, add horizontal padding to prevent settings from touching the screen edges.
                     // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
                     // Non-immersive layouts only need vertical padding.
-                    .padding(vertical = CP.normal, horizontal = if (immersive) CP.large else CP.medium),
+                    .padding(
+                        vertical = CP.normal,
+                        horizontal = if (immersive) CP.large else CP.medium
+                    ),
                 content = {
                     GroupHeader(
                         text = stringResource(id = R.string.general),
@@ -589,8 +571,3 @@ fun Settings(viewState: SettingsViewState) {
         },
     )
 }
-
-
-
-
-

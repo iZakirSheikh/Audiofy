@@ -59,6 +59,7 @@ import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.settings.Settings
+import com.primex.core.SignalWhite
 import com.primex.core.foreground
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
@@ -158,8 +159,8 @@ private fun MiniLayout(
             modifier = Modifier
                 .border(1.dp, Color.White.copy(0.12f), CircleShape)
                 .aspectRatio(1.0f)
-                .foreground(Color.Black.copy(0.24f))
                 .sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0.22f)
+                .foreground(Color.Black.copy(0.24f), CircleShape)
                 .clip(CircleShape),
         )
 
@@ -167,7 +168,7 @@ private fun MiniLayout(
         val properties = rememberLottieDynamicProperties(
             rememberLottieDynamicProperty(
                 property = LottieProperty.COLOR,
-                accent.toArgb(),
+                Color.SignalWhite.toArgb(),
                 "**"
             )
         )

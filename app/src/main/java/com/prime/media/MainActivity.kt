@@ -153,7 +153,10 @@ private val IAPs = arrayOf(
  */
 private const val MESSAGE_COUNT = 6
 
-class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedListener,
+class MainActivity :
+    ComponentActivity(),
+    SystemFacade,
+    OnDestinationChangedListener,
     AdEventListener {
     // injectables
     private val toastHostState: ToastHostState by inject()
@@ -168,24 +171,27 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
     val paymaster by lazy {
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, IAPs)
     }
-    val splitInstallManager by lazy {
+    private val splitInstallManager by lazy {
         val manager = SplitInstallManagerFactory.create(this@MainActivity)
         // Request progress updates for dynamic feature installation
         manager.requestProgressFlow()
-            .onEach {state ->
-                when(state.status){
+            .onEach { state ->
+                when (state.status) {
                     Flag.DOWNLOADING -> {
                         // Calculate the download progress as a percentage
-                        val percent = state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
+                        val percent =
+                            state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
                         Log.d("SplitInstall", "Download progress: $percent%")
                         // Update the progress indicator
                         inAppTaskProgress = percent
                     }
+
                     Flag.INSTALLING, Flag.PENDING -> {
                         // Set the progress to an indeterminate state
                         inAppTaskProgress = -1f
                         Log.d("SplitInstall", "Installing...")
                     }
+
                     Flag.INSTALLED -> {
                         // There is a known issue when observing the state of dynamic module installations.
                         // If the user has requested the installation of the dynamic module during this session,
@@ -198,8 +204,8 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                         Log.d("SplitInstall", "Module installed successfully!")
                         // Show a toast message requesting the app restart
                         val res = toastHostState.showToast(
-                            "Restart the app for changes to take effect.",
-                            "Restart",
+                            getString(R.string.msg_apply_changes_restart),
+                            getString(R.string.restart),
                             priority = Toast.PRIORITY_HIGH
                         )
                         // Restart the app if the user chooses to
@@ -207,6 +213,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
                             restart(true)
                         // The dynamic feature module can now be accessed
                     }
+
                     else -> {
                         // Hide the progress bar for unknown statuses
                         inAppTaskProgress = Float.NaN
@@ -250,17 +257,22 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
     override var style: WindowStyle by mutableStateOf(WindowStyle())
     override var inAppTaskProgress: Float by mutableFloatStateOf(Float.NaN)
 
-    override fun showPlatformToast(message: String, duration: Int) =
-        showAndroidToast(message, duration)
+    override fun showPlatformToast(message: String, priority: Int) =
+        showAndroidToast(message, priority)
 
-    override fun showPlatformToast(message: Int, duration: Int) =
-        showAndroidToast(message, duration)
+    override fun showPlatformToast(message: Int, priority: Int) =
+        showAndroidToast(message, priority)
 
     fun loadBannerAd(size: AdSize) = advertiser.load(size)
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getDeviceService(name: String): T = getSystemService(name) as T
-    override fun showToast(message: CharSequence, icon: ImageVector?, accent: Color, priority: Int) {
+    override fun showToast(
+        message: CharSequence,
+        icon: ImageVector?,
+        accent: Color,
+        priority: Int
+    ) {
         lifecycleScope.launch {
             toastHostState.showToast(message, null, icon, accent, priority)
         }
@@ -632,7 +644,7 @@ class MainActivity : ComponentActivity(), SystemFacade, OnDestinationChangedList
         setContent {
             val navController = rememberNavController()
             // Set the content to Home screen with toastHostState and navController
-            Home(toastHostState, navController)
+            App(toastHostState, navController)
             // Observe the destination change and initialize navController.
             DisposableEffect(Unit) {
                 Log.d(TAG, "onCreate - DisposableEffect")

@@ -119,6 +119,7 @@ inline fun Placeholder(
  */
 private val HEADER_MARGIN = Padding(0.dp, CP.normal, 0.dp, CP.medium)
 private val CHAR_HEADER_SHAPE = RoundedCornerShape(50, 25, 25, 25)
+private val NORMAL_HEADER_SHAPE = RoundedCornerShape(8, 50, 50, 50)
 
 /**
  * Represents header for list/grid item groups.
@@ -157,8 +158,8 @@ fun ListHeader(
             modifier = modifier
                 .padding(HEADER_MARGIN)
                 .widthIn(max = 220.dp)
-                .border(0.5.dp, AppTheme.colors.background(30.dp), CircleShape)
-                .background(AppTheme.colors.background(1.dp), CircleShape)
+                .border(0.5.dp, AppTheme.colors.background(30.dp), NORMAL_HEADER_SHAPE)
+                .background(AppTheme.colors.background(1.dp), NORMAL_HEADER_SHAPE)
                 .padding(horizontal = CP.normal, vertical = CP.small)
         )
     }

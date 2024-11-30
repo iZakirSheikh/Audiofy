@@ -258,7 +258,7 @@ private fun GetToKnowUs(
                                 )
                             }
                         )
-                        Label(text = "Donate")
+                        Label(text = textResource(R.string.sponsor))
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 )
@@ -353,7 +353,7 @@ fun AboutUs() {
                         MyApps()
                     }
                     Header(
-                        "What's new",
+                        textResource(R.string.what_s_new),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
@@ -363,13 +363,13 @@ fun AboutUs() {
                     Info(textResource(R.string.what_s_new_latest),)
 
                     Header(
-                        "About Us",
+                        textResource(R.string.about_us),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
                         contentPadding = HeaderPadding
                     )
-                    Info(textResource(R.string.pref_about_us_summery),)
+                    Info(textResource(R.string.pref_about_us_desc),)
                 }
             )
         }

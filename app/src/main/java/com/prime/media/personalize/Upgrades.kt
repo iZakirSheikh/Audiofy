@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prime.media.BuildConfig
+import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.dynamicFeatureRequest
 import com.prime.media.common.dynamicModuleName
@@ -140,7 +142,7 @@ private fun Upgrade(
 
                 // Product formatted price
                 Text(
-                    text = value.formattedPrice ?: "N/A",
+                    text = value.formattedPrice ?: stringResource(R.string.n_a),
                     modifier = Modifier.padding(vertical = CP.small),
                     style = AppTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
@@ -212,18 +214,18 @@ fun Upgrades(
                 // Determine the state text to display based on the product's current status
                 state = when {
                     // If it's a dynamic feature and installed, show "Installed"
-                    value.isDynamicFeature && facade.isInstalled(value.dynamicModuleName) -> "Installed"
+                    value.isDynamicFeature && facade.isInstalled(value.dynamicModuleName) -> stringResource(R.string.installed)
                     // If it's purchased, show "Purchased"
-                    purchase.purchased -> "Purchased"
+                    purchase.purchased -> stringResource(R.string.purchased)
                     // Otherwise, show "Unlock" (indicating it needs to be purchased)
-                    else -> "Unlock"
+                    else -> stringResource(R.string.unlock)
                 },
                 // Determine the action text for the button based on the product's status
                 action = when {
                     // If it's a dynamic feature and not installed, show "Tap to Install"
-                    value.isDynamicFeature && !facade.isInstalled(value.dynamicModuleName) -> "Tap to Install"
+                    value.isDynamicFeature && !facade.isInstalled(value.dynamicModuleName) -> stringResource(R.string.tap_to_install)
                     // If it's not purchased, show "Tap to Purchase"
-                    !purchase.purchased -> "Tap to Purchase"
+                    !purchase.purchased -> stringResource(R.string.tap_to_purchase)
                     // Otherwise, show no action (empty string)
                     else -> ""
                 },
