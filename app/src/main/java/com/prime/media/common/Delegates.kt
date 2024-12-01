@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prime.media.common.menu.Action
 import com.primex.core.composableOrNull
+import com.primex.core.fadeEdge
 import com.primex.material2.Label
 import com.primex.material2.Text
 import com.zs.core_ui.AppTheme
@@ -119,7 +120,7 @@ inline fun Placeholder(
  */
 private val HEADER_MARGIN = Padding(0.dp, CP.normal, 0.dp, CP.medium)
 private val CHAR_HEADER_SHAPE = RoundedCornerShape(50, 25, 25, 25)
-private val NORMAL_HEADER_SHAPE = RoundedCornerShape(8, 50, 50, 50)
+private val NORMAL_HEADER_SHAPE = RoundedCornerShape(12, 50, 50, 50)
 
 /**
  * Represents header for list/grid item groups.
@@ -153,14 +154,13 @@ fun ListHeader(
         else -> Label(
             text = value,
             maxLines = 2,
-            fontWeight = FontWeight.Normal,
-            style = AppTheme.typography.titleSmall,
+            style = AppTheme.typography.titleMedium,
             modifier = modifier
                 .padding(HEADER_MARGIN)
                 .widthIn(max = 220.dp)
                 .border(0.5.dp, AppTheme.colors.background(30.dp), NORMAL_HEADER_SHAPE)
                 .background(AppTheme.colors.background(1.dp), NORMAL_HEADER_SHAPE)
-                .padding(horizontal = CP.normal, vertical = CP.small)
+                .padding(horizontal = CP.normal, vertical = CP.medium)
         )
     }
 }
@@ -188,11 +188,13 @@ fun Filters(
     // Early return if values are empty.
     if (values.isEmpty()) return
     // TODO - Migrate to LazyRow
+    val state = ScrollState()
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(padding)
-            .horizontalScroll(ScrollState()),
+            .fadeEdge(AppTheme.colors.background, state)
+            .horizontalScroll(state),
         horizontalArrangement = ITEM_SPACING,
         verticalAlignment = Alignment.CenterVertically,
         content = {
