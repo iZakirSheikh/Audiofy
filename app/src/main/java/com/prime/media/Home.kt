@@ -224,9 +224,9 @@ private fun NavController.toRoute(route: String) {
         // Pop up to the start destination of the graph to
         // avoid building up a large stack of destinations
         // on the back stack as users select items
-        popUpTo(graph.findStartDestination().id) {
+        /*popUpTo(graph.findStartDestination().id) {
             saveState = true
-        }
+        }*/
         // Avoid multiple copies of the same destination when
         // re-selecting the same item
         launchSingleTop = true

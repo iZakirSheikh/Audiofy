@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.HotelClass
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ShopTwo
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
@@ -65,6 +66,7 @@ import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
+import com.primex.core.AzureBlue
 import com.primex.core.MetroGreen
 import com.primex.core.SkyBlue
 import com.primex.core.composableOrNull
@@ -264,6 +266,37 @@ private fun GetApp(
     )
 }
 
+
+@Composable
+private fun HelpTranslate(
+    expanded: Boolean = false,
+    onValueChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val facade = LocalSystemFacade.current
+    Promotion(
+        expanded,
+        onValueChange,
+        message = stringResource(id = R.string.msg_library_help_translate),
+        icon = Icons.Outlined.Translate,
+        modifier = modifier,
+        accent = Color.AzureBlue,
+        action = {
+            com.primex.material2.Button(
+                label = stringResource(id = R.string.translate),
+                onClick = { facade.launch(Settings.TranslateIntent) },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.SkyBlue.copy(0.12f)
+                ),
+                shape = AppTheme.shapes.compact,
+                elevation = null,
+                modifier = Modifier.scale(0.9f),
+                border = BorderStroke(Dp.Hairline, Color.SkyBlue.copy(0.24f))
+            )
+        }
+    )
+}
+
 private val ProductInfo.action
     get() = when (id) {
         BuildConfig.IAP_BUY_ME_COFFEE -> R.string.sponsor
@@ -314,7 +347,7 @@ private fun InAppPurchase(
     )
 }
 
-private const val PROMOTIONS_COUNT = 7
+private const val PROMOTIONS_COUNT = 8
 
 /**
  * Displays a series of promotional items, cycling through them with delays.
@@ -348,6 +381,7 @@ fun Promotions(
                 4 -> RateUs(expanded, onValueChange)
                 5 -> JoinUs(expanded, onValueChange)
                 6 -> GetApp(expanded, onValueChange)
+                7 -> HelpTranslate(expanded, onValueChange)
             }
         },
     )

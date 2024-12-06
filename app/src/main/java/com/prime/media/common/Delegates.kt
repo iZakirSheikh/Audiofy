@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prime.media.common.menu.Action
 import com.primex.core.composableOrNull
-import com.primex.core.fadeEdge
+import com.primex.core.fadingEdge
 import com.primex.material2.Label
 import com.primex.material2.Text
 import com.zs.core_ui.AppTheme
@@ -193,7 +193,7 @@ fun Filters(
         modifier = modifier
             .fillMaxWidth()
             .padding(padding)
-            .fadeEdge(AppTheme.colors.background, state)
+            .fadingEdge(state, true)
             .horizontalScroll(state),
         horizontalArrangement = ITEM_SPACING,
         verticalAlignment = Alignment.CenterVertically,

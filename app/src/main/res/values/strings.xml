@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--Some common variables-->
-<!DOCTYPE resources[<!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev"><!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">]
-    ><!--The string resources should follow the above rules strictly-->
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!--
     Naming convention for string resources:
      - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
@@ -93,7 +91,7 @@
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
     <string name="start">Start</string>
-    <string name="videos">Videos <sup><small>&beta;</small></sup></string>
+    <string name="videos">Videos <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="allow">Allow</string>
 
     <!--A plural represents how many items are there-->
@@ -187,15 +185,15 @@
         2. Un-Synchronized Text.</string>
 
     <!--======================         Sleep Timer Dialog        ======================      -->
-    <string name="sleep_timer_dialog_title">Sleep Timer &beta;</string>
+    <string name="sleep_timer_dialog_title">Sleep Timer <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="sleep_timer_dialog_minute_s">%1$s min</string>
 
     <!--======================         Playback speed Dialog        ======================      -->
-    <string name="playback_speed_dialog_title">Playback Speed &beta;</string>
+    <string name="playback_speed_dialog_title">Playback Speed <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="playback_speed_dialog_x_f">%1$.2fx</string>
 
     <!--======================         AudioFx        ======================      -->
-    <string name="equalizer">Equalizer &beta;</string>
+    <string name="equalizer">Equalizer <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
     <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
 
@@ -327,7 +325,7 @@
         very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
         and encouragement.
     </string>
-    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>&author;</i></b>"</string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>Zakir Sheikh</i></b>"</string>
     <string name="pref_font_scale"><b>Font Scale</b>
          <font color="grey" size="14">
             \nAdjust the font size to make text easier to read. Choose a scale that suits your
@@ -339,7 +337,7 @@
         \nAdjust the space each item takes up in the grid layout.
           </font>
     </string>
-    <string name="pref_colorization_strategy"><b>Auto Colorize &beta;</b>
+    <string name="pref_colorization_strategy"><b>Auto Colorize <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
          <font color="grey" size="14">
         \nDynamically generate a theme based on the colors of the currently playing media artwork.
           </font>
@@ -380,4 +378,11 @@
         <item>Light</item>
         <item>Sync with System</item>
     </string-array>
+    <string name="msg_library_help_translate"><b>Join the translation effort!</b>
+    <font color='grey'>\nIf you enjoy the app, try it in your language. <b>Help us with translations</b> and <i>fix</i> any missing ones.
+        Find translation info on our <b>GitHub</b> page or join our <b>Telegram</b> community for assistance.
+        \nThanks!
+    </font>
+    </string>
+    <string name="translate">Translate</string>
 </resources>

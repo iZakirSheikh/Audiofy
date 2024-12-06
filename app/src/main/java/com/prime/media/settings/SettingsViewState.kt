@@ -135,6 +135,9 @@ object Settings {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, "Hey, check out this cool app: [app link here]")
     }
+    val TranslateIntent = Intent(Intent.ACTION_VIEW).apply {
+        data = Uri.parse("https://crowdin.com/project/audiofy")
+    }
 
     private const val PREFIX = "Audiofy"
 

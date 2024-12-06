@@ -63,8 +63,8 @@ import androidx.compose.ui.unit.dp
 import com.primex.core.ImageBrush
 import com.primex.core.SignalWhite
 import com.primex.core.composableOrNull
+import com.primex.core.fadingEdge
 import com.primex.core.thenIf
-import com.primex.core.verticalFadingEdge
 import com.primex.core.visualEffect
 import com.primex.material2.Button
 import com.primex.material2.Label
@@ -296,7 +296,7 @@ internal fun Toast(
                             .heightIn(max = 195.dp)
                             .thenIf(isExpanded) {
                                 val state = rememberScrollState()
-                                verticalFadingEdge(backgroundColor, state, 16.dp)
+                                fadingEdge( state, false, 16.dp)
                                     .verticalScroll(state)
                             }
                     )
@@ -305,7 +305,7 @@ internal fun Toast(
                 footer = composableOrNull(isExpanded) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End,
+                        horizontalArrangement = Arrangement.Start,
                         modifier = Modifier.thenIf(value.icon != null) { padding(start = 20.dp) }.fillMaxWidth(),
                         content = {
                             // Action button if available

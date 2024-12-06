@@ -70,7 +70,7 @@ import com.prime.media.common.Route
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.settings.DancingScriptFontFamily
 import com.prime.media.settings.Settings
-import com.primex.core.fadeEdge
+import com.primex.core.fadingEdge
 import com.primex.core.shapes.SquircleShape
 import com.primex.core.textResource
 import com.primex.core.thenIf
@@ -342,7 +342,7 @@ fun AboutUs() {
             Column(
                 modifier = Modifier
                     .padding(WindowInsets.contentInsets)
-                    .fadeEdge(AppTheme.colors.background, scrollState, false)
+                    .fadingEdge(scrollState, false)
                     .verticalScroll(scrollState)
                     .thenIf(isMobilePortrait) { navigationBarsPadding() }
                     .padding(DefaultPaddingValues),

@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Some common variables-->
-<!DOCTYPE resources [
-<!ENTITY author "Zakir Sheikh">
-<!ENTITY version_name "0.0.1-dev">
-<!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">
-]>
-<!--The string resources should follow the above rules strictly-->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!--
     Naming convention for string resources:
      - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
