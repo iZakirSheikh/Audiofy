@@ -135,6 +135,9 @@ object Settings {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, "Hey, check out this cool app: [app link here]")
     }
+    val TranslateIntent = Intent(Intent.ACTION_VIEW).apply {
+        data = Uri.parse("https://crowdin.com/project/audiofy")
+    }
 
     private const val PREFIX = "Audiofy"
 
@@ -156,8 +159,8 @@ object Settings {
     // For intermediate versions (between Android 10 and Android 15), this setting is false
     // by default but can be toggled to enable or disable translucent system bars based
     // on user preferences.
-    val TRANSLUCENT_SYSTEM_BARS =
-        booleanPreferenceKey(PREFIX + "_force_colorize", Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+    val TRANSPARENT_SYSTEM_BARS =
+        booleanPreferenceKey(PREFIX + "_force_colorize", Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
     val IMMERSIVE_VIEW =
         booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
     val MIN_TRACK_LENGTH_SECS =

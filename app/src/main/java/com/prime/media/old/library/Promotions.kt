@@ -19,7 +19,6 @@
 package com.prime.media.old.library
 
 import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.repeatable
@@ -27,6 +26,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
@@ -38,15 +38,13 @@ import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.HotelClass
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ShopTwo
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -63,10 +61,12 @@ import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.preference
 import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
+import com.primex.core.AzureBlue
 import com.primex.core.MetroGreen
 import com.primex.core.SkyBlue
 import com.primex.core.composableOrNull
@@ -77,8 +77,6 @@ import com.zs.core.paymaster.purchased
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.scale
 import com.zs.core_ui.shimmer.shimmer
-import kotlinx.coroutines.delay
-import kotlin.random.Random
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import com.primex.core.textResource as stringResource
 import com.zs.core_ui.ContentPadding as CP
@@ -268,6 +266,37 @@ private fun GetApp(
     )
 }
 
+
+@Composable
+private fun HelpTranslate(
+    expanded: Boolean = false,
+    onValueChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val facade = LocalSystemFacade.current
+    Promotion(
+        expanded,
+        onValueChange,
+        message = stringResource(id = R.string.msg_library_help_translate),
+        icon = Icons.Outlined.Translate,
+        modifier = modifier,
+        accent = Color.AzureBlue,
+        action = {
+            com.primex.material2.Button(
+                label = stringResource(id = R.string.translate),
+                onClick = { facade.launch(Settings.TranslateIntent) },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.SkyBlue.copy(0.12f)
+                ),
+                shape = AppTheme.shapes.compact,
+                elevation = null,
+                modifier = Modifier.scale(0.9f),
+                border = BorderStroke(Dp.Hairline, Color.SkyBlue.copy(0.24f))
+            )
+        }
+    )
+}
+
 private val ProductInfo.action
     get() = when (id) {
         BuildConfig.IAP_BUY_ME_COFFEE -> R.string.sponsor
@@ -318,9 +347,7 @@ private fun InAppPurchase(
     )
 }
 
-private const val PROMOTIONS_COUNT = 7
-private const val STANDARD_DELAY = 30_000L // 30s
-private const val ID_NONE = -1
+private const val PROMOTIONS_COUNT = 8
 
 /**
  * Displays a series of promotional items, cycling through them with delays.
@@ -336,20 +363,17 @@ fun Promotions(
 ) {
     // current: Index of the currently displayed promotion item.
     // Starts with ID_NONE to indicate no promotion is initially shown.
-    var current by remember {  mutableIntStateOf(ID_NONE) }
-
+    val count by preference(Settings.KEY_LAUNCH_COUNTER)
     // expanded: State variable to track if a promotion item is expanded (details shown).
     // onValueChange: Callback to update the expanded state.
     val (expanded, onValueChange) = remember { mutableStateOf(false) }
 
     // AnimatedContent: Composable to handle animated transitions between promotion items.
-    AnimatedContent(
-        current,
+    Box(
         modifier = modifier,
-        label = TAG,
-        content = { index ->
+        content = {
             // Display the appropriate promotion item based on the current index.
-            when (index) {
+            when ((count ?: 0) % PROMOTIONS_COUNT) {
                 0 -> InAppPurchase(BuildConfig.IAP_NO_ADS, expanded, onValueChange)
                 1 -> InAppPurchase(BuildConfig.IAP_CODEX, expanded, onValueChange)
                 2 -> InAppPurchase(BuildConfig.IAP_TAG_EDITOR_PRO, expanded, onValueChange)
@@ -357,27 +381,8 @@ fun Promotions(
                 4 -> RateUs(expanded, onValueChange)
                 5 -> JoinUs(expanded, onValueChange)
                 6 -> GetApp(expanded, onValueChange)
+                7 -> HelpTranslate(expanded, onValueChange)
             }
         },
     )
-
-    // LaunchedEffect: Side-effect to control the promotion cycling logic.
-    LaunchedEffect(Unit) {
-        while (true) {
-            // Apply small
-            if (current != ID_NONE) delay(STANDARD_DELAY)
-            // Update the current promotion index if not in expanded state.
-            if (!expanded)
-                current = when(current){
-                    ID_NONE -> Random.nextInt(PROMOTIONS_COUNT)
-                    else -> (current + 1) % PROMOTIONS_COUNT
-                }
-        }
-    }
 }
-
-
-
-
-
-

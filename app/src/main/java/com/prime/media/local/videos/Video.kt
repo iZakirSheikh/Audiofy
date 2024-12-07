@@ -46,11 +46,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.prime.media.R
 import com.prime.media.common.menu.Action
 import com.primex.core.SignalWhite
 import com.primex.core.rememberVectorPainter
@@ -116,7 +118,9 @@ fun Video(
                     }
                     append("  ")
                     withSpanStyle(color.copy(ContentAlpha.medium), background = color.copy(0.12f)) {
-                        append(" ${value.height}p ")
+                        append(" ")
+                        append(stringResource(R.string.postfix_p_s, value.height))
+                        append(" ")
                     }
                 },
                 fontWeight = FontWeight.SemiBold,

@@ -1,28 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?><!--Some common variables-->
-<!DOCTYPE resources [<!ENTITY appname "Audiofy"><!ENTITY author "Zakir Sheikh"><!ENTITY version_name "0.0.1-dev"> <!ENTITY beta "<sup><font color = '#ae1c27' size= '10'><b>Beta</b></font></sup>">]><!--The string resources should follow the above rules strictly-->
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!--
-     Naming convention for string resources:
+    Naming convention for string resources:
      - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
      - The string resources should be named as follows:
        1. If the string is simple, like Delete, its name should be R.string.delete.
-       2. If the string contains complex text, the name should be in this format: screen_purpose_variables
-          (optional; if no variables, omit this). For example, pref_theme_ss.
+       2. If the string contains complex text, the name should be in this format: screen_name_purpose_variables
+          (optional; if no variables, omit this). For example, timeline_scr_items_d
        3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional).
           The message can be styled as bold or experimental, like alpha superscript. The message
           can have any length.
        4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s
-          (optional).
+          (optional). E.g., msg_preference_permission_s
        5. The snackbar message should have this structure: Title\n bold + experimental + message.
           The string resources should follow the above rules strictly
      -->
-
-    <string name="app_name">&appname;</string>
+    <string name="app_name" translatable="false">Audiofy</string>
     <!--
         App icon name. Dynamically set to reflect the build type (e.g., debug, release).
         This helps visually differentiate between app variants on a device.
     -->
-    <string name="launcher_label">@string/app_name</string>
+    <string name="launcher_label" translatable="false">@string/app_name</string>
     <!--Simple Strings-->
     <string name="dismiss">Dismiss</string>
     <string name="empty">empty</string>
@@ -32,19 +30,10 @@
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
     <string name="about_us">About Us</string>
-    <string name="app_version">App Version</string>
     <string name="settings">Settings</string>
     <string name="appearance">Appearance</string>
     <string name="error">Error</string>
     <string name="delete">Delete</string>
-    <string name="confirm">Confirm</string>
-    <string name="success">Success</string>
-    <string name="warning">Warning</string>
-    <string name="add">Add</string>
-    <string name="launch">Launch</string>
-    <string name="reset">reset</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="update">Update</string>
     <string name="play">Play</string>
     <string name="shuffle">Shuffle</string>
     <string name="share">Share</string>
@@ -102,10 +91,9 @@
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
     <string name="start">Start</string>
-    <string name="videos">Videos <sup><small>&beta;</small></sup></string>
+    <string name="videos">Videos <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="allow">Allow</string>
 
-    <string name="desc_share_app_s">Let me recommend you this application %1$s</string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
     <!--A string indicating duration hors-->
@@ -124,147 +112,32 @@
         <item quantity="other">%d seconds</item>
     </plurals>
     <string name="msg_unknown_error"><b>Error\n</b>Oops!! some unknown error has occurred.</string>
-    <string name="msg_unplayable_file">can\'t play the audio file</string>
     <!--The messages to be shown when on removing a track from queue.-->
     <string name="msg_track_will_be_removed">The track will be removed shortly.</string>
     <string name="msg_track_remove_error">Oops! It seems there was an <b>error</b> while trying to
         remove the track.
     </string>
     <!--Delete files-->
-    <string name="msg_delete_files_warning_d"><b>Warning\n</b>You are about to delete %d files
-        permanently. This cannot be undone. Click <b>Delete</b> or the message will cancel itself.
-    </string>
     <!--Delete error-->
-    <string name="msg_error_status_uncertain">Error Status Uncertain</string>
-    <string name="msg_delete_unknown_error">Oops! An error occurred while deleting audio files</string>
     <!--Delete confirm dialog-->
-    <string name="msg_showing_delete_dialog">
-        A dialog is about to be shown. please confirm to delete the files
-    </string>
     <!--Delete process cancelled-->
-    <string name="msg_deleting_process_cancelled">
-        The deleting of files was <b>cancelled</b> by the user.
-    </string>
     <!--Delete message success with args deleted/total-->
-    <string name="msg_delete_success_ss"><b>Success\n</b>
-        The %1$s/%2$s files from the storage have been successfully deleted.
-    </string>
     <!--Block path-->
-    <string name="msg_block_folder_warning_s">
-        You are about to add <b>%1$s</b> to the blacklist. You can unblock it later from the settings.
-        This message will be automatically cancelled if you do not wish to proceed.
-    </string>
     <!--Block success message arg name-->
-    <string name="msg_block_success_s">%1$s has been added to the blacklist. To unblock, go to the
-        settings and remove it from there.
-    </string>
     <!--Equalizer-->
     <string name="msg_3rd_party_equalizer_not_found">
         No third-party or built-in equalizer found. Please download a third-party equalizer from the
         market to enhance your audio experience.
     </string>
     <!--Queue Update-->
-    <string name="msg_queue_add_experimental_warning">
-        Please note that adding to queue is an experimental feature and it may not work properly
-        when shuffle mode is on.
-    </string>
     <string name="msg_clearing_playing_queue">The playing queue will be cleared shortly.</string>
 
     <!-- Message shown after added queue added/total-->
-    <plurals name="msg_queue_updated_dd">
-        <item quantity="zero"><b>Add to queue</b>\n<font color='grey'>The items are either in the queue already or some error has occurred while adding.</font></item>
-        <item quantity="one"><b>Add to queue</b>\n<font color='grey'>%d/%d item has been successfully added to the playlist. Enjoy your music!</font></item>
-        <item quantity="other"><b>Add to queue</b>\n<font color='grey'>%d/%d items have been successfully added to the playlist. Enjoy your music!</font></item>
-    </plurals>
     <string name="msg_new_update_downloaded"><b>Alert\n</b> An update has just been downloaded.</string>
     <string name="msg_no_new_update_available">The app is already updated to the latest version.</string>
     <string name="msg_error_fav_playlist_update"><b>Error\n</b>An error occurred while adding/removing the item to favourite playlist</string>
     <string name="msg_upgrade_to_pro">Upgrade to the Pro version to unlock this feature.</string>
 
-    <!--======================   Settings screen      ===========================================-->
-
-    <!--App Theme-->
-    <string name="pref_app_theme">App Theme</string>
-    <string name="pref_app_theme_summery">
-        Select the app theme: dark, light, or follow the system settings.
-    </string>
-    <!--Color StatusBar-->
-    <string name="pref_translucent_system_bars">System Bars</string>
-    <string name="pref_translucent_system_bars_summery">Enable tranparent system bars for an edge-to-edge experience <b><i>\n(Android 6.0+)</i></b>
-
-    </string>
-    <!--Immersive View-->
-    <string name="pref_immersive_view">Immersive View</string>
-    <string name="pref_immersive_view_summery">Activate to hide the status and navigation bars for a seamless, full-screen experience.</string>
-    <!--Min Track Length-->
-    <string name="pref_minimum_track_length">Minimum track length</string>
-    <string name="pref_minimum_track_length_summery">
-        Tracks shorter than this duration (in seconds) will not be added to the library.
-    </string>
-    <!--Recent Playlist Size-->
-    <string name="pref_recent_playlist_size">Recent playlist size</string>
-    <string name="pref_recent_playlist_size_summery">
-         Define the maximum number of tracks to keep in the playlist history.
-    </string>
-
-    <!--Stop Playback when app is removed from recents.-->
-    <string name="pref_stop_playback_when_task_removed">Stop Playback</string>
-    <string name="pref_stop_playback_when_task_removed_summery">
-        Terminate playback service when the app is removed from the recent tasks list.
-    </string>
-
-    <string name="pref_use_inbuilt_audio_effects">Audio Effects</string>
-    <string name="pref_use_inbuilt_audio_effects_summery">Switch between in-built or 3rd party
-        audio effects.\n<i>Turn Off in-built effects manually if using 3rd party app.</i></string>
-
-    <!--Fetch_artwork_from_MediaStore-->
-    <string name="pref_fetch_artwork_from_media_store">Fetch artwork from MediaStore</string>
-    <string name="pref_fetch_artwork_from_media_store_summery">
-         Faster artwork loading times, but there is a possibility of displaying incorrect artwork.\n
-        Changing this setting requires <i>restarting</i> the app.
-    </string>
-    <!--Enable Trash can-->
-    <string name="pref_enable_trash_can">Enable trash can</string>
-    <string name="pref_enable_trash_can_summery"><b><i>Only available on Android 11 and above</i></b>, when enabled, deleted tracks are moved
-        to a <b>Trash Can</b> folder instead of being permanently deleted.
-    </string>
-    <!--Blacklist-->
-    <string name="pref_blacklist">Blacklist</string>
-    <string name="pref_blacklist_summery">
-        Tracks from the blacklist folders will be hidden from your library.
-    </string>
-    <!--Gapless Playback-->
-    <string name="pref_enable_gapless_playback">Enable gapless playback</string>
-    <string name="pref_enable_gapless_playback_summery">
-        When enabled, there will be no gaps or pauses between tracks during playback.
-    </string>
-    <!--Crossfade Time-->
-    <string name="pref_crossfade_time">Crossfade time</string>
-    <string name="pref_crossfade_time_summery">
-        The duration (in seconds) of cross fading effect between tracks during playback.
-    </string>
-    <string name="pref_feedback">Feedback</string>
-    <string name="pref_feedback_summery">
-        <b>Have feedback?</b> We\'d love to hear it, but please don\'t share sensitive information.
-    </string>
-    <string name="pref_about_us_summery">Thank you for using <b>&appname;</b> . I am an <b>individual
-        developer</b> who loves to create useful and beautiful apps. I need your
-        <b><i>support</i></b> to keep developing this app and make it better. You can support me by
-        <b>buying</b> the app or rating it <b>5 stars</b> on the store. Your <b>feedback</b> is also
-        very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
-        and encouragement.
-    </string>
-    <string name="pref_rate_us">Rate Us</string>
-    <string name="pref_review_summery">
-        If you enjoy using <b>&appname;</b>, please take a moment and <b>rate it 5 stars</b> on app store.
-        Thanks for your support <b>\nTap to rate</b>.
-    </string>
-    <string name="pref_spread_the_word">Spread the word</string>
-    <string name="pref_spread_the_word_summery">
-        We appreciate your support for the app. If you love it, please share it with your friends,
-        family and WhatsApp groups. Remember, sharing is caring!
-    </string>
-    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>&author;</i></b>"</string>
 
     <!--=====================            Media Library          =================================-->
     <!--Title to the audio library screen-->
@@ -285,7 +158,7 @@
 
     <!--===========================  Permission Screen ==========================================-->
     <string name="permission_screen_title">Storage Permission</string>
-    <string name="permission_screen_desc">For the best experience with <b><i>&appname;</i></b>, we need to access your device\'s files. This allows us to:
+    <string name="permission_screen_desc">For the best experience with <b><i>Audiofy</i></b>, we need to access your device\'s files. This allows us to:
         \n       • Seamlessly play your media
         \n       • Optimize playback quality
         \n       • Personalize app features
@@ -293,24 +166,13 @@
     </string>
 
     <!--============================ Blacklist Dialog  ====================================      -->
-    <string name="blacklist_empty_desc">No items have been added to the <b>blacklist</b> yet.  Add folders
-        or files to it by long-pressing them in FolderView.
-    </string>
-    <string name="msg_blacklist_item_remove_success_s">%1$s has been successfully removed from blacklist</string>
     <!--============================          Albums     ==================================      -->
     <string name="albums_scr_year_d">Year: %1$s</string>
 
     <!--============================          TagEditor     ==================================      -->
-    <string name="overwrite">Overwrite</string>
     <string name="tag_editor_scr_pro_title">Tag Editor <sup><font color="#00a300" size="11">Pro</font></sup></string>
     <string name="tag_editor_scr_title">Tag Editor</string>
     <string name="tag_editor_scr_extra_immutable_info_ssss"><small>Channel</small> <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
-    <string name="msg_tag_editor_reset_warning"><b>Warning</b>\nReset will result in data loss. Are you sure?</string>
-    <string name="msg_tag_editor_scr_overwrite_waring"><b>Warning</b>\nThis action will overwrite 
-        the file, and it cannot be undone. Proceed with caution.
-    </string>
-    <string name="msg_tag_editor_overwrite_permission_revoked"><b>Permission\n</b>User declined the file overwrite.</string>
-    <string name="msg_tag_editor_file_update_success">File update completed successfully.</string>
     <string name="msg_tag_editor_buy_me_banner">Enhance your experience by upgrading to
         <b>Tag Editor Pro</b>, where you can edit lyrics and album art seamlessly.
     </string>
@@ -323,15 +185,15 @@
         2. Un-Synchronized Text.</string>
 
     <!--======================         Sleep Timer Dialog        ======================      -->
-    <string name="sleep_timer_dialog_title">Sleep Timer &beta;</string>
+    <string name="sleep_timer_dialog_title">Sleep Timer <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="sleep_timer_dialog_minute_s">%1$s min</string>
 
     <!--======================         Playback speed Dialog        ======================      -->
-    <string name="playback_speed_dialog_title">Playback Speed &beta;</string>
+    <string name="playback_speed_dialog_title">Playback Speed <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="playback_speed_dialog_x_f">%1$.2fx</string>
 
     <!--======================         AudioFx        ======================      -->
-    <string name="equalizer">Equalizer &beta;</string>
+    <string name="equalizer">Equalizer <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
     <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
     <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
 
@@ -347,8 +209,7 @@
     </string>
     <string name="rate_us">Rate Us</string>
     <string name="install">Install</string>
-    <string name="pref_font_scale">Font Scale</string>
-    <string name="pref_font_scale_summery">Zoom in or out the text shown on the screen.</string>"
+
     <string-array name="playback_speed_dialog_predefined_speeds">
         <item value="0.8">0.8</item>
         <item value="1.0">1.0</item>
@@ -358,17 +219,10 @@
     </string-array>
 
     <string name="unlock">Unlock</string>
-    <string name="msg_ad_free_experience_ss"><b>Limited Time Offer: Go Ad-Free for just %1$s!</b>
-        <font color='grey' size="11">
-            \nUpgrade now and enjoy a premium, <b>ad-free</b> experience <b>forever</b>.
-        </font></string>
     <string name="msg_library_buy_me_a_coffee"><b>Like the app?</b>
         <font color='grey'>
             \nBuy me a <b>coffee</b> to help keep it awesome! Your <b>support fuels development</b> and is greatly appreciated. ☕ Thank you!
         </font></string>
-    <string name="thanks">Thanks</string>
-    <string name="msg_unlock_codex_ss"><b>Limited Time Offer: Get Codex for just %1$s!\n</b><font color="grey" size="11">Unlock seamless playback for H.264, HEVC, VP8, VP9 and more with Codex!</font></string>
-    <string name="msg_unlock_tag_editor_pro_ss"><b>Edit Lyrics &amp; Album Art with Ease!\n</b><font color='grey' size="11">Get Tag Editor Pro for only %1$s and enhance your music experience.</font></string>
     <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font color='grey' size="11">A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
     <string name="msg_claim_ad_free_reward_ds"><b>%2$s Ad-Free Left! Extend Now</b>
         <font color='grey' size="11">
@@ -382,12 +236,6 @@
             \nTotal premium days: %2$d. <b>Enjoy!</b>
        </font>
     </string>
-    <string name="pref_grid_item_size_multiplier">Grid Item size </string>
-    <string name="pref_grid_item_size_multiplier_summery">Control how much space each item takes up in the grid layout.</string>
-    <string name="pref_colorization_strategy">Auto Colorize &beta;</string>
-    <string name="pref_colorization_strategy_summery">Dynamically generate a theme based on the colors of the currently playing media artwork.</string>
-    <string name="pref_privacy_policy_summery">Click here to view the privacy policy.</string>
-    <string name="pref_privacy_policy">Privacy Policy</string>
     <string name="feedback_placeholder">Tell us how we can improve our product.</string>
     <string name="feedback_extra_info">Could you describe your issue or suggestion?
         <font color='grey' size="11">
@@ -404,9 +252,6 @@
     <string name="suggestion">Suggestion</string>
     <string name="feature_request">Request</string>
     <string name="scr_personalize_title_desc">Personalize<font color='grey' size='11'>\n<sup>Tweak it till it\'s perfect, just for you.</sup></font></string>
-    <string name="msg_scr_personalize_customize_everywhere"><b>Matchy-Matchy Home Screen</b>
-        <font color='grey'>\nDouble the customization, double the fun! Unlock a skin today, and get ready to personalize your home screen widgets with the same style in an upcoming update, at no additional cost.</font>
-       </string>
     <string name="msg_promotion_gallery_app"><b>New App Alert!</b>
         <font color='grey'>\nDownload our new <b>Gallery</b> app and experience a new way to view and manage your photos.</font>
     </string>
@@ -421,7 +266,6 @@
     <string name="scr_playlist_delete">Delete Playlist</string>
     <string name="search">Search</string>
     <string name="scr_personalize_accent_nav">ColorNav\n<font color='grey'>Use vibrant color to paint navigation bar.</font></string>
-    <string name="msg_promo_personalize">Personalize<font color='grey'>\nCustomize your app with in-app <b>widgets</b> and change the nav bar <b>accent</b> color. More features coming soon—stay tuned!</font></string>
     <string name="rename">Rename</string>
     <string name="msg_files_deletion_confirm"><b>Delete</b>
         <font color='grey'>\nAre you sure you want to delete this? You won\'t be able to get it back
@@ -437,6 +281,108 @@
     </font>
     </string>
     <string name="telegram">Telegram</string>
+    <string name="restart">Restart</string>
+    <string name="msg_apply_changes_restart">Restart the app for changes to take effect.</string>
 
+    <string name="pref_app_theme_s"><b>App Theme</b><font color="grey">\n%1$s</font></string>
+    <string name="pref_translucent_system_bars"><b>System Bars</b>
+        <font color="grey" size="14">
+            \nEnable transparent system bars for an edge-to-edge experience <b><i>\n(Android 6.0+)</i></b>
+        </font>
+    </string>
+    <string name="pref_immersive_view"><b>Immersive View</b>
+        <font color="grey" size="14">
+            \nActivate to hide the status and navigation bars for a seamless, full-screen experience.
+        </font>
+    </string>
+    <string name="pref_minimum_track_length"><b>Minimum track length</b>
+         <font color="grey" size="14">
+            \nTracks shorter than this duration (in seconds) will not be added to the library.
+        </font>
+    </string>
+    <string name="pref_use_inbuilt_audio_effects"><b>Audio Effects</b>
+        <font color="grey" size="14">\nEnable built-in audio effects (e.g., Equalizer).
+            \n<i>Keep this disabled to use third-party effects.</i>
+        </font>
+    </string>
+    <string name="pref_fetch_artwork_from_media_store"><b>Artwork</b>
+          <font color="grey" size="14">
+            \nEnable cached artwork loading from Android MediaStore. May display incorrect artwork
+              but uses fewer resources and is faster.
+            \nRestart the app to apply changes.
+        </font>
+    </string>
+    <string name="pref_enable_trash_can"><b>Recycle Bin <small>(Android 11+)</small></b>
+          <font color="grey" size="14">\nEnable to move deleted files to
+              the Recycle Bin instead of permanently deleting them.
+          </font>
+    </string>
 
+    <string name="pref_about_us_desc">Thank you for using <b>Audiofy</b> . I am an <b>individual
+        developer</b> who loves to create useful and beautiful apps. I need your
+        <b><i>support</i></b> to keep developing this app and make it better. You can support me by
+        <b>buying</b> the app or rating it <b>5 stars</b> on the store. Your <b>feedback</b> is also
+        very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
+        and encouragement.
+    </string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>Zakir Sheikh</i></b>"</string>
+    <string name="pref_font_scale"><b>Font Scale</b>
+         <font color="grey" size="14">
+            \nAdjust the font size to make text easier to read. Choose a scale that suits your
+             preference for better readability.
+        </font>
+    </string>
+    <string name="pref_grid_item_size_multiplier"><b>Grid Size Multiplier</b>
+          <font color="grey" size="14">
+        \nAdjust the space each item takes up in the grid layout.
+          </font>
+    </string>
+    <string name="pref_colorization_strategy"><b>Auto Colorize <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
+         <font color="grey" size="14">
+        \nDynamically generate a theme based on the colors of the currently playing media artwork.
+          </font>
+    </string>
+    <string name="pref_privacy_policy"><b>Privacy Policy</b>
+           <font color="grey" size="14">
+        \nClick here to view the privacy policy.
+          </font>
+    </string>
+
+    <!-- Appends any number formatted to int; denotes no. of seconds. -->
+    <string name="postfix_s_d">%1$ds</string>
+    <string name="system">System</string>
+    <string name="postfix_x_f">%.1fx</string>
+    <string name="version">Version</string>
+    <string name="version_info_s">Version: %1$s</string>
+    <string name="join_the_beta">Join the Beta</string>
+    <string name="update_audiofy">Update Audiofy</string>
+    <string name="share_app_label">Spread the Word</string>
+    <string name="postfix_p_s">%1$sp</string>
+    <string name="search_placeholder">Type here to search!!</string>
+    <string name="what_s_new">What\'s new</string>
+    <string name="upgrades">Upgrades</string>
+    <string name="fine_tuning">Fine Tuning</string>
+    <string name="widgets">Widgets</string>
+    <string name="n_a">N/A</string>
+    <string name="purchased">Purchased</string>
+    <string name="installed">Installed</string>
+    <string name="tap_to_install">Tap to Install</string>
+    <string name="tap_to_purchase">Tap to Purchase</string>
+    <string name="playlists_enter_playlist_name">Enter playlist name.</string>
+    <string name="playlists_text_field_placeholder">Tap here to start typing…</string>
+    <string name="playlists_playlist_desc_placeholder">Type playlist description…</string>
+    <string name="update">Update</string>
+
+    <string-array name="pref_night_mode_entries">
+        <item>Dark</item>
+        <item>Light</item>
+        <item>Sync with System</item>
+    </string-array>
+    <string name="msg_library_help_translate"><b>Join the translation effort!</b>
+    <font color='grey'>\nIf you enjoy the app, try it in your language. <b>Help us with translations</b> and <i>fix</i> any missing ones.
+        Find translation info on our <b>GitHub</b> page or join our <b>Telegram</b> community for assistance.
+        \nThanks!
+    </font>
+    </string>
+    <string name="translate">Translate</string>
 </resources>

@@ -66,6 +66,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.common.preference
 import com.prime.media.settings.Settings
 import com.primex.core.plus
+import com.primex.core.textResource
 import com.primex.material2.appbar.LargeTopAppBar
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
@@ -216,7 +217,7 @@ fun Personalize(viewState: ViewState) {
                         contentType = "header",
                         content = {
                             Header(
-                                "Upgrades",
+                                stringResource(R.string.upgrades),
                                 drawDivider = true,
                                 color = AppTheme.colors.accent,
                                 style = AppTheme.typography.bodyMedium,
@@ -229,7 +230,7 @@ fun Personalize(viewState: ViewState) {
                 // Tweaks
                 item() {
                     Header(
-                        "Fine Tuning",
+                        stringResource(R.string.fine_tuning),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
@@ -241,7 +242,7 @@ fun Personalize(viewState: ViewState) {
                 // Widgets
                 item() {
                     Header(
-                        "Widgets",
+                        stringResource(R.string.widgets),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
@@ -259,7 +260,7 @@ fun Personalize(viewState: ViewState) {
             Column(
                 content = {
                     Header(
-                        "Upgrades",
+                        textResource(R.string.upgrades),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
@@ -267,7 +268,9 @@ fun Personalize(viewState: ViewState) {
                     )
                     Upgrades(data)
                 },
-                modifier = Modifier.widthIn(max = SecondaryPaneMaxWidth).systemBarsPadding()
+                modifier = Modifier
+                    .widthIn(max = SecondaryPaneMaxWidth)
+                    .systemBarsPadding()
             )
         }
     )

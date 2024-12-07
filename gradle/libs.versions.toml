@@ -1,9 +1,9 @@
 [versions]
-agp = "8.7.2"
-kotlin = "2.0.21"
+agp = "8.7.3"
+kotlin = "2.1.0"
 compose = "1.8.0-alpha06"
 media3 = "1.5.0"
-toolkit = "2.1.0"
+toolkit = "v2.2.5"
 material_icons = "1.7.5"
 room = "2.6.1"
 
@@ -15,7 +15,7 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 google-service = { id = "com.google.gms.google-services", version = "4.4.2" }
 crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
-ksp = {id = "com.google.devtools.ksp", version = "2.0.21-1.0.25" }
+ksp = {id = "com.google.devtools.ksp", version = "2.1.0-1.0.29" }
 
 
 [libraries]

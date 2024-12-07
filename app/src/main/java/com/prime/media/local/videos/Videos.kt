@@ -48,7 +48,7 @@ import com.prime.media.common.menu.Action
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
 import com.primex.core.drawHorizontalDivider
-import com.primex.core.fadeEdge
+import com.primex.core.fadingEdge
 import com.primex.core.findActivity
 import com.primex.core.plus
 import com.primex.material2.IconButton
@@ -173,7 +173,7 @@ fun Videos(viewState: VideosViewState) {
                 contentPadding = Padding(CP.normal) + WindowInsets.navigationBars.asPaddingValues(),
                 modifier = Modifier
                     .padding(WindowInsets.contentInsets)
-                    .fadeEdge(AppTheme.colors.background, state, false, 16.dp),
+                    .fadingEdge(state, false, 16.dp),
                 content = {
                     val values = emit(data) ?: return@LazyColumn
                     // Filters: Display the filters section.

@@ -61,6 +61,7 @@ import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.settings.Settings
 import com.primex.core.plus
+import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -183,7 +184,9 @@ private fun LazyGridScope.content(
                 contentType = "header",
                 content = {
                     Box(
-                        modifier = Modifier.animateItem().padding(horizontal = 6.dp),
+                        modifier = Modifier
+                            .animateItem()
+                            .padding(horizontal = 6.dp),
                         content = { ListHeader(header) }
                     )
                 }
@@ -236,8 +239,8 @@ private fun SearchView(
                         contentDescription = null
                     )
                 },
-                placeholder = { Label(text = "Type here to search!!") },
-                label = { Label(text = "Search") },
+                placeholder = { Label(text = stringResource(R.string.search_placeholder)) },
+                label = { Label(text = stringResource(R.string.search)) },
                 shape = AppTheme.shapes.compact,
                 modifier = Modifier.focusRequester(requester),
                 trailingIcon = {

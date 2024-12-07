@@ -34,6 +34,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
+import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -52,6 +53,8 @@ import com.zs.core.set
 import kotlinx.coroutines.*
 import kotlin.String
 import kotlin.random.Random
+import androidx.media3.exoplayer.DefaultLoadControl.Builder as LoadControl
+import androidx.media3.exoplayer.upstream.DefaultAllocator as Allocator
 import com.zs.core.db.Playlists2 as Playlists
 
 class Playback : MediaLibraryService(), Callback, Player.Listener {
@@ -160,15 +163,25 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         factory.setEnableDecoderFallback(true)
         factory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
 
-        val attr = AudioAttributes.Builder()
+        val attr = AudioAttributes()
             .setContentType(AUDIO_CONTENT_TYPE_MUSIC)
             .setUsage(C.USAGE_MEDIA)
             .build()
 
+        val loadControl = LoadControl()
+            .setAllocator(Allocator(true, 16))
+            .setBufferDurationsMs(2000, 5000, 1500, 2000)
+            .setTargetBufferBytes(-1)
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+
+
         ExoPlayer.Builder(this)
             .setRenderersFactory(factory)
+            .setLoadControl(loadControl)
             .setAudioAttributes(attr, true)
-            .setHandleAudioBecomingNoisy(true).build()
+            .setHandleAudioBecomingNoisy(true)
+            .build()
     }
 
     /**
@@ -352,7 +365,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         reason: Int
     ) {
         // save current index in preference
-        preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex
+        scope.launch { preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex }
 
         // Add the media item to the "recent" playlist if the mediaItem is not null
         // and its media URI is not from a third-party source. Third-party content URIs
@@ -363,8 +376,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         if (mediaItem.mimeType?.startsWith("video/") == true)
             return
         // else save file in history
-        val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
-        scope.launch(Dispatchers.IO) { playlists.addToRecent(mediaItem, limit.toLong()) }
+        scope.launch(Dispatchers.IO) {
+            val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
+            playlists.addToRecent(mediaItem, limit.toLong())
+        }
         session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
     }
 
@@ -376,7 +391,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onShuffleModeEnabledChanged(
         shuffleModeEnabled: Boolean
     ) {
-        preferences[PREF_KEY_SHUFFLE_MODE] = shuffleModeEnabled
+        scope.launch() { preferences[PREF_KEY_SHUFFLE_MODE] = shuffleModeEnabled }
         session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
     }
 
@@ -388,7 +403,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onRepeatModeChanged(
         repeatMode: Int
     ) {
-        preferences[PREF_KEY_REPEAT_MODE] = repeatMode
+        scope.launch() { preferences[PREF_KEY_REPEAT_MODE] = repeatMode }
     }
 
     /**
@@ -411,7 +426,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             scope.launch(Dispatchers.IO) { playlists.save(items) }
 
             // Save the orders in preferences
-            preferences[PREF_KEY_ORDERS] = player.orders.joinToString("$LIST_ITEM_DELIMITER")
+            scope.launch() {
+                preferences[PREF_KEY_ORDERS] = player.orders.joinToString("$LIST_ITEM_DELIMITER")
+            }
             session.notifyChildrenChanged(ROOT_QUEUE, 0, null)
         }
     }
@@ -539,15 +556,17 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             }.getOrNull()
         }
 
-        // Enable the equalizer.
-        equalizer?.enabled = preferences[PREF_KEY_EQUALIZER_ENABLED, false]
+        scope.launch {
+            // Enable the equalizer.
+            equalizer?.enabled = preferences[PREF_KEY_EQUALIZER_ENABLED, false]
 
-        // Retrieve equalizer properties from preferences.
-        val properties = preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""]
+            // Retrieve equalizer properties from preferences.
+            val properties = preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""]
 
-        // Apply equalizer properties only if they are not null or blank.
-        if (properties.isNotBlank()) {
-            equalizer?.properties = Settings(properties)
+            // Apply equalizer properties only if they are not null or blank.
+            if (properties.isNotBlank()) {
+                equalizer?.properties = Settings(properties)
+            }
         }
     }
 
@@ -609,8 +628,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                         EXTRA_EQUALIZER_PROPERTIES, null
                     )
                     // save in pref
-                    preferences[PREF_KEY_EQUALIZER_PROPERTIES] = properties
-                    preferences[PREF_KEY_EQUALIZER_ENABLED] = isEqualizerEnabled
+                    scope.launch() {
+                        preferences[PREF_KEY_EQUALIZER_PROPERTIES] = properties
+                        preferences[PREF_KEY_EQUALIZER_ENABLED] = isEqualizerEnabled
+                    }
                     onAudioSessionIdChanged(-1)
                 }
 
@@ -620,11 +641,11 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     SessionResult(SessionResult.RESULT_SUCCESS) {
                         putBoolean(
                             EXTRA_EQUALIZER_ENABLED,
-                            preferences[PREF_KEY_EQUALIZER_ENABLED, false]
+                            runBlocking() { preferences[PREF_KEY_EQUALIZER_ENABLED, false] }
                         )
                         putString(
                             EXTRA_EQUALIZER_PROPERTIES,
-                            preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""]
+                            runBlocking() { preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""] }
                         )
                     }
                 )
@@ -655,7 +676,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.playWhenReady = false
-        if (preferences[PREF_KEY_CLOSE_WHEN_REMOVED, false]) {
+        if (runBlocking { preferences[PREF_KEY_CLOSE_WHEN_REMOVED, false] }) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
                 stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()

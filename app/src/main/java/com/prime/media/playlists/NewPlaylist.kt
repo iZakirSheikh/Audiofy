@@ -29,7 +29,6 @@ import androidx.compose.foundation.text.input.rememberTextFieldState as TextFiel
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -50,6 +49,7 @@ import com.prime.media.R
 import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.Label
+import com.primex.material2.Text
 import com.zs.core.db.Playlist
 import com.zs.core_ui.AppTheme
 import com.primex.core.textResource as stringResource
@@ -120,7 +120,7 @@ fun NewPlaylist(
                 OutlinedTextField(
                     title,
                     shape = AppTheme.shapes.compact,
-                    label = { Label("Enter playlist name.") },
+                    label = { Label(stringResource(R.string.playlists_enter_playlist_name)) },
                     modifier = Modifier
                         .padding(hPadding)
                         .fillMaxWidth(),
@@ -129,7 +129,7 @@ fun NewPlaylist(
                         Icon(Icons.Outlined.Title, contentDescription = null)
                     },
                     placeholder = {
-                        Label("Tap here to start typing...")
+                        Label(stringResource(R.string.playlists_text_field_placeholder))
                     },
                     isError = isError
                 )
@@ -145,10 +145,10 @@ fun NewPlaylist(
                         .padding(hPadding)
                         .weight(1f, false),
                     lineLimits = MultiLine(minHeightInLines = 5),
-                    placeholder = { Text("Type playlist description...") }
+                    placeholder = { Text(stringResource(R.string.playlists_playlist_desc_placeholder)) }
                 )
                 Button(
-                    if (value == null) "Create" else "Update",
+                    stringResource(if (value == null) R.string.create else R.string.update),
                     onClick = {
                         onConfirm(
                             value?.clone(title.text.toString(), desc.text.toString())

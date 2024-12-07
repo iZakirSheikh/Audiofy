@@ -1,91 +1,139 @@
 <!--![Featured Graphics](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/e696e11c-58fa-4162-80ec-9ef0328c0e4d)-->
-![Featured Graphics](https://github.com/iZakirSheikh/Audiofy2/assets/46754437/e696e11c-58fa-4162-80ec-9ef0328c0e4d)
-<h1><img src="https://github.com/iZakirSheikh/Audiofy2/assets/46754437/27f792dc-25db-40ca-92ff-b67b3bdba9a5" height = 48 alt="logo"/> Audiofy - Media Player</h1>
-<h6>An Open-Source Media Player App for all your needs!</h6>
+
+<h1><img src="https://github.com/user-attachments/assets/8600bd8b-ffbc-47e4-aeaf-2d73e079284c" height = 34 alt="logo"/> Audiofy - Media Player</h1>
+<h6>A native offline android media player app.</h6>
 
 <!--Info-->
-[![Release](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy2)](https://github.com/iZakirSheikh/Audiofy/releases)
-[![Playstore](https://img.shields.io/endpoint?color=crimson&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
-![GitHub Installs](https://img.shields.io/github/downloads/iZakirSheikh/Audiofy/total?logo=github&cacheSeconds=3600)
-[![Google Play Installs](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
-[![Google Play Rating](https://img.shields.io/endpoint?color=forestgreen&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)
-![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FiZakirSheikh%2FAudiofy&countColor=%23dce775&style=plastic&labelStyle=lower)
-
-## Don't forget to ⭐ the repo
-![GitHub stars](https://img.shields.io/github/stars/iZakirSheikh/Audiofy2?style=social)
-![GitHub forks](https://img.shields.io/github/forks/iZakirSheikh/Audiofy2?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/iZakirSheikh/Audiofy2?style=social)
-![GitHub follow](https://img.shields.io/github/followers/iZakirSheikh?label=Follow&style=social)
-
-## Contact
-<!--Contact-->
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/iZakirSheikh/Audiofy.svg?logo=github&label=GitHub&cacheSeconds=3600)](https://github.com/iZakirSheikh/Audiofy/releases/latest)
+[![Google Play](https://img.shields.io/endpoint?color=green&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3DGoogle%2520Play%26m%3Dv%24version)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![GitHub all releases](https://img.shields.io/github/downloads/iZakirSheikh/Audiofy/total?logo=github&cacheSeconds=3600)](https://github.com/iZakirSheikh/Audiofy/releases/latest)
+[![Google Play](https://img.shields.io/endpoint?color=green&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Ddownloads%26m%3D%24totalinstalls)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Google Play](https://img.shields.io/endpoint?color=green&logo=google-play&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dcom.prime.player%26l%3Drating%26m%3D%25E2%2598%2585%2520%24rating)](https://play.google.com/store/apps/details?id=com.prime.player)
+[![Media3](https://img.shields.io/github/v/release/androidx/media?label=Media3&color=007ec6)](https://github.com/androidx/media/releases/latest)
+[![Crowdin](https://badges.crowdin.net/audiofy/localized.svg)](https://crowdin.com/project/audiofy)
+[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/AudiofyMediaPlayer?label=r%2FAudiofy&logo=reddit&logoColor=white&cacheSeconds=3600)](https://www.reddit.com/r/AudiofyMediaPlayer/)
 [![Telegram Group](https://img.shields.io/badge/Telegram-Discussion-252850?color=orangered&logo=telegram)](https://telegram.dog/audiofy_support)
 ![Email Badge](https://badgen.net/badge/email/helpline.prime.zs%40gmail.com/blue?icon=mail)
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40iZakirSheikh)](https://twitter.com/iZakirSheikh)
 
-| Donate                                                                                                                                                                           | Download                                                                                                                                                                                                                                                                                                |
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <a href="https://www.buymeacoffee.com/sheikhzaki3" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="160"> </a> | <a href='https://play.google.com/store/apps/details?id=com.prime.player&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'> <img alt='Get it on Google Play' width="160" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' /></a> |
+Introducing ***Audiofy Media Player***, the native offline Android media player designed with Kotlin
+and [Jetpack Compose](https://developer.android.com/compose). Its interface is clean, attractive,
+and intuitive, ensuring a smooth media
+playback experience on Android devices. Built
+on [Media3](https://developer.android.com/media/media3) (previously known as ExoPlayer), it
+supports Android 5+ and Android TV.
 
-## Description
+**Audiofy** leverages ExoPlayer's `ffmpeg` extension, enabling support for a wide range of audio
+formats,
+including niche ones like ***AC3, EAC3, DTS, DTS HD, and TrueHD***.
 
-**Audiofy Media Player** is an open-source multimedia player app that lets you play music and videos on your Android device.
+Moreover, it ensures perfect audio-video **synchronization** with **Bluetooth** audio devices. This
+was born
+out of a need for a quality ExoPlayer-based media player, which led to the creation of *Audiofy*.
 
-**Audiofy Media Player**  is a mulitmedia app that lets you enjoy various videos and audio formats on your Android device or Android TV. It uses the ffmpeg extension of Media3, a powerful media player library, to support common and special audio formats such as Vorbis, Opus, FLAC, MP3, AAC, DTS, etc. It also supports video formats such as H.264, H.265, VP8, VP9, AV1, etc. You can also sync audio and video tracks when using Bluetooth earphones or speaker, for a smooth viewing experience. It has a simple and minimalistic interface that lets you watch videos without any hassle..
+[<img
+alt='Get it on Google Play'
+src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'
+height="80" />](https://play.google.com/store/apps/details?id=com.prime.player)
+[<img
+alt='Get it on Github'
+src='https://github.com/user-attachments/assets/28de125a-29d3-42a6-9a2b-66f06c72325f'
+height="80" />](https://github.com/iZakirSheikh/Audiofy/releases/latest)
 
-| Category            | Supported Formats                                                                                                                                                                              |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Audio formats       | Vorbis, Opus, FLAC, ALAC, PCM/WAVE (μ-law, A-law), MP1, MP2, MP3, AMR (NB, WB), AAC (LC, ELD, HE; xHE on Android 9+), AC-3, E-AC-3, DTS, DTS-HD, TrueHD, AC-4 (on devices with system decoder) |
-| Video formats       | H.263, H.264 AVC (Baseline Profile; Main Profile on Android 6+), H.265 HEVC, MPEG-4 SP, VP8, VP9, AV1                                                                                          |
-| Container formats   | MP4, MOV, WebM, MKV, Ogg, MPEG-TS, MPEG-PS, FLV, AVI (under development)                                                                                                                       |
-| Streaming protocols | DASH, HLS, SmoothStreaming, RTSP                                                                                                                                                               |
-| HDR video playback  | HDR10+ and Dolby Vision (on compatible/supported hardware)                                                                                                                                     |
+## Preview
 
-## Screenshots
+### Tablets/ Horizontal
 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/e9f93cf2-0508-4a1d-ace4-4eb6f3bfb40f" width="310">
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/43d30623-214f-4f0d-ae77-6a38d7aa3ff7" width="310">
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/053fb2d9-24d8-435a-a1a0-f8b0694b9b53" width="310"> <br/>
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/3b74387d-7190-44dd-90b4-f7a40d95d80d" width="65"> 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/c587e598-420d-442a-99b4-4d3fa438ba1c" width="65"> 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/0174fc3b-6d82-4a25-954f-59c28a3ec31e" width="65"> 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/da85b46f-b159-40b3-ab6e-f58ee689baf1" width="65"> 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/ea2cd0b0-e563-4f25-86be-831db851790f" width="65"> 
-<img src="https://github.com/iZakirSheikh/Audiofy/assets/46754437/cc4a358d-d64d-4ee5-ba67-68fd7c901b74" width="65">
+<div style="width:100%; display:flex; justify-content:space-between;">
+      <a href="https://github.com/user-attachments/assets/fa284673-7b39-4a6e-90bd-73c6397ddb81">
+    <img src="https://github.com/user-attachments/assets/fa284673-7b39-4a6e-90bd-73c6397ddb81" width="45%" alt="Screenshot_20241201-124148">
+  </a>
+  <a href="https://github.com/user-attachments/assets/29ddd4ad-7ccf-487e-bd55-cd41cfac3a49">
+    <img src="https://github.com/user-attachments/assets/29ddd4ad-7ccf-487e-bd55-cd41cfac3a49" width="45%" alt="Screenshot_20241201-123745">
+  </a>
+</div>
+
+### Mobile Phones
+
+<div style="width:100%; display:flex; justify-content:space-between;">
+  <a href="https://github.com/user-attachments/assets/1411bd41-9aaa-4577-9cdc-2e9d0222020d">
+    <img src="https://github.com/user-attachments/assets/1411bd41-9aaa-4577-9cdc-2e9d0222020d" width="20%" alt="Screenshot_20241201-123905">
+  </a>
+  <a href="https://github.com/user-attachments/assets/4c49339a-3b4c-4ac9-b1e0-44ce4c63ace9">
+    <img src="https://github.com/user-attachments/assets/4c49339a-3b4c-4ac9-b1e0-44ce4c63ace9" width="20%" alt="Screenshot_20241201-123719">
+  </a>
+
+  <a href="https://github.com/user-attachments/assets/9a820a5a-4dd0-4233-bb02-d3c179d51051">
+    <img src="https://github.com/user-attachments/assets/9a820a5a-4dd0-4233-bb02-d3c179d51051" width="20%" alt="Screenshot_20241201-124002">
+  </a>
+
+  <a href="https://github.com/user-attachments/assets/f81f6dec-7bd5-4b9d-b245-ff17cde49c8f">
+    <img src="https://github.com/user-attachments/assets/f81f6dec-7bd5-4b9d-b245-ff17cde49c8f" width="20%" alt="Screenshot_20241201-123932">
+  </a>
+  <a href="https://github.com/user-attachments/assets/29bbce68-c02f-4d36-8db4-86817a3f795d">
+    <img src="https://github.com/user-attachments/assets/29bbce68-c02f-4d36-8db4-86817a3f795d" width="20%" alt="Screenshot_20241201-123650">
+  </a>
+  <a href="https://github.com/user-attachments/assets/1882e087-03f5-4cfb-af1b-658f7192d6df">
+    <img src="https://github.com/user-attachments/assets/1882e087-03f5-4cfb-af1b-658f7192d6df" width="20%" alt="Screenshot_20241201-123518">
+  </a>
+  <a href="https://github.com/user-attachments/assets/88e9484b-2858-4d49-911e-6ecd40d20664">
+    <img src="https://github.com/user-attachments/assets/88e9484b-2858-4d49-911e-6ecd40d20664" width="20%" alt="Screenshot_20241201-124024">
+  </a>
+</div>
+
+## Supported formats
+
+- **Video**: H.263, H.264 AVC (Baseline Profile; Main Profile on Android 6+), H.265 HEVC, MPEG-4 SP,
+  VP8, VP9, AV1
+    - Support depends on Android device
+- **Audio**: Vorbis, Opus, FLAC, ALAC, PCM/WAVE (μ-law, A-law), MP1, MP2, MP3, AMR (NB, WB), AAC (
+  LC, ELD, HE; xHE on Android 9+), AC-3, E-AC-3, DTS,
+  DTS-HD, TrueHD
+    - Support provided by ExoPlayer FFmpeg extension
+- **Subtitles**: SRT, SSA, ASS, TTML, VTT, DVB
+    - SSA/ASS has limited styling support
+      see [this issue](https://github.com/google/ExoPlayer/issues/8435)
 
 ## Features
-* Audio/subtitle track selection
-* Playback speed control
-* Horizontal swipe and double tap to quickly seek
-* Vertical swipe to change brightness (left) / volume (right)
-* Pinch to zoom (Android 7+)
-* PiP (Picture in Picture) on Android 8+ (resizable on Android 11+) (Comming soon)
-* Resize (fit/crop)
-* Volume boost (Coming soon)
-* Auto frame rate matching on Android TV/boxes (Android 6+)
-* Post-playback actions (delete file/skip to next)
-* Touch lock (long tap)
-* 3rd party equalizer / audio processing support (e.g. [Wavelet](https://github.com/Pittvandewitt/Wavelet))
-* Media Session and Audio Focus support
-* Pause playback when disconnecting headphones
 
-## 🧰 Build and run the project
-If you are a developer and want to build and run the Audiofy app from the source code, you need to follow these additional steps:
+- Native Android app with simple and easy-to-use interface
+- Completely free and open source and without any excessive permissions
+- Software decoders for h264 and hevc
+- Audio/Subtitle track selection
+- Vertical swipe to change brightness (left) / volume (right) (Comming soon)
+- Horizontal swipe to seek through video (Comming soon)
+- Play videos from storage access framework (Android Document picker)
+- Control playback speed
+- Pinch to zoom (Comming sooon)
+- Picture-in-picture mode (Comming soon)
+- Auto frame rate matching on Android TV/boxes (Android 6+)
+- Post-playback actions (delete file/skip to next)
+- Touch lock (long tap)
+- 3rd party equalizer / audio processing support (e.g. [Wavelet]
+- Media Session and Audio Focus support
+- Pause playback when disconnecting headphones
+- Resize (fit/crop)
+- Just 5MB Size
 
-### Prerequisites
-- Install Android Studio Alpha (Hedgehog) or above on your machine. You can download it from here: https://developer.android.com/studio/preview
-- Install Git on your machine. You can download it from here: https://git-scm.com/downloads
+## Contributing
 
-### Steps
-To build the Audiofy app, follow these steps:
+Contributions are welcome!
 
-1. Clone the repository: Open a terminal window and type the following command: `git clone https://github.com/iZakirSheikh/audiofy2.git`
-2. Open Android Studio and select Open an existing project.
-3. Navigate to the folder where you cloned or downloaded this repository and select it.
-4. Wait for Android Studio to sync the project and resolve the dependencies.
-65 Run the app on an emulator or a connected device by clicking the Run button.
+### Translating
 
-You have successfully built and run the Audiofy app from the source code. Enjoy!
+You can help translate Audiofy on [Crowdin](https://crowdin.com/project/audiofy).
+
+![Translation Status](https://badges.awesome-crowdin.com/translation-16583273-741779.png)
+
+## Credits
+
+### Open Source Projects
+
+- [Findroid](https://github.com/jarnedemeulemeester/findroid)
+- [Just (Video) Player](https://github.com/moneytoo/Player)
+- [LibreTube](https://github.com/libre-tube/LibreTube)
+- [ReadYou](https://github.com/Ashinch/ReadYou)
+- [Seal](https://github.com/JunkFood02/Seal)
+- [Next Player](https://github.com/anilbeesetti/nextplayer)
 
 ## 🔖 License
 

@@ -23,8 +23,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -43,15 +45,17 @@ import kotlin.reflect.KProperty
  *         Returns `null` if the key is not found and no default value is provided, or if the type [T] is not supported.
  */
 @Suppress("UNCHECKED_CAST")
-inline operator fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T {
-    return when (T::class) {
-        String::class -> getString(key, defaultValue as? String) as T
-        Int::class -> getInt(key, defaultValue as? Int ?: 0) as T
-        Boolean::class -> getBoolean(key, defaultValue as? Boolean ?: false) as T
-        Float::class -> getFloat(key, defaultValue as? Float ?: 0f) as T
-        Long::class -> getLong(key, defaultValue as? Long ?: 0L) as T
-        Set::class -> getStringSet(key, defaultValue as? Set<String>) as T
-        else -> error("Unsupported type ${T::class}")
+suspend inline operator fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T {
+    return withContext(Dispatchers.IO) {
+        when (T::class) {
+            String::class -> getString(key, defaultValue as? String) as T
+            Int::class -> getInt(key, defaultValue as? Int ?: 0) as T
+            Boolean::class -> getBoolean(key, defaultValue as? Boolean ?: false) as T
+            Float::class -> getFloat(key, defaultValue as? Float ?: 0f) as T
+            Long::class -> getLong(key, defaultValue as? Long ?: 0L) as T
+            Set::class -> getStringSet(key, defaultValue as? Set<String>) as T
+            else -> error("Unsupported type ${T::class}")
+        }
     }
 }
 
@@ -66,18 +70,20 @@ inline operator fun <reified T> SharedPreferences.get(key: String, defaultValue:
  * @return Returns `true` if the value was successfully put, `false` otherwise.
  */
 @Suppress("UNCHECKED_CAST")
-inline operator fun <reified T> SharedPreferences.set(key: String, value: T) {
-    with(edit()) {
-        when (T::class) {
-            String::class -> putString(key, value as? String)
-            Int::class -> putInt(key, value as? Int ?: 0)
-            Boolean::class -> putBoolean(key, value as? Boolean ?: false)
-            Float::class -> putFloat(key, value as? Float ?: 0f)
-            Long::class -> putLong(key, value as? Long ?: 0L)
-            Set::class -> putStringSet(key, value as? Set<String>)
-            else -> error("Unsupported type ${T::class}")
-        }.apply()
-    }
+suspend inline operator fun <reified T> SharedPreferences.set(key: String, value: T) {
+   withContext(Dispatchers.IO){
+       with(edit()) {
+           when (T::class) {
+               String::class -> putString(key, value as? String)
+               Int::class -> putInt(key, value as? Int ?: 0)
+               Boolean::class -> putBoolean(key, value as? Boolean ?: false)
+               Float::class -> putFloat(key, value as? Float ?: 0f)
+               Long::class -> putLong(key, value as? Long ?: 0L)
+               Set::class -> putStringSet(key, value as? Set<String>)
+               else -> error("Unsupported type ${T::class}")
+           }.apply()
+       }
+   }
 }
 
 /** Permits property delegation of `val`s using `by` for [Result]. */
