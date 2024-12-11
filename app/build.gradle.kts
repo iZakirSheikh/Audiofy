@@ -65,8 +65,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 179
-        versionName = "3.2.1"
+        versionCode = 180
+        versionName = "3.3.0-alpha"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -107,7 +107,15 @@ android {
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
     dynamicFeatures += setOf(":codex")
-    composeCompiler { enableStrongSkippingMode = false }
+    composeCompiler {
+        //enableStrongSkippingMode = false
+        // TODO - I guess disable these in release builds.
+//        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//        metricsDestination = layout.buildDirectory.dir("compose_compiler")
+//        stabilityConfigurationFiles = listOf(
+//            rootProject.layout.projectDirectory.file("stability_config.conf")
+//        )
+    }
 }
 
 // Not moving these to libs.version.toml because i think this is redundant.

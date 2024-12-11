@@ -18,9 +18,8 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.console.widget
+package com.prime.media.widget
 
-import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.fadeIn
@@ -54,20 +53,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceIn
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
+import com.prime.media.common.chronometer
 import com.prime.media.old.common.Artwork
+import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimation
-import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.core.playback.mediaUri
-import com.prime.media.old.core.playback.title
+import com.prime.media.old.console.Console
+import com.prime.media.personalize.RoutePersonalize
 import com.primex.core.SignalWhite
 import com.primex.core.UmbraGrey
 import com.primex.core.blend
@@ -76,6 +75,7 @@ import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
@@ -83,29 +83,28 @@ import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
+import kotlin.math.roundToLong
 
 private val TiramisuShape = RoundedCornerShape(14)
 private inline val Colors.ring
     @Composable
     get() =
-        Brush.horizontalGradient(listOf(accent.copy(0.5f), Color.Transparent,  accent.copy(0.5f)))
-private inline val Colors.contentColor @Composable get() =
-    if (accent.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
+        Brush.horizontalGradient(listOf(accent.copy(0.5f), Color.Transparent, accent.copy(0.5f)))
+private inline val Colors.contentColor
+    @Composable get() =
+        if (accent.luminance() > 0.6f) Color.UmbraGrey else Color.SignalWhite
 
 /**
  * Represents a widget inspired from the media notification of android 13.
  */
 @Composable
 fun Tiramisu(
-    item: MediaItem,
+    state: NowPlaying,
+    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    playing: Boolean = false,
-    duration: Long = C.TIME_UNSET,
-    progress: Float = 0.0f,
-    onSeek: (progress: Float) -> Unit = {},
-    onAction: (action: String) -> Unit = {},
+    showcase: Boolean = false
 ) {
-    val colors =  AppTheme.colors
+    val colors = AppTheme.colors
     Box(
         modifier = modifier
             .shadow(Glance.ELEVATION, TiramisuShape)
@@ -115,28 +114,37 @@ fun Tiramisu(
         content = {
             // The artwork as the background of the widget
             Artwork(
-                data = item.artworkUri,
-                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID, zIndexInOverlay = 0f)}
+                data = state.artwork,
+                modifier = Modifier
+                    .thenIf(!showcase) {
+                        sharedElement(
+                            Glance.SHARED_ARTWORK_ID,
+                            zIndexInOverlay = 0f
+                        )
+                    }
                     .clip(TiramisuShape)
                     .foreground(colors.ring)
                     .foreground(Color.Black.copy(0.26f))
                     .matchParentSize(),
             )
             val onColor = Color.SignalWhite
+            val navController = LocalNavController.current
             ListTile(
                 color = Color.Transparent,
                 onColor = onColor,
-                modifier = Modifier.thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(
-                    Glance.SHARED_BACKGROUND_ID,
-                    exit = fadeOut() + scaleOut(),
-                    enter = fadeIn() + scaleIn(),
-                    zIndexInOverlay = 1f
-                )},
+                modifier = Modifier.thenIf(!showcase) {
+                    sharedBounds(
+                        Glance.SHARED_BACKGROUND_ID,
+                        exit = fadeOut() + scaleOut(),
+                        enter = fadeIn() + scaleIn(),
+                        zIndexInOverlay = 1f
+                    )
+                },
                 centerAlign = true,
                 // title
                 subtitle = {
                     Label(
-                        item.title.toString(),
+                        state.title ?: stringResource(R.string.unknown),
                         color = LocalContentColor.current.copy(ContentAlpha.medium),
                         style = AppTheme.typography.caption,
                         modifier = Modifier.fillMaxWidth(0.85f)
@@ -145,7 +153,7 @@ fun Tiramisu(
                 // subtitle
                 headline = {
                     Label(
-                        item.title.toString(),
+                        state.title ?: stringResource(R.string.unknown),
                         style = AppTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth(0.85f),
                         fontWeight = FontWeight.Bold,
@@ -155,11 +163,11 @@ fun Tiramisu(
                 overline = {
                     IconButton(
                         imageVector = Icons.Outlined.Tune,
-                        onClick = { onAction(Glance.ACTION_LAUNCH_CONTROL_PANEL) },
+                        onClick = { navController.navigate(RoutePersonalize()); onDismissRequest() },
                         modifier = Modifier.offset(-12.dp, -16.dp)
                     )
                 },
-
+                // timebar
                 footer = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -167,22 +175,33 @@ fun Tiramisu(
                         content = {
                             // Expand to fill
                             val color = LocalContentColor.current.copy(ContentAlpha.medium)
+                            val chronometer = state.chronometer
+                            val position = chronometer.value
+                            val ctx = LocalContext.current
                             // SeekBackward
                             IconButton(
-                                onClick = { onAction(Glance.ACTION_PREV_TRACK) },
+                                onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_PREVIOUS) },
                                 imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                                 contentDescription = null,
                                 tint = color
                             )
 
                             // slider
+                            val progress =
+                                if (chronometer.value != -1L) chronometer.value / state.duration.toFloat() else 0f
                             WavySlider(
-                                value = progress.fastCoerceIn(0f, 1f),
-                                onValueChange = onSeek,
+                                value = progress,
+                                onValueChange = {
+                                    if (position == -1L) return@WavySlider
+                                    chronometer.value = ((it * state.duration).roundToLong())
+                                    NowPlaying.trySend(ctx, NowPlaying.ACTION_SEEK_TO) {
+                                        putExtra(NowPlaying.EXTRA_SEEK_PCT, it)
+                                    }
+                                },
                                 modifier = Modifier.weight(1f),
                                 // idp because 0 dp is not supported.
-                                waveLength = if (!playing) 0.dp else 20.dp,
-                                waveHeight = if (!playing) 0.dp else 7.dp,
+                                waveLength = if (!state.playing) 0.dp else 20.dp,
+                                waveHeight = if (!state.playing) 0.dp else 7.dp,
                                 incremental = true,
                                 colors = SliderDefaults.colors(
                                     activeTrackColor = LocalContentColor.current,
@@ -193,7 +212,7 @@ fun Tiramisu(
 
                             // SeekNext
                             IconButton(
-                                onClick = { onAction(Glance.ACTION_NEXT_TRACK) },
+                                onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_NEXT) },
                                 imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                                 contentDescription = null,
                                 tint = color
@@ -203,14 +222,16 @@ fun Tiramisu(
                             IconButton(
                                 imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                                 //   tint = accent
-                                onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
+                                onClick = { navController.navigate(Console.route); onDismissRequest() },
                             )
                         }
                     )
                 },
+                // play button
                 trailing = {
+                    val ctx = LocalContext.current
                     FloatingActionButton(
-                        onClick = { onAction(Glance.ACTION_PLAY) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_TOGGLE_PLAY) },
                         shape = RoundedCornerShape(28),
                         backgroundColor = Color.SignalWhite.blend(colors.accent, 0.2f),
                         contentColor = Color.UmbraGrey,
@@ -227,7 +248,7 @@ fun Tiramisu(
 
                         LottieAnimation(
                             id = R.raw.lt_play_pause,
-                            atEnd = !playing,
+                            atEnd = !state.playing,
                             scale = 1.5f,
                             progressRange = 0.0f..0.29f,
                             duration = Anim.MediumDurationMills,

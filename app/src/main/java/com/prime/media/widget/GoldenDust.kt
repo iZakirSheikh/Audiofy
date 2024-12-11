@@ -18,9 +18,8 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.console.widget
+package com.prime.media.widget
 
-import android.net.Uri
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.EaseInOutBounce
@@ -58,38 +57,38 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
-import com.zs.core_ui.ContentElevation
-import com.zs.core_ui.ContentPadding
-import com.zs.core_ui.MediumDurationMills
+import com.prime.media.common.chronometer
 import com.prime.media.old.common.Artwork
+import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.marque
-import com.zs.core_ui.shape.RoundedPolygonShape
-import com.zs.core_ui.shimmer.shimmer
-import com.primex.core.thenIf
-import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.core.playback.mediaUri
-import com.prime.media.old.core.playback.subtitle
-import com.prime.media.old.core.playback.title
+import com.prime.media.old.console.Console
+import com.prime.media.personalize.RoutePersonalize
 import com.primex.core.ImageBrush
+import com.primex.core.thenIf
 import com.primex.core.visualEffect
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.MediumDurationMills
+import com.zs.core_ui.shape.RoundedPolygonShape
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
+import com.zs.core_ui.shimmer.shimmer
 import kotlin.math.roundToLong
 
 private val WidgetShape = RoundedCornerShape(16.dp)
@@ -116,18 +115,14 @@ private val PlayButtonShape = RoundedCornerShape(28)
 
 @Composable
 fun GoldenDust(
-    item: MediaItem,
+    state: NowPlaying,
+    onDismissRequest: () -> Unit ,
     modifier: Modifier = Modifier,
-    playing: Boolean = false,
-    duration: Long = C.TIME_UNSET,
-    progress: Float = 0.0f,
-    onSeek: (progress: Float) -> Unit = {},
-    onAction: (action: String) -> Unit = {},
+    showcase: Boolean = false,
 ) {
-    val isPreview = item.mediaUri == Uri.EMPTY
     ListTile(
         modifier = modifier
-            .thenIf(!isPreview, ){Glance.SharedBoundsModifier}
+            .thenIf(!showcase) { Glance.SharedBoundsModifier }
             .visualEffect(ImageBrush.NoiseBrush, 0.4f, overlay = true)
             .shimmer(Accent, 400.dp, BlendMode.Overlay, ShimmerAnimSpec)
             .border(1.dp, onAccent, WidgetShape)
@@ -137,7 +132,7 @@ fun GoldenDust(
         onColor = onAccent,
         headline = {
             Label(
-                item.title.toString(),
+                state.title ?: stringResource(R.string.unknown),
                 modifier = Modifier.marque(Int.MAX_VALUE),
                 style = AppTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
@@ -145,17 +140,17 @@ fun GoldenDust(
         },
         overline = {
             Label(
-                item.subtitle.toString(),
+                state.subtitle ?: stringResource(R.string.unknown),
                 style = AppTheme.typography.caption,
                 color = LocalContentColor.current
             )
         },
         trailing = {
             Artwork(
-                data = item.artworkUri,
+                data = state.artwork,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                    .thenIf(!isPreview) { sharedElement(Glance.SHARED_ARTWORK_ID) }
+                    .thenIf(!showcase) { sharedElement(Glance.SHARED_ARTWORK_ID) }
                     .scale(1.15f)
                     .shadow(ContentElevation.medium, ArtworkShape),
             )
@@ -168,9 +163,11 @@ fun GoldenDust(
                     .padding(top = ContentPadding.medium)
                     .fillMaxWidth(),
                 content = {
+                    val ctx = LocalContext.current
+                    val navController = LocalNavController.current
                     // SeekBackward
                     IconButton(
-                        onClick = { onAction(Glance.ACTION_PREV_TRACK) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_PREVIOUS) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
                         modifier = IconModifier
@@ -181,7 +178,7 @@ fun GoldenDust(
                         contentColor = LocalContentColor.current,
                         shape = PlayButtonShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
-                        onClick = { onAction(Glance.ACTION_PLAY) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_TOGGLE_PLAY) },
                     ) {
                         val properties = rememberLottieDynamicProperties(
                             rememberLottieDynamicProperty(
@@ -193,7 +190,7 @@ fun GoldenDust(
                         // Play Toggle
                         LottieAnimation(
                             id = R.raw.lt_play_pause,
-                            atEnd = !playing,
+                            atEnd = !state.playing,
                             scale = 1.65f,
                             progressRange = 0.0f..0.29f,
                             duration = Anim.MediumDurationMills,
@@ -204,7 +201,7 @@ fun GoldenDust(
 
                     // SeekNext
                     IconButton(
-                        onClick = { onAction(Glance.ACTION_NEXT_TRACK) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_NEXT) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
                         modifier = IconModifier
@@ -216,7 +213,7 @@ fun GoldenDust(
                     // control centre
                     IconButton(
                         imageVector = Icons.Outlined.Tune,
-                        onClick = { onAction(Glance.ACTION_LAUNCH_CONTROL_PANEL) },
+                        onClick = { navController.navigate(RoutePersonalize()); onDismissRequest() },
                         modifier = IconModifier
                     )
                 }
@@ -228,6 +225,7 @@ fun GoldenDust(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
                 content = {
+                    val chronometer = state.chronometer
                     //
                     // show playing bars.
                     LottieAnimation(
@@ -241,24 +239,33 @@ fun GoldenDust(
                             )
                         ),
                         modifier = Modifier
-                            .thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
+                            .thenIf(!showcase){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
                             .requiredSize(24.dp),
-                        isPlaying = playing,
+                        isPlaying = state.playing,
                     )
 
-                    // played duration
+                    // position
+                    val position = chronometer.value
                     Label(
-                        when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
-                            else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
+                        when (position) {
+                            -1L -> stringResource(R.string.abbr_not_available)
+                            else -> DateUtils.formatElapsedTime((position / 1000L))
                         },
                         style = AppTheme.typography.caption,
                     )
 
                     // slider
+                    val progress = if (position != -1L) position / state.duration.toFloat() else 0f
+                    val ctx = LocalContext.current
                     Slider(
                         value = progress.fastCoerceIn(0f, 1f),
-                        onValueChange = onSeek,
+                        onValueChange = {
+                            if (position == -1L) return@Slider
+                            chronometer.value = ((it * state.duration).roundToLong())
+                            NowPlaying.trySend(ctx, NowPlaying.ACTION_SEEK_TO){
+                                putExtra(NowPlaying.EXTRA_SEEK_PCT, it)
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         colors = SliderDefaults.colors(
                             activeTrackColor = Accent,
@@ -268,19 +275,20 @@ fun GoldenDust(
 
                     // total duration
                     Label(
-                        when (duration) {
-                            C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
-                            else -> DateUtils.formatElapsedTime((duration / 1000))
+                        when (position) {
+                            -1L -> stringResource(R.string.abbr_not_available)
+                            else -> DateUtils.formatElapsedTime((state.duration / 1000))
                         },
                         style = AppTheme.typography.caption,
                         color = LocalContentColor.current,
                     )
 
                     // Expand to fill
+                    val navController = LocalNavController.current
                     IconButton(
                         imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                         //   tint = accent
-                        onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
+                        onClick = { navController.navigate(Console.route); onDismissRequest() },
                         modifier = IconModifier
                     )
                 }

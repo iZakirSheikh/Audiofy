@@ -18,9 +18,8 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.console.widget
+package com.prime.media.widget
 
-import android.net.Uri
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.fadeIn
@@ -49,28 +48,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
-import com.zs.core_ui.Anim
-import com.zs.core_ui.MediumDurationMills
 import com.prime.media.old.common.Artwork
+import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.marque
+import com.prime.media.old.console.Console
+import com.prime.media.personalize.RoutePersonalize
 import com.primex.core.thenIf
-import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.core.playback.mediaUri
-import com.prime.media.old.core.playback.subtitle
-import com.prime.media.old.core.playback.title
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core.playback.NowPlaying
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 
@@ -78,38 +77,39 @@ private val SnowConeShape = RoundedCornerShape(14)
 private val DefaultArtworkShape = RoundedCornerShape(20)
 private val DefaultArtworkSize = 84.dp
 
+
 /**
  * A mini-player inspired by android 12 notification
  */
 @Composable
 fun SnowCone(
-    item: MediaItem,
+    state: NowPlaying,
+    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    playing: Boolean = false,
-    duration: Long = C.TIME_UNSET,
-    progress: Float = 0.0f,
-    onSeek: (progress: Float) -> Unit = {},
-    onAction: (action: String) -> Unit = {},
+    showcase: Boolean = false
 ) {
-    val colors =  AppTheme.colors
+    val colors = AppTheme.colors
+    val navController = LocalNavController.current
     ListTile(
         onColor = colors.onBackground,
         modifier = modifier
-            .thenIf(item.mediaUri != Uri.EMPTY){sharedBounds(
-                Glance.SHARED_BACKGROUND_ID,
-                exit = fadeOut() + scaleOut(),
-                enter = fadeIn() + scaleIn(),
-            )}
+            .thenIf(!showcase) {
+                sharedBounds(
+                    Glance.SHARED_BACKGROUND_ID,
+                    exit = fadeOut() + scaleOut(),
+                    enter = fadeIn() + scaleIn(),
+                )
+            }
             .heightIn(max = 120.dp)
             .shadow(16.dp, SnowConeShape)
             .thenIf(
-                !colors.isLight){border(0.5.dp, colors.accent.copy(0.12f), SnowConeShape)}
-            .background(AppTheme.colors.background(1.dp))
-        ,
+                !colors.isLight
+            ) { border(0.5.dp, colors.accent.copy(0.12f), SnowConeShape) }
+            .background(AppTheme.colors.background(1.dp)),
         // subtitle
         headline = {
             Label(
-                item.subtitle.toString(),
+                state.subtitle ?: stringResource(R.string.unknown),
                 style = AppTheme.typography.caption,
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
@@ -117,7 +117,7 @@ fun SnowCone(
         // title
         overline = {
             Label(
-                item.title.toString(),
+                state.title ?: stringResource(R.string.unknown),
                 style = AppTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.marque(Int.MAX_VALUE)
@@ -126,11 +126,13 @@ fun SnowCone(
         // AlbumArt
         leading = {
             Artwork(
-                data = item.artworkUri,
+                data = state.artwork,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                        .thenIf(item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID)
-                            .clip(DefaultArtworkShape)}
+                    .thenIf(!showcase) {
+                        sharedElement(Glance.SHARED_ARTWORK_ID)
+                            .clip(DefaultArtworkShape)
+                    }
             )
         },
         // control centre
@@ -139,13 +141,13 @@ fun SnowCone(
                 // Expand to fill
                 IconButton(
                     imageVector = Icons.Outlined.Tune,
-                    onClick = { onAction(Glance.ACTION_LAUNCH_CONTROL_PANEL) },
+                    onClick = { navController.navigate(RoutePersonalize()); onDismissRequest() },
                     modifier = Modifier.offset(10.dp, -10.dp)
                 )
 
                 IconButton(
                     imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                    onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
+                    onClick = { navController.navigate(Console.route); onDismissRequest() },
                     modifier = Modifier.offset(10.dp, -4.dp)
                 )
             }
@@ -157,9 +159,10 @@ fun SnowCone(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     val color = LocalContentColor.current
+                    val ctx = LocalContext.current
                     // SeekBackward
                     IconButton(
-                        onClick = { onAction(Glance.ACTION_PREV_TRACK) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_PREVIOUS) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
                         tint = color
@@ -175,18 +178,18 @@ fun SnowCone(
                     // Play Toggle
                     LottieAnimButton(
                         id = R.raw.lt_play_pause,
-                        atEnd = !playing,
+                        atEnd = !state.playing,
                         scale = 1.8f,
                         progressRange = 0.0f..0.29f,
                         duration = Anim.MediumDurationMills,
                         easing = LinearEasing,
-                        onClick = { onAction(Glance.ACTION_PLAY) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_TOGGLE_PLAY) },
                         dynamicProperties = properties
                     )
 
                     // SeekNext
                     IconButton(
-                        onClick = { onAction(Glance.ACTION_NEXT_TRACK) },
+                        onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_NEXT) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
                         tint = color

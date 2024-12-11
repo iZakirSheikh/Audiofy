@@ -18,9 +18,8 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.prime.media.console.widget
+package com.prime.media.widget
 
-import android.net.Uri
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
@@ -54,34 +53,33 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceIn
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
-import com.zs.core_ui.Anim
-import com.zs.core_ui.ContentPadding
-import com.zs.core_ui.MediumDurationMills
+import com.prime.media.common.chronometer
 import com.prime.media.old.common.Artwork
+import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.LottieAnimation
-import com.primex.core.thenIf
-import com.prime.media.old.core.playback.artworkUri
-import com.prime.media.old.core.playback.mediaUri
-import com.prime.media.old.core.playback.subtitle
-import com.prime.media.old.core.playback.title
+import com.prime.media.old.console.Console
+import com.prime.media.personalize.RoutePersonalize
 import com.primex.core.SignalWhite
 import com.primex.core.foreground
+import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.primex.material2.ListTile
+import com.zs.core.playback.NowPlaying
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -101,18 +99,16 @@ private val Colors.veil
         //startX = -30f
     )
 
+
 /**
  * Represents a widget inspired from the media notification of android 11.
  */
 @Composable
-fun RedVelvetCake(
-    item: MediaItem,
+fun RedVioletCake(
+    state: NowPlaying,
+    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    playing: Boolean = false,
-    duration: Long = C.TIME_UNSET,
-    progress: Float = 0.0f,
-    onSeek: (progress: Float) -> Unit = {},
-    onAction: (action: String) -> Unit = {},
+    showcase: Boolean = false
 ) {
     val colors = AppTheme.colors
     val background = colors.widgetBackground
@@ -120,18 +116,19 @@ fun RedVelvetCake(
         modifier = modifier
             .shadow(Glance.ELEVATION, WidgetShape)
             .thenIf(
-                !colors.isLight){border(0.5.dp, colors.accent.copy(0.12f), WidgetShape)}
+                !colors.isLight
+            ) { border(0.5.dp, colors.accent.copy(0.12f), WidgetShape) }
             .background(background, WidgetShape)
             .heightIn(max = 150.dp)
             .fillMaxWidth(),
         content = {
-
             // The artwork situated in end of the component
             Artwork(
-                data = item.artworkUri,
+                data = state.artwork,
                 modifier = Modifier
                     .thenIf(
-                        item.mediaUri != Uri.EMPTY){sharedElement(Glance.SHARED_ARTWORK_ID)}
+                        !showcase
+                    ) { sharedElement(Glance.SHARED_ARTWORK_ID) }
                     .align(Alignment.TopEnd)
                     .aspectRatio(1.0f, matchHeightConstraintsFirst = true)
                     .foreground(colors.veil)
@@ -145,15 +142,18 @@ fun RedVelvetCake(
                 color = Color.Transparent,
                 onColor = AppTheme.colors.onBackground,
                 modifier = Modifier.thenIf(
-                    item.mediaUri != Uri.EMPTY){sharedBounds(
-                    Glance.SHARED_BACKGROUND_ID,
-                    exit = fadeOut() + scaleOut(),
-                    enter = fadeIn() + scaleIn(),
-                    zIndexInOverlay = 1f
-                )},
+                    !showcase
+                ) {
+                    sharedBounds(
+                        Glance.SHARED_BACKGROUND_ID,
+                        exit = fadeOut() + scaleOut(),
+                        enter = fadeIn() + scaleIn(),
+                        zIndexInOverlay = 1f
+                    )
+                },
                 headline = {
                     Label(
-                        item.subtitle.toString(),
+                        state.subtitle ?: stringResource(R.string.unknown),
                         color = LocalContentColor.current.copy(ContentAlpha.medium),
                         style = AppTheme.typography.caption,
                         modifier = Modifier.fillMaxWidth(0.85f)
@@ -161,7 +161,7 @@ fun RedVelvetCake(
                 },
                 overline = {
                     Label(
-                        item.title.toString(),
+                        state.title ?: stringResource(R.string.unknown),
                         style = AppTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth(0.85f),
                         fontWeight = FontWeight.Bold,
@@ -181,9 +181,10 @@ fun RedVelvetCake(
                         ),
                         modifier = Modifier
                             .thenIf(
-                                item.mediaUri != Uri.EMPTY){sharedBounds(Glance.SHARED_PLAYING_BARS_ID)}
+                                !showcase
+                            ) { sharedBounds(Glance.SHARED_PLAYING_BARS_ID) }
                             .requiredSize(24.dp),
-                        isPlaying = playing,
+                        isPlaying = state.playing,
                     )
                 },
                 subtitle = {
@@ -193,9 +194,10 @@ fun RedVelvetCake(
                         modifier = Modifier.fillMaxWidth(),
                         content = {
                             val color = LocalContentColor.current.copy(ContentAlpha.medium)
+                            val ctx = LocalContext.current
                             // SeekBackward
                             IconButton(
-                                onClick = { onAction(Glance.ACTION_PREV_TRACK) },
+                                onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_PREVIOUS) },
                                 imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                                 contentDescription = null,
                                 tint = color
@@ -211,24 +213,30 @@ fun RedVelvetCake(
                             // Play Toggle
                             LottieAnimButton(
                                 id = R.raw.lt_play_pause,
-                                atEnd = !playing,
+                                atEnd = !state.playing,
                                 scale = 1.8f,
                                 progressRange = 0.0f..0.29f,
                                 duration = Anim.MediumDurationMills,
                                 easing = LinearEasing,
-                                onClick = { onAction(Glance.ACTION_PLAY) },
+                                onClick = {
+                                    NowPlaying.trySend(
+                                        ctx,
+                                        NowPlaying.ACTION_TOGGLE_PLAY
+                                    )
+                                },
                                 dynamicProperties = properties
                             )
 
                             // SeekNext
                             IconButton(
-                                onClick = { onAction(Glance.ACTION_NEXT_TRACK) },
+                                onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_NEXT) },
                                 imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                                 contentDescription = null,
                                 tint = color
                             )
                         }
                     )
+
                 },
                 footer = {
                     Row(
@@ -237,30 +245,42 @@ fun RedVelvetCake(
                         modifier = Modifier.fillMaxWidth(),
                         content = {
                             // Expand to fill
+                            val navController = LocalNavController.current
                             IconButton(
                                 imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                                 //   tint = accent
-                                onClick = { onAction(Glance.ACTION_LAUCH_CONSOLE) },
+                                onClick = { navController.navigate(Console.route); onDismissRequest() },
                             )
 
                             // played duration
+                            val chronometer = state.chronometer
+                            val position = chronometer.value
                             Label(
-                                when (duration) {
-                                    C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
-                                    else -> DateUtils.formatElapsedTime((duration / 1000 * progress).roundToLong())
+                                when (position) {
+                                    -1L -> stringResource(R.string.abbr_not_available)
+                                    else -> DateUtils.formatElapsedTime((position / 1000))
                                 },
                                 style = AppTheme.typography.caption,
                                 color = LocalContentColor.current.copy(ContentAlpha.medium)
                             )
 
                             // slider
+                            val ctx = LocalContext.current
+                            val progress =
+                                if (chronometer.value != -1L) chronometer.value / state.duration.toFloat() else 0f
                             WavySlider(
-                                value = progress.fastCoerceIn(0f, 1f),
-                                onValueChange = onSeek,
+                                value = progress,
+                                onValueChange = {
+                                    if (position == -1L) return@WavySlider
+                                    chronometer.value = ((it * state.duration).roundToLong())
+                                    NowPlaying.trySend(ctx, NowPlaying.ACTION_SEEK_TO) {
+                                        putExtra(NowPlaying.EXTRA_SEEK_PCT, it)
+                                    }
+                                },
                                 modifier = Modifier.weight(1f),
                                 // idp because 0 dp is not supported.
-                                waveLength = if (!playing) 0.dp else 20.dp,
-                                waveHeight = if (!playing) 0.dp else 7.dp,
+                                waveLength = if (!state.playing) 0.dp else 20.dp,
+                                waveHeight = if (!state.playing) 0.dp else 7.dp,
                                 incremental = true,
                                 colors = SliderDefaults.colors(
                                     activeTrackColor = accent,
@@ -270,9 +290,9 @@ fun RedVelvetCake(
 
                             // total duration
                             Label(
-                                when (duration) {
-                                    C.TIME_UNSET -> stringResource(R.string.abbr_not_available)
-                                    else -> DateUtils.formatElapsedTime((duration / 1000))
+                                when (position) {
+                                    -1L -> stringResource(R.string.abbr_not_available)
+                                    else -> DateUtils.formatElapsedTime((state.duration / 1000))
                                 },
                                 style = AppTheme.typography.caption,
                                 color = LocalContentColor.current
@@ -280,12 +300,12 @@ fun RedVelvetCake(
                             // control centre
                             IconButton(
                                 imageVector = Icons.Outlined.Tune,
-                                onClick = { onAction(Glance.ACTION_LAUNCH_CONTROL_PANEL) },
+                                onClick = { navController.navigate(RoutePersonalize()) },
                                 tint = Color.SignalWhite
                             )
                         }
                     )
-                },
+                }
             )
         }
     )

@@ -20,24 +20,36 @@
 
 package com.prime.media.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.media3.common.C
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.prime.media.common.menu.Action
-import com.prime.media.old.common.util.PathUtils
 import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
-import com.zs.core.store.Album
+import com.zs.core.playback.NowPlaying
+import com.zs.core.playback.PlaybackController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlin.math.roundToLong
 import kotlin.text.appendLine
 
 /**
@@ -126,6 +138,7 @@ val ProductInfo.richDesc
     }
 
 private const val ELLIPSIS_NORMAL = "\u2026"; // HORIZONTAL ELLIPSIS (…)
+
 /**
  * Ellipsizes this CharSequence, adding a horizontal ellipsis (…) if it is longer than [after] characters.
  *
@@ -182,3 +195,60 @@ typealias Filter = Pair<Boolean, Action>
  */
 typealias Mapped<T> = Map<CharSequence, List<T>>
 
+/**
+ * Observes the current [NowPlaying] as state.
+ */
+@SuppressLint("ProduceStateDoesNotAssignValue")
+@Composable
+fun PlaybackController.Companion.collectNowPlayingAsState(): State<NowPlaying> {
+    val ctx = LocalContext.current
+    return produceState(NowPlaying.EMPTY, this) {
+        observe(ctx).collect { this.value = it }
+    }
+}
+
+private const val TAG = "Util"
+
+/**
+ * Provides a [Chronometer] that tracks the current playback position.
+ *
+ * The chronometer's value is `-1L` if the position is not available (e.g., during initial load,
+ * if the duration is unknown, or if playback is complete). Otherwise, the value represents the
+ * current playback position in milliseconds, updated to reflect the elapsed time during playback.
+ */
+val NowPlaying.chronometer: Chronometer
+    @Composable
+    get() {
+        // Create and remember a Chronometer instance.
+        val chronometer = remember { Chronometer(-1L) }
+
+        // Launch an effect that updates the chronometer based on the NowPlaying state.
+        LaunchedEffect(this) {
+            // If duration or current position is not set, or if playback is complete, set chronometer to -1L and return.
+            if (duration == C.TIME_UNSET || duration == 0L || position == duration || position == C.TIME_UNSET)
+                return@LaunchedEffect
+
+            var current = position
+            // Set the initial value of the chronometer to the current position.
+            chronometer.value = current
+            // If not playing, return without starting the chronometer updates.
+            if (!playing) return@LaunchedEffect
+            // since we might have moved from old to new time
+            // FIXME - consider the case if the user have set variable speed during the time.
+            val elapsed = System.currentTimeMillis() - timeStamp
+            current += (elapsed * speed).roundToLong()
+            // Launch a coroutine to update the chronometer periodically.
+            launch {
+                // Continue updating the chronometer until the current position reaches the duration.
+                while (current < duration) {
+                    Log.d(TAG, "duration: $duration | value: ${chronometer.value} | position: $current ")
+                    // Delay for 1 second.
+                    delay(1000)
+                    // Update the current position based on the playback speed.
+                    current += (1000 * speed).roundToLong()
+                    chronometer.value = current
+                }
+            }
+        }
+        return chronometer
+    }

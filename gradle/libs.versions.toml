@@ -1,10 +1,10 @@
 [versions]
 agp = "8.7.3"
 kotlin = "2.1.0"
-compose = "1.8.0-alpha06"
+compose = "1.8.0-alpha07"
 media3 = "1.5.0"
 toolkit = "v2.2.5"
-material_icons = "1.7.5"
+material_icons = "1.7.6"
 room = "2.6.1"
 
 [plugins]
@@ -27,7 +27,7 @@ androidx-foundation = { module = "androidx.compose.foundation:foundation", versi
 androidx-animation-graphics = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
 
 # Misc
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.5" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.6" }
 coil-compose = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
 kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
@@ -38,7 +38,7 @@ androidx-constraint-layout-compose = { module = "androidx.constraintlayout:const
 material_view = { module = "com.google.android.material:material", version = "1.12.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.4" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.5" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.0" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }
@@ -50,7 +50,7 @@ accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive",
 
 # Firebase
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.2" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.2.1" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.3.0" }
 
 #Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }

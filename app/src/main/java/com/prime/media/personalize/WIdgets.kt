@@ -25,30 +25,25 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.ellipsize
 import com.prime.media.common.isFreemium
 import com.prime.media.common.isPurchasable
 import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
-import com.prime.media.console.widget.GoldenDust
-import com.prime.media.console.widget.GradientGroves
-import com.prime.media.console.widget.Iphone
-import com.prime.media.console.widget.RedVelvetCake
-import com.prime.media.console.widget.SnowCone
-import com.prime.media.console.widget.Tiramisu
 import com.prime.media.old.core.playback.MediaItem
+import com.prime.media.widget.Glance
 import com.primex.material2.Button
 import com.primex.material2.IconButton
 import com.primex.material2.OutlinedButton
 import com.zs.core.paymaster.purchased
+import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Header
@@ -81,22 +76,6 @@ private val SampleMediaItem =
         artwork = Uri.parse("https://upload.wikimedia.org/wikipedia/en/c/c0/LetitbleedRS.jpg")
     )
 
-/**
- * Emits a widget corresponding to the id.
- */
-@NonRestartableComposable
-@Composable
-private fun Preview(id: String, modifier: Modifier = Modifier) = when (id) {
-    BuildConfig.IAP_PLATFORM_WIDGET_IPHONE -> Iphone(item = SampleMediaItem, modifier)
-    BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE ->
-        RedVelvetCake(item = SampleMediaItem, modifier)
-
-    BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE -> SnowCone(item = SampleMediaItem, modifier)
-    BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU -> Tiramisu(item = SampleMediaItem, modifier)
-    BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST -> GoldenDust(SampleMediaItem, modifier)
-    BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES -> GradientGroves(SampleMediaItem, modifier)
-    else -> error("Unknown widget $id")
-}
 
 private val WIDGET_MAX_WIDTH = 400.dp
 
@@ -154,23 +133,25 @@ fun LazyListScope.widgets(
             item(
                 child + group,
                 content = {
-                    Preview(
-                        id = child,
-                        modifier = Modifier.widthIn(max = WIDGET_MAX_WIDTH)
-                    )
+                    val state by PlaybackController.collectNowPlayingAsState()
+                    Glance(child, state, {}, showcase = true)
                 }
             )
 
             // Emit a footer item for the current child widget
             // This section defines the footer for each widget item in the list
-            val childInfo = details[child] ?: continue // Retrieve details for the child; skip if not found (shouldn't happen)
-             item(
+            val childInfo = details[child]
+                ?: continue // Retrieve details for the child; skip if not found (shouldn't happen)
+            item(
                 key = "footer_$child",
                 contentType = "widget_footer",
                 content = {
                     Header(
                         text = childInfo.title.ellipsize(30),
-                        contentPadding = PaddingValues(bottom = ContentPadding.normal, start = ContentPadding.normal),
+                        contentPadding = PaddingValues(
+                            bottom = ContentPadding.normal,
+                            start = ContentPadding.normal
+                        ),
                         style = AppTheme.typography.bodyMedium,
                         action = {
                             // Show a toast with the child's rich description on click
@@ -183,7 +164,8 @@ fun LazyListScope.widgets(
                             // Purchase and selection state
                             val widget by purchase(child) // Observe the purchase state of the child widget
                             val bundle by purchase(group) // Observe the purchase state of the parent group/bundle
-                            val isApplied = selected == child // Check if this child widget is currently selected
+                            val isApplied =
+                                selected == child // Check if this child widget is currently selected
                             // If freemium, purchased, debuggable or part of a purchased bundle, show a radio button
                             if (childInfo.isFreemium || widget.purchased || bundle.purchased || BuildConfig.DEBUG)
                                 return@Header androidx.compose.material.RadioButton(

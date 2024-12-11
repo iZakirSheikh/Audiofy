@@ -22,8 +22,6 @@ package com.zs.core.playback
 
 import android.annotation.SuppressLint
 import android.app.*
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -34,7 +32,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
-import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -52,7 +49,9 @@ import com.zs.core.getValue
 import com.zs.core.set
 import kotlinx.coroutines.*
 import kotlin.String
+import kotlin.math.roundToLong
 import kotlin.random.Random
+import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 import androidx.media3.exoplayer.DefaultLoadControl.Builder as LoadControl
 import androidx.media3.exoplayer.upstream.DefaultAllocator as Allocator
 import com.zs.core.db.Playlists2 as Playlists
@@ -257,6 +256,31 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         }
     }
 
+    // Handle custom actions from inApp Widget or Android Widget.
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val action = intent?.action
+        Log.d(TAG, "onStartCommand: $action")
+        if (action == null) {
+            sendBroadcast(NowPlaying.from(this, player))
+            return super.onStartCommand(intent, flags, startId)
+        }
+        if (player.playbackState != Player.STATE_READY)
+            player.prepare()
+        // if action is null; implies notification update requested
+        when(action){
+            NowPlaying.ACTION_TOGGLE_PLAY -> player.playWhenReady = !player.playWhenReady
+            NowPlaying.ACTION_NEXT -> player.seekToNextMediaItem()
+            NowPlaying.ACTION_PREVIOUS -> player.seekToPreviousMediaItem()
+            NowPlaying.ACTION_SEEK_TO -> {
+                val arg = intent.getFloatExtra(NowPlaying.EXTRA_SEEK_PCT, -1f)
+                val position = if (arg != -1f) (arg * player.duration).roundToLong() else -1L
+                if (position != -1L)
+                    player.seekTo(position)
+            }
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     /**
      * Returns the session associated with the provided [controllerInfo].
      * @param controllerInfo The controller information.
@@ -444,19 +468,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         startInForegroundRequired: Boolean
     ) {
         super.onUpdateNotification(session, startInForegroundRequired)
-
-        // Send an intent for updating the widget
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-            .setPackage("com.prime.player")
-        //intent.setAction()
-
-        // Retrieve widget IDs
-        val ids = AppWidgetManager.getInstance(application)
-            .getAppWidgetIds(ComponentName(application, "com.prime.media.old.console.Widget"))
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-
-        // Broadcast the intent to update the widget
-        sendBroadcast(intent)
+        // TODO - Send notification from call-site of each change.
+        sendBroadcast(NowPlaying.from(this, player))
     }
 
     /**
@@ -673,6 +686,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         super.onDestroy()
     }
 
+    // stop player if user wished.
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.playWhenReady = false
