@@ -69,12 +69,8 @@ value class NowPlaying(private val value: Intent) {
             return Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
                 `package` = "com.prime.player"
                 val ids = AppWidgetManager.getInstance(ctx.applicationContext)
-                    .getAppWidgetIds(
-                        ComponentName(
-                            ctx.applicationContext,
-                            "com.prime.media.old.console.Widget"
-                        )
-                    )
+                    .getAppWidgetIds(ComponentName(ctx.applicationContext, "com.zs.widget.AppWidget"))
+
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
                 val mediaItem = player.currentMediaItem ?: return@apply
                 putExtra(EXTRA_TITLE, mediaItem.mediaMetadata.title.toString())

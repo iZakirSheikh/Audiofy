@@ -55,7 +55,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.google.android.material.chip.Chip
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.MetaData
 import com.prime.media.common.MetaDataTopAppBar
