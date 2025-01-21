@@ -119,6 +119,23 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
         //
         private val LIST_ITEM_DELIMITER = ';'
+
+        /**
+        * Player events that trigger widget updates.
+        *
+        * The widget updates its state upon receiving any of these events,
+        * reflecting changes to playback, timeline, or other player properties.
+        */
+        internal val UPDATE_EVENTS = intArrayOf(
+            Player.EVENT_TIMELINE_CHANGED,
+            Player.EVENT_PLAYBACK_STATE_CHANGED,
+            Player.EVENT_REPEAT_MODE_CHANGED,
+            Player.EVENT_IS_PLAYING_CHANGED,
+            Player.EVENT_IS_LOADING_CHANGED,
+            Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+            Player.EVENT_MEDIA_ITEM_TRANSITION
+        )
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -264,8 +281,11 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             sendBroadcast(NowPlaying.from(this, player))
             return super.onStartCommand(intent, flags, startId)
         }
-        if (player.playbackState != Player.STATE_READY)
+        if (player.playbackState != Player.STATE_READY) {
+            // FIX-ME Here we assume that session hasn't been added.
+            addSession(session)
             player.prepare()
+        }
         // if action is null; implies notification update requested
         when(action){
             NowPlaying.ACTION_TOGGLE_PLAY -> player.playWhenReady = !player.playWhenReady
@@ -457,18 +477,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         }
     }
 
-    /**
-     * Called when an update to the media session's notification is required, possibly to start it in foreground mode.
-     *
-     * @param session The media session.
-     * @param startInForegroundRequired True if the notification should be started in foreground mode.
-     */
-    override fun onUpdateNotification(
-        session: MediaSession,
-        startInForegroundRequired: Boolean
-    ) {
-        super.onUpdateNotification(session, startInForegroundRequired)
-        // TODO - Send notification from call-site of each change.
+    override fun onEvents(player: Player, events: Player.Events) {
+        if (!events.containsAny(*UPDATE_EVENTS))
+            return
         sendBroadcast(NowPlaying.from(this, player))
     }
 
@@ -477,9 +488,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
      *
      * @param error The playback exception representing the error.
      */
-    override fun onPlayerError(
-        error: PlaybackException
-    ) {
+    override fun onPlayerError(error: PlaybackException) {
         // Display a simple toast message indicating an unplayable file
         Toast.makeText(this, "Unplayable file", Toast.LENGTH_SHORT).show()
         // You may choose to handle the error here or take other actions like seeking to the next media item

@@ -3,12 +3,10 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New</b>
         <font color='grey'>
-            \n Added support for Spanish language.
-            \n Added a link to help translate the app.
-            \n Fixed the navigation bug causing the backstack to clear.
-            \n Bug fixes and performance improvements.
-            \n 🚀 <b>Introduced a Brand-New In-App Video Browser Screen:</b> Seamlessly browse and
-            play videos directly within the app.
+            \n We\'ve enhanced the functionality of the app.
+            \n We\'re utilizing the new, advanced NowPlaying API for real-time updates regarding playback metadata state.
+            \n We\'ve added a new Dynamic Widget that automatically adjusts to size.
+            \n More App Widget styles are coming soon.
         </font>
     </string>
 

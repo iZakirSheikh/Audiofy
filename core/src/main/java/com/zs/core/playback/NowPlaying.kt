@@ -23,6 +23,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.media3.common.C
 import androidx.media3.common.Player
@@ -62,6 +63,9 @@ value class NowPlaying(private val value: Intent) {
         @JvmStatic
         val EXTRA_SEEK_PCT = "com.prime.player.extra.SEEK_TO"
 
+        @JvmStatic
+        val EXTRA_REPEAT_MODE = "com.prime.player.action.REPEAT_MODE"
+
         /**
          * Constructs the widget update intent from a [Player].
          */
@@ -83,6 +87,7 @@ value class NowPlaying(private val value: Intent) {
                 putExtra(EXTRAS_PLAY_WHEN_READY, player.playWhenReady)
                 putExtra(EXTRA_WHEN, System.currentTimeMillis())
                 putExtra(EXTRA_SPEED, player.playbackParameters.speed)
+                putExtra(EXTRA_REPEAT_MODE, player.repeatMode)
             }
         }
 
@@ -97,7 +102,7 @@ value class NowPlaying(private val value: Intent) {
         inline fun trySend(ctx: Context, action: String? = null, args: Intent.() -> Unit = {}) {
             try {
                 val intent = Intent(action, null, ctx, Playback::class.java).apply(args)
-                ctx.startService(intent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(intent) else ctx.startService(intent)
             } catch (i: Exception) {
                 Log.d("NowPlaying", "trySend: ${i.message}")
             }
@@ -122,6 +127,8 @@ value class NowPlaying(private val value: Intent) {
         get() = value.getBooleanExtra(EXTRAS_PLAY_WHEN_READY, false)
     val speed
         get() = value.getFloatExtra(EXTRA_SPEED, 1f)
+    val repeatMode
+        get() = value.getIntExtra(EXTRA_REPEAT_MODE, Player.REPEAT_MODE_ALL)
 
     val playing get() = playWhenReady && state != Player.STATE_ENDED && state != Player.STATE_IDLE
 }
