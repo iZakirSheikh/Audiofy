@@ -102,7 +102,7 @@ value class NowPlaying(private val value: Intent) {
         inline fun trySend(ctx: Context, action: String? = null, args: Intent.() -> Unit = {}) {
             try {
                 val intent = Intent(action, null, ctx, Playback::class.java).apply(args)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(intent) else ctx.startService(intent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startService(intent) else ctx.startService(intent)
             } catch (i: Exception) {
                 Log.d("NowPlaying", "trySend: ${i.message}")
             }

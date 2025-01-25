@@ -7,10 +7,6 @@ toolkit = "v2.2.5"
 material_icons = "1.7.6"
 room = "2.6.1"
 glance = "1.1.1"
-junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-appcompat = "1.7.0"
 
 
 [plugins]
@@ -45,7 +41,7 @@ material_view = { module = "com.google.android.material:material", version = "1.
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.5" }
-androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.1" }
+androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.2" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }
 

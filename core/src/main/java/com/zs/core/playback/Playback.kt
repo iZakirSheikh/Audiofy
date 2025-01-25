@@ -121,11 +121,11 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         private val LIST_ITEM_DELIMITER = ';'
 
         /**
-        * Player events that trigger widget updates.
-        *
-        * The widget updates its state upon receiving any of these events,
-        * reflecting changes to playback, timeline, or other player properties.
-        */
+         * Player events that trigger widget updates.
+         *
+         * The widget updates its state upon receiving any of these events,
+         * reflecting changes to playback, timeline, or other player properties.
+         */
         internal val UPDATE_EVENTS = intArrayOf(
             Player.EVENT_TIMELINE_CHANGED,
             Player.EVENT_PLAYBACK_STATE_CHANGED,
@@ -208,6 +208,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     private val session: MediaLibrarySession by lazy {
         // Build and configure the MediaLibrarySession
         MediaLibrarySession.Builder(this, player, this)
+            .setId("playback")
             .setSessionActivity(activity)
             .build()
     }
@@ -270,6 +271,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             player.addListener(this@Playback)
             // Initialize the audio effects;
             onAudioSessionIdChanged(-1)
+            sendBroadcast(NowPlaying.from(this@Playback, player))
         }
     }
 
@@ -281,13 +283,15 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             sendBroadcast(NowPlaying.from(this, player))
             return super.onStartCommand(intent, flags, startId)
         }
-        if (player.playbackState != Player.STATE_READY) {
-            // FIX-ME Here we assume that session hasn't been added.
+
+        if (sessions.find { it.id == session.id } == null)
             addSession(session)
+
+        if (player.playbackState != Player.STATE_READY)
             player.prepare()
-        }
+
         // if action is null; implies notification update requested
-        when(action){
+        when (action) {
             NowPlaying.ACTION_TOGGLE_PLAY -> player.playWhenReady = !player.playWhenReady
             NowPlaying.ACTION_NEXT -> player.seekToNextMediaItem()
             NowPlaying.ACTION_PREVIOUS -> player.seekToPreviousMediaItem()

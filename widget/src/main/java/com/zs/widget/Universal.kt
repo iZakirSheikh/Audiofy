@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -67,9 +68,15 @@ private val ArtworkBg = Color.Gray.copy(0.7f)
 @Composable
 internal fun Universal(state: NowPlaying, type: ViewType) {
     // Define a common top_modifier
-    val modifier =
-        Modifier.cornerRadius(ROUNDNESS)
-            .background(GlanceTheme.colors.surface)
+    val modifier = Modifier
+        // Rounded corners (cornerRadius) are not directly supported in Android API levels below 12.
+        // We're using a background drawable with rounded corners as a workaround for backward compatibility.
+        .background(
+            ImageProvider(R.drawable.rect_rounded_cornors_12dp),
+            colorFilter = ColorFilter.tint(GlanceTheme.colors.surface)
+        )
+       // cornerRadius(ROUNDNESS)
+            //.background(GlanceTheme.colors.surface)
             .padding(8.dp)
             .appWidgetBackground()
             .launchApp()
