@@ -55,6 +55,9 @@ interface PlaybackController {
      */
     suspend fun clear()
 
+    /** Ensures that controller is connected with service. */
+    suspend fun connect()
+
     companion object {
 
         private const val TAG = "PlaybackController"

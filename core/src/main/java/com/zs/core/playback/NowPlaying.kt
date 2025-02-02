@@ -27,6 +27,8 @@ import android.os.Build
 import android.util.Log
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val TAG = "NowPlaying"
 
