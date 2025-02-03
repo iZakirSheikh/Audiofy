@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.prime.media.old.console
 
 import android.annotation.SuppressLint
@@ -29,6 +31,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.IntDef
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -175,6 +178,7 @@ import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.sharedElement
 import com.zs.core_ui.toast.Toast
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
@@ -1195,6 +1199,7 @@ private fun MainContent(
         Artwork(
             data = state.artworkUri,
             modifier = Modifier
+                .sharedElement(Constraints.ID_ARTWORK)
                 .layoutId(Constraints.ID_ARTWORK)
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
@@ -1213,7 +1218,7 @@ private fun MainContent(
         Label(
             text = state.subtitle ?: stringResource(id = R.string.unknown),
             style = AppTheme.typography.caption,
-            modifier = Modifier.layoutId(Constraints.ID_SUBTITLE),
+            modifier = Modifier.sharedElement(Constraints.ID_SUBTITLE).layoutId(Constraints.ID_SUBTITLE),
             color = contentColor
         )
 
@@ -1223,6 +1228,7 @@ private fun MainContent(
             fontSize = constraints.titleTextSize,// Maybe Animate
             fontWeight = FontWeight.Bold,
             modifier = Modifier
+                .sharedElement(Constraints.ID_TITLE)
                 .marque(Int.MAX_VALUE)
                 .layoutId(Constraints.ID_TITLE),
             color = contentColor
@@ -1237,14 +1243,14 @@ private fun MainContent(
                 else -> SEEKBAR_STYLE_WAVY
             },
             onRequest = onRequest,
-            modifier = Modifier.layoutId(Constraints.ID_TIME_BAR)
+            modifier = Modifier.sharedElement(Constraints.ID_TIME_BAR).layoutId(Constraints.ID_TIME_BAR)
         )
 
         // Controls
         Controls(
             state = state,
             style = if (background == BACKGROUND_VIDEO_SURFACE) PLAY_BUTTON_STYLE_SIMPLE else PLAY_BUTTON_STYLE_NEUMORPHIC,
-            modifier = Modifier.layoutId(Constraints.ID_CONTROLS)
+            modifier = Modifier.sharedElement(Constraints.ID_CONTROLS).layoutId(Constraints.ID_CONTROLS)
         )
 
         // Options
@@ -1538,6 +1544,7 @@ fun Console(state: Console) {
         displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(
             activity = context.findActivity()
         ),
+        modifier = Modifier.sharedElement(Constraints.ID_BACKGROUND),
         // The second pane is the details pane, which can show different content based on the
         // detailsOf value
         // Use the horizontal or vertical two pane strategy based on the orientation and the new window size

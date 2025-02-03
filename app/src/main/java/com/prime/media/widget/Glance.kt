@@ -23,6 +23,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
+import com.prime.media.old.console.Constraints
 import com.prime.media.settings.Settings
 import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.ContentPadding
@@ -46,9 +47,13 @@ object Glance {
      */
     val MIN_SIZE = 40.dp
 
-    const val SHARED_ARTWORK_ID = "artwork"
+    const val SHARED_ARTWORK_ID = Constraints.ID_ARTWORK
     const val SHARED_PLAYING_BARS_ID = "playing_bars"
-    const val SHARED_BACKGROUND_ID = "background"
+    const val SHARED_BACKGROUND_ID = Constraints.ID_BACKGROUND
+    const val SHARED_TITLE = Constraints.ID_TITLE
+    const val SHARED_SUBTITLE = Constraints.ID_SUBTITLE
+    const val SHARED_CONTROLS = Constraints.ID_CONTROLS
+    const val SHARD_TIME_BAR = Constraints.ID_TIME_BAR
 
     val ELEVATION = 12.dp
 

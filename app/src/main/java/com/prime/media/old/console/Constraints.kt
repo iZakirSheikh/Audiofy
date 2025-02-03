@@ -339,10 +339,8 @@ private fun Portrait(
         end.linkTo(parent.end, ContentPadding.normal + right)
         top.linkTo(REF_SIGNATURE.bottom, up)
         bottom.linkTo(REF_POSITION.top)
-        width = Dimension.fillToConstraints
+        width = Dimension.percent(0.8f)
         height = Dimension.ratio("1:1")
-        scaleY = 0.8f
-        scaleX = 0.8f
     }
 
     vertical(
@@ -472,10 +470,10 @@ private fun Landscape(
         // Make artwork middle only if not compact
         if (!compact)
             bottom.linkTo(parent.bottom, ContentPadding.normal + down)
-        width = Dimension.percent(0.35f)
+        width = Dimension.percent((if (compact) 0.7f else 0.9f) * 0.35f)
         height = Dimension.ratio("1:1")
-        scaleY = if (compact) 0.7f else 0.9f
-        scaleX = if (compact) 0.7f else 0.9f
+       // scaleY =
+      //  scaleX = if (compact) 0.7f else 0.9f
     }
 
     constrain(REF_TITLE) {
@@ -565,14 +563,14 @@ private fun Medium(
 
     // Artwork Row
     constrain(REF_ARTWORK) {
-        start.linkTo(parent.start, ContentPadding.normal)
-        end.linkTo(parent.end, ContentPadding.normal)
-        top.linkTo(REF_CLOSE_BTN.bottom)
-        bottom.linkTo(REF_OPTIONS.top)
-        width = Dimension.fillToConstraints.atMost(420.dp)
+        start.linkTo(parent.start, ContentPadding.large)
+        end.linkTo(parent.end, ContentPadding.large)
+        top.linkTo(REF_CLOSE_BTN.bottom, ContentPadding.normal)
+        bottom.linkTo(REF_OPTIONS.top, ContentPadding.normal)
+        width = Dimension.fillToConstraints.atMost(420.dp * 0.8f)
         height = Dimension.ratio("1:1")
-        scaleY = 0.8f
-        scaleX = 0.8f
+       // scaleY = 0.8f
+      //  scaleX = 0.8f
     }
 
     constrain(REF_TIME_BAR) {
@@ -669,10 +667,10 @@ private fun Large(
         //end.linkTo(parent.end, ContentPadding.normal)
         // top.linkTo(REF_CLOSE_BTN.bottom)
         bottom.linkTo(REF_TIME_BAR.top)
-        width = Dimension.fillToConstraints.atMost(420.dp)
+        width = Dimension.fillToConstraints.atMost(420.dp * 0.8f)
         height = Dimension.ratio("1:1")
-        scaleY = 0.8f
-        scaleX = 0.8f
+//        scaleY = 0.8f
+//        scaleX = 0.8f
     }
 
     constrain(REF_TIME_BAR) {
