@@ -18,9 +18,17 @@
 
 package com.zs.core.playback
 
+import android.appwidget.AppWidgetManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 
 interface PlaybackController {
 
@@ -47,7 +55,52 @@ interface PlaybackController {
      */
     suspend fun clear()
 
+    /** Ensures that controller is connected with service. */
+    suspend fun connect()
+
     companion object {
-        operator fun invoke(context: Context): PlaybackController = PlaybackControllerImpl(context.applicationContext)
+
+        private const val TAG = "PlaybackController"
+
+        /**
+         * Creates and returns an instance of [PlaybackController].
+         */
+        operator fun invoke(context: Context): PlaybackController =
+            PlaybackControllerImpl(context.applicationContext)
+
+        /**
+         * Observes NowPlaying events using a BroadcastReceiver.
+         *
+         * This function creates a cold flow that emits NowPlaying objects whenever the
+         * AppWidgetManager.ACTION_APPWIDGET_UPDATE broadcast is received.
+         *
+         * @param context The context to register the receiver in.
+         * @return A Flow that emits NowPlaying objects.
+         */
+        fun observe(context: Context) = callbackFlow<NowPlaying> {
+            // Create a BroadcastReceiver to listen for NowPlaying events
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    trySend(NowPlaying(intent ?: return))
+                }
+            }
+
+            // Register the receiver to listen for the specified broadcast
+            ContextCompat.registerReceiver(
+                context,
+                receiver,
+                IntentFilter(AppWidgetManager.ACTION_APPWIDGET_UPDATE),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+
+            // send signal for getting first progress
+            NowPlaying.trySend(context)
+
+            // Unregister the receiver when the flow is closed
+            awaitClose {
+                context.unregisterReceiver(receiver)
+                Log.d(TAG, "observe: unregistering receiver")
+            }
+        }
     }
 }

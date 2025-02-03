@@ -22,8 +22,6 @@ package com.zs.core.playback
 
 import android.annotation.SuppressLint
 import android.app.*
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -34,7 +32,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.*
-import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -52,7 +49,9 @@ import com.zs.core.getValue
 import com.zs.core.set
 import kotlinx.coroutines.*
 import kotlin.String
+import kotlin.math.roundToLong
 import kotlin.random.Random
+import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 import androidx.media3.exoplayer.DefaultLoadControl.Builder as LoadControl
 import androidx.media3.exoplayer.upstream.DefaultAllocator as Allocator
 import com.zs.core.db.Playlists2 as Playlists
@@ -120,6 +119,23 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
         //
         private val LIST_ITEM_DELIMITER = ';'
+
+        /**
+         * Player events that trigger widget updates.
+         *
+         * The widget updates its state upon receiving any of these events,
+         * reflecting changes to playback, timeline, or other player properties.
+         */
+        internal val UPDATE_EVENTS = intArrayOf(
+            Player.EVENT_TIMELINE_CHANGED,
+            Player.EVENT_PLAYBACK_STATE_CHANGED,
+            Player.EVENT_REPEAT_MODE_CHANGED,
+            Player.EVENT_IS_PLAYING_CHANGED,
+            Player.EVENT_IS_LOADING_CHANGED,
+            Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+            Player.EVENT_MEDIA_ITEM_TRANSITION
+        )
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -192,6 +208,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     private val session: MediaLibrarySession by lazy {
         // Build and configure the MediaLibrarySession
         MediaLibrarySession.Builder(this, player, this)
+            .setId("playback")
             .setSessionActivity(activity)
             .build()
     }
@@ -254,7 +271,38 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             player.addListener(this@Playback)
             // Initialize the audio effects;
             onAudioSessionIdChanged(-1)
+            sendBroadcast(NowPlaying.from(this@Playback, player))
         }
+    }
+
+    // Handle custom actions from inApp Widget or Android Widget.
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val action = intent?.action
+        Log.d(TAG, "onStartCommand: $action")
+        if (action == null) {
+            sendBroadcast(NowPlaying.from(this, player))
+            return super.onStartCommand(intent, flags, startId)
+        }
+
+        if (sessions.find { it.id == session.id } == null)
+            addSession(session)
+
+        if (player.playbackState != Player.STATE_READY)
+            player.prepare()
+
+        // if action is null; implies notification update requested
+        when (action) {
+            NowPlaying.ACTION_TOGGLE_PLAY -> player.playWhenReady = !player.playWhenReady
+            NowPlaying.ACTION_NEXT -> player.seekToNextMediaItem()
+            NowPlaying.ACTION_PREVIOUS -> player.seekToPreviousMediaItem()
+            NowPlaying.ACTION_SEEK_TO -> {
+                val arg = intent.getFloatExtra(NowPlaying.EXTRA_SEEK_PCT, -1f)
+                val position = if (arg != -1f) (arg * player.duration).roundToLong() else -1L
+                if (position != -1L)
+                    player.seekTo(position)
+            }
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
     /**
@@ -433,30 +481,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         }
     }
 
-    /**
-     * Called when an update to the media session's notification is required, possibly to start it in foreground mode.
-     *
-     * @param session The media session.
-     * @param startInForegroundRequired True if the notification should be started in foreground mode.
-     */
-    override fun onUpdateNotification(
-        session: MediaSession,
-        startInForegroundRequired: Boolean
-    ) {
-        super.onUpdateNotification(session, startInForegroundRequired)
-
-        // Send an intent for updating the widget
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-            .setPackage("com.prime.player")
-        //intent.setAction()
-
-        // Retrieve widget IDs
-        val ids = AppWidgetManager.getInstance(application)
-            .getAppWidgetIds(ComponentName(application, "com.prime.media.old.console.Widget"))
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-
-        // Broadcast the intent to update the widget
-        sendBroadcast(intent)
+    override fun onEvents(player: Player, events: Player.Events) {
+        if (!events.containsAny(*UPDATE_EVENTS))
+            return
+        sendBroadcast(NowPlaying.from(this, player))
     }
 
     /**
@@ -464,9 +492,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
      *
      * @param error The playback exception representing the error.
      */
-    override fun onPlayerError(
-        error: PlaybackException
-    ) {
+    override fun onPlayerError(error: PlaybackException) {
         // Display a simple toast message indicating an unplayable file
         Toast.makeText(this, "Unplayable file", Toast.LENGTH_SHORT).show()
         // You may choose to handle the error here or take other actions like seeking to the next media item
@@ -673,6 +699,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         super.onDestroy()
     }
 
+    // stop player if user wished.
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.playWhenReady = false

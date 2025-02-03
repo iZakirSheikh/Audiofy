@@ -61,6 +61,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.observeProductInfoAsState
 import com.prime.media.common.preference
 import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
@@ -317,14 +318,13 @@ private fun InAppPurchase(
     // specific UI components. If in inspection mode, return to avoid executing the rest of the code.
     if (purchase.purchased || LocalInspectionMode.current) return Spacer(modifier)
     val facade = LocalSystemFacade.current
-    val details = remember(id) {
-        (facade as MainActivity).paymaster.details.value.find { it.id == id }
-    }
-    if (details == null) {
+    val info by facade.observeProductInfoAsState(id)
+    if (info == null) {
         // This would never happen
         Log.d(TAG, "InAppPurchase: details for $id not found")
         return Spacer(modifier)
     }
+    val details = info ?: return
     Promotion(
         expanded,
         onValueChange,

@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -21,6 +22,7 @@ import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.primex.preferences.Key
+import com.zs.core.paymaster.ProductInfo
 import com.zs.core.paymaster.Purchase
 import com.zs.core_ui.WindowStyle
 import com.zs.core_ui.toast.Priority
@@ -264,7 +266,8 @@ val LocalSystemFacade =
  * is called in preview mode.
  */
 @Composable
-inline fun purchase(id: String): State<Purchase?> {
+@Stable
+fun purchase(id: String): State<Purchase?> {
     val activity = LocalSystemFacade.current as? MainActivity
     if (activity == null) {
         Log.i(
@@ -276,6 +279,28 @@ inline fun purchase(id: String): State<Purchase?> {
     val manager = activity.paymaster
     return produceState(remember { manager.purchases.value.find { it.id == id } }) {
         manager.purchases.map { it.find { it.id == id } }.collect {
+            // updating purchase
+            value = it
+        }
+    }
+}
+
+
+@Composable
+@Stable
+fun SystemFacade.observeProductInfoAsState(id: String): State<ProductInfo?> {
+    val activity = LocalSystemFacade.current as? MainActivity
+    if (activity == null) {
+        Log.i(
+            "SystemFacade", "Purchase operation returned null in preview mode because " +
+                    "the activity context is null. This is expected behavior in preview mode."
+        )
+        return remember { mutableStateOf(null) }
+    }
+    val manager = activity.paymaster
+    return produceState(remember { manager.details.value.find { it.id == id } }, id) {
+        manager.details.map { it.find { it.id == id } }.collect {
+            // updating
             value = it
         }
     }
@@ -301,4 +326,3 @@ inline fun <S, O> preference(key: Key.Key2<S, O>): State<O> {
     val provider = LocalSystemFacade.current
     return provider.observeAsState(key = key)
 }
-

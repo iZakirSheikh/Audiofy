@@ -50,7 +50,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -64,9 +63,9 @@ import com.prime.media.common.NavItem
 import com.prime.media.common.Regular
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
+import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
-import com.prime.media.console.widget.Glance
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.PlaylistViewModel
 import com.prime.media.impl.PlaylistsViewModel
@@ -109,11 +108,13 @@ import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
+import com.prime.media.widget.Glance
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
 import com.zs.core_ui.LocalWindowSize
@@ -511,6 +512,7 @@ private fun NavigationBar(
                 Spacer(modifier = Modifier.weight(1f))
             },
         )
+
         else -> BottomAppBar(
             windowInsets = WindowInsets.navigationBars,
             contentColor = contentColor,
@@ -622,7 +624,10 @@ fun App(
             hideNavigationBar = !requiresNavBar,
             background = AppTheme.colors.background,
             progress = activity.inAppTaskProgress,
-            widget = { Glance() },
+            widget = {
+                val state by PlaybackController.collectNowPlayingAsState()
+                Glance(state)
+            },
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val colors = AppTheme.colors
@@ -635,7 +640,10 @@ fun App(
                         useAccent -> Modifier.background(colors.accent)
                         else -> Modifier.dynamicBackdrop(
                             if (!portrait) null else provider,
-                            HazeStyle.Regular(colors.background, if (colors.isLight) 0.30f else 0.63f),
+                            HazeStyle.Regular(
+                                colors.background,
+                                if (colors.isLight) 0.30f else 0.63f
+                            ),
                             colors.background,
                             colors.accent
                         )

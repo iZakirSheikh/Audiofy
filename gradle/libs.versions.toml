@@ -1,11 +1,13 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
-compose = "1.8.0-alpha06"
-media3 = "1.5.0"
+agp = "8.8.0"
+kotlin = "2.1.10"
+compose = "1.8.0-beta01"
+media3 = "1.5.1"
 toolkit = "v2.2.5"
-material_icons = "1.7.5"
+material_icons = "1.7.7"
 room = "2.6.1"
+glance = "1.1.1"
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -27,7 +29,7 @@ androidx-foundation = { module = "androidx.compose.foundation:foundation", versi
 androidx-animation-graphics = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
 
 # Misc
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.5" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.7" }
 coil-compose = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
 kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
@@ -38,19 +40,19 @@ androidx-constraint-layout-compose = { module = "androidx.constraintlayout:const
 material_view = { module = "com.google.android.material:material", version = "1.12.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.4" }
-androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.0" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.6" }
+androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.2" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }
 
 # Accompanist
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.36.0" }
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.36.0" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.0" }
+accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.37.0" }
 
 
 # Firebase
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.1.2" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.2.1" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.2.0" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.0" }
 
 #Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
@@ -82,10 +84,10 @@ iron_source_ad_qaulity = { module = "com.ironsource:adqualitysdk", version = "7.
 unity_adapter = { module = "com.ironsource.adapters:unityadsadapter", version = "4.3.40" }
 
 androidx-window = { group = "androidx.window", name = "window", version = "1.3.0" }
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.9.3" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.0" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
-lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.0" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.2" }
 chrisbanes-haze = {module= "dev.chrisbanes.haze:haze", version = "1.0.2"}
 
 # Google Play Services
@@ -93,6 +95,10 @@ play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", versi
 play-app-review-ktx = { module = "com.google.android.play:review-ktx", version = "2.0.1" } #Updating it caused crash on 2.0.2
 google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.1.1" }
 play_feature_delivery = { module = "com.google.android.play:feature-delivery-ktx", version = "2.1.0" }
+
+# Compose Glance
+glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 [bundles]
 compose = ["androidx-animation-graphics", "androidx-material", "androidx-ui", "androidx-ui-graphics", "toolkit-material2", "toolkit-core-ktx"]

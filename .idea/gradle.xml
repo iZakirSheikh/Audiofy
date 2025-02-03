@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/codex" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core-ui" />
+            <option value="$PROJECT_DIR$/widget" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

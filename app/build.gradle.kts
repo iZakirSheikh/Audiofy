@@ -65,8 +65,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 179
-        versionName = "3.2.1"
+        versionCode = 184
+        versionName = "3.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -107,7 +107,15 @@ android {
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
     dynamicFeatures += setOf(":codex")
-    composeCompiler { enableStrongSkippingMode = false }
+    composeCompiler {
+        //enableStrongSkippingMode = false
+        // TODO - I guess disable these in release builds.
+//        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//        metricsDestination = layout.buildDirectory.dir("compose_compiler")
+//        stabilityConfigurationFiles = listOf(
+//            rootProject.layout.projectDirectory.file("stability_config.conf")
+//        )
+    }
 }
 
 // Not moving these to libs.version.toml because i think this is redundant.
@@ -122,7 +130,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.navigation.compose)
     implementation(libs.androidx.constraint.layout.compose)
-    implementation (libs.material.view)
     implementation(libs.androidx.ui.text.google.fonts)
 
     implementation(libs.androidx.startup.runtime)
@@ -132,6 +139,7 @@ dependencies {
     implementation(project(":ads"))
     implementation(project(":core-ui"))
     implementation(project(":core"))
+    implementation(project(":widget"))
 
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
