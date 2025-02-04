@@ -85,8 +85,9 @@ import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.store.Artists
-import com.prime.media.old.directory.store.ArtistsViewModel
+import com.prime.media.local.Artists
+import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.local.RouteArtists
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.directory.store.Folders
@@ -334,9 +335,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Albums(viewState = viewModel)
     }
     // Artists
-    composable(Artists.route) {
+    composable(RouteArtists) {
         val viewModel = koinViewModel<ArtistsViewModel>()
-        Artists(viewModel = viewModel)
+        Artists(viewState = viewModel)
     }
     // Audios
     composable(Audios.route) {

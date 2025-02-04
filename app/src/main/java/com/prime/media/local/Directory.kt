@@ -25,8 +25,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
@@ -134,7 +136,7 @@ private fun FloatingTopAppBar(
                 title = {
                     Label(
                         text = title,
-                        style = AppTheme.typography.titleMedium,
+                        style = AppTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -168,7 +170,7 @@ private fun FloatingTopAppBar(
                         ),
                         FloatingTopBarShape
                     )
-                    .height(48.dp)
+                   // .height(48.dp)
                     .dynamicBackdrop(
                         backdropProvider,
                         HazeStyle.Regular(colors.background),
@@ -260,7 +262,7 @@ fun <T> Directory(
     key: ((item: T) -> Any)? = null,
     itemContent: @Composable LazyGridItemScope.(item: T) -> Unit
 ) {
-    val inAppNavBarInsets = WindowInsets.contentInsets
+    val inAppNavBarInsets = WindowInsets.contentInsets + WindowInsets.navigationBars.asPaddingValues()
     val state = GridState()
     var isSearchVisible by remember { mutableStateOf(false) }
 
@@ -291,7 +293,6 @@ fun <T> Directory(
             // Get the grid item size multiplier from user preferences.
             val data by viewState.data.collectAsState()
             val multiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
-            val navController = LocalNavController.current
             LazyVerticalGrid(
                 state = state,
                 columns = GridCells.Adaptive(80.dp * multiplier),

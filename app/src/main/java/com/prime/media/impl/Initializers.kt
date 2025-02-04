@@ -25,7 +25,6 @@ import coil.Coil
 import com.prime.media.BuildConfig
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.store.ArtistsViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.directory.store.FoldersViewModel
 import com.prime.media.old.impl.AudioFxViewModel
@@ -98,6 +97,7 @@ private val KoinAppModules = module {
     viewModelOf(::VideosViewModel)
     viewModelOf(::MembersViewModel) // remove this later
     viewModelOf(::GenresViewModel)
+    viewModelOf(::ArtistsViewModel)
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }
@@ -107,7 +107,6 @@ private val KoinAppModules = module {
     viewModelOf(::PlaylistViewModel)
     viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
     viewModelOf(::AlbumsViewModel)
-    viewModel { (h: Handle) -> ArtistsViewModel(h, get(), get(), get()) }
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
     viewModel { (h: Handle) -> FoldersViewModel(h, get(), get(), get()) }
 }

@@ -561,7 +561,21 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Artist> {
-        TODO("Not yet implemented")
+        return resolver.query2(
+            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+            projection = ARTIST_PROJECTION,
+            selection = if (filter == null) "${MediaStore.Audio.Artists._ID} != 0" else "${MediaStore.Audio.Artists.ARTIST} LIKE ?",
+            if (filter != null) arrayOf("%$filter%") else null,
+            order,
+            ascending = ascending,
+            offset = offset,
+            limit = limit,
+        ) { c ->
+            List(c.count) {
+                c.moveToPosition(it)
+                Artist(c)
+            }
+        }
     }
 
     override suspend fun fetchAlbums(

@@ -34,6 +34,7 @@ import com.prime.media.common.menu.Action
 import com.prime.media.common.raw
 import com.prime.media.local.DirectoryViewState
 import com.zs.core.store.Album
+import com.zs.core.store.Artist
 import com.zs.core.store.Genre
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.toast.Toast
@@ -125,6 +126,27 @@ class GenresViewModel(provider: MediaProvider) : AbstractLocalDirViewModel<Genre
         val result = provider.fetchGenres(query, order.id, ascending)
         return when (order) {
             GENRES_ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
+            else -> result.groupBy { "" }
+        }
+    }
+}
+
+private val Artist.firstTitleChar
+    inline get() = name.uppercase(Locale.ROOT)[0].toString()
+private val ARTISTS_ORDER_BY_TITLE = Action(R.string.title, id = MediaStore.Audio.Artists.ARTIST)
+private val ARTISTS_ORDER_BY_NONE = Action(R.string.none, id = MediaStore.Audio.Artists._ID)
+
+// Folders
+class ArtistsViewModel(provider: MediaProvider): AbstractLocalDirViewModel<Artist>(provider){
+    override var order: Filter by mutableStateOf(true to ARTISTS_ORDER_BY_TITLE)
+    override val title: CharSequence = getText(R.string.artists)
+    override val orders: List<Action> = listOf(ARTISTS_ORDER_BY_NONE, ARTISTS_ORDER_BY_TITLE)
+
+    override suspend fun fetch(filter: Filter, query: String?): Mapped<Artist> {
+        val (ascending, order) = filter
+        val result = provider.fetchArtists(query, order.id, ascending)
+        return when (order) {
+            ARTISTS_ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
             else -> result.groupBy { "" }
         }
     }

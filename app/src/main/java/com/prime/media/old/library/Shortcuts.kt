@@ -42,11 +42,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.local.RouteArtists
 import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.playlists.Members
-import com.prime.media.old.directory.store.Artists
 import com.prime.media.old.directory.store.Audios
 import com.primex.core.textResource
 import com.primex.material2.Label
@@ -140,7 +140,7 @@ fun Shortcuts(
 
             // Shortcut for Artists navigation
             Shortcut(
-                onAction = { navigator.navigate(Artists.direction()) },
+                onAction = { navigator.navigate(RouteArtists()) },
                 icon = Icons.Outlined.Person,
                 label = textResource(id = R.string.artists),
             )
