@@ -118,9 +118,10 @@ inline fun Placeholder(
  * Item header.
  * //TODO: Handle padding in parent composable.
  */
-private val HEADER_MARGIN = Padding(0.dp, CP.normal, 0.dp, CP.medium)
+private val HEADER_MARGIN = Padding(0.dp, CP.xLarge, 0.dp, CP.medium)
+private val CHAR_HEADER_MARGIN = Padding(0.dp, CP.normal, 0.dp, CP.medium)
 private val CHAR_HEADER_SHAPE = RoundedCornerShape(50, 25, 25, 25)
-private val NORMAL_HEADER_SHAPE = RoundedCornerShape(12, 50, 50, 50)
+private val NORMAL_HEADER_SHAPE = RoundedCornerShape(0, 50, 50, 50)
 
 /**
  * Represents header for list/grid item groups.
@@ -143,7 +144,7 @@ fun ListHeader(
             text = value,
             style = AppTheme.typography.headlineLarge,
             modifier = modifier
-                .padding(HEADER_MARGIN)
+                .padding(CHAR_HEADER_MARGIN)
                 .border(0.5.dp, AppTheme.colors.background(30.dp), CHAR_HEADER_SHAPE)
                 .background(AppTheme.colors.background(1.dp), CHAR_HEADER_SHAPE)
                 .padding(horizontal = CP.large, vertical = CP.medium),
@@ -154,13 +155,13 @@ fun ListHeader(
         else -> Label(
             text = value,
             maxLines = 2,
-            style = AppTheme.typography.titleMedium,
+            style = AppTheme.typography.titleSmall,
             modifier = modifier
                 .padding(HEADER_MARGIN)
                 .widthIn(max = 220.dp)
                 .border(0.5.dp, AppTheme.colors.background(30.dp), NORMAL_HEADER_SHAPE)
                 .background(AppTheme.colors.background(1.dp), NORMAL_HEADER_SHAPE)
-                .padding(horizontal = CP.normal, vertical = CP.medium)
+                .padding(horizontal = CP.normal, vertical = CP.small)
         )
     }
 }

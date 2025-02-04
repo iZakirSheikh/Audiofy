@@ -50,6 +50,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -67,12 +68,15 @@ import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
 import com.prime.media.impl.AlbumsViewModel
+import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.PlaylistViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
-import com.prime.media.local.albums.Albums
-import com.prime.media.local.albums.RouteAlbums
+import com.prime.media.local.Albums
+import com.prime.media.local.RouteAlbums
+import com.prime.media.local.Genres
+import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
 import com.prime.media.local.videos.Videos
 import com.prime.media.old.common.LocalNavController
@@ -87,8 +91,6 @@ import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.directory.store.Folders
 import com.prime.media.old.directory.store.FoldersViewModel
-import com.prime.media.old.directory.store.Genres
-import com.prime.media.old.directory.store.GenresViewModel
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.effects.AudioFx
 import com.prime.media.old.feedback.Feedback
@@ -225,9 +227,9 @@ private fun NavController.toRoute(route: String) {
         // Pop up to the start destination of the graph to
         // avoid building up a large stack of destinations
         // on the back stack as users select items
-        /*popUpTo(graph.findStartDestination().id) {
+        popUpTo(graph.findStartDestination().id) {
             saveState = true
-        }*/
+        }
         // Avoid multiple copies of the same destination when
         // re-selecting the same item
         launchSingleTop = true
@@ -347,9 +349,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Folders(viewModel = viewModel)
     }
     // Genres
-    composable(Genres.route) {
+    composable(RouteGenres) {
         val viewModel = koinViewModel<GenresViewModel>()
-        Genres(viewModel = viewModel)
+        Genres(viewModel)
     }
     // Playlists
     composable(RoutePlaylists) {

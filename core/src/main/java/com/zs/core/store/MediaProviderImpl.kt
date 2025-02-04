@@ -598,6 +598,20 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Genre> {
-        TODO("Not yet implemented")
+        return resolver.query2(
+            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+            projection = GENRE_PROJECTION,
+            selection = if (filter == null) "${MediaStore.Audio.Genres._ID} != 0" else "${MediaStore.Audio.Genres.NAME} LIKE ?",
+            if (filter != null) arrayOf("%$filter%") else null,
+            order,
+            ascending = ascending,
+            offset = offset,
+            limit = limit,
+        ) { c ->
+            List(c.count) {
+                c.moveToPosition(it)
+                Genre(c)
+            }
+        }
     }
 }

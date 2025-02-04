@@ -28,7 +28,6 @@ import com.prime.media.old.directory.playlists.MembersViewModel
 import com.prime.media.old.directory.store.ArtistsViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.directory.store.FoldersViewModel
-import com.prime.media.old.directory.store.GenresViewModel
 import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
@@ -98,6 +97,7 @@ private val KoinAppModules = module {
     viewModelOf(::SettingsViewModel)
     viewModelOf(::VideosViewModel)
     viewModelOf(::MembersViewModel) // remove this later
+    viewModelOf(::GenresViewModel)
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }
@@ -109,7 +109,6 @@ private val KoinAppModules = module {
     viewModelOf(::AlbumsViewModel)
     viewModel { (h: Handle) -> ArtistsViewModel(h, get(), get(), get()) }
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
-    viewModel { (h: Handle) -> GenresViewModel(h, get(), get(), get()) }
     viewModel { (h: Handle) -> FoldersViewModel(h, get(), get(), get()) }
 }
 

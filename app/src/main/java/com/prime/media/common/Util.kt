@@ -27,6 +27,7 @@ import android.util.Log
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -252,3 +253,5 @@ val NowPlaying.chronometer: Chronometer
         }
         return chronometer
     }
+
+val TextFieldState.raw  get() = text.trim().toString().ifEmpty { null }

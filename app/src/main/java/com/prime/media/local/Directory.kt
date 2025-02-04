@@ -1,12 +1,27 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+/*
+ * Copyright 2025 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 04-02-2025.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-package com.prime.media.local.albums
+package com.prime.media.local
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -17,14 +32,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TopAppBar
@@ -47,7 +61,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.prime.media.R
 import com.prime.media.common.Filters
 import com.prime.media.common.ListHeader
@@ -58,14 +71,11 @@ import com.prime.media.common.emit
 import com.prime.media.common.fullLineSpan
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.directory.store.Audios
 import com.prime.media.settings.Settings
 import com.primex.core.plus
-import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
-import com.zs.core.store.Album
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.AppTheme.colors
 import com.zs.core_ui.None
@@ -84,9 +94,9 @@ import com.zs.core_ui.ContentPadding as CP
 import dev.chrisbanes.haze.HazeState as BackdropProvider
 import dev.chrisbanes.haze.haze as observerBackdrop
 
-private const val TAG = "Albums"
+private const val TAG = "Directory"
 
-private val FloatingTopBarShape = CircleShape
+private val FloatingTopBarShape = RoundedCornerShape(25)
 
 /**
  * Represents a Top app bar for this screen.
@@ -94,6 +104,7 @@ private val FloatingTopBarShape = CircleShape
 @Composable
 @NonRestartableComposable
 private fun FloatingTopAppBar(
+    title: CharSequence,
     modifier: Modifier = Modifier,
     onToggleSearch: () -> Unit,
     backdropProvider: BackdropProvider? = null,
@@ -122,7 +133,7 @@ private fun FloatingTopAppBar(
                 },
                 title = {
                     Label(
-                        text = stringResource(id = R.string.albums),
+                        text = title,
                         style = AppTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -171,10 +182,11 @@ private fun FloatingTopAppBar(
 }
 
 private val GRID_ITEM_SPACING = Arrangement.spacedBy(CP.small)
-private fun LazyGridScope.content(
-    navController: NavHostController,
+private fun <T> LazyGridScope.content(
+    data: Mapped<T>,
     state: LazyGridState,
-    data: Mapped<Album>
+    key: ((item: T) -> Any)? = null,
+    itemContent: @Composable LazyGridItemScope.(item: T) -> Unit
 ) {
     for ((header, values) in data) {
         if (header.isNotBlank()) // only show this if non-blank.
@@ -192,23 +204,8 @@ private fun LazyGridScope.content(
                 }
             )
 
-        // rest of the items
-        items(
-            values,
-            key = Album::id,
-            contentType = { "album" },
-            itemContent = {
-                Album(
-                    it,
-                    modifier = Modifier
-                        .animateItem()
-                        .clickable {
-                            val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
-                            navController.navigate(direction)
-                        },
-                )
-            }
-        )
+        for (value in values)
+            item(key = if (key != null) key(value) else null, content = { itemContent(value) })
     }
 }
 
@@ -258,7 +255,11 @@ private fun SearchView(
 }
 
 @Composable
-fun Albums(viewState: AlbumsViewState) {
+fun <T> Directory(
+    viewState: DirectoryViewState<T>,
+    key: ((item: T) -> Any)? = null,
+    itemContent: @Composable LazyGridItemScope.(item: T) -> Unit
+) {
     val inAppNavBarInsets = WindowInsets.contentInsets
     val state = GridState()
     var isSearchVisible by remember { mutableStateOf(false) }
@@ -268,7 +269,6 @@ fun Albums(viewState: AlbumsViewState) {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> BackdropObserver()
         else -> null
     }
-
     // content
     TwoPane(
         topBar = {
@@ -282,7 +282,8 @@ fun Albums(viewState: AlbumsViewState) {
                     if (isSearchVisible)
                         scope.launch() { state.scrollToItem(0) }
                 },
-                backdropProvider = observer
+                backdropProvider = observer,
+                title = viewState.title
             )
         },
         primary = {
@@ -339,7 +340,7 @@ fun Albums(viewState: AlbumsViewState) {
                     )
 
                     // Rest of the items
-                    content(navController, state, values)
+                    content(values, state, key, itemContent)
                 }
             )
         }

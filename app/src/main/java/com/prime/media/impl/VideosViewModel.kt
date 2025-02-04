@@ -28,10 +28,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.NearbyError
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -48,7 +45,6 @@ import com.prime.media.local.videos.VideosViewState
 import com.prime.media.local.videos.VideosViewState.Companion.ACTION_DELETE
 import com.prime.media.local.videos.VideosViewState.Companion.ACTION_SHARE
 import com.primex.core.Rose
-import com.primex.core.findActivity
 import com.primex.core.runCatching
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.PlaybackController
@@ -69,7 +65,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.android.ext.koin.androidContext
 import java.util.Locale
 
 private const val TAG = "VideosViewModel"

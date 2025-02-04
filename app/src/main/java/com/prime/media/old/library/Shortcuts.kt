@@ -42,12 +42,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.store.Artists
 import com.prime.media.old.directory.store.Audios
-import com.prime.media.old.directory.store.Genres
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.zs.core.playback.Playback
@@ -126,7 +126,7 @@ fun Shortcuts(
 
             // Shortcut for Genres navigation
             Shortcut(
-                onAction = { navigator.navigate(Genres.direction()) },
+                onAction = { navigator.navigate(RouteGenres()) },
                 icon = Icons.Outlined.Grain,
                 label = textResource(id = R.string.genres),
             )
