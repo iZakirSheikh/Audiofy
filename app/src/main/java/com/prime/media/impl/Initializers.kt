@@ -23,10 +23,10 @@ import android.util.Log
 import androidx.startup.Initializer
 import coil.Coil
 import com.prime.media.BuildConfig
+import com.prime.media.R
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.old.directory.playlists.MembersViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
-import com.prime.media.old.directory.store.FoldersViewModel
 import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
 import com.prime.media.old.impl.FeedbackViewModel
@@ -43,6 +43,7 @@ import com.zs.core.db.Playlists
 import com.zs.core.db.Playlists2
 import com.zs.core.db.Playlists2.Companion.invoke
 import com.zs.core.store.MediaProvider
+import com.zs.core_ui.Anim
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
 import com.zs.core_ui.toast.ToastHostState
 import org.koin.android.ext.koin.androidContext
@@ -58,12 +59,9 @@ import coil.ImageLoader.Builder as ImageLoader
 import com.google.firebase.FirebaseApp.initializeApp as FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance as Crashlytics
 import com.zs.ads.AdManager.Companion.initialize as AdManager
-import kotlin.also as then
-import com.prime.media.R
-import com.zs.core.playback.PlaybackController
 import com.zs.core.playback.PlaybackController.Companion.invoke as PlaybackController
-import com.zs.core_ui.Anim
 import com.zs.core_ui.coil.VideoThumbnailFetcher as ThumbnailFetcher
+import kotlin.also as then
 
 private const val TAG = "Initializers"
 
@@ -98,6 +96,7 @@ private val KoinAppModules = module {
     viewModelOf(::MembersViewModel) // remove this later
     viewModelOf(::GenresViewModel)
     viewModelOf(::ArtistsViewModel)
+    viewModelOf( ::FoldersViewModel )
     viewModel { AudioFxViewModel(get()) }
     viewModel { FeedbackViewModel(get()) }
     viewModel() { LibraryViewModel(get(), get(), get()) }
@@ -108,7 +107,7 @@ private val KoinAppModules = module {
     viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
     viewModelOf(::AlbumsViewModel)
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
-    viewModel { (h: Handle) -> FoldersViewModel(h, get(), get(), get()) }
+
 }
 
 /**

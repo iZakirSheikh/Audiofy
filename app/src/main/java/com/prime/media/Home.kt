@@ -87,11 +87,12 @@ import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.playlists.MembersViewModel
 import com.prime.media.local.Artists
 import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.impl.FoldersViewModel
+import com.prime.media.local.Folders
 import com.prime.media.local.RouteArtists
+import com.prime.media.local.RouteFolders
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
-import com.prime.media.old.directory.store.Folders
-import com.prime.media.old.directory.store.FoldersViewModel
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.effects.AudioFx
 import com.prime.media.old.feedback.Feedback
@@ -345,9 +346,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Audios(viewModel = viewModel)
     }
     // Folders
-    composable(Folders.route) {
+    composable(RouteFolders) {
         val viewModel = koinViewModel<FoldersViewModel>()
-        Folders(viewModel = viewModel)
+        Folders(viewState = viewModel)
     }
     // Genres
     composable(RouteGenres) {
@@ -448,8 +449,8 @@ private fun NavigationBar(
         NavItem(
             label = { Label(text = textResource(R.string.folders)) },
             icon = { Icon(imageVector = Icons.Filled.FolderCopy, contentDescription = null) },
-            checked = route == Folders.route,
-            onClick = { navController.toRoute(Folders.direction()); facade.initiateReviewFlow() },
+            checked = route == RouteFolders(),
+            onClick = { navController.toRoute(RouteFolders()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -559,7 +560,7 @@ private fun NavigationBar(
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), Folders.route, RouteAlbums(), RoutePlaylists(), Library.route)
+    arrayOf(RouteSettings(), RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
 
 /**
  * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.

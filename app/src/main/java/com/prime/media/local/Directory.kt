@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -98,7 +99,7 @@ import dev.chrisbanes.haze.haze as observerBackdrop
 
 private const val TAG = "Directory"
 
-private val FloatingTopBarShape = RoundedCornerShape(25)
+private val FloatingTopBarShape = CircleShape
 
 /**
  * Represents a Top app bar for this screen.
@@ -136,7 +137,7 @@ private fun FloatingTopAppBar(
                 title = {
                     Label(
                         text = title,
-                        style = AppTheme.typography.titleLarge,
+                        style = AppTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -167,8 +168,7 @@ private fun FloatingTopAppBar(
                                     0.24f
                                 ),
                             )
-                        ),
-                        FloatingTopBarShape
+                        ), FloatingTopBarShape
                     )
                    // .height(48.dp)
                     .dynamicBackdrop(

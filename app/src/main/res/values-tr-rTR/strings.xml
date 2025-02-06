@@ -20,6 +20,57 @@
         This helps visually differentiate between app variants on a device.
     -->
     <!--Simple Strings-->
+    <string name="dismiss">Kapat</string>
+    <string name="empty">boş</string>
+    <string name="loading">Yükleniyor</string>
+    <string name="unknown">Bilinmeyen</string>
+    <string name="playing_queue">Oynatma Sırası</string>
+    <string name="now_playing">Şimdi Çalıyor</string>
+    <string name="up_next">Sıradaki</string>
+    <string name="about_us">Hakkımızda</string>
+    <string name="settings">Ayarlar</string>
+    <string name="appearance">Görünüm</string>
+    <string name="error">Hata</string>
+    <string name="delete">Sil</string>
+    <string name="play">Oynat</string>
+    <string name="shuffle">Karıştır</string>
+    <string name="share">Paylaş</string>
+    <string name="add_to_playlist">Oynama Listesine Ekle</string>
+    <string name="create">Oluştur</string>
+    <string name="edit">Düzenle</string>
+    <string name="go_to_artist">Sanatçıya Git</string>
+    <string name="go_to_album">Albüme Git</string>
+    <string name="properties">Özellikler</string>
+    <string name="select_all">Tümünü Seçin</string>
+    <string name="add_to_queue">Sıraya Ekle</string>
+    <string name="play_next">Sonrakini Oynat</string>
+    <string name="none">Hiçbiri</string>
+    <string name="name">İsim</string>
+    <string name="date_modified">Değiştirilme Tarihi</string>
+    <string name="date_added">Eklenme Tarihi</string>
+    <string name="artist">Sanatçı</string>
+    <string name="album">Albüm</string>
+    <string name="folder">Dosya</string>
+    <string name="length">Uzunluk</string>
+    <string name="list">Liste</string>
+    <string name="grid">Kılavuz</string>
+    <string name="folders">Klasörler</string>
+    <string name="genres">Tarzlar</string>
+    <string name="audios">Sesler</string>
+    <string name="artists">Sanatçılar</string>
+    <string name="favourite">Favori</string>
+    <string name="playlists">Çalma Listeleri</string>
+    <string name="albums">Albümler</string>
+    <string name="general">Genel</string>
+    <string name="feedback">Geri Bildirim</string>
+    <string name="title">Başlık</string>
+    <string name="file_path">Dosya Yolu</string>
+    <string name="size">Boyut</string>
+    <string name="format">Biçim</string>
+    <string name="bitrate">Bit Hızı</string>
+    <string name="sampling_rate">Örnekleme Hızı</string>
+    <string name="bits_per_sample">Örnek başı bit</string>
+    <string name="year"></string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
     <!--A string indicating duration hors-->
@@ -43,9 +94,36 @@
     <!--============================ Blacklist Dialog  ====================================      -->
     <!--============================          Albums     ==================================      -->
     <!--============================          TagEditor     ==================================      -->
+    <string name="lyrics">Şarkı Sözleri</string>
+    <string name="tag_editor_lyrics_placeholder">Lütfen şarkı sözlerinizi şu şekilde girin:\n
+1. Eş zamanlı Şarkı Sözleri (“[MM:SS.XX] satırı”) veya\n
+2. Eş zamansız Metin.</string>
     <!--======================         Sleep Timer Dialog        ======================      -->
+    <string name="sleep_timer_dialog_title">Uyku Zamanlayıcısı<sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></string>
+    <string name="sleep_timer_dialog_minute_s">%1$s dk</string>
     <!--======================         Playback speed Dialog        ======================      -->
+    <string name="playback_speed_dialog_title">Oynatma Hızı <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></string>
+    <string name="playback_speed_dialog_x_f">%1$.2fx</string>
     <!--======================         AudioFx        ======================      -->
+    <string name="equalizer">Equalizer <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></string>
+    <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
+    <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
+    <string name="title_codex">Audiofy Medya Oynatıcısı için Media Codecs Uzantıları</string>
+    <string name="msg_library_rate_us"><b>Uygulamamızı Puanlayın ve Gelişmemize Yardımcı Olun</b>
+
+<!--Mesaj Metni-->
+<font color="grey">\nUygulamamızı beğeniyorsanız, lütfen Play Store\'da bize 5 yıldız vererek değerlendirin. Olumlu geri bildiriminiz, büyümemize ve uygulamamızı herkes için geliştirmemize yardımcı olacaktır. </font></string>
+    <string name="rate_us">Bizi Değerlendirin</string>
+    <string name="install">Yükle</string>
+    <string-array name="playback_speed_dialog_predefined_speeds">
+        <item value="0.8">0.8</item>
+        <item value="1.0">1,0</item>
+        <item value="1.2">1.2</item>
+        <item value="1.5">1.5</item>
+        <item value="2.0">2.0</item>
+    </string-array>
+    <string name="msg_error_sharing_files">Dosyaları paylaşırken bir şeyler yanlış gitti. Lütfen tekrar deneyin.</string>
     <!-- Appends any number formatted to int; denotes no. of seconds. -->
+    <string name="tap_to_purchase">Satın Almak için Dokunun</string>
 </resources>

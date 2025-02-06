@@ -20,6 +20,69 @@
         This helps visually differentiate between app variants on a device.
     -->
     <!--Simple Strings-->
+    <string name="dismiss">Pozostaw</string>
+    <string name="empty">pusty</string>
+    <string name="loading">Ładowanie</string>
+    <string name="unknown">Nieznany</string>
+    <string name="now_playing">Teraz Odtwarzane</string>
+    <string name="up_next">Następny</string>
+    <string name="about_us">O Nas</string>
+    <string name="settings">Ustawienia</string>
+    <string name="error">Błąd</string>
+    <string name="delete">Usuń</string>
+    <string name="play">Odtwórz</string>
+    <string name="shuffle">Losowo</string>
+    <string name="share">Udostępnij</string>
+    <string name="add_to_playlist">Dodaj do Playlisty</string>
+    <string name="create">Utwórz</string>
+    <string name="edit">Edytuj</string>
+    <string name="go_to_artist">Idź do Artysty</string>
+    <string name="go_to_album">Idź do Albumu</string>
+    <string name="properties">Właściwości</string>
+    <string name="select_all">Wybierz Wszystkie</string>
+    <string name="add_to_queue">Dodaj do Bieżącej</string>
+    <string name="play_next">Odtwórz Następy</string>
+    <string name="none">Żaden</string>
+    <string name="name">Nazwa</string>
+    <string name="date_modified">Data Modyfikacji</string>
+    <string name="date_added">Data Dodania</string>
+    <string name="artist">Artysta</string>
+    <string name="album">Album</string>
+    <string name="folder">Folder</string>
+    <string name="length">Długość</string>
+    <string name="list">Lista</string>
+    <string name="grid">Miniatura</string>
+    <string name="folders">Foldery</string>
+    <string name="genres">Gatunki</string>
+    <string name="audios">Dźwięki</string>
+    <string name="artists">Artyści</string>
+    <string name="favourite">Ulubione</string>
+    <string name="playlists">Playlisty</string>
+    <string name="albums">Albumy</string>
+    <string name="general">Ogólne</string>
+    <string name="feedback">Wsparcie</string>
+    <string name="title">Tytuł</string>
+    <string name="size">Rozmiar</string>
+    <string name="format">Format</string>
+    <string name="bitrate">Przepustowość</string>
+    <string name="year">Rok</string>
+    <string name="disk_number">Dysk numer</string>
+    <string name="apply">Zatwierdź</string>
+    <string name="track_number">Utwór numer</string>
+    <string name="genre">Gatunek</string>
+    <string name="composer">Kompozytor</string>
+    <string name="author">Autor</string>
+    <string name="writer">Pisarz</string>
+    <string name="done">Gotowe</string>
+    <string name="abbr_not_available">Nieznany</string>
+    <string name="duration">Długość</string>
+    <string name="album_artist">Artysta albumu</string>
+    <string name="comment">Komentarze</string>
+    <string name="total_disks">Wszystkie Dyski</string>
+    <string name="url">Adres</string>
+    <string name="original_artist">Oryginalny Artysta</string>
+    <string name="publisher">Wydawca</string>
+    <string name="start">Start</string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
     <!--A string indicating duration hors-->
@@ -36,16 +99,37 @@
     <!--Equalizer-->
     <!--Queue Update-->
     <!-- Message shown after added queue added/total-->
+    <string name="msg_upgrade_to_pro">Rozwiń do wersji Pro by odblokować ten dodatek.</string>
     <!--=====================            Media Library          =================================-->
     <!--Title to the audio library screen-->
+    <string name="library_history">Historia\n<font color="grey" size="11"><sup>Gdzie Tworzą się Wspomnienia.</sup></font> </string>
     <!--==================              Audios                   ================================-->
+    <string name="audios_scr_less_then_2_mins">Poniżej 2 Min</string>
+    <string name="audios_scr_less_than_5_mins">Mnie niż 5 Min</string>
+    <string name="audios_scr_less_than_10_mins">Mniej niż 10 Min</string>
+    <string name="audios_scr_greater_than_10_mins">Lepiej niż 10 Min</string>
     <!--===========================  Permission Screen ==========================================-->
+    <string name="permission_screen_title">Uprawnienia Pamięci</string>
     <!--============================ Blacklist Dialog  ====================================      -->
     <!--============================          Albums     ==================================      -->
+    <string name="albums_scr_year_d">Rok: %1$s</string>
     <!--============================          TagEditor     ==================================      -->
+    <string name="tag_editor_scr_pro_title">Tag Edytor &lt;sup&gt;&lt;font color=\"#00a300\" 
+size=\"11\"&gt;Pro&lt;/font&gt;&lt;/sup&gt;</string>
+    <string name="tag_editor_scr_title">Tag Edytor</string>
     <!--======================         Sleep Timer Dialog        ======================      -->
     <!--======================         Playback speed Dialog        ======================      -->
     <!--======================         AudioFx        ======================      -->
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
+    <string name="claim">Zbierz</string>
+    <string name="feedback_placeholder">Powiedz nam jak poprawić nasz produkt.</string>
+    <string name="feedback_extra_info">Czy mógłbyś opisać swój problem lub sugestię?
+        <font color="grey" size="11">
+                \nProszę nie zawierać poufnych informacji.
+        </font>
+    </string>
+    <string name="message">Message</string>
+    <string name="submit">Wyślij</string>
+    <string name="feedback_msg_failure">Coś poszło źle! </string>
     <!-- Appends any number formatted to int; denotes no. of seconds. -->
 </resources>

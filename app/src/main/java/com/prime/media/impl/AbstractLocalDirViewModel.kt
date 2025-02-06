@@ -19,6 +19,7 @@
 package com.prime.media.impl
 
 import android.provider.MediaStore
+import android.text.format.DateUtils
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,7 @@ import com.prime.media.common.raw
 import com.prime.media.local.DirectoryViewState
 import com.zs.core.store.Album
 import com.zs.core.store.Artist
+import com.zs.core.store.Folder
 import com.zs.core.store.Genre
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.toast.Toast
@@ -136,8 +138,8 @@ private val Artist.firstTitleChar
 private val ARTISTS_ORDER_BY_TITLE = Action(R.string.title, id = MediaStore.Audio.Artists.ARTIST)
 private val ARTISTS_ORDER_BY_NONE = Action(R.string.none, id = MediaStore.Audio.Artists._ID)
 
-// Folders
-class ArtistsViewModel(provider: MediaProvider): AbstractLocalDirViewModel<Artist>(provider){
+// Artists
+class ArtistsViewModel(provider: MediaProvider) : AbstractLocalDirViewModel<Artist>(provider) {
     override var order: Filter by mutableStateOf(true to ARTISTS_ORDER_BY_TITLE)
     override val title: CharSequence = getText(R.string.artists)
     override val orders: List<Action> = listOf(ARTISTS_ORDER_BY_NONE, ARTISTS_ORDER_BY_TITLE)
@@ -148,6 +150,46 @@ class ArtistsViewModel(provider: MediaProvider): AbstractLocalDirViewModel<Artis
         return when (order) {
             ARTISTS_ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
             else -> result.groupBy { "" }
+        }
+    }
+}
+
+private val FOLDERS_ORDER_BY_DATE_MODIFIED =
+    Action(R.string.date_modified, id = MediaStore.Audio.Media.DATE_MODIFIED)
+private val FOLDERS_ORDER_BY_TITLE = Action(R.string.title, id = MediaStore.Audio.Media.TITLE)
+private val FOLDERS_ORDER_BY_NONE = ORDER_BY_NONE
+
+private val Folder.firstTitleChar
+    inline get() = name.uppercase(Locale.ROOT)[0].toString()
+
+// Folders
+class FoldersViewModel(provider: MediaProvider) : AbstractLocalDirViewModel<Folder>(provider) {
+
+    override var order: Filter by mutableStateOf(false to FOLDERS_ORDER_BY_DATE_MODIFIED)
+    override val title: CharSequence = getText(R.string.folders)
+    override val orders: List<Action> =
+        listOf(FOLDERS_ORDER_BY_NONE, FOLDERS_ORDER_BY_DATE_MODIFIED, FOLDERS_ORDER_BY_TITLE)
+
+    override suspend fun fetch(filter: Filter, query: String?): Mapped<Folder> {
+        val (ascending, order) = filter
+        val data = provider.fetchFolders(query, ascending)
+        return when (order) {
+            FOLDERS_ORDER_BY_TITLE -> data.sortedBy { it.firstTitleChar }
+                .let { if (ascending) it else it.reversed() }.groupBy { it.firstTitleChar }
+
+            FOLDERS_ORDER_BY_DATE_MODIFIED -> data.sortedBy { it.lastModified }
+                .let { if (ascending) it else it.reversed() }
+                .groupBy {
+                    DateUtils.getRelativeTimeSpanString(
+                        it.lastModified,
+                        System.currentTimeMillis(),
+                        DateUtils.MINUTE_IN_MILLIS,
+                        DateUtils.FORMAT_ABBREV_RELATIVE
+                    ).toString()
+                }
+
+            FOLDERS_ORDER_BY_NONE -> data.groupBy { "" }
+            else -> error("Oops invalid id passed $order")
         }
     }
 }

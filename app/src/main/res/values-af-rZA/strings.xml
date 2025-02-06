@@ -20,6 +20,9 @@
         This helps visually differentiate between app variants on a device.
     -->
     <!--Simple Strings-->
+    <string name="dismiss"></string>
+    <string name="empty">empty</string>
+    <string name="loading"></string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
     <!--A string indicating duration hors-->
