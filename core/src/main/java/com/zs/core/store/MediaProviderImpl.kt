@@ -514,6 +514,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             append(ONLY_MUSIC_SELECTION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 append(" AND $COLUMN_IS_TRASHED != 1")
+            append(" AND ${MediaProvider.COLUMN_MEDIA_DURATION} >= 30000")
             // Add name filter if provided.
             if (filter != null)
                 append(" AND $COLUMN_NAME LIKE ?")
