@@ -54,10 +54,11 @@ interface File {
     val size: Long
 
 
-    val contentUri get() =  when(this){
-        is Video -> ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
-        else -> error("Type(${this.javaClass.simpleName}) not registered")
-    }
+    val contentUri
+        get() = when (this) {
+            is Video -> ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+            else -> error("Type(${this.javaClass.simpleName}) not registered")
+        }
 }
 
 
@@ -297,7 +298,7 @@ data class Folder(
     val artworkUri get() = if (artworkID == -1L) null else MediaProvider.buildAlbumArtUri(artworkID)
 }
 
-private val GENRE_PROJECTION
+internal val GENRE_PROJECTION
     get() = arrayOf(
         MediaStore.Audio.Genres._ID, //0
         MediaStore.Audio.Genres.NAME,//1

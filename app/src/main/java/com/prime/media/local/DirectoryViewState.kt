@@ -1,25 +1,30 @@
-package com.prime.media.local.albums
+package com.prime.media.local
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
-import com.prime.media.common.Route
 import com.prime.media.common.menu.Action
-import com.zs.core.store.Album
 import kotlinx.coroutines.flow.StateFlow
 
-object RouteAlbums : Route
+/**
+* Represents the common interface among directories
+* @property data
+*/
+interface DirectoryViewState<T> {
 
 
-interface AlbumsViewState {
+
+    companion object
+
+    val title: CharSequence
+
     val orders: List<Action>
-    val data: StateFlow<Mapped<Album>?>
+    val data: StateFlow<Mapped<T>?>
 
     // filter.
     val query: TextFieldState
     val order: Filter
 
     // actions
-
     fun filter(ascending: Boolean = this.order.first, order: Action = this.order.second)
 }

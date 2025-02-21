@@ -102,13 +102,14 @@ fun Iphone(
             Label(
                 state.subtitle ?: textResource(R.string.unknown),
                 style = AppTheme.typography.caption,
-                color = LocalContentColor.current.copy(ContentAlpha.medium)
+                color = LocalContentColor.current.copy(ContentAlpha.medium),
+                modifier = Modifier.thenIf(!showcase){sharedElement(Glance.SHARED_SUBTITLE)},
             )
         },
         headline = {
             Label(
                 state.title ?: textResource(R.string.unknown),
-                modifier = Modifier.marque(Int.MAX_VALUE)
+                modifier = Modifier.thenIf(!showcase){sharedElement(Glance.SHARED_TITLE)}.marque(Int.MAX_VALUE)
             )
         },
         leading = {
@@ -135,7 +136,7 @@ fun Iphone(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(ContentPadding.small),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().thenIf(!showcase){sharedElement(Glance.SHARED_CONTROLS)},
                 content = {
                     val ctx = LocalContext.current
                     val color = LocalContentColor.current.copy(ContentAlpha.medium)
@@ -179,7 +180,7 @@ fun Iphone(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().thenIf(!showcase){sharedElement(Glance.SHARD_TIME_BAR)},
                 content = {
                     val chronometer = state.chronometer
                     val position = chronometer.value

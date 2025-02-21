@@ -191,7 +191,7 @@ interface MediaProvider {
      */
     suspend fun fetchGenres(
         filter: String? = null,
-        order: String = MediaStore.Audio.Albums.ALBUM,
+        order: String = MediaStore.Audio.Genres.DEFAULT_SORT_ORDER,
         ascending: Boolean = true,
         offset: Int = 0,
         limit: Int = Int.MAX_VALUE

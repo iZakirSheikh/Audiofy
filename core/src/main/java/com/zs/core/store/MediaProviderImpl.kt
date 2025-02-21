@@ -507,50 +507,51 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Folder> {
-        // The selection to fetch all folders from the MediaStore.
-        // FixMe - For Android versions below API 10, consider using GroupBy, Count, etc.
-        //         In Android 10 and above, we rely on this current implementation.
-        //         Additionally, explore ways to optimize performance for faster results.
-        // Compose the selection for folders; exclude trashed items for Android 11 and above.
-        //language = SQL
-        val selection =
-            "(${COLUMN_MEDIA_TYPE} = $MEDIA_TYPE_AUDIO OR $COLUMN_MEDIA_TYPE = ${MEDIA_TYPE_VIDEO})" +
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) " AND $COLUMN_IS_TRASHED != 1" else "" +
-                            if (filter != null) " AND $COLUMN_NAME LIKE ?" else ""
+        // build a selection for selecting folders.
+        // since these are audio folders, we are excluding not-music.
+        // TODO - maybe include tracks only larger than 30 seconds.
+        val selection = buildString {
+            append(ONLY_MUSIC_SELECTION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                append(" AND $COLUMN_IS_TRASHED != 1")
+            append(" AND ${MediaProvider.COLUMN_MEDIA_DURATION} >= 30000")
+            // Add name filter if provided.
+            if (filter != null)
+                append(" AND $COLUMN_NAME LIKE ?")
+        }
         return resolver.query2(
-            EXTERNAL_CONTENT_URI,
-            arrayOf(COLUMN_ID, COLUMN_PATH, COLUMN_SIZE, COLUMN_DATE_MODIFIED),
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaProvider.COLUMN_AUDIO_ALBUM_ID,
+                COLUMN_PATH,
+                COLUMN_SIZE,
+                COLUMN_DATE_MODIFIED
+            ),
             selection = selection,
             if (filter != null) arrayOf("%$filter%") else null,
             order = COLUMN_DATE_MODIFIED,
             ascending = ascending
-        ) { c ->
-            val list = ArrayList<Folder>()
-            while (c.moveToNext()) {
-                val path = c.getString(1)
-                val parent = PathUtils.parent(path).let {
-                    if (PathUtils.name(it).startsWith("img", true)) PathUtils.parent(it)
-                    else it
+        ) { cursor ->
+            buildList {
+                while (cursor.moveToNext()){
+                    val parent = PathUtils.parent(cursor.getString(1))
+                    val albumID = cursor.getLong(0)
+                    val size = cursor.getInt(2)
+                    val modified = cursor.getLong(3) * 1000
+
+                    // check if this folder is in the list already
+                    val index = indexOfFirst { it.path == parent }
+                    if (index == -1) {
+                        this += Folder(albumID, parent, 1, size, modified)
+                        continue // continue to the next iteration
+                    }
+                    // else update the folder
+                    val folder = this[index]
+                    val lastModified = maxOf(folder.lastModified, modified)
+                    // replace this with new one
+                    this[index] = folder.copy(count = folder.count + 1, size = folder.size + size, lastModified = lastModified)
                 }
-                val id = c.getLong(0)
-                val size = c.getInt(2)
-                val lastModified = c.getLong(3)
-                val index = list.indexOfFirst { it.path == parent }
-                if (index == -1) {
-                    list += Folder(id, parent, 1, size, lastModified)
-                    continue
-                }
-                val old = list[index]
-                val artwork = if (old.lastModified > lastModified) old.artworkID else id
-                list[index] = Folder(
-                    artwork,
-                    parent,
-                    old.count + 1,
-                    old.size + size,
-                    maxOf(old.lastModified, lastModified)
-                )
             }
-            list
         }
     }
 
@@ -561,7 +562,21 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Artist> {
-        TODO("Not yet implemented")
+        return resolver.query2(
+            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+            projection = ARTIST_PROJECTION,
+            selection = if (filter == null) "${MediaStore.Audio.Artists._ID} != 0" else "${MediaStore.Audio.Artists.ARTIST} LIKE ?",
+            if (filter != null) arrayOf("%$filter%") else null,
+            order,
+            ascending = ascending,
+            offset = offset,
+            limit = limit,
+        ) { c ->
+            List(c.count) {
+                c.moveToPosition(it)
+                Artist(c)
+            }
+        }
     }
 
     override suspend fun fetchAlbums(
@@ -598,6 +613,20 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Genre> {
-        TODO("Not yet implemented")
+        return resolver.query2(
+            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+            projection = GENRE_PROJECTION,
+            selection = if (filter == null) "${MediaStore.Audio.Genres._ID} != 0" else "${MediaStore.Audio.Genres.NAME} LIKE ?",
+            if (filter != null) arrayOf("%$filter%") else null,
+            order,
+            ascending = ascending,
+            offset = offset,
+            limit = limit,
+        ) { c ->
+            List(c.count) {
+                c.moveToPosition(it)
+                Genre(c)
+            }
+        }
     }
 }
