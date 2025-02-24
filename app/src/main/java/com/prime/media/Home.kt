@@ -136,6 +136,7 @@ import com.zs.core_ui.renderInSharedTransitionScopeOverlay
 import com.zs.core_ui.shape.EndConcaveShape
 import com.zs.core_ui.shape.TopConcaveShape
 import com.zs.core_ui.toast.ToastHostState
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -616,7 +617,7 @@ fun App(
     // In this case, showing the BottomBar is preferable!
     val portrait = clazz.widthRange < Range.Medium
     // Create only backdrop provider for android 12 onwards
-    val provider = when {
+    val provider: HazeState? = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> backdropProvider()
         else -> null
     }

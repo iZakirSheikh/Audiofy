@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -57,10 +58,10 @@ fun HazeStyle.Companion.Regular(
     containerColor: Color,
     tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.52f else 0.24f
 ) = HazeStyle(
-    blurRadius = if (containerColor.luminance() >= 0.5f) 28.dp else 50.dp,
+    blurRadius = if (containerColor.luminance() >= 0.5f) 28.dp else 60.dp,
     backgroundColor = containerColor,
-    noiseFactor = if (containerColor.luminance() >= 0.5f) 0.35f else 0.25f,
-    tint = HazeTint(containerColor.copy(alpha = tintAlpha)),
+    noiseFactor = if (containerColor.luminance() >= 0.5f) 0.25f else 0.15f,
+    tint = HazeTint(containerColor.copy(alpha = tintAlpha), blendMode = BlendMode.Hue),
 )
 
 private val MistCachedPaint = Paint().apply {

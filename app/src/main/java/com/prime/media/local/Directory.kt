@@ -20,6 +20,7 @@ package com.prime.media.local
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -81,6 +82,7 @@ import com.primex.material2.IconButton
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.AppTheme.colors
+import com.zs.core_ui.Colors
 import com.zs.core_ui.None
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.contentInsets
@@ -99,7 +101,15 @@ import dev.chrisbanes.haze.haze as observerBackdrop
 
 private const val TAG = "Directory"
 
-private val FloatingTopBarShape = CircleShape
+private val FloatingTopBarShape = RoundedCornerShape(25)
+private val Colors.floatingTopBarBorder: BorderStroke
+@Composable
+inline get() =  BorderStroke(0.5.dp, VerticalGradient(
+    listOf(
+        if (isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
+        if (isLight) colors.background(2.dp) else Color.Gray.copy(0.24f),
+    )
+))
 
 /**
  * Represents a Top app bar for this screen.
@@ -151,33 +161,18 @@ private fun FloatingTopAppBar(
                 backgroundColor = Color.Transparent,
                 elevation = 0.dp,
                 modifier = Modifier
-                    .widthIn(max = 550.dp)
+                    .widthIn(max = 500.dp)
                     .windowInsetsPadding(insets)
                     .padding(horizontal = CP.xLarge, vertical = CP.small)
                     .clip(FloatingTopBarShape)
-                    .border(
-                        0.5.dp,
-                        VerticalGradient(
-                            listOf(
-                                if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(
-                                    0.24f
-                                ),
-                                Color.Transparent,
-                                Color.Transparent,
-                                if (colors.isLight) colors.background(2.dp) else Color.Gray.copy(
-                                    0.24f
-                                ),
-                            )
-                        ), FloatingTopBarShape
-                    )
-                   // .height(48.dp)
+                    .border(colors.floatingTopBarBorder, FloatingTopBarShape)
+                    .height(52.dp)
                     .dynamicBackdrop(
                         backdropProvider,
                         HazeStyle.Regular(colors.background),
                         colors.background,
                         colors.accent
                     )
-
             )
         }
     )
