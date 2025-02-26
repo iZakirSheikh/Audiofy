@@ -44,6 +44,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieDynamicProperties
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottiePainter
@@ -111,6 +112,7 @@ fun lottieAnimationPainter(
     speed: Float = 1f,
     repeatMode: RepeatMode = RepeatMode.Restart,
     iterations: Int = Int.MAX_VALUE,
+    dynamicProperties: LottieDynamicProperties? = null
 ): Painter {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val progress by animateLottieCompositionAsState(
@@ -121,7 +123,8 @@ fun lottieAnimationPainter(
     )
     return rememberLottiePainter(
         composition = composition,
-        progress = progress
+        progress = progress,
+        dynamicProperties = dynamicProperties
     )
 }
 

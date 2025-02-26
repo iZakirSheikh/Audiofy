@@ -42,11 +42,11 @@ private fun RoundedPolygon.getBounds() = calculateBounds().let { Rect(it[0], it[
  * This shape creates a polygon with the specified number of sides and applies rounding to its corners.
  * The rounding is controlled by the `rounding` parameter, which represents the fraction of the side length used for rounding.
  *
- * @param sides The number of sides of the polygon. Must be 6 or greater.
+ * @param sides The number of sides of the polygon. Must be 3 or greater.
  * @param rounding The rounding factor, as a fraction of the side length. Should be a value between 0.0 (no rounding) and 1.0 (maximum rounding).
  */
 class RoundedPolygonShape(
-    @IntRange(6) private val sides: Int,
+    @IntRange(3) private val sides: Int,
     @FloatRange(0.0, 1.0) private val rounding: Float = 0.0f
 ): Shape {
 

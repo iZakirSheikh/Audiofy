@@ -61,7 +61,9 @@ private val widgets = mapOf(
     ),
     BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE to listOf(
         BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
-        BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST
+        BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST,
+        BuildConfig.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS,
+        BuildConfig.IAP_COLOR_CROFT_ROTATING_GRADEINT
     )
 )
 
