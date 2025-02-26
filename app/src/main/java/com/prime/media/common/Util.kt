@@ -172,7 +172,7 @@ val ProductInfo.isFreemium: Boolean
 val ProductInfo.isPurchasable: Boolean
     get() {
         return when (id) {
-            BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE -> false
+            //BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE -> false
             else -> true
         }
     }

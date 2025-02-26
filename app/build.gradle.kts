@@ -55,6 +55,8 @@ private fun ApplicationDefaultConfig.init() {
     buildConfigField("IAP_COLOR_CROFT_WIDGET_BUNDLE", "aurora_widget_bundle")
     buildConfigField("IAP_COLOR_CROFT_GRADIENT_GROVES", "color_craft_gradient_groves")
     buildConfigField("IAP_COLOR_CROFT_GOLDEN_DUST", "color_craft_golden_dust")
+    buildConfigField("IAP_COLOR_CROFT_ROTATING_GRADEINT", "color_craft_rotating_gradient")
+    buildConfigField("IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS", "color_croft_wavy_gradient_dots")
     // Group
 }
 
@@ -65,8 +67,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 189
-        versionName = "3.4.1"
+        versionCode = 190
+        versionName = "3.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
