@@ -86,6 +86,20 @@ inline fun Glance(
     showcase: Boolean = false,
 ) {
     when (id) {
+        BuildConfig.IAP_PLATFORM_WIDGET_ELONGATE_BEAT -> ElongatedBeat(
+            state,
+            onDismissRequest,
+            modifier,
+            showcase
+        )
+
+        BuildConfig.IAP_PLATFORM_WIDGET_DISK_DYNAMO -> DiskDynamo(
+            state,
+            onDismissRequest,
+            modifier,
+            showcase
+        )
+
         BuildConfig.IAP_PLATFORM_WIDGET_IPHONE -> Iphone(
             state,
             onDismissRequest,
@@ -119,8 +133,10 @@ inline fun Glance(
 
         BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES ->
             GradientGroves(state, onDismissRequest, modifier, showcase)
+
         BuildConfig.IAP_COLOR_CROFT_ROTATING_GRADEINT ->
             RotatingColorGradient(state, onDismissRequest, modifier, showcase)
+
         BuildConfig.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS ->
             WavyGradientDots(state, onDismissRequest, modifier, showcase)
     }

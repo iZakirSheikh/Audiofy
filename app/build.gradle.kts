@@ -51,6 +51,8 @@ private fun ApplicationDefaultConfig.init() {
     buildConfigField("IAP_PLATFORM_WIDGET_TIRAMISU", "platform_widget_tiramisu")
     buildConfigField("IAP_PLATFORM_WIDGET_SNOW_CONE", "platform_widget_snow_cone")
     buildConfigField("IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE", "platform_widget_red_violet_cake")
+    buildConfigField("IAP_PLATFORM_WIDGET_DISK_DYNAMO", "platform_widget_disk_dynamo")
+    buildConfigField("IAP_PLATFORM_WIDGET_ELONGATE_BEAT", "platform_widget_elongate_beat")
     // ColorCroft Widget Bundle
     buildConfigField("IAP_COLOR_CROFT_WIDGET_BUNDLE", "aurora_widget_bundle")
     buildConfigField("IAP_COLOR_CROFT_GRADIENT_GROVES", "color_craft_gradient_groves")
@@ -67,8 +69,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 190
-        versionName = "3.5.0"
+        versionCode = 191
+        versionName = "3.5.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -89,7 +91,7 @@ android {
         // Add necessary changes to debug apk.
         debug {
             // makes it possible to install both release and debug versions in same device.
-            applicationIdSuffix = ".debug"
+            //applicationIdSuffix = ".debug"
             resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.common.LocalSystemFacade
@@ -39,15 +40,19 @@ import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
 import com.prime.media.old.core.playback.MediaItem
 import com.prime.media.widget.Glance
+import com.primex.core.textResource
 import com.primex.material2.Button
 import com.primex.material2.IconButton
+import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
 import com.zs.core.paymaster.purchased
+import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Header
 import com.zs.core.paymaster.ProductInfo as Product
+import com.prime.media.R
 
 /**
  * A map of widget bundles to their corresponding product IDs.
@@ -57,7 +62,9 @@ private val widgets = mapOf(
         BuildConfig.IAP_PLATFORM_WIDGET_IPHONE,
         BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE,
         BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE,
-        BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU
+        BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU,
+        BuildConfig.IAP_PLATFORM_WIDGET_DISK_DYNAMO,
+        BuildConfig.IAP_PLATFORM_WIDGET_ELONGATE_BEAT
     ),
     BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE to listOf(
         BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
@@ -89,6 +96,7 @@ private val WIDGET_MAX_WIDTH = 400.dp
  * @param onRequestApply Callback invoked when a widget is selected for application.
  */
 fun LazyListScope.widgets(
+    state: NowPlaying,
     selected: String,
     details: Map<String, Product>,
     onRequestApply: (widget: String) -> Unit
@@ -120,10 +128,23 @@ fun LazyListScope.widgets(
                         // If the group is not purchased, display a purchase button
                         val purchase by purchase(group)
                         if (!purchase.purchased)
-                            Button(
-                                label = "Get - ${groupInfo.formattedPrice}",
+                            androidx.compose.material.Button(
+                                content = {
+                                    Label(
+                                        textResource(R.string.scr_personalize_unlock_all_s,  groupInfo.formattedPrice ?: "N/A"),
+                                        maxLines = 2,
+                                        textAlign = TextAlign.Center
+                                    )
+                                },
+                                elevation = null,
+                                shape = AppTheme.shapes.compact,
                                 // Initiate purchase flow on click
                                 onClick = { facade.initiatePurchaseFlow(group) },
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = AppTheme.colors.background(1.dp),
+                                    contentColor = AppTheme.colors.accent,
+                                ),
+                                border = if (AppTheme.colors.isLight) null else ButtonDefaults.outlinedBorder
                             )
                     }
                 )
@@ -135,7 +156,6 @@ fun LazyListScope.widgets(
             item(
                 child + group,
                 content = {
-                    val state by PlaybackController.collectNowPlayingAsState()
                     Glance(child, state, {}, showcase = true)
                 }
             )

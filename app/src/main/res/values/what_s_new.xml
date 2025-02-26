@@ -3,12 +3,11 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.5.0)</b>
         <font color='grey'>
-            \n We\'ve added two new mini-player skins.
-            \n We\'ve added new awesome animations to <b>NowPlaying</b> Screen.
-            \n We\'ve updated the UI of <b>Artists, Genres, Folders</b> screen.
-            \n We\'ve enhanced the functionality of the app.
-            \n We\'ve added a new <b>Dynamic Widget</b> that automatically adjusts to size.
-            \n More App <b>Widget</b> styles are coming soon.
+            \n😍 We\'ve added new mini-player skins.
+            \nWe\'ve added new awesome animations to <b>NowPlaying</b> Screen.
+            \nWe\'ve updated the UI of <b>Artists, Genres, Folders</b> screen.
+            \nWe\'ve enhanced the functionality of the app.
+            \nWe\'ve added a new <b>Dynamic Widget</b> that automatically adjusts to size.
         </font>
     </string>
 

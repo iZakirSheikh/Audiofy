@@ -79,6 +79,7 @@ import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.background
 import com.zs.core_ui.lottieAnimationPainter
 import com.zs.core_ui.shape.RoundedPolygonShape
+import com.zs.core_ui.shape.RoundedStarShape
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -88,7 +89,7 @@ private const val TAG = "RotatingGradient"
 
 private val Shape = RoundedCornerShape(12)
 private val ArtworkSize = 100.dp
-private val ArtworkShape = RoundedPolygonShape(5, 0.3f)
+private val ArtworkShape = /*RoundedPolygonShape(5, 0.3f)*/RoundedStarShape(15, 0.03)
 private val TitleDrawStyle = Stroke(width = 2.5f, join = StrokeJoin.Round)
 
 // Example changing dynamic gradient
@@ -117,6 +118,7 @@ fun RotatingColorGradient(
     // Content
     ListTile(
         onColor = contentColor,
+        spacing = ContentPadding.small,
         modifier = modifier
             .thenIf(!showcase) {
                 sharedBounds(
@@ -161,7 +163,7 @@ fun RotatingColorGradient(
                     .size(ArtworkSize)
                     .thenIf(!showcase) { sharedElement(Glance.SHARED_ARTWORK_ID) }
                     .clip(ArtworkShape)
-                //.border(2.dp, Color.Gray.copy(0.24f), ArtworkShape)
+                .border(0.5.dp, contentColor, ArtworkShape)
             )
         },
         trailing = {

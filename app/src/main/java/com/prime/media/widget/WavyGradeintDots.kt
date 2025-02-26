@@ -80,6 +80,7 @@ import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.background
 import com.zs.core_ui.lottieAnimationPainter
 import com.zs.core_ui.shape.RoundedPolygonShape
+import com.zs.core_ui.shape.RoundedStarShape
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
@@ -89,8 +90,8 @@ private const val TAG = "WavyGradeintDots"
 
 private val Shape = RoundedCornerShape(12)
 private val ArtworkSize = 84.dp
-private val ArtworkShape = RoundedPolygonShape(3, 0.3f)
-private val TitleDrawStyle = Stroke(width = 2.5f, join = StrokeJoin.Round)
+private val ArtworkShape = RoundedPolygonShape(5, 0.3f)
+private val TitleDrawStyle = Stroke(width = 3.2f, join = StrokeJoin.Round)
 
 private val IconModifier = Modifier
     .scale(0.84f)
