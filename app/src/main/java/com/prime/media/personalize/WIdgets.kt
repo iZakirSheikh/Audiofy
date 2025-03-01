@@ -64,13 +64,15 @@ private val widgets = mapOf(
         BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE,
         BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU,
         BuildConfig.IAP_PLATFORM_WIDGET_DISK_DYNAMO,
-        BuildConfig.IAP_PLATFORM_WIDGET_ELONGATE_BEAT
+        BuildConfig.IAP_PLATFORM_WIDGET_ELONGATE_BEAT,
+        BuildConfig.IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC
     ),
     BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE to listOf(
         BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
         BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST,
         BuildConfig.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS,
-        BuildConfig.IAP_COLOR_CROFT_ROTATING_GRADEINT
+        BuildConfig.IAP_COLOR_CROFT_ROTATING_GRADEINT,
+        BuildConfig.IAP_COLOR_CROFT_MISTY_DREAM
     )
 )
 

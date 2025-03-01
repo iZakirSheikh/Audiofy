@@ -53,12 +53,14 @@ private fun ApplicationDefaultConfig.init() {
     buildConfigField("IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE", "platform_widget_red_violet_cake")
     buildConfigField("IAP_PLATFORM_WIDGET_DISK_DYNAMO", "platform_widget_disk_dynamo")
     buildConfigField("IAP_PLATFORM_WIDGET_ELONGATE_BEAT", "platform_widget_elongate_beat")
+    buildConfigField("IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC", "platform_widget_skewed_dynamic")
     // ColorCroft Widget Bundle
     buildConfigField("IAP_COLOR_CROFT_WIDGET_BUNDLE", "aurora_widget_bundle")
     buildConfigField("IAP_COLOR_CROFT_GRADIENT_GROVES", "color_craft_gradient_groves")
     buildConfigField("IAP_COLOR_CROFT_GOLDEN_DUST", "color_craft_golden_dust")
     buildConfigField("IAP_COLOR_CROFT_ROTATING_GRADEINT", "color_craft_rotating_gradient")
     buildConfigField("IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS", "color_croft_wavy_gradient_dots")
+    buildConfigField("IAP_COLOR_CROFT_MISTY_DREAM", "color_craft_misty_dream")
     // Group
 }
 
@@ -69,8 +71,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 191
-        versionName = "3.5.1"
+        versionCode = 192
+        versionName = "3.5.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.

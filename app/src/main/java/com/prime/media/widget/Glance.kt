@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.os.BuildCompat
 import com.prime.media.BuildConfig
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
@@ -139,6 +140,9 @@ inline fun Glance(
 
         BuildConfig.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS ->
             WavyGradientDots(state, onDismissRequest, modifier, showcase)
+
+        BuildConfig.IAP_COLOR_CROFT_MISTY_DREAM -> MistyDream(state, onDismissRequest, modifier, showcase)
+        BuildConfig.IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC -> SkewedDynamic(state, onDismissRequest, modifier, showcase)
     }
 }
 

@@ -56,9 +56,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
@@ -66,9 +69,11 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
+import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.marque
 import com.prime.media.old.console.Console
+import com.primex.core.SignalWhite
 import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.IconButton
@@ -78,6 +83,7 @@ import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.LongDurationMills
 import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.shape.CompactDisk
 import com.zs.core_ui.sharedBounds
@@ -89,6 +95,8 @@ private val Shape = RoundedCornerShape(50, 8, 25, 50)
 
 private val PlayButtonShape = RoundedCornerShape(28)
 private val WidgetContentPadding = PaddingValues(8.dp, 6.dp)
+private val TitleDrawStyle = Stroke(width = 2.8f, join = StrokeJoin.Round)
+
 
 @Composable
 fun DiskDynamo(
@@ -112,8 +120,8 @@ fun DiskDynamo(
                 )
             }
             .shadow(Glance.ELEVATION, Shape)
-            .border(1.dp, Color.DarkGray.copy(0.12f), Shape)
-            .background(colors.background(2.dp)),
+            .border(0.5.dp, colors.background(30.dp), Shape)
+            .background(colors.background(1.dp)),
         leading = {
             val infiniteTransition = rememberInfiniteTransition()
             val degrees by infiniteTransition.animateFloat(
@@ -136,7 +144,7 @@ fun DiskDynamo(
                         shadowElevation = 12.dp.toPx()
                         clip = true
                     }
-                    .border(0.5.dp, contentColor, DefaultArtworkShape),
+                    .border(1.dp, Color.SignalWhite, DefaultArtworkShape),
             )
         },
         overline = {
@@ -145,7 +153,10 @@ fun DiskDynamo(
                 modifier = Modifier
                     .thenIf(!showcase) { sharedElement(Glance.SHARED_TITLE) }
                     .marque(Int.MAX_VALUE),
-                style = AppTheme.typography.titleLarge
+                style = AppTheme.typography.headlineSmall.copy(
+                    drawStyle = TitleDrawStyle,
+                    fontWeight = FontWeight.Medium,
+                )
             )
         },
         headline = {
@@ -158,15 +169,15 @@ fun DiskDynamo(
         },
         subtitle = {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(ContentPadding.medium),
+               // horizontalArrangement = Arrangement.spacedBy(ContentPadding.medium),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(top = ContentPadding.medium)
                     .fillMaxWidth(),
                 content = {
                     val IconModifier = Modifier
-                        .scale(0.84f)
-                        .background(contentColor.copy(0.3f), CircleShape)
+                        .scale(0.80f)
+                        .background(colors.background(5.dp), CircleShape)
 
                     val ctx = LocalContext.current
                     val navController = LocalNavController.current
@@ -178,31 +189,25 @@ fun DiskDynamo(
                         modifier = IconModifier
                     )
 
-                    FloatingActionButton(
-                        backgroundColor = contentColor.copy(0.3f),
-                        contentColor = LocalContentColor.current,
-                        shape = PlayButtonShape,
-                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                    val properties = rememberLottieDynamicProperties(
+                        rememberLottieDynamicProperty(
+                            property = LottieProperty.STROKE_COLOR,
+                            colors.accent.toArgb(),
+                            "**"
+                        )
+                    )
+                    // Play Toggle
+                    LottieAnimButton(
+                        id = R.raw.lt_play_pause3,
+                        atEnd = !state.playing,
+                        scale = 2f,
+                        progressRange = 0.0f..0.48f,
+                        duration = Anim.MediumDurationMills,
+                        easing = LinearEasing,
                         onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_TOGGLE_PLAY) },
-                    ) {
-                        val properties = rememberLottieDynamicProperties(
-                            rememberLottieDynamicProperty(
-                                property = LottieProperty.STROKE_COLOR,
-                                LocalContentColor.current.toArgb(),
-                                "**"
-                            )
-                        )
-                        // Play Toggle
-                        LottieAnimation(
-                            id = R.raw.lt_play_pause,
-                            atEnd = !state.playing,
-                            scale = 1.65f,
-                            progressRange = 0.0f..0.29f,
-                            duration = Anim.MediumDurationMills,
-                            easing = LinearEasing,
-                            dynamicProperties = properties,
-                        )
-                    }
+                        dynamicProperties = properties
+                    )
+
 
                     // SeekNext
                     IconButton(
