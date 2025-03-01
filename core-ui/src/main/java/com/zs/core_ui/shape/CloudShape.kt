@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection as LD
@@ -105,18 +104,4 @@ class CloudShape : Shape {
 
         return Outline.Generic(path)
     }
-}
-
-
-@Preview
-@Composable
-private fun Preview() {
-    Spacer(
-        Modifier
-            .background(
-                Color.Red,
-                shape = CloudShape()
-            )
-            .size(400.dp, 84.dp)
-    )
 }
