@@ -63,6 +63,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import com.prime.media.BuildConfig
+import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.preference
 import com.prime.media.settings.Settings
 import com.primex.core.plus
@@ -72,6 +73,7 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.zs.core.paymaster.Paymaster
 import com.zs.core.paymaster.ProductInfo
+import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Header
@@ -204,6 +206,7 @@ fun Personalize(viewState: ViewState) {
         primary = {
             // The selected Widget
             val selected by preference(Settings.GLANCE)
+            val state by PlaybackController.collectNowPlayingAsState()
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(ContentPadding.medium),
@@ -251,8 +254,7 @@ fun Personalize(viewState: ViewState) {
                 }
 
                 // emit widgets
-                widgets(selected, data, onRequestApply = viewState::setInAppWidget)
-
+                widgets(state, selected, data, onRequestApply = viewState::setInAppWidget)
             }
         },
         secondary = {

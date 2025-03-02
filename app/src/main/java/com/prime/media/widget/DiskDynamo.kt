@@ -1,7 +1,7 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright 2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 28-08-2024.
+ * Created by Zakir Sheikh on 26-02-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,34 +22,45 @@ package com.prime.media.widget
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.FloatingActionButtonDefaults
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieProperty
@@ -59,9 +70,11 @@ import com.prime.media.R
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimButton
+import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.marque
 import com.prime.media.old.console.Console
-import com.prime.media.personalize.RoutePersonalize
+import com.primex.core.SignalWhite
+import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -69,131 +82,153 @@ import com.primex.material2.ListTile
 import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.LongDurationMills
 import com.zs.core_ui.MediumDurationMills
+import com.zs.core_ui.shape.CompactDisk
 import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 
-private val SnowConeShape = RoundedCornerShape(14)
-private val DefaultArtworkShape = RoundedCornerShape(20)
 private val DefaultArtworkSize = 84.dp
+private val DefaultArtworkShape = CompactDisk
+private val Shape = RoundedCornerShape(50, 8, 25, 50)
+
+private val PlayButtonShape = RoundedCornerShape(28)
+private val WidgetContentPadding = PaddingValues(8.dp, 6.dp)
+private val TitleDrawStyle = Stroke(width = 2.8f, join = StrokeJoin.Round)
 
 
-/**
- * A mini-player inspired by android 12 notification
- */
 @Composable
-fun SnowCone(
+fun DiskDynamo(
     state: NowPlaying,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     showcase: Boolean = false
 ) {
     val colors = AppTheme.colors
-    val navController = LocalNavController.current
+    val contentColor = colors.onBackground
     ListTile(
-        onColor = colors.onBackground,
+        onColor = contentColor,
+        centerAlign = true,
+        padding = WidgetContentPadding,
         modifier = modifier
             .thenIf(!showcase) {
                 sharedBounds(
                     Glance.SHARED_BACKGROUND_ID,
                     exit = fadeOut() + scaleOut(),
-                    enter = fadeIn() + scaleIn(),
+                    enter = fadeIn() + scaleIn()
                 )
             }
-            .heightIn(max = 120.dp)
-            .shadow(16.dp, SnowConeShape)
-            .border(0.5.dp, colors.background(20.dp), SnowConeShape)
-            .background(AppTheme.colors.background(1.dp)),
-        // subtitle
-        headline = {
-            Label(
-                state.subtitle ?: stringResource(R.string.unknown),
-                style = AppTheme.typography.caption,
-                color = LocalContentColor.current.copy(ContentAlpha.medium)
-            )
-        },
-        // title
-        overline = {
-            Label(
-                state.title ?: stringResource(R.string.unknown),
-                style = AppTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.marque(Int.MAX_VALUE)
-            )
-        },
-        // AlbumArt
+            .shadow(Glance.ELEVATION, Shape)
+            .border(0.5.dp, colors.background(30.dp), Shape)
+            .background(colors.background(1.dp)),
         leading = {
+            val infiniteTransition = rememberInfiniteTransition()
+            val degrees by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 2000, easing = LinearEasing),
+                )
+            )
             Artwork(
                 data = state.artwork,
                 modifier = Modifier
                     .size(DefaultArtworkSize)
-                    .thenIf(!showcase) {
-                        sharedElement(Glance.SHARED_ARTWORK_ID)
+                    .thenIf(!showcase) { sharedElement(Glance.SHARED_ARTWORK_ID) }
+                    .graphicsLayer {
+                        rotationZ = if (!state.playing) 0f else degrees
+                        scaleX = 1.1f
+                        scaleY = 1.1f
+                        this.shape = DefaultArtworkShape
+                        shadowElevation = 12.dp.toPx()
+                        clip = true
                     }
-                    .clip(DefaultArtworkShape)
+                    .border(1.dp, Color.SignalWhite, DefaultArtworkShape),
             )
         },
-        // control centre
-        trailing = {
-            Column {
-                // Expand to fill
-                IconButton(
-                    imageVector = Icons.Outlined.Tune,
-                    onClick = { navController.navigate(RoutePersonalize()); onDismissRequest() },
-                    modifier = Modifier.offset(10.dp, -10.dp)
+        overline = {
+            Label(
+                state.title ?: textResource(R.string.unknown),
+                modifier = Modifier
+                    .thenIf(!showcase) { sharedElement(Glance.SHARED_TITLE) }
+                    .marque(Int.MAX_VALUE),
+                style = AppTheme.typography.headlineSmall.copy(
+                    drawStyle = TitleDrawStyle,
+                    fontWeight = FontWeight.Medium,
                 )
-
-                IconButton(
-                    imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                    onClick = { navController.navigate(Console.route); onDismissRequest() },
-                    modifier = Modifier.offset(10.dp, -4.dp)
-                )
-            }
+            )
         },
-        // play controls
+        headline = {
+            Label(
+                state.subtitle ?: textResource(R.string.unknown),
+                style = AppTheme.typography.caption,
+                color = LocalContentColor.current.copy(ContentAlpha.medium),
+                modifier = Modifier.thenIf(!showcase) { sharedElement(Glance.SHARED_SUBTITLE) },
+            )
+        },
         subtitle = {
             Row(
+               // horizontalArrangement = Arrangement.spacedBy(ContentPadding.medium),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(top = ContentPadding.medium)
+                    .fillMaxWidth(),
                 content = {
-                    val color = LocalContentColor.current
+                    val IconModifier = Modifier
+                        .scale(0.80f)
+                        .background(colors.background(5.dp), CircleShape)
+
                     val ctx = LocalContext.current
+                    val navController = LocalNavController.current
                     // SeekBackward
                     IconButton(
                         onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_PREVIOUS) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
-                        tint = color
+                        modifier = IconModifier
                     )
 
                     val properties = rememberLottieDynamicProperties(
                         rememberLottieDynamicProperty(
-                            property = LottieProperty.COLOR,
-                            color.toArgb(),
+                            property = LottieProperty.STROKE_COLOR,
+                            colors.accent.toArgb(),
                             "**"
                         )
                     )
                     // Play Toggle
                     LottieAnimButton(
-                        id = R.raw.lt_play_pause2,
+                        id = R.raw.lt_play_pause3,
                         atEnd = !state.playing,
-                        scale = 1.5f,
-                        progressRange = 0.1f..0.65f,
+                        scale = 2f,
+                        progressRange = 0.0f..0.48f,
                         duration = Anim.MediumDurationMills,
                         easing = LinearEasing,
                         onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_TOGGLE_PLAY) },
                         dynamicProperties = properties
                     )
 
+
                     // SeekNext
                     IconButton(
                         onClick = { NowPlaying.trySend(ctx, NowPlaying.ACTION_NEXT) },
                         imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
-                        tint = color
+                        modifier = IconModifier
+                    )
+
+                    //
+                    Spacer(Modifier.weight(1f))
+
+                    // control centre
+                    IconButton(
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                        //   tint = accent
+                        onClick = { navController.navigate(Console.route); onDismissRequest() },
+                        modifier = IconModifier,
                     )
                 }
             )
-        },
+        }
     )
 }

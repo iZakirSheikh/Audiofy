@@ -385,4 +385,5 @@
     </font>
     </string>
     <string name="translate">Translate</string>
+    <string name="scr_personalize_unlock_all_s">%s<font color ='grey' size = "10">\nUnlock All</font></string>
 </resources>
