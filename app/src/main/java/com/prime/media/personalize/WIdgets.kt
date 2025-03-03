@@ -53,6 +53,7 @@ import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Header
 import com.zs.core.paymaster.ProductInfo as Product
 import com.prime.media.R
+import com.zs.core_ui.shape.TagShape
 
 /**
  * A map of widget bundles to their corresponding product IDs.
@@ -87,6 +88,7 @@ private val SampleMediaItem =
         artwork = Uri.parse("https://upload.wikimedia.org/wikipedia/en/c/c0/LetitbleedRS.jpg")
     )
 
+private val DEBUG get() = BuildConfig.DEBUG
 
 private val WIDGET_MAX_WIDTH = 400.dp
 
@@ -139,13 +141,9 @@ fun LazyListScope.widgets(
                                     )
                                 },
                                 elevation = null,
-                                shape = AppTheme.shapes.compact,
+                                shape = TagShape,
                                 // Initiate purchase flow on click
                                 onClick = { facade.initiatePurchaseFlow(group) },
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = AppTheme.colors.background(1.dp),
-                                    contentColor = AppTheme.colors.accent,
-                                ),
                                 border = if (AppTheme.colors.isLight) null else ButtonDefaults.outlinedBorder
                             )
                     }
@@ -191,7 +189,7 @@ fun LazyListScope.widgets(
                             val isApplied =
                                 selected == child // Check if this child widget is currently selected
                             // If freemium, purchased, debuggable or part of a purchased bundle, show a radio button
-                            if (childInfo.isFreemium || widget.purchased || bundle.purchased || BuildConfig.DEBUG)
+                            if (childInfo.isFreemium || widget.purchased || bundle.purchased || DEBUG)
                                 return@Header androidx.compose.material.RadioButton(
                                     isApplied,
                                     onClick = { onRequestApply(child) },
@@ -205,7 +203,7 @@ fun LazyListScope.widgets(
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = Color.Transparent,
                                 ),
-                                shape = AppTheme.shapes.small,
+                                shape = AppTheme.shapes.compact,
                                 border = ButtonDefaults.outlinedBorder
                             )
                         },
