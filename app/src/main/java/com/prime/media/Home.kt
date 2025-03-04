@@ -68,14 +68,20 @@ import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
 import com.prime.media.impl.AlbumsViewModel
+import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.PlaylistViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
 import com.prime.media.local.Albums
-import com.prime.media.local.RouteAlbums
+import com.prime.media.local.Artists
+import com.prime.media.local.Folders
 import com.prime.media.local.Genres
+import com.prime.media.local.RouteAlbums
+import com.prime.media.local.RouteArtists
+import com.prime.media.local.RouteFolders
 import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
 import com.prime.media.local.videos.Videos
@@ -85,12 +91,6 @@ import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.local.Artists
-import com.prime.media.impl.ArtistsViewModel
-import com.prime.media.impl.FoldersViewModel
-import com.prime.media.local.Folders
-import com.prime.media.local.RouteArtists
-import com.prime.media.local.RouteFolders
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.editor.TagEditor
@@ -131,6 +131,7 @@ import com.zs.core_ui.adaptive.NavigationItemDefaults
 import com.zs.core_ui.adaptive.NavigationSuiteScaffold
 import com.zs.core_ui.calculateWindowSizeClass
 import com.zs.core_ui.checkSelfPermissions
+import com.zs.core_ui.dynamicAccentColor
 import com.zs.core_ui.isAppearanceLightSystemBars
 import com.zs.core_ui.renderInSharedTransitionScopeOverlay
 import com.zs.core_ui.shape.EndConcaveShape
@@ -162,6 +163,8 @@ private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 private val LightAccentColor = Color(0xFF514700)
 private val DarkAccentColor = Color(0xFFD8A25E)
 
+
+
 /**
  * Provides a dynamic accent color based on the current theme (dark/light) and the user's
  * chosen colorization strategy. This composable reacts to changes in both the theme and
@@ -187,7 +190,9 @@ private fun resolveAccentColor(
         var job: Job? = null
         when (strategy) {
             ColorizationStrategy.Manual -> value = default
-            ColorizationStrategy.Wallpaper -> value = default
+            ColorizationStrategy.Wallpaper -> value =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    dynamicAccentColor(activity, isDark) else default
             // just return the default color
             ColorizationStrategy.Default -> value = default
             else -> {
