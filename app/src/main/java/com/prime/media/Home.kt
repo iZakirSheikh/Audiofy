@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Weekend
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
@@ -437,16 +438,26 @@ private fun NavigationBar(
         // Get the current navigation destination from NavController
         val current by navController.current()
         val color = LocalContentColor.current
-        val colors = NavigationItemDefaults.navigationItemColors(
-            selectedContentColor = color,
-            selectedBackgroundColor = color.copy(0.12f)
-        )
+        val colors = when {
+            typeRail -> NavigationItemDefaults.navigationItemColors(
+                selectedContentColor = color,
+                selectedBackgroundColor = color.copy(0.12f)
+            )
+            contentColor == AppTheme.colors.onAccent -> NavigationItemDefaults.bottomNavItem2Colors(
+                selectedIndicatorColor = color.copy(0.12f),
+                selectedIconColor = color,
+                unselectedIconColor = color,
+                selectedTextColor = color,
+                unselectedTextColor = color
+            )
+            else -> NavigationItemDefaults.bottomNavItem2Colors()
+        }
         val route = current?.destination?.route
         val facade = LocalSystemFacade.current
         // Home
         NavItem(
             label = { Label(text = textResource(R.string.home)) },
-            icon = { Icon(imageVector = Icons.Filled.Home, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
             checked = route == Library.route,
             onClick = { navController.toRoute(Library.direction()); facade.initiateReviewFlow() },
             typeRail = typeRail,
@@ -478,16 +489,6 @@ private fun NavigationBar(
             icon = { Icon(imageVector = Icons.Outlined.PlaylistPlay, contentDescription = null) },
             checked = route == RoutePlaylists(),
             onClick = { navController.toRoute(RoutePlaylists()); facade.initiateReviewFlow() },
-            typeRail = typeRail,
-            colors = colors
-        )
-
-        // Settings
-        NavItem(
-            label = { Label(text = textResource(R.string.settings)) },
-            icon = { Icon(imageVector = Icons.Outlined.Settings, contentDescription = null) },
-            checked = route == RouteSettings(),
-            onClick = { navController.toRoute(RouteSettings()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -567,7 +568,7 @@ private fun NavigationBar(
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
+    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
 
 /**
  * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
