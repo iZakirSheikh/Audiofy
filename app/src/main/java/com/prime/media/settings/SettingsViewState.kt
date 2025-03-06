@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
@@ -83,9 +84,9 @@ enum class ColorizationStrategy {
     Manual, Default, Wallpaper, Artwork
 }
 
-private val ColorSaver = object : LongSaver<Color> {
-    override fun restore(value: Long): Color = Color(value)
-    override fun save(value: Color): Long = value.value.toLong()
+private val ColorSaver = object : IntSaver<Color> {
+    override fun restore(value: Int): Color = Color(value)
+    override fun save(value: Color): Int = value.toArgb()
 }
 
 /**
@@ -140,6 +141,9 @@ object Settings {
     }
 
     private const val PREFIX = "Audiofy"
+
+    val LightAccentColor = Color(0xFF514700)
+    val DarkAccentColor = Color(0xFFD8A25E)
 
     val NIGHT_MODE =
         stringPreferenceKey(
@@ -201,9 +205,9 @@ object Settings {
     val ARTWORK_BORDER_WIDTH =
         intPreferenceKey("${PREFIX}_artwork_border_width")
     val COLOR_ACCENT_LIGHT =
-        longPreferenceKey("${PREFIX}_color_accent_light", Color.Unspecified, ColorSaver)
+        intPreferenceKey("${PREFIX}_color_accent_light", LightAccentColor, ColorSaver)
     val COLOR_ACCENT_DARK =
-        longPreferenceKey("${PREFIX}_color_accent_dark", Color.Unspecified, ColorSaver)
+        intPreferenceKey("${PREFIX}_color_accent_dark", DarkAccentColor, ColorSaver)
     val GLANCE =
         stringPreferenceKey("${PREFIX}_glance", BuildConfig.IAP_PLATFORM_WIDGET_IPHONE)
     val KEY_LAUNCH_COUNTER =

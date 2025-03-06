@@ -24,8 +24,23 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.TextButton
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,7 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -43,20 +59,42 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toIntSize
+import androidx.compose.ui.window.DialogProperties
+import com.primex.core.Amber
+import com.primex.core.AzureBlue
+import com.primex.core.BlackOlive
+import com.primex.core.CapriBlue
+import com.primex.core.ClaretViolet
+import com.primex.core.DahliaYellow
+import com.primex.core.Ivory
+import com.primex.core.JetBlack
+import com.primex.core.LightBlue
 import com.primex.core.MetroGreen
-import kotlin.math.max
-import kotlin.math.min
+import com.primex.core.MetroGreen2
+import com.primex.core.OliveYellow
+import com.primex.core.Orange
+import com.primex.core.OrientRed
+import com.primex.core.RedViolet
+import com.primex.core.Rose
+import com.primex.core.SepiaBrown
+import com.primex.core.SkyBlue
+import com.primex.core.TrafficBlack
+import com.primex.core.TrafficYellow
+import com.primex.core.UmbraGrey
+import com.primex.core.thenIf
+import com.primex.material2.Dialog
+import com.primex.material2.IconButton
+import com.primex.material2.Label
 import kotlin.math.roundToInt
+import android.graphics.Color as AndroidColor
 
 private const val TAG = "ColorPicker"
 
-// inspiration - https://github.com/mhssn95/compose-color-picker/blob/main/colorPicker/src/main/java/io/mhssn/colorpicker/data/Colors.kt
-
-private val test = Color(0xFF1C0000)
+// See Also - https://github.com/mhssn95/compose-color-picker/blob/main/colorPicker/src/main/java/io/mhssn/colorpicker/data/Colors.kt
 
 /**Represents the color of [HueSlider]*/
 private val HueSliderColors = listOf(
@@ -70,120 +108,43 @@ private val HueSliderColors = listOf(
 )
 
 /**
- * Calculates the color based on the given progress value.
+ * Converts a progress value (between 0.0 and 1.0) to a corresponding color in the HSV color space.
+ * The progress determines the hue of the color, while saturation and value are kept at their maximum (1.0).
  *
- * The progress value is a float ranging from 0.0 to 1.0, representing the position
- * within the hue spectrum. The function maps the progress value to one of the six
- * segments of the hue spectrum (Red to Yellow, Yellow to Green, Green to Cyan,
- * Cyan to Blue, Blue to Purple, and Purple to Red) and calculates the corresponding color.
- *
- * @param progress The progress value ranging from 0.0 to 1.0.
- * @return The calculated Color based on the progress value.
+ * @param progress A float value representing the progress, typically between 0.0 and 1.0.
+ *                 Values outside this range will be handled, but the resulting hue will wrap around.
+ *                 e.g. -0.5 will be the same hue as 0.5, and 1.5 will be the same as 0.5
+ * @return A Color object representing the color corresponding to the given progress. The color will have a full saturation and value.
+ *         The hue will smoothly transition from 0 to 360 degrees as progress goes from 0.0 to 1.0, creating a rainbow spectrum.
  */
 private fun progressToColor(progress: Float): Color {
-     // Calculate the hue value based on progress
+    // Calculate the hue value based on progress
     val hue = progress * 360
-
     // Convert the HSV color to RGB
     val color = Color.hsv(hue, 1f, 1f)
-
     return color
-  /*  val scaledProgress = progress * 7
-    val segment = scaledProgress.toInt()
-    val segmentProgress = scaledProgress - segment
-
-    val red: Int
-    val green: Int
-    val blue: Int
-
-    // Determine the color range based on the progress value
-    when (segment % 7) {
-        0 -> {
-            // Red to Yellow
-            red = 255
-            green = (255 * segmentProgress).roundToInt()
-            blue = 0
-        }
-
-        1 -> {
-            // Yellow to Green
-            red = (255 * (1 - segmentProgress)).roundToInt()
-            green = 255
-            blue = 0
-        }
-
-        2 -> {
-            // Green to Cyan
-            red = 0
-            green = 255
-            blue = (255 * segmentProgress).roundToInt()
-        }
-
-        3 -> {
-            // Cyan to Blue
-            red = 0
-            green = (255 * (1 - segmentProgress)).roundToInt()
-            blue = 255
-        }
-
-        4 -> {
-            // Blue to Magenta
-            red = (255 * segmentProgress).roundToInt()
-            green = 0
-            blue = 255
-        }
-
-        5 -> {
-            // Magenta to Red
-            red = 255
-            green = 0
-            blue = (255 * (1 - segmentProgress)).roundToInt()
-        }
-
-        else -> {
-            // This should never happen, but for safety:
-            red = 255
-            green = 0
-            blue = 0
-        }
-    }
-    // Return the calculated color
-    return Color(red, green, blue)*/
 }
 
 /**
- * Converts a color to a progress value.
+ * Converts a Compose Color to a progress value representing its hue.
  *
- * This function takes a color and maps it to a progress value ranging from 0.0 to 1.0,
- * representing the position within the hue spectrum. The function calculates the hue component
- * of the color in the HSV (Hue, Saturation, Value) color model and normalizes it to a progress value.
+ * This function takes a [Color] object and extracts its hue component,
+ * returning a normalized progress value between 0.0 and 1.0.
  *
- * @param color The color to convert to a progress value.
- * @return The progress value ranging from 0.0 to 1.0 based on the hue of the color.
+ * @param color The [Color] object to convert.
+ * @return A [Float] representing the hue as a progress value (0.0 to 1.0).
+ *         Returns 0.0 if the color is invalid.
  */
 private fun colorToProgress(color: Color): Float {
-    // Extract the red, green, and blue components from the Color object
-    val red = color.red
-    val green = color.green
-    val blue = color.blue
-    // Calculate the maximum and minimum values among the RGB components
-    val max = max(red, max(green, blue))
-    val min = min(red, min(green, blue))
+    // Convert Color to ARGB
+    val argb = color.toArgb()
 
-    // Calculate the difference (delta) between the max and min values
-    val delta = max - min
+    // Extract the Hue using Android's ColorUtils
+    val hsv = FloatArray(3)
+    AndroidColor.colorToHSV(argb, hsv)
 
-    // Calculate the hue value based on the max RGB component and the delta
-    val hue = when {
-        delta == 0f -> 0f
-        max == red -> (green - blue) / delta % 6
-        max == green -> (blue - red) / delta + 2
-        max == blue -> (red - green) / delta + 4
-        else -> 0f
-    }
-
-    // Normalize the hue value to a progress value between 0.0 and 1.0
-    return (hue / 6 + if (hue < 0) 1 else 0)
+    // Return the hue as a progress value (0.0 to 1.0)
+    return hsv[0] / 360f
 }
 
 /**
@@ -231,24 +192,9 @@ private fun calculateColorAtLocation(
     return Color(red, green, blue, (255 * alpha).roundToInt())
 }
 
-/**
- * @see calculateColorAtLocation
- */
-private fun calculateLocationFromColor(source: Color): Offset {
-    TODO("Not yet implemented!")
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    ColorPicker(
-        Color.MetroGreen
-    ) { }
-}
-
-private val DarkPalette = Brush.verticalGradient(listOf(Color.Transparent, Color.Black))
+/**Represents the brightness of the ColorPallet*/
+private val Brightness = Brush.verticalGradient(listOf(Color.Transparent, Color.Black))
 private val ColorPaletteHandleRadius = 8.dp
-
 
 /**
  * Composable function that creates a color palette.
@@ -256,21 +202,31 @@ private val ColorPaletteHandleRadius = 8.dp
  * This function displays a color palette that users can interact with to pick a color.
  * When a color is picked, the `onColorPicked` callback is invoked with the selected color.
  *
- * @param color The base color for the palette.
+ * @param hue The base color for the palette.
  * @param onColorPicked A callback function that is invoked when a color is picked.
  * @param modifier The modifier to be applied to the canvas.
  */
 @Composable
 private fun ColorPalette(
-    color: Color,
+    hue: Color,
     onColorPicked: (color: Color) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // This represents the size of the color palette
-    // This does not need to be state since we only use it in pointerInput.
-    // The initial value is not important.
+// Represents the size of the color palette area (initially set to zero)
+    // This is not stateful because it's only used within pointer input handling.
     var area = Size.Zero
-    var location by remember { mutableStateOf(Offset.Infinite) }
+
+    // Location of the user's current selection on the color board.
+    // When the seed color changes, reset the selection to an initial invalid location (Offset.Infinite).
+    var location by remember(hue) {
+        onColorPicked(hue)
+        mutableStateOf(Offset.Infinite)
+    }
+
+    // Canvas used to display the color palette and allow color selection via touch input.
+    // This palette is used to select the seed color and adjust the brightness.
+    // The horizontal axis (width) represents the lightness of the color,
+    // while the vertical axis represents the brightness.
     Canvas(
         modifier
             .fillMaxWidth()
@@ -285,7 +241,7 @@ private fun ColorPalette(
                         location = Offset(x, y)
                         // Calculate the new color based on the updated location
                         val newColor =
-                            calculateColorAtLocation(color, location, area.toIntSize(), 1f)
+                            calculateColorAtLocation(hue, location, area.toIntSize(), 1f)
                         // Invoke the callback to pass the new color
                         onColorPicked(newColor)
                     }
@@ -295,10 +251,10 @@ private fun ColorPalette(
         onDraw = {
             // Set the area to the size of the canvas
             area = this.size
-            // Construct the palette by drawing a horizontal gradient
-            drawRect(Brush.horizontalGradient(listOf(Color.White, color)))
-            drawRect(DarkPalette)
-
+            // Create a horizontal gradient from white to the seed color, representing lightness.
+            drawRect(Brush.horizontalGradient(listOf(Color.White, hue))) // Lightness gradient.
+            // Add a placeholder or actual drawing for brightness (if needed, you can define a gradient for brightness).
+            drawRect(Brightness) // This can be customized to visualize the brightness.
             // Draw the handle
             val radiusPx = ColorPaletteHandleRadius.toPx()
             // Set the initial handle location or use the updated location
@@ -321,18 +277,36 @@ private val HueSliderHeight = 22.dp
 private val HueSliderShape = CircleShape
 private val HueSliderBorder = BorderStroke(0.2.dp, Color.LightGray)
 
+
+/**
+ * A Composable function that renders a horizontal hue slider where users can select a color hue.
+ * The slider displays a gradient representing the full spectrum of hues, and users can adjust
+ * the hue by dragging the thumb along the slider.
+ *
+ * The selected hue value is updated based on the user's interaction, and the corresponding color
+ * is passed back through the [onHuePicked] callback.
+ *
+ * @param hue The current hue color, which is used to initialize the slider's progress.
+ * @param onHuePicked A callback function that is triggered when the user selects a new hue color.
+ * This function receives the new color as a parameter.
+ * @param modifier A modifier to customize the appearance and layout of the slider. Default is [Modifier].
+ */
 @Composable
 private fun HueSlider(
-    color: Color,
-    onColorPicked: (color: Color) -> Unit,
+    hue: Color,
+    onHuePicked: (color: Color) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // This represents the size of the HueSlider
-    // This does not need to be state since we only use it in pointerInputFilter.
-    // The initial value is not important.
-    // TODO - Use PointerInput and this is not required
+    // Represents the size of the HueSlider area. This is used to calculate where the user is touching.
+    // The initial value is not important because we update it dynamically in the pointer input handler.
+    // TODO: Use PointerInput for more modern and flexible handling of touch events (pointerInteropFilter can be replaced).
     var area = Size.Zero
-    var progress by remember { mutableFloatStateOf(colorToProgress(color)) }
+
+    // State to store the current progress of the hue slider (range: 0.0 to 1.0).
+    // The progress is initialized based on the initial hue value.
+    var progress by remember(hue) { mutableFloatStateOf(colorToProgress(hue)) }
+
+    // Draw the slider
     Canvas(
         modifier = modifier
             .fillMaxWidth()
@@ -340,10 +314,13 @@ private fun HueSlider(
             .pointerInteropFilter {
                 when (it.action) {
                     MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                        // Calculate the progress based on the user's horizontal touch position.
+                        // Clamp the progress between 0 and 1 based on the width of the slider.
                         progress = (it.x / area.width).coerceIn(0f, 1f)
                         Log.d(TAG, "HueSlider: $progress")
+                        // Calculate the new color based on the progress and trigger the callback.
                         val newColor = progressToColor(progress)
-                        onColorPicked(newColor)
+                        onHuePicked(newColor)
                     }
                 }
                 return@pointerInteropFilter true
@@ -351,7 +328,9 @@ private fun HueSlider(
             .clip(HueSliderShape)
             .border(HueSliderBorder, HueSliderShape),
         onDraw = {
+            // Update the area size to match the size of the canvas.
             area = size
+            // Draw a horizontal gradient to represent the hue spectrum (rainbow).
             drawRect(
                 Brush.horizontalGradient(
                     HueSliderColors,
@@ -359,10 +338,17 @@ private fun HueSlider(
                     endX = size.width - size.height / 2
                 )
             )
+
+            // Calculate the radius of the thumb (the handle the user interacts with) based on the slider's height.
             val thumbRadiusPx = size.minDimension / 3.5f
+
+            // Draw the thumb (circle) that the user moves along the slider.
+            // The position of the thumb is based on the calculated progress.
             drawCircle(
                 Color.White,
                 radius = thumbRadiusPx,
+                // Calculate the X-coordinate of the thumb's center based on progress.
+                // The Y-coordinate of the thumb is always centered vertically.
                 center = Offset(
                     thumbRadiusPx + (size.height / 2 - thumbRadiusPx) + ((size.width - (thumbRadiusPx + (size.height / 2 - thumbRadiusPx)) * 2) * progress),
                     size.height / 2
@@ -373,47 +359,149 @@ private fun HueSlider(
     )
 }
 
-private val Spacing = Arrangement.spacedBy(8.dp)
-private val Padding = PaddingValues(horizontal = 12.dp, vertical = 16.dp)
+private val DialogProperties = DialogProperties(dismissOnClickOutside = false)
+
+private val ColorSwatch = arrayOf(
+    Color.CapriBlue,
+    Color.SkyBlue,
+    Color.LightBlue,
+    Color.Orange,
+    Color.Rose,
+    Color.OrientRed,
+    Color.RedViolet,
+    Color.ClaretViolet,
+    Color.Magenta,
+    Color.AzureBlue,
+    Color.MetroGreen,
+    Color.MetroGreen2,
+    Color.OliveYellow,
+    Color.Ivory,
+    Color.TrafficYellow,
+    Color.DahliaYellow,
+    Color.Amber,
+    Color.BlackOlive,
+    Color.SepiaBrown,
+    Color.UmbraGrey,
+    Color.JetBlack,
+    Color.TrafficBlack,
+)
 
 @Composable
-fun ColorPicker(
-    source: Color,
-    modifier: Modifier = Modifier,
-    onColorPicked: (color: Color) -> Unit
+private fun ColorSwatch(
+    hue: Color,
+    onHuePicked: (Color) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val (color, onColorChange) = remember(source) { mutableStateOf(source) }
-    Column(
+    Row(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Spacing
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        ColorPalette(
-            source,
-            onColorPicked = onColorChange,
-            modifier = Modifier
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Spacing,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        ) {
+        for (color in ColorSwatch) {
             Spacer(
                 modifier = Modifier
-                    .background(color, shape = CircleShape)
-                    .border(1.dp, Color.LightGray, shape = CircleShape)
-                    .size(56.dp)
-            )
-
-            HueSlider(
-                source,
-                onColorPicked = onColorPicked,
-                modifier = Modifier.weight(1f)
+                    .thenIf(color == hue) { scale(1.15f) }
+                    .size(width = 15.dp, height = 45.dp)
+                    .weight(1f)
+                    .background(color)
+                    .clickable() { onHuePicked(color) }
             )
         }
-
-        //TODO Remove this when new components are added
-        Spacer(Modifier)
     }
+}
+
+/*The space between the component of screen*/
+private val ItemSpacing = Arrangement.spacedBy(8.dp)
+private val hItemPadding = PaddingValues(horizontal = 12.dp)
+
+@Composable
+fun ColorPickerDialog(
+    expanded: Boolean,
+    initial: Color,
+    onColorPicked: (Color) -> Unit
+) {
+    Dialog(
+        expanded,
+        onDismissRequest = { onColorPicked(Color.Unspecified) },
+        properties = DialogProperties,
+        content = {
+            Column {
+                TopAppBar(
+                    title = { Label("Color Picker", style = AppTheme.typography.titleSmall) },
+                    navigationIcon = {
+                        IconButton(
+                            Icons.Default.Close,
+                            onClick = {
+                                onColorPicked(Color.Unspecified)
+                            }
+                        )
+                    },
+                    backgroundColor = AppTheme.colors.background(2.dp),
+                    contentColor = LocalContentColor.current,
+                    elevation = 0.dp
+                )
+
+                // content
+                val (hue, onHueChange) = remember { mutableStateOf(initial) }
+                val (color, onBrightnessChange) =
+                    remember(hue) { mutableStateOf(initial) }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = ItemSpacing
+                ) {
+
+                    ColorPalette(hue, onBrightnessChange)
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = ItemSpacing,
+                        modifier = Modifier.padding(hItemPadding),
+                        content = {
+
+                            Spacer(
+                                modifier = Modifier
+                                    .drawBehind {
+                                        drawCircle(color = color)
+                                        drawCircle(color = Color.LightGray, style = Stroke(1.dp.toPx()))
+                                    }
+                                    .size(56.dp)
+                            )
+
+                            HueSlider(
+                                hue,
+                                onHuePicked = onHueChange,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    )
+
+                    Label(
+                        "Swatches",
+                        style = AppTheme.typography.caption,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .padding(horizontal = 12.dp)
+                            .align(Alignment.Start)
+                    )
+
+                    ColorSwatch(hue, onHueChange, modifier = Modifier.padding(hItemPadding))
+
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        TextButton(onClick = { onColorPicked(Color.Unspecified) }) {
+                            Label(text = stringResource(id = android.R.string.cancel))
+                        }
+                        TextButton(onClick = { onColorPicked(color) }) {
+                            Label(text = stringResource(id = android.R.string.ok))
+                        }
+                    }
+                )
+            }
+        }
+    )
 }

@@ -24,9 +24,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,17 +36,25 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Deck
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -55,38 +62,31 @@ import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.ScenicAppBar
-import com.prime.media.old.common.LocalNavController
-import com.primex.core.thenIf
-import com.primex.material2.IconButton
-import com.primex.material2.Label
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import com.prime.media.BuildConfig
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.preference
+import com.prime.media.old.common.LocalNavController
+import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.Settings
 import com.primex.core.plus
 import com.primex.core.textResource
-import com.primex.material2.appbar.LargeTopAppBar
+import com.primex.core.thenIf
+import com.primex.material2.IconButton
+import com.primex.material2.Label
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
-import com.zs.core.paymaster.Paymaster
-import com.zs.core.paymaster.ProductInfo
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
-import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.ColorPickerDialog
 import com.zs.core_ui.Header
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.None
 import com.zs.core_ui.Range
+import com.zs.core_ui.ToggleButton
 import com.zs.core_ui.adaptive.HorizontalTwoPaneStrategy
 import com.zs.core_ui.adaptive.SinglePaneStrategy
 import com.zs.core_ui.adaptive.TwoPane
-import com.zs.core_ui.adaptive.TwoPaneStrategy
 import com.zs.core_ui.adaptive.contentInsets
 import com.zs.core_ui.lottieAnimationPainter
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import com.primex.core.textResource as stringResource
@@ -101,6 +101,8 @@ private val vPadding = CP.normal
 private val vPaddingValues = Padding(vertical = vPadding)
 private val Padding = Padding(hPadding, vPadding)
 private val HeaderPadding = Padding(CP.medium, CP.normal, CP.medium, CP.medium)
+
+private val ComponentSpacing = Arrangement.spacedBy(CP.medium)
 
 private val SecondaryPaneMaxWidth = 320.dp
 
@@ -163,6 +165,73 @@ private fun TopAppBar(
     )
 }
 
+
+@Composable
+private fun ColorizationStrategyRow(
+    viewState: ViewState,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.padding(start = CP.normal),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = ComponentSpacing
+    ) {
+
+        var expanded by remember { mutableStateOf(false) }
+        val isLightTheme = AppTheme.colors.isLight
+        ColorPickerDialog(
+            expanded,
+            AppTheme.colors.accent,
+            onColorPicked = { pickedColor ->
+                if (pickedColor.isSpecified)
+                    viewState[if (isLightTheme) Settings.COLOR_ACCENT_LIGHT else Settings.COLOR_ACCENT_DARK] =
+                        pickedColor
+                expanded = false
+            }
+        )
+
+        // Manual
+        val current by preference(Settings.COLORIZATION_STRATEGY)
+        ToggleButton(
+            selected = current == ColorizationStrategy.Manual,
+            onClick = {
+                if (current == ColorizationStrategy.Manual)
+                    expanded = true
+                // TODO - Allow only users to use this strategy if they have paid version.
+                viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Manual;
+            },
+            label = "Manual",
+            icon = Icons.Default.ColorLens,
+        )
+
+        // Default
+        ToggleButton(
+            selected = current == ColorizationStrategy.Default,
+            onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Default },
+            label = "Default",
+            icon = Icons.Default.Deck,
+        )
+
+        ToggleButton(
+            selected = current == ColorizationStrategy.Wallpaper,
+            onClick = {
+                viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Wallpaper
+            },
+            label = "Dynamic",
+            icon = Icons.Default.Devices,
+        )
+
+        ToggleButton(
+            selected = current == ColorizationStrategy.Artwork,
+            onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Artwork },
+            label = "Album Art",
+            icon = Icons.Default.Image
+        )
+
+        Spacer(Modifier.weight(1f))
+    }
+}
+
 /**
  * Represents the personalize screen.
  */
@@ -209,7 +278,7 @@ fun Personalize(viewState: ViewState) {
             val state by PlaybackController.collectNowPlayingAsState()
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(ContentPadding.medium),
+                verticalArrangement = ComponentSpacing,
                 contentPadding = Padding + WindowInsets.navigationBars.asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
@@ -230,6 +299,19 @@ fun Personalize(viewState: ViewState) {
                     )
                     item("upgrades", content = { Upgrades(data) })
                 }
+
+                // Colorization Strategy
+                item() {
+                    Header(
+                        stringResource(R.string.accent_color),
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                }
+                item() { ColorizationStrategyRow(viewState) }
+
                 // Tweaks
                 item() {
                     Header(
@@ -240,7 +322,7 @@ fun Personalize(viewState: ViewState) {
                         contentPadding = HeaderPadding
                     )
                 }
-                item(){ Tweaks(viewState) }
+                item() { Tweaks(viewState) }
 
                 // Widgets
                 item() {

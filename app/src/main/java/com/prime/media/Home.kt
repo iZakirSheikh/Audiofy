@@ -67,6 +67,7 @@ import com.prime.media.common.SystemFacade
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
+import com.prime.media.common.preference
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.ArtistsViewModel
 import com.prime.media.impl.FoldersViewModel
@@ -160,11 +161,6 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color(0xFF514700)
-private val DarkAccentColor = Color(0xFFD8A25E)
-
-
-
 /**
  * Provides a dynamic accent color based on the current theme (dark/light) and the user's
  * chosen colorization strategy. This composable reacts to changes in both the theme and
@@ -180,16 +176,21 @@ private fun resolveAccentColor(
     isDark: Boolean
 ): State<Color> {
     // Default accent color based on the current theme
-    val default = if (isDark) DarkAccentColor else LightAccentColor
+    val default = if (isDark) Settings.DarkAccentColor else Settings.LightAccentColor
     // Get the activity context for accessing resources and services
     val activity = LocalView.current.context as MainActivity
     // Get the colorization strategy preference
     val strategy by activity.observeAsState(Settings.COLORIZATION_STRATEGY)
     // Observe the accent color based on the colorization strategy
+    if (strategy == ColorizationStrategy.Manual) {
+        val state =
+            activity.observeAsState(if (isDark) Settings.COLOR_ACCENT_DARK else Settings.COLOR_ACCENT_LIGHT)
+        Log.d(TAG, "resolveAccentColor: ${state.value}")
+        return state
+    }
     return produceState(default, isDark, strategy) {
         var job: Job? = null
         when (strategy) {
-            ColorizationStrategy.Manual -> value = default
             ColorizationStrategy.Wallpaper -> value =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                     dynamicAccentColor(activity, isDark) else default
