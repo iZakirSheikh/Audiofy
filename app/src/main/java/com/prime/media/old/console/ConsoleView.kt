@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterialApi::class)
 
 package com.prime.media.old.console
 
@@ -168,6 +168,7 @@ import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.findActivity
 import com.primex.core.plus
+import com.primex.core.thenIf
 import com.primex.core.visualEffect
 import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
@@ -178,13 +179,14 @@ import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.lottieAnimationPainter
 import com.zs.core_ui.sharedElement
 import com.zs.core_ui.toast.Toast
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 
 private const val TAG = "ConsoleView"
 
-fun SystemFacade.launchEqualizer(id: Int) {
+private fun SystemFacade.launchEqualizer(id: Int) {
     if (id == AudioEffect.ERROR_BAD_VALUE)
         return showToast(R.string.msg_unknown_error)
     val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -260,6 +262,8 @@ private const val PLAY_BUTTON_STYLE_SIMPLE = 0
 /** Neumorphic play button style. */
 private const val PLAY_BUTTON_STYLE_NEUMORPHIC = 1
 
+private const val PLAY_BUTTON_STYLE_ROUNDED = 2
+
 /**
  * Annotation to restrict valid values for play button styles.
  *
@@ -267,7 +271,7 @@ private const val PLAY_BUTTON_STYLE_NEUMORPHIC = 1
  *  - [PLAY_BUTTON_STYLE_SIMPLE]
  *  - [PLAY_BUTTON_STYLE_NEUMORPHIC]
  */
-@IntDef(PLAY_BUTTON_STYLE_SIMPLE, PLAY_BUTTON_STYLE_NEUMORPHIC)
+@IntDef(PLAY_BUTTON_STYLE_SIMPLE, PLAY_BUTTON_STYLE_NEUMORPHIC, PLAY_BUTTON_STYLE_ROUNDED)
 @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
@@ -374,7 +378,7 @@ private val WindowInsets.asDpRect: DpRect
  *         in both width and height, meaning it can fully contain the other size.
  *         Returns `false` otherwise.
  */
-fun DpSize.contains(other: DpSize): Boolean {
+private fun DpSize.contains(other: DpSize): Boolean {
     // Ensure that both the width and height of this DpSize are greater than
     // or equal to the corresponding dimensions of the other DpSize to indicate
     // that it can fully contain the other size within its bounds.
@@ -543,9 +547,22 @@ private fun PlayButton(
         // The tint in this case is derived from the LocalContentColor.
         PLAY_BUTTON_STYLE_SIMPLE ->
             IconButton(
-                painter = painterResource(id = if (isPlaying) R.drawable.media3_notification_pause else R.drawable.media3_notification_play),
                 modifier = modifier.scale(1.5f),
-                onClick = onClick
+                onClick = onClick,
+                painter = lottieAnimationPainter(
+                    R.raw.lt_play_pause,
+                    progressRange = 0.0f..0.29f,
+                    atEnd = !isPlaying,
+                    duration = Anim.MediumDurationMills,
+                    easing = LinearEasing,
+                    dynamicProperties = rememberLottieDynamicProperties(
+                        rememberLottieDynamicProperty(
+                            property = LottieProperty.STROKE_COLOR,
+                            Color.SignalWhite.toArgb(),
+                            "**"
+                        )
+                    )
+                )
             )
 
         PLAY_BUTTON_STYLE_NEUMORPHIC -> NeumorphicButton(
@@ -572,6 +589,31 @@ private fun PlayButton(
                         rememberLottieDynamicProperty(
                             property = LottieProperty.STROKE_COLOR,
                             accent.toArgb(),
+                            "**"
+                        )
+                    )
+                )
+            }
+        )
+
+        PLAY_BUTTON_STYLE_ROUNDED -> Surface(
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape_24,
+            color = Color.Transparent,
+            border = BorderStroke(1.dp, AppTheme.colors.onBackground.copy(ContentAlpha.disabled)),
+            content = {
+                LottieAnimation(
+                    id = R.raw.lt_play_pause,
+                    atEnd = !isPlaying,
+                    scale = 0.8f,
+                    progressRange = 0.0f..0.29f,
+                    duration = Anim.MediumDurationMills,
+                    easing = LinearEasing,
+                    dynamicProperties = rememberLottieDynamicProperties(
+                        rememberLottieDynamicProperty(
+                            property = LottieProperty.STROKE_COLOR,
+                            AppTheme.colors.onBackground.toArgb(),
                             "**"
                         )
                     )
@@ -1159,7 +1201,7 @@ private fun MainContent(
         if (isVideo)
             Spacer(
                 modifier = Modifier
-                    .background(Color.Black.copy(0.35f))
+                    .background(Color.Black.copy(0.30f))
                     .layoutId(Constraints.ID_SCRIM)
             )
 
@@ -1199,7 +1241,7 @@ private fun MainContent(
         Artwork(
             data = state.artworkUri,
             modifier = Modifier
-                .sharedElement(Constraints.ID_ARTWORK)
+                .thenIf(!state.isVideo) { sharedElement(Constraints.ID_ARTWORK) }
                 .layoutId(Constraints.ID_ARTWORK)
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .shadow(ContentElevation.medium, DefaultArtworkShape)
@@ -1249,7 +1291,7 @@ private fun MainContent(
         // Controls
         Controls(
             state = state,
-            style = if (background == BACKGROUND_VIDEO_SURFACE) PLAY_BUTTON_STYLE_SIMPLE else PLAY_BUTTON_STYLE_NEUMORPHIC,
+            style = if (background == BACKGROUND_VIDEO_SURFACE) PLAY_BUTTON_STYLE_SIMPLE else PLAY_BUTTON_STYLE_ROUNDED,
             modifier = Modifier.sharedElement(Constraints.ID_CONTROLS).layoutId(Constraints.ID_CONTROLS)
         )
 

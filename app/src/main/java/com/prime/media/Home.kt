@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Weekend
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
@@ -67,15 +68,22 @@ import com.prime.media.common.SystemFacade
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
+import com.prime.media.common.preference
 import com.prime.media.impl.AlbumsViewModel
+import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.PlaylistViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
 import com.prime.media.local.Albums
-import com.prime.media.local.RouteAlbums
+import com.prime.media.local.Artists
+import com.prime.media.local.Folders
 import com.prime.media.local.Genres
+import com.prime.media.local.RouteAlbums
+import com.prime.media.local.RouteArtists
+import com.prime.media.local.RouteFolders
 import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
 import com.prime.media.local.videos.Videos
@@ -85,12 +93,6 @@ import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.local.Artists
-import com.prime.media.impl.ArtistsViewModel
-import com.prime.media.impl.FoldersViewModel
-import com.prime.media.local.Folders
-import com.prime.media.local.RouteArtists
-import com.prime.media.local.RouteFolders
 import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.editor.TagEditor
@@ -131,6 +133,7 @@ import com.zs.core_ui.adaptive.NavigationItemDefaults
 import com.zs.core_ui.adaptive.NavigationSuiteScaffold
 import com.zs.core_ui.calculateWindowSizeClass
 import com.zs.core_ui.checkSelfPermissions
+import com.zs.core_ui.dynamicAccentColor
 import com.zs.core_ui.isAppearanceLightSystemBars
 import com.zs.core_ui.renderInSharedTransitionScopeOverlay
 import com.zs.core_ui.shape.EndConcaveShape
@@ -159,9 +162,6 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color(0xFF514700)
-private val DarkAccentColor = Color(0xFFD8A25E)
-
 /**
  * Provides a dynamic accent color based on the current theme (dark/light) and the user's
  * chosen colorization strategy. This composable reacts to changes in both the theme and
@@ -177,17 +177,24 @@ private fun resolveAccentColor(
     isDark: Boolean
 ): State<Color> {
     // Default accent color based on the current theme
-    val default = if (isDark) DarkAccentColor else LightAccentColor
+    val default = if (isDark) Settings.DarkAccentColor else Settings.LightAccentColor
     // Get the activity context for accessing resources and services
     val activity = LocalView.current.context as MainActivity
     // Get the colorization strategy preference
     val strategy by activity.observeAsState(Settings.COLORIZATION_STRATEGY)
     // Observe the accent color based on the colorization strategy
+    if (strategy == ColorizationStrategy.Manual) {
+        val state =
+            activity.observeAsState(if (isDark) Settings.COLOR_ACCENT_DARK else Settings.COLOR_ACCENT_LIGHT)
+        Log.d(TAG, "resolveAccentColor: ${state.value}")
+        return state
+    }
     return produceState(default, isDark, strategy) {
         var job: Job? = null
         when (strategy) {
-            ColorizationStrategy.Manual -> value = default
-            ColorizationStrategy.Wallpaper -> value = default
+            ColorizationStrategy.Wallpaper -> value =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    dynamicAccentColor(activity, isDark) else default
             // just return the default color
             ColorizationStrategy.Default -> value = default
             else -> {
@@ -431,16 +438,26 @@ private fun NavigationBar(
         // Get the current navigation destination from NavController
         val current by navController.current()
         val color = LocalContentColor.current
-        val colors = NavigationItemDefaults.navigationItemColors(
-            selectedContentColor = color,
-            selectedBackgroundColor = color.copy(0.12f)
-        )
+        val colors = when {
+            typeRail -> NavigationItemDefaults.navigationItemColors(
+                selectedContentColor = color,
+                selectedBackgroundColor = color.copy(0.12f)
+            )
+            contentColor == AppTheme.colors.onAccent -> NavigationItemDefaults.bottomNavItem2Colors(
+                selectedIndicatorColor = color.copy(0.12f),
+                selectedIconColor = color,
+                unselectedIconColor = color,
+                selectedTextColor = color,
+                unselectedTextColor = color
+            )
+            else -> NavigationItemDefaults.bottomNavItem2Colors()
+        }
         val route = current?.destination?.route
         val facade = LocalSystemFacade.current
         // Home
         NavItem(
             label = { Label(text = textResource(R.string.home)) },
-            icon = { Icon(imageVector = Icons.Filled.Home, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
             checked = route == Library.route,
             onClick = { navController.toRoute(Library.direction()); facade.initiateReviewFlow() },
             typeRail = typeRail,
@@ -472,16 +489,6 @@ private fun NavigationBar(
             icon = { Icon(imageVector = Icons.Outlined.PlaylistPlay, contentDescription = null) },
             checked = route == RoutePlaylists(),
             onClick = { navController.toRoute(RoutePlaylists()); facade.initiateReviewFlow() },
-            typeRail = typeRail,
-            colors = colors
-        )
-
-        // Settings
-        NavItem(
-            label = { Label(text = textResource(R.string.settings)) },
-            icon = { Icon(imageVector = Icons.Outlined.Settings, contentDescription = null) },
-            checked = route == RouteSettings(),
-            onClick = { navController.toRoute(RouteSettings()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -561,7 +568,7 @@ private fun NavigationBar(
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteSettings(), RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
+    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
 
 /**
  * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
@@ -646,8 +653,8 @@ fun App(
                         else -> Modifier.dynamicBackdrop(
                             if (!portrait) null else provider,
                             HazeStyle.Regular(
-                                colors.background,
-                                if (colors.isLight) 0.30f else 0.63f
+                                if (colors.isLight) colors.accent else colors.background,
+                                if (colors.isLight) 0.24f else 0.63f
                             ),
                             colors.background,
                             colors.accent

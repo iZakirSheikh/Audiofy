@@ -1,5 +1,5 @@
 [versions]
-agp = "8.8.2"
+agp = "8.9.0"
 kotlin = "2.1.10"
 compose = "1.8.0-beta03"
 media3 = "1.5.1"
@@ -35,24 +35,24 @@ kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version = "1.0.1" }
-androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.0" }
+androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
 # TODO - Remove this when widgets are replaced by compose glance.
 material_view = { module = "com.google.android.material:material", version = "1.12.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.7" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.8.8" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.2" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.9.0" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }
 
 # Accompanist
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.1" }
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.37.1" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.2" }
+accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.37.2" }
 
 
 # Firebase
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.2.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.0" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.3.0" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.1" }
 
 #Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }

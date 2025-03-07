@@ -21,6 +21,9 @@
 
 package com.zs.core_ui
 
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
@@ -445,6 +448,28 @@ private val Color.lightness: Float
     }
 
 private val DefaultColorSpec = tween<Color>(AnimationConstants.DefaultDurationMillis)
+
+/**
+ * Retrieves a dynamic accent color based on the device's API level and the current theme (light or dark).
+ *
+ * On Android 14 (API level 34) and above, it uses the system's primary light or dark color.
+ * On older devices, it uses system_accent1_600 for light themes and system_accent1_200 for dark themes.
+ *
+ * @param context The application context.
+ * @param darkTheme `true` if the current theme is dark, `false` if it's light.
+ * @return A [Color] object representing the dynamic accent color.
+ */
+@RequiresApi(Build.VERSION_CODES.S)
+fun dynamicAccentColor(context: Context, darkTheme: Boolean): Color {
+    val res = context.resources
+    val color = when{
+        Build.VERSION.SDK_INT >= 34 && !darkTheme -> res.getColor(android.R.color.system_primary_light, context.theme)
+        Build.VERSION.SDK_INT >= 34 && !darkTheme -> res.getColor(android.R.color.system_primary_dark, context.theme)
+        !darkTheme ->  res.getColor(android.R.color.system_accent1_600, context.theme)// light, tonalPalette.primary40, // dark tonalPalette.primary80
+        else -> res.getColor(android.R.color.system_accent1_200, context.theme)
+    }
+    return Color(color)
+}
 
 /**
  * Provides a composable function to set up the application's theme using the provided

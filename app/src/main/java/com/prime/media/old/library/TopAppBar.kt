@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.MoreTime
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -69,6 +70,7 @@ import com.prime.media.common.LocalSystemFacade
 import com.zs.core_ui.shimmer.pulsate
 import com.prime.media.old.feedback.RouteFeedback
 import com.prime.media.old.impl.Repository
+import com.prime.media.settings.RouteSettings
 import com.primex.core.ImageBrush
 import com.primex.core.blend
 import com.primex.core.foreground
@@ -208,12 +210,6 @@ private inline fun Actions() {
     // Support
     val ctx = LocalContext.current
     val navController = LocalNavController.current
-    IconButton(
-        imageVector = Icons.Outlined.Feedback,
-        onClick = { navController.navigate(RouteFeedback()) },
-        modifier = Modifier,
-        tint = contentColor
-    )
     // Just return if the app is free version app.
     val provider = LocalSystemFacade.current
     if (provider.isAdFreeVersion)
@@ -242,5 +238,13 @@ private inline fun Actions() {
         enabled = available,
         modifier = (if (!available) Modifier else Modifier
             .pulsate(color, animationSpec = DefaultRepeatableSpec)),
+    )
+
+    // Settings
+    IconButton(
+        imageVector = Icons.Outlined.Settings,
+        onClick = { navController.navigate(RouteSettings()) },
+        modifier = Modifier,
+        tint = contentColor
     )
 }

@@ -62,6 +62,7 @@ import com.primex.material2.Label
 import com.primex.material2.Text
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.adaptive.BottomNavItem
+import com.zs.core_ui.adaptive.BottomNavItem2
 import com.zs.core_ui.adaptive.NavRailItem
 import com.zs.core_ui.adaptive.NavigationItemDefaults
 import com.zs.core_ui.lottieAnimationPainter
@@ -268,5 +269,5 @@ inline fun NavItem(
     colors: SelectableChipColors = NavigationItemDefaults.navigationItemColors(),
 ) = when (typeRail) {
     true -> NavRailItem(onClick, icon, label, modifier, checked, colors = colors)
-    else -> BottomNavItem(onClick, icon, label, modifier, checked, colors = colors)
+    else -> BottomNavItem2(checked, onClick, icon, label, modifier.padding(horizontal = 4.dp),  colors = colors)
 }

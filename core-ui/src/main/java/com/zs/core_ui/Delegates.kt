@@ -79,7 +79,8 @@ fun lottieAnimationPainter(
     atEnd: Boolean,
     duration: Int = -1,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    easing: Easing = FastOutSlowInEasing
+    easing: Easing = FastOutSlowInEasing,
+    dynamicProperties: LottieDynamicProperties? = null
 ): Painter {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val duration2 = composition?.duration?.roundToLong() ?: AnimationConstants.DefaultDurationMillis
@@ -91,9 +92,8 @@ fun lottieAnimationPainter(
     return rememberLottiePainter(
         composition = composition,
         progress = progress,
-
-
-        )
+        dynamicProperties = dynamicProperties
+    )
 }
 
 /**
@@ -166,7 +166,8 @@ inline fun LottieAnimatedIcon(
             .then(modifier),
     )*/
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
-    val duration2 = composition?.duration?.roundToLong() ?: AnimationConstants.DefaultDurationMillis.toLong()
+    val duration2 =
+        composition?.duration?.roundToLong() ?: AnimationConstants.DefaultDurationMillis.toLong()
     val progress by animateFloatAsState(
         targetValue = if (atEnd) progressRange.start else progressRange.endInclusive,
         label = "Lottie $id",
@@ -180,8 +181,6 @@ inline fun LottieAnimatedIcon(
             .then(modifier),
     )
 }
-
-
 
 
 /**
@@ -206,7 +205,7 @@ inline fun Header(
     modifier = modifier
         .padding(contentPadding)
         .fillMaxWidth()
-        .thenIf(drawDivider){
+        .thenIf(drawDivider) {
             drawHorizontalDivider(color = color)
                 .padding(bottom = ContentPadding.medium)
         },
@@ -247,7 +246,7 @@ inline fun Header(
     modifier = modifier
         .padding(contentPadding)
         .fillMaxWidth()
-        .thenIf(drawDivider){
+        .thenIf(drawDivider) {
             drawHorizontalDivider(color = color)
                 .padding(bottom = ContentPadding.medium)
         },

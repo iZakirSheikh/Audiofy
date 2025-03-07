@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -53,15 +54,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
+import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.common.Artwork
@@ -137,6 +142,13 @@ private fun Track(
                             LottieAnimation(
                                 composition = composition,
                                 iterations = Int.MAX_VALUE,
+                                dynamicProperties = rememberLottieDynamicProperties(
+                                    rememberLottieDynamicProperty(
+                                        property = LottieProperty.COLOR,
+                                        AppTheme.colors.accent.toArgb(),
+                                        "**"
+                                    )
+                                ),
                                 modifier = Modifier
                                     .requiredSize(24.dp)
                                     .offset(x = -ContentPadding.medium)
