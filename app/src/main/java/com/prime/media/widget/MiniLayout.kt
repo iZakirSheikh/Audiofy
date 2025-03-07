@@ -66,7 +66,7 @@ fun MiniLayout(
                 Glance.SHARED_BACKGROUND_ID,
                 exit = fadeOut() + scaleOut(),
                 enter = fadeIn() + scaleIn(),
-                zIndexInOverlay = 0.21f
+               /* zIndexInOverlay = 0.21f*/
             )
             .shadow(Glance.ELEVATION, CircleShape)
             .background(AppTheme.colors.background(1.dp))

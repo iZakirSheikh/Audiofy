@@ -124,7 +124,7 @@ fun ToggleButton(
                     ContentAlpha.disabled
                 )
             CompositionLocalProvider(
-                LocalTextStyle provides AppTheme.typography.caption2,
+                LocalTextStyle provides AppTheme.typography.caption,
                 LocalContentColor provides labelColor,
                 content = label
             )
