@@ -46,9 +46,10 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.primex.core.shapes.SquircleShape
 import com.primex.material2.Label
 
-private val IndicatorShape = RoundedCornerShape(25)
+private val IndicatorShape = SquircleShape(0.7f)
 private val DefaultIndicatorSize = Modifier.defaultMinSize(56.dp, 56.dp)
 
 private val IconLabelSpace = Arrangement.spacedBy(8.dp)

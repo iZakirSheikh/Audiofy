@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -23,6 +24,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
@@ -35,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -61,9 +67,12 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.zs.core.playback.Playback
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.Indication
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.None
 import com.zs.core_ui.adaptive.contentInsets
+import com.zs.core_ui.lottieAnimationPainter
+import com.zs.core_ui.shimmer.shimmer
 
 /**
  * A Composable function that lays out a screen with a top bar, content, and details section.
@@ -210,20 +219,32 @@ fun Library(state: Library) {
             )
         },
         content = {
-            // Personalize
+
             val navigator = LocalNavController.current
-            DropDownMenuItem(
-                textResource(R.string.scr_personalize_title_desc),
-                icon = rememberVectorPainter(Icons.Outlined.Palette),
+            // Promotions
+            Promotions(
+                modifier = Modifier
+                    .padding(DefaultContentPadding)
+                    .fillMaxWidth(),
+            )
+
+            // Personalize
+            DropdownMenuItem(
                 onClick = {
                     navigator.navigate(RoutePersonalize())
                 },
-                modifier = Modifier.padding(vertical = ContentPadding.medium)
-            )
-
-            // Promotions
-            Promotions(
-                modifier = Modifier.padding(DefaultContentPadding).fillMaxWidth(),
+                modifier = Modifier.padding(vertical = ContentPadding.medium),
+                content = {
+                    Icon(
+                        painter = lottieAnimationPainter(R.raw.lt_settings_roll, iterations = 2),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp).scale(1.35f)
+                    )
+                    Text(
+                        textResource(R.string.scr_personalize_title_desc),
+                        modifier = Modifier.padding(start = ContentPadding.medium)
+                    )
+                },
             )
 
             // Resents.
