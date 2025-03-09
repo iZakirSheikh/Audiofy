@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -216,9 +217,9 @@ fun Library(state: Library) {
                 modifier = if (immersive) Modifier
                 else Modifier
                     .padding(DefaultContentPadding)
-                    .statusBarsPadding()
+                    .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .clip(RoundedCornerShape(15)),
-                insets = if (immersive) WindowInsets.statusBars else WindowInsets.None
+                insets = if (immersive) TopAppBarDefaults.windowInsets else WindowInsets.None
             )
         },
         content = {
@@ -301,7 +302,7 @@ fun Library(state: Library) {
             )
             NewlyAddedList(
                 state,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(bottom = ContentPadding.normal),
                 contentPadding = DefaultContentPadding
             )
         },

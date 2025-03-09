@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -619,7 +621,7 @@ private fun <T : Any> List(
         modifier = modifier,
         horizontalArrangement = horizontalArrangement,
         verticalArrangement = verticalArrangement,
-        contentPadding = WindowInsets.contentInsets + contentPadding
+        contentPadding = WindowInsets.contentInsets + contentPadding + WindowInsets.navigationBars.asPaddingValues()
     ) {
         // used to pin the list to top.
         // such data search bar is not opened in hiding.

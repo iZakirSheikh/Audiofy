@@ -36,6 +36,320 @@
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="versions">
+                <list>
+                  <VersionSetting>
+                    <option name="buildVersion" value="100000027" />
+                    <option name="displayName" value="2.0 (100000027)" />
+                    <option name="displayVersion" value="2.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="195" />
+                    <option name="displayName" value="3.6.0 (195)" />
+                    <option name="displayVersion" value="3.6.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="195" />
+                    <option name="displayName" value="3.6.0-debug (195)" />
+                    <option name="displayVersion" value="3.6.0-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="194" />
+                    <option name="displayName" value="3.6.0-beta02-debug (194)" />
+                    <option name="displayVersion" value="3.6.0-beta02-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="193" />
+                    <option name="displayName" value="3.6.0 (193)" />
+                    <option name="displayVersion" value="3.6.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="193" />
+                    <option name="displayName" value="3.6.0-debug (193)" />
+                    <option name="displayVersion" value="3.6.0-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="192" />
+                    <option name="displayName" value="3.5.2 (192)" />
+                    <option name="displayVersion" value="3.5.2" />
+                    <option name="tracks">
+                      <list>
+                        <option value="PRODUCTION" />
+                      </list>
+                    </option>
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="192" />
+                    <option name="displayName" value="3.5.2-debug (192)" />
+                    <option name="displayVersion" value="3.5.2-debug" />
+                    <option name="tracks">
+                      <list>
+                        <option value="PRODUCTION" />
+                      </list>
+                    </option>
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="191" />
+                    <option name="displayName" value="3.5.1 (191)" />
+                    <option name="displayVersion" value="3.5.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="191" />
+                    <option name="displayName" value="3.5.1-debug (191)" />
+                    <option name="displayVersion" value="3.5.1-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="190" />
+                    <option name="displayName" value="3.5.0 (190)" />
+                    <option name="displayVersion" value="3.5.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="189" />
+                    <option name="displayName" value="3.4.1 (189)" />
+                    <option name="displayVersion" value="3.4.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="189" />
+                    <option name="displayName" value="3.4.1-debug (189)" />
+                    <option name="displayVersion" value="3.4.1-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="188" />
+                    <option name="displayName" value="3.4.0 (188)" />
+                    <option name="displayVersion" value="3.4.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="185" />
+                    <option name="displayName" value="3.4.0-alpha01 (185)" />
+                    <option name="displayVersion" value="3.4.0-alpha01" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="184" />
+                    <option name="displayName" value="3.3.0 (184)" />
+                    <option name="displayVersion" value="3.3.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="184" />
+                    <option name="displayName" value="3.3.0-debug (184)" />
+                    <option name="displayVersion" value="3.3.0-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="184" />
+                    <option name="displayName" value="3.3.0-rc02-debug (184)" />
+                    <option name="displayVersion" value="3.3.0-rc02-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="183" />
+                    <option name="displayName" value="3.3.0-rc01 (183)" />
+                    <option name="displayVersion" value="3.3.0-rc01" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="183" />
+                    <option name="displayName" value="3.3.0-rc01-debug (183)" />
+                    <option name="displayVersion" value="3.3.0-rc01-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="183" />
+                    <option name="displayName" value="3.3.0-beta02-debug (183)" />
+                    <option name="displayVersion" value="3.3.0-beta02-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="182" />
+                    <option name="displayName" value="3.3.0-beta01 (182)" />
+                    <option name="displayVersion" value="3.3.0-beta01" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="182" />
+                    <option name="displayName" value="3.3.0-beta01-debug (182)" />
+                    <option name="displayVersion" value="3.3.0-beta01-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="182" />
+                    <option name="displayName" value="3.3.0-alpha02-debug (182)" />
+                    <option name="displayVersion" value="3.3.0-alpha02-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="181" />
+                    <option name="displayName" value="3.3.0-alpha01 (181)" />
+                    <option name="displayVersion" value="3.3.0-alpha01" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="181" />
+                    <option name="displayName" value="3.3.0-alpha01-debug (181)" />
+                    <option name="displayVersion" value="3.3.0-alpha01-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="181" />
+                    <option name="displayName" value="3.3.0-alpha02-debug (181)" />
+                    <option name="displayVersion" value="3.3.0-alpha02-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="180" />
+                    <option name="displayName" value="3.3.0-alpha (180)" />
+                    <option name="displayVersion" value="3.3.0-alpha" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="180" />
+                    <option name="displayName" value="3.3.0-alpha-debug (180)" />
+                    <option name="displayVersion" value="3.3.0-alpha-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="179" />
+                    <option name="displayName" value="3.2.1 (179)" />
+                    <option name="displayVersion" value="3.2.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="179" />
+                    <option name="displayName" value="3.2.1-debug (179)" />
+                    <option name="displayVersion" value="3.2.1-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="178" />
+                    <option name="displayName" value="3.2.0 (178)" />
+                    <option name="displayVersion" value="3.2.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="176" />
+                    <option name="displayName" value="3.1.2 (176)" />
+                    <option name="displayVersion" value="3.1.2" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="175" />
+                    <option name="displayName" value="3.1.1-debug (175)" />
+                    <option name="displayVersion" value="3.1.1-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="174" />
+                    <option name="displayName" value="3.1.0 (174)" />
+                    <option name="displayVersion" value="3.1.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="161" />
+                    <option name="displayName" value="3.0.3 (161)" />
+                    <option name="displayVersion" value="3.0.3" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="160" />
+                    <option name="displayName" value="3.0.2-debug (160)" />
+                    <option name="displayVersion" value="3.0.2-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="160" />
+                    <option name="displayName" value="3.0.2 (160)" />
+                    <option name="displayVersion" value="3.0.2" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="158" />
+                    <option name="displayName" value="3.0.0 (158)" />
+                    <option name="displayVersion" value="3.0.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="157" />
+                    <option name="displayName" value="3.0.0-rc03 (157)" />
+                    <option name="displayVersion" value="3.0.0-rc03" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="149" />
+                    <option name="displayName" value="2.17.4-debug (149)" />
+                    <option name="displayVersion" value="2.17.4-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="149" />
+                    <option name="displayName" value="2.17.4 (149)" />
+                    <option name="displayVersion" value="2.17.4" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="135" />
+                    <option name="displayName" value="2.17.3 (135)" />
+                    <option name="displayVersion" value="2.17.3" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="134" />
+                    <option name="displayName" value="2.17.2 (134)" />
+                    <option name="displayVersion" value="2.17.2" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="132" />
+                    <option name="displayName" value="2.17.0 (132)" />
+                    <option name="displayVersion" value="2.17.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="126" />
+                    <option name="displayName" value="2.16.0 (126)" />
+                    <option name="displayVersion" value="2.16.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="110" />
+                    <option name="displayName" value="2.14.0 (110)" />
+                    <option name="displayVersion" value="2.14.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="104" />
+                    <option name="displayName" value="2.13.1 (104)" />
+                    <option name="displayVersion" value="2.13.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="101" />
+                    <option name="displayName" value="2.13-rc02 (101)" />
+                    <option name="displayVersion" value="2.13-rc02" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="94" />
+                    <option name="displayName" value="2.12.0 (94)" />
+                    <option name="displayVersion" value="2.12.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="90" />
+                    <option name="displayName" value="2.11.0 (90)" />
+                    <option name="displayVersion" value="2.11.0" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="87" />
+                    <option name="displayName" value="2.10.1 (87)" />
+                    <option name="displayVersion" value="2.10.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="82" />
+                    <option name="displayName" value="2.9.1 (82)" />
+                    <option name="displayVersion" value="2.9.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="78" />
+                    <option name="displayName" value="2.8.1 (78)" />
+                    <option name="displayVersion" value="2.8.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="76" />
+                    <option name="displayName" value="2.8.0-rc02 (76)" />
+                    <option name="displayVersion" value="2.8.0-rc02" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="71" />
+                    <option name="displayName" value="2.7.9 (71)" />
+                    <option name="displayVersion" value="2.7.9" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="63" />
+                    <option name="displayName" value="2.7.1 (63)" />
+                    <option name="displayVersion" value="2.7.1" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="58" />
+                    <option name="displayName" value="2.6.2 (58)" />
+                    <option name="displayVersion" value="2.6.2" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="50" />
+                    <option name="displayName" value="2.3.3-debug (50)" />
+                    <option name="displayVersion" value="2.3.3-debug" />
+                  </VersionSetting>
+                  <VersionSetting>
+                    <option name="buildVersion" value="38" />
+                    <option name="displayName" value="2.2.5 (38)" />
+                    <option name="displayVersion" value="2.2.5" />
+                  </VersionSetting>
+                </list>
+              </option>
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>
