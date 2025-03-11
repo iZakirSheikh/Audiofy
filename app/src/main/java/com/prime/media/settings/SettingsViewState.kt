@@ -3,27 +3,48 @@ package com.prime.media.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.Route
+import com.prime.media.settings.Settings.BLACKLISTED_FILES
+import com.prime.media.settings.Settings.FeedbackIntent
+import com.prime.media.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
+import com.prime.media.settings.Settings.GitHubIssuesPage
+import com.prime.media.settings.Settings.GithubIntent
+import com.prime.media.settings.Settings.MIN_TRACK_LENGTH_SECS
+import com.prime.media.settings.Settings.PrivacyPolicyIntent
+import com.prime.media.settings.Settings.TRASH_CAN_ENABLED
+import com.prime.media.settings.Settings.TelegramIntent
+import com.prime.media.settings.Settings.USE_IN_BUILT_AUDIO_FX
+import com.prime.media.settings.Settings.USE_LEGACY_ARTWORK_METHOD
+import com.primex.core.shapes.SquircleShape
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
-import com.primex.preferences.LongSaver
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
 import com.primex.preferences.floatPreferenceKey
 import com.primex.preferences.intPreferenceKey
-import com.primex.preferences.longPreferenceKey
 import com.primex.preferences.stringPreferenceKey
 import com.primex.preferences.stringSetPreferenceKey
 import com.zs.core_ui.NightMode
+import com.zs.core_ui.shape.CompactDisk
+import com.zs.core_ui.shape.HeartShape
+import com.zs.core_ui.shape.NotchedCornerShape
+import com.zs.core_ui.shape.RoundedPolygonShape
+import com.zs.core_ui.shape.RoundedStarShape
+import com.zs.core_ui.shape.SkewedRoundedRectangleShape
 
 private const val TAG = "Settings"
 
@@ -118,7 +139,8 @@ object Settings {
         putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
     }
     val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
-        data = Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
+        data =
+            Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
     }
     val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
@@ -142,6 +164,18 @@ object Settings {
 
     private const val PREFIX = "Audiofy"
 
+    private val ArtworkShapeRoundedRect = RoundedCornerShape(15)
+    private val ArtworkShapeHeart = HeartShape
+    private val ArtworkShapeDisk = CompactDisk
+    private val ArtworkShapeCircle = CircleShape
+    private val ArtworkShapeSkewedRect = SkewedRoundedRectangleShape(15.dp, 0.15f)
+    private val ArtworkShapeLeaf = RoundedCornerShape(20, 4, 20, 4)
+    private val ArtworkShapePentagon = RoundedPolygonShape(5, 0.3f)
+    private val ArtworkShapeWavyCircle = RoundedStarShape(15, 0.03)
+    private val ArtworkShapeCutCorneredRect = CutCornerShape(15)
+    private val ArtworkShapeScopedRect = NotchedCornerShape(30.dp)
+    private val ArtworkShapeSquircle = SquircleShape(0.7f)
+
     val LightAccentColor = Color(0xFF514700)
     val DarkAccentColor = Color(0xFFD8A25E)
 
@@ -154,6 +188,24 @@ object Settings {
                 override fun restore(value: String): NightMode = NightMode.valueOf(value)
             }
         )
+
+    fun mapKeyToShape(key: String): Shape =
+        when(key){
+            BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT -> ArtworkShapeRoundedRect
+            BuildConfig.IAP_ARTWORK_SHAPE_HEART -> ArtworkShapeHeart
+            BuildConfig.IAP_ARTWORK_SHAPE_DISK -> ArtworkShapeDisk
+            BuildConfig.IAP_ARTWORK_SHAPE_CIRCLE -> ArtworkShapeCircle
+            BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT -> ArtworkShapeSkewedRect
+            BuildConfig.IAP_ARTWORK_SHAPE_LEAF -> ArtworkShapeLeaf
+            BuildConfig.IAP_ARTWORK_SHAPE_PENTAGON -> ArtworkShapePentagon
+            BuildConfig.IAP_ARTWORK_SHAPE_WAVY_CIRCLE-> ArtworkShapeWavyCircle
+            BuildConfig.IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT -> ArtworkShapeCutCorneredRect
+            BuildConfig.IAP_ARTWORK_SHAPE_SCOPED_RECT -> ArtworkShapeScopedRect
+            BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE -> ArtworkShapeSquircle
+            else -> error("$key is not among shapes mentioned in Settings.")
+        }
+
+
     // For Android versions below 10 (API level 29), this is true by default, meaning
     // system bars are translucent and cannot be toggled.
     //
@@ -164,7 +216,10 @@ object Settings {
     // by default but can be toggled to enable or disable translucent system bars based
     // on user preferences.
     val TRANSPARENT_SYSTEM_BARS =
-        booleanPreferenceKey(PREFIX + "_force_colorize", Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        booleanPreferenceKey(
+            PREFIX + "_force_colorize",
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        )
     val IMMERSIVE_VIEW =
         booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
     val MIN_TRACK_LENGTH_SECS =
@@ -200,10 +255,13 @@ object Settings {
             }
         }
     )
+
     val SIGNATURE =
         stringPreferenceKey("${PREFIX}_signature")
-    val ARTWORK_BORDER_WIDTH =
-        intPreferenceKey("${PREFIX}_artwork_border_width")
+    val ARTWORK_BORDERED =
+        booleanPreferenceKey("${PREFIX}_artwork_bordered", false)
+
+    val ARTWORK_ELEVATED = booleanPreferenceKey("${PREFIX}_artwork_elevated", true)
     val COLOR_ACCENT_LIGHT =
         intPreferenceKey("${PREFIX}_color_accent_light", LightAccentColor, ColorSaver)
     val COLOR_ACCENT_DARK =
@@ -213,6 +271,13 @@ object Settings {
     val KEY_LAUNCH_COUNTER =
         intPreferenceKey("Audiofy_launch_counter")
     val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", false)
+
+    /** @see mapKeyToShape */
+    val ARTWORK_SHAPE_KEY =
+        stringPreferenceKey(
+            "${PREFIX}_artwork_shape_key",
+            BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
+        )
 
     const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
     const val FALLBACK_GOOGLE_STORE =

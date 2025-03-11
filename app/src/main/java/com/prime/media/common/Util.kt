@@ -159,7 +159,9 @@ fun CharSequence.ellipsize(after: Int): CharSequence =
 val ProductInfo.isFreemium: Boolean
     get() {
         return when (id) {
-            BuildConfig.IAP_PLATFORM_WIDGET_IPHONE, BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES -> true
+            BuildConfig.IAP_PLATFORM_WIDGET_IPHONE, BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
+            BuildConfig.IAP_ARTWORK_SHAPE_HEART, BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
+            BuildConfig.IAP_ARTWORK_SHAPE_CIRCLE, BuildConfig.IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT -> true
             else -> false
         }
     }
@@ -242,7 +244,10 @@ val NowPlaying.chronometer: Chronometer
             launch {
                 // Continue updating the chronometer until the current position reaches the duration.
                 while (current < duration) {
-                    Log.d(TAG, "duration: $duration | value: ${chronometer.value} | position: $current ")
+                    Log.d(
+                        TAG,
+                        "duration: $duration | value: ${chronometer.value} | position: $current "
+                    )
                     // Delay for 1 second.
                     delay(1000)
                     // Update the current position based on the playback speed.
@@ -254,4 +259,4 @@ val NowPlaying.chronometer: Chronometer
         return chronometer
     }
 
-val TextFieldState.raw  get() = text.trim().toString().ifEmpty { null }
+val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }

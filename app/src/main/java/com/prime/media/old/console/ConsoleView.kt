@@ -26,6 +26,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils.formatElapsedTime
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -38,6 +39,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -95,6 +97,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -103,6 +106,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -129,6 +133,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.Player
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
@@ -167,6 +173,7 @@ import com.primex.core.ImageBrush
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.findActivity
+import com.primex.core.foreground
 import com.primex.core.plus
 import com.primex.core.thenIf
 import com.primex.core.visualEffect
@@ -179,6 +186,8 @@ import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.coil.ReBlurTransformation
+import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
 import com.zs.core_ui.sharedElement
 import com.zs.core_ui.toast.Toast
@@ -478,10 +487,6 @@ private fun Console.ensureAlwaysVisible(enabled: Boolean) {
         else -> Console.VISIBILITY_ALWAYS
     }
 }
-
-// Different shapes
-private val Rounded_15 = RoundedCornerShape(15)
-private val DefaultArtworkShape = Rounded_15
 
 /**
  * Composable function representing a SeekBar.
@@ -1004,6 +1009,7 @@ private fun Options(
     More(state = state, onRequest)
 }
 
+
 /**
  * Composable function that renders the background of the console, providing a customizable background and content area.
  *
@@ -1015,11 +1021,13 @@ private fun Options(
 @Composable
 private fun Background(
     @Background style: Int,
+    state: Console,
     modifier: Modifier = Modifier
 ) {
+    val ctx = LocalContext.current
     when (style) {
         // Use black color for video background and animate changes smoothly
-        BACKGROUND_VIDEO_SURFACE, DEFAULT_BACKGROUND -> {
+        BACKGROUND_VIDEO_SURFACE -> {
             // Animate color changes for visual transitions
             val color by animateColorAsState(
                 targetValue = if (style == BACKGROUND_VIDEO_SURFACE) Color.Black else AppTheme.colors.background,
@@ -1027,6 +1035,32 @@ private fun Background(
             )
             // Create the background with the determined color
             Spacer(modifier = modifier.background(color))
+        }
+        DEFAULT_BACKGROUND if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) -> {
+            val transformation = remember {
+                RsBlurTransformation(ctx, 25f, 2.1f)
+            }
+            AsyncImage(
+                model = ImageRequest.Builder(ctx)
+                    .data(state.artworkUri)
+                    .transformations(transformation).build(),
+                contentDescription = null,
+                modifier = modifier
+                    .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
+                    .visualEffect(ImageBrush.NoiseBrush, overlay = true),
+                contentScale = ContentScale.Crop
+            )
+        }
+        DEFAULT_BACKGROUND -> {
+            AsyncImage(
+                model = state.artworkUri,
+                contentDescription = null,
+                modifier = modifier
+                    .blur(100.dp)
+                    .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
+                    .visualEffect(ImageBrush.NoiseBrush, overlay = true),
+                contentScale = ContentScale.Crop
+            )
         }
 
         else -> TODO("Not Implemented yet background style: $style")
@@ -1136,6 +1170,7 @@ private fun MainContent(
         // The Background of this component.
         Background(
             style = background,
+            state = state,
             modifier = Modifier.layoutId(Constraints.ID_BACKGROUND)
         )
 
@@ -1238,13 +1273,18 @@ private fun MainContent(
 
         // Artwork
         // TODO - Support different shapes, animation, effects, etc.
+        val bordered by preference(Settings.ARTWORK_BORDERED)
+        val elevated by preference(Settings.ARTWORK_ELEVATED)
+        val shapeKey by preference(Settings.ARTWORK_SHAPE_KEY)
+        val artworkShape = Settings.mapKeyToShape(shapeKey)
         Artwork(
             data = state.artworkUri,
             modifier = Modifier
                 .thenIf(!state.isVideo) { sharedElement(Constraints.ID_ARTWORK) }
                 .layoutId(Constraints.ID_ARTWORK)
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
-                .shadow(ContentElevation.medium, DefaultArtworkShape)
+                .thenIf(bordered) {border(1.dp, contentColor, artworkShape)}
+                .shadow(if (elevated) ContentElevation.medium else 0.dp, artworkShape, clip = true)
                 .background(AppTheme.colors.background(1.dp)),
         )
 
