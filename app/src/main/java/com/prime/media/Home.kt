@@ -120,6 +120,7 @@ import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
+import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
@@ -443,6 +444,7 @@ private fun NavigationBar(
                 selectedContentColor = color,
                 selectedBackgroundColor = color.copy(0.12f)
             )
+
             contentColor == AppTheme.colors.onAccent -> NavigationItemDefaults.bottomNavItem2Colors(
                 selectedIndicatorColor = color.copy(0.12f),
                 selectedIconColor = color,
@@ -450,6 +452,7 @@ private fun NavigationBar(
                 selectedTextColor = color,
                 unselectedTextColor = color
             )
+
             else -> NavigationItemDefaults.bottomNavItem2Colors()
         }
         val route = current?.destination?.route
@@ -638,7 +641,7 @@ fun App(
             progress = activity.inAppTaskProgress,
             widget = {
                 val state by PlaybackController.collectNowPlayingAsState()
-                Glance(state)
+                if (state.hasActiveMedia) Glance(state) else Spacer(Modifier)
             },
             // Set up the navigation bar using the NavBar composable
             navBar = {

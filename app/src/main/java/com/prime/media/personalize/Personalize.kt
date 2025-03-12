@@ -326,13 +326,23 @@ fun Personalize(viewState: ViewState) {
                 item() { Tweaks(viewState, modifier = Modifier.fillMaxWidth()) }
 
                 // Artwork Shapes
+                item() {
+                    Header(
+                        "Artwork Style",
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                }
                 item {
                     val selected by preference(Settings.ARTWORK_SHAPE_KEY)
                     ArtworkShapeRow(
                         state.artwork,
                         selected,
                         data,
-                        onRequestApply = viewState::setArtworkShapeKey
+                        onRequestApply = viewState::setArtworkShapeKey,
+                        modifier = Modifier.padding(top = CP.medium)
                     )
                 }
 

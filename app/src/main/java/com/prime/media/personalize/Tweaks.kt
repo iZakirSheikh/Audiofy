@@ -101,7 +101,12 @@ fun Tweak(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = SPACE) {
                     if (icon != null)
                         Icon(icon, contentDescription = title)
-                    Label(title, style = AppTheme.typography.caption, modifier = Modifier.weight(1f))
+                    Label(
+                        title,
+                        style = AppTheme.typography.caption,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2
+                    )
                 }
                 Switch(checked, onCheckedChange = null)
             }

@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -52,6 +53,7 @@ import com.prime.media.common.purchase
 import com.prime.media.old.console.Constraints
 import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
+import com.primex.core.fadingEdge
 import com.primex.core.visualEffect
 import com.primex.material2.Label
 import com.zs.core.paymaster.purchased
@@ -96,9 +98,11 @@ fun ArtworkShapeRow(
         contentColor = AppTheme.colors.accent
     )
 
+    val state = rememberLazyListState()
     // Content
     LazyRow(
-        modifier = modifier,
+        modifier = modifier.fadingEdge(state, true),
+        state = state,
         horizontalArrangement = Arrangement.spacedBy(ContentPadding.normal),
         content = {
             items(
@@ -115,10 +119,9 @@ fun ArtworkShapeRow(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(MAX_WIDTH)
-                                    .layoutId(Constraints.ID_ARTWORK)
-                                    .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                                     .border(1.dp, LocalContentColor.current, shape)
                                     .shadow(ContentElevation.medium, shape)
+                                    .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                                     .background(AppTheme.colors.background(1.dp)),
                             )
 
