@@ -186,6 +186,7 @@ import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.Indication
 import com.zs.core_ui.coil.ReBlurTransformation
 import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
@@ -604,9 +605,12 @@ private fun PlayButton(
         PLAY_BUTTON_STYLE_ROUNDED -> Surface(
             onClick = onClick,
             modifier = modifier,
-            shape = RoundedCornerShape_24,
+            shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
             color = Color.Transparent,
-            border = BorderStroke(1.dp, AppTheme.colors.onBackground.copy(ContentAlpha.disabled)),
+            border = BorderStroke(
+                1.dp,
+                AppTheme.colors.onBackground.copy(if (!AppTheme.colors.isLight) ContentAlpha.Indication else 1f)
+            ),
             content = {
                 LottieAnimation(
                     id = R.raw.lt_play_pause,
@@ -1036,6 +1040,7 @@ private fun Background(
             // Create the background with the determined color
             Spacer(modifier = modifier.background(color))
         }
+
         DEFAULT_BACKGROUND if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) -> {
             val transformation = remember {
                 RsBlurTransformation(ctx, 25f, 2.1f)
@@ -1051,6 +1056,7 @@ private fun Background(
                 contentScale = ContentScale.Crop
             )
         }
+
         DEFAULT_BACKGROUND -> {
             AsyncImage(
                 model = state.artworkUri,
@@ -1283,7 +1289,7 @@ private fun MainContent(
                 .thenIf(!state.isVideo) { sharedElement(Constraints.ID_ARTWORK) }
                 .layoutId(Constraints.ID_ARTWORK)
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
-                .thenIf(bordered) {border(1.dp, contentColor, artworkShape)}
+                .thenIf(bordered) { border(1.dp, contentColor, artworkShape) }
                 .shadow(if (elevated) ContentElevation.medium else 0.dp, artworkShape, clip = true)
                 .background(AppTheme.colors.background(1.dp)),
         )
@@ -1300,7 +1306,9 @@ private fun MainContent(
         Label(
             text = state.subtitle ?: stringResource(id = R.string.unknown),
             style = AppTheme.typography.caption,
-            modifier = Modifier.sharedElement(Constraints.ID_SUBTITLE).layoutId(Constraints.ID_SUBTITLE),
+            modifier = Modifier
+                .sharedElement(Constraints.ID_SUBTITLE)
+                .layoutId(Constraints.ID_SUBTITLE),
             color = contentColor
         )
 
@@ -1325,14 +1333,18 @@ private fun MainContent(
                 else -> SEEKBAR_STYLE_WAVY
             },
             onRequest = onRequest,
-            modifier = Modifier.sharedElement(Constraints.ID_TIME_BAR).layoutId(Constraints.ID_TIME_BAR)
+            modifier = Modifier
+                .sharedElement(Constraints.ID_TIME_BAR)
+                .layoutId(Constraints.ID_TIME_BAR)
         )
 
         // Controls
         Controls(
             state = state,
             style = if (background == BACKGROUND_VIDEO_SURFACE) PLAY_BUTTON_STYLE_SIMPLE else PLAY_BUTTON_STYLE_ROUNDED,
-            modifier = Modifier.sharedElement(Constraints.ID_CONTROLS).layoutId(Constraints.ID_CONTROLS)
+            modifier = Modifier
+                .sharedElement(Constraints.ID_CONTROLS)
+                .layoutId(Constraints.ID_CONTROLS)
         )
 
         // Options

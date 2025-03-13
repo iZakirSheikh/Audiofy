@@ -244,7 +244,7 @@ object Settings {
         floatPreferenceKey(PREFIX + "_font_scale", -1f)
     val COLORIZATION_STRATEGY = intPreferenceKey(
         "${PREFIX}_colorization_strategy",
-        ColorizationStrategy.Default,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default,
         object : IntSaver<ColorizationStrategy> {
             override fun restore(value: Int): ColorizationStrategy {
                 return ColorizationStrategy.entries[value]
