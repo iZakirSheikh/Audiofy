@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.6.0)</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.7.0)</b>
         <font color='grey'>
+            \n - Introducing a variety of stunning <b>Album Art</b> styles! You can now customize your experience by selecting your favorite style from the <b>Personalize Screen</b>.
+            \n - Say goodbye to the conventional white/dark themes of the Console! <b>Audiofy</b> now features the all-new Ambient Mode, showcasing an exquisite blend of intricate blurs and vibrant color combinations for a truly captivating visual experience.
             \n - Introduced multiple options for selecting the <b>Accent</b> Color, including manual selection and wallpaper-based choices.
             \n - Made subtle yet meaningful UI improvements.
             \n - 😍 We\'ve added new mini-player skins (<b>Disk Dynamo, Elongated Beat, Misty Dream, Rotating Gradient, Skewed Dynamic and Wavy Dynamic Dots</b>).
             \n Please go to <b>Personalize Screen</b> to use these new skins.
-            \n - We\'ve added new awesome animations to <b>NowPlaying</b> Screen.
-            \n - We\'ve updated the UI of <b>Artists, Genres, Folders</b> screen.
         </font>
     </string>
 

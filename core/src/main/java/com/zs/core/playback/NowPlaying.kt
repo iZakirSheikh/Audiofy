@@ -42,9 +42,11 @@ private val EXTRA_STATE = "com.prime.player.extra.MEDIA_STATE"
 private val EXTRAS_PLAY_WHEN_READY = "com.prime.player.extra.PLAY_WHEN_READY"
 private val EXTRA_WHEN = "com.prime.player.extra.WHEN"
 private val EXTRA_SPEED = "com.prime.player.extra.SPEED"
+private val EXTRA_URI = "com.prime.player.extra.URI"
 
 /**
  * @property timeStamp - The time in mills when this notification was generated.
+ * @property hasActiveMedia - represents if there is loaded media-item in player.
  */
 @JvmInline
 value class NowPlaying(private val value: Intent) {
@@ -68,6 +70,8 @@ value class NowPlaying(private val value: Intent) {
         @JvmStatic
         val EXTRA_REPEAT_MODE = "com.prime.player.action.REPEAT_MODE"
 
+
+
         /**
          * Constructs the widget update intent from a [Player].
          */
@@ -80,6 +84,7 @@ value class NowPlaying(private val value: Intent) {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
                 val mediaItem = player.currentMediaItem ?: return@apply
                 putExtra(EXTRA_TITLE, mediaItem.mediaMetadata.title.toString())
+                putExtra(EXTRA_URI, mediaItem.mediaUri)
                 putExtra(EXTRA_SUBTITLE, mediaItem.mediaMetadata.subtitle.toString())
                 val uri = mediaItem.mediaMetadata.artworkUri
                 putExtra(EXTRA_ARTWORK, uri)
@@ -131,6 +136,8 @@ value class NowPlaying(private val value: Intent) {
         get() = value.getFloatExtra(EXTRA_SPEED, 1f)
     val repeatMode
         get() = value.getIntExtra(EXTRA_REPEAT_MODE, Player.REPEAT_MODE_ALL)
+    val hasActiveMedia
+        get() = value.getParcelableExtra<Uri?>(EXTRA_URI) != null
 
     val playing get() = playWhenReady && state != Player.STATE_ENDED && state != Player.STATE_IDLE
 }

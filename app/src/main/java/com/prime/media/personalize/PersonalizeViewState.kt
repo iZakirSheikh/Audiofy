@@ -18,6 +18,7 @@
 
 package com.prime.media.personalize
 
+import androidx.compose.ui.graphics.Shape
 import com.prime.media.common.Route
 import com.primex.preferences.Key
 
@@ -29,6 +30,8 @@ interface PersonalizeViewState {
      * Sets the current widget to [id]
      */
     fun setInAppWidget(id: String)
+
+    fun setArtworkShapeKey(key: String)
 
     /**
      * Sets the [key] to [value]

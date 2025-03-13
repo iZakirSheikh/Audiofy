@@ -152,7 +152,8 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // Draw the top rectangle with a slightly transparent version of the container color.
         drawRect(containerColor.copy(if (isLight) 0.73f else 0.60f))
     }
-        .visualEffect(ImageBrush.NoiseBrush, 0.3f)
+        // FIXME - Enabling this causes crash in android 9 on startup.
+      //  .visualEffect(ImageBrush.NoiseBrush, 0.3f)
 
 /**
  * Adds a dynamic backdrop to the Modifier based on the provided HazeState.

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -322,7 +323,28 @@ fun Personalize(viewState: ViewState) {
                         contentPadding = HeaderPadding
                     )
                 }
-                item() { Tweaks(viewState) }
+                item() { Tweaks(viewState, modifier = Modifier.fillMaxWidth()) }
+
+                // Artwork Shapes
+                item() {
+                    Header(
+                        "Artwork Style",
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                }
+                item {
+                    val selected by preference(Settings.ARTWORK_SHAPE_KEY)
+                    ArtworkShapeRow(
+                        state.artwork,
+                        selected,
+                        data,
+                        onRequestApply = viewState::setArtworkShapeKey,
+                        modifier = Modifier.padding(top = CP.medium)
+                    )
+                }
 
                 // Widgets
                 item() {

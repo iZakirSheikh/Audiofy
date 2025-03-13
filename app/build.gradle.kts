@@ -62,6 +62,19 @@ private fun ApplicationDefaultConfig.init() {
     buildConfigField("IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS", "color_croft_wavy_gradient_dots")
     buildConfigField("IAP_COLOR_CROFT_MISTY_DREAM", "color_craft_misty_dream")
     // Group
+    // Artwork Shapes
+    buildConfigField("IAP_ARTWORK_SHAPE_HEART", "artwork_shape_heart")
+    buildConfigField("IAP_ARTWORK_SHAPE_ROUNDED_RECT", "artwork_shape_rounded_rect")
+    buildConfigField("IAP_ARTWORK_SHAPE_CIRCLE", "artwork_shape_circle")
+    buildConfigField("IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT", "artwork_shape_cut_cornored_rect")
+    buildConfigField("IAP_ARTWORK_SHAPE_SCOPED_RECT", "artwork_shape_scoped")
+    buildConfigField("IAP_ARTWORK_SHAPE_SKEWED_RECT", "artwork_shape_skewed_rect")
+    buildConfigField("IAP_ARTWORK_SHAPE_SQUIRCLE", "artwork_shape_squircle")
+    buildConfigField("IAP_ARTWORK_SHAPE_WAVY_CIRCLE", "artwork_shape_wavy_circle")
+    buildConfigField("IAP_ARTWORK_SHAPE_LEAF", "artwork_shape_leaf")
+    buildConfigField("IAP_ARTWORK_SHAPE_DISK", "artwork_shape_disk")
+    buildConfigField("IAP_ARTWORK_SHAPE_PENTAGON", "artwork_shape_pentagon")
+
 }
 
 android {
@@ -71,8 +84,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 195
-        versionName = "3.6.0"
+        versionCode = 200
+        versionName = "3.7.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -107,7 +120,8 @@ android {
         freeCompilerArgs = listOf(
             "-Xopt-in=kotlin.RequiresOptIn",
             "-Xcontext-receivers",
-            "-Xopt-in=com.primex.core.ExperimentalToolkitApi"
+            "-Xopt-in=com.primex.core.ExperimentalToolkitApi",
+            "-Xwhen-guards"
         )
     }
     buildFeatures { compose = true; buildConfig = true }

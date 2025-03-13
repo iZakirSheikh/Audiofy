@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBars
@@ -188,7 +189,7 @@ fun Playlists(viewState: PlaylistsViewState) {
     val floatingActionMenu = @Composable {
         Crossfade(
             targetState = highlighted == null,
-            Modifier.padding(inAppNavBarInsets),
+            Modifier.padding(inAppNavBarInsets).thenIf(!isCompactWidth){ navigationBarsPadding()},
             label = "",
             content = { value ->
                 when {
@@ -225,7 +226,7 @@ fun Playlists(viewState: PlaylistsViewState) {
         topBar = {
             Toolbar(
                 behaviour = topAppBarScrollBehavior,
-                insets = WindowInsets.statusBars,
+                insets = TopAppBarDefaults.windowInsets,
                 onNavigateBack = onNavigateBack,
                 shape = if (isCompactWidth) null else FloatingTopBarShape,
             )

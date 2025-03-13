@@ -4,6 +4,7 @@ package com.prime.media.old.library
 
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -11,15 +12,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -213,9 +217,9 @@ fun Library(state: Library) {
                 modifier = if (immersive) Modifier
                 else Modifier
                     .padding(DefaultContentPadding)
-                    .statusBarsPadding()
+                    .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .clip(RoundedCornerShape(15)),
-                insets = if (immersive) WindowInsets.statusBars else WindowInsets.None
+                insets = if (immersive) TopAppBarDefaults.windowInsets else WindowInsets.None
             )
         },
         content = {
@@ -238,11 +242,20 @@ fun Library(state: Library) {
                     Icon(
                         painter = lottieAnimationPainter(R.raw.lt_settings_roll, iterations = 2),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp).scale(1.35f)
+                        modifier = Modifier.size(24.dp).scale(1.5f),
                     )
+
                     Text(
                         textResource(R.string.scr_personalize_title_desc),
                         modifier = Modifier.padding(start = ContentPadding.medium)
+                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    Icon(
+                        painter = lottieAnimationPainter(R.raw.lt_skip_to_next_circular_bordered, iterations = 2),
+                        contentDescription = null,
+                        modifier = Modifier.padding(horizontal = ContentPadding.normal).size(44.dp),
                     )
                 },
             )
@@ -289,7 +302,7 @@ fun Library(state: Library) {
             )
             NewlyAddedList(
                 state,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(bottom = ContentPadding.normal),
                 contentPadding = DefaultContentPadding
             )
         },

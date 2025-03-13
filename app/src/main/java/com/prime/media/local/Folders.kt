@@ -60,6 +60,7 @@ import com.zs.core_ui.AppTheme
 import com.zs.core_ui.shape.FolderShape
 import java.io.File
 import com.prime.media.R
+import com.primex.core.runCatching
 
 object RouteFolders : Route
 
@@ -80,11 +81,12 @@ private fun Context.formattedFileSize(bytes: Long) =
  */
 private fun isRemovableStorage(path: String): Boolean {
     val externalStorageDirectory = Environment.getExternalStorageDirectory().absolutePath
-    return !path.startsWith(externalStorageDirectory) && Environment.isExternalStorageRemovable(
-        File(
-            path
-        )
-    )
+    return runCatching(TAG) {
+        !path.startsWith(externalStorageDirectory) && Environment.isExternalStorageRemovable(
+            File(
+                path
+            ))
+    } == true
 }
 
 private const val TAG = "Folders"
