@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package com.prime.media.common
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,7 +33,7 @@ private const val TAG = "lazy-ktx"
  *
  * @return  item list, can be null if placeholder emitted otherwise no-null
  */
-inline fun <T> LazyGridScope.emit(
+fun <T> LazyGridScope.emit(
     data: List<T>?,
 ): List<T>? {
     when {
@@ -76,7 +74,7 @@ inline fun <T> LazyGridScope.emit(
 /**
  * @see emit
  */
-inline fun <T> LazyGridScope.emit(
+fun <T> LazyGridScope.emit(
     data: Mapped<T>?
 ): Mapped<T>? {
     when {
@@ -117,7 +115,7 @@ inline fun <T> LazyGridScope.emit(
 /**
  * @see emit
  */
-inline fun <T> LazyListScope.emit(
+fun <T> LazyListScope.emit(
     data: Mapped<T>?
 ): Mapped<T>? {
     when {
