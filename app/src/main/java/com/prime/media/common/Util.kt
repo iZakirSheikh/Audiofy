@@ -21,7 +21,9 @@
 package com.prime.media.common
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.media.AudioManager
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -50,8 +52,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
-import kotlin.text.appendLine
 
 /**
  * Creates a split install request for the module with [name]
@@ -162,6 +164,7 @@ val ProductInfo.isFreemium: Boolean
             BuildConfig.IAP_PLATFORM_WIDGET_IPHONE, BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
             BuildConfig.IAP_ARTWORK_SHAPE_HEART, BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
             BuildConfig.IAP_ARTWORK_SHAPE_CIRCLE, BuildConfig.IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT -> true
+
             else -> false
         }
     }
@@ -260,3 +263,82 @@ val NowPlaying.chronometer: Chronometer
     }
 
 val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }
+
+/**
+ * Represents the volume of the music stream, providing a normalized view (0.0 to 1.0)
+ * over the system's integer volume range.
+ *
+ * The volume is represented as a float between 0.0 and 1.0, where 0.0 is muted and 1.0
+ * is the maximum volume.  This property maps between the normalized float
+ * representation and the underlying integer volume levels of the Android system's
+ * `AudioManager.STREAM_MUSIC` stream.
+ *
+ * **Important Considerations:**
+ *
+ * -   **Integer Mapping:** The Android system manages volume using integer levels.
+ * This property converts the 0.0-1.0 float range to the nearest integer
+ * volume level when setting the volume. This means that very small
+ * adjustments in the float value might not result in a change in the actual
+ * system volume.
+ * -   **Granularity:** The number of discrete volume levels is determined by
+ * `getStreamMaxVolume(AudioManager.STREAM_MUSIC)`.  A larger maximum volume
+ * means finer-grained control.
+ * -   **Clamping:** When setting the volume, the provided float value is clamped
+ * to the range 0.0 to 1.0 to ensure it's within valid bounds.
+ *
+ * @property volume Gets or sets the normalized volume of the music stream (0.0 to 1.0).
+ * -   **Get:** Retrieves the current music stream volume and normalizes it to a
+ * float between 0.0 and 1.0 by dividing by the maximum stream volume.
+ * -   **Set:** Sets the music stream volume.  The provided float value is
+ * first clamped to the 0.0-1.0 range, then converted to the corresponding
+ * integer volume level.
+ */
+var AudioManager.volume: Float
+    get() {
+        // Get the current volume of the music stream.
+        val current = getStreamVolume(AudioManager.STREAM_MUSIC)
+        // Get the maximum volume for the music stream.
+        val max = getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        // Normalize the current volume to a float between 0.0 and 1.0.
+        // Handle the case where maxVolume is 0 to avoid division by zero.
+        return if (max > 0) current.toFloat() / max.toFloat() else 0f
+    }
+    set(value) {
+        // Get the maximum volume for the music stream.
+        val max = getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        // Convert the normalized volume (0.0-1.0) to an integer volume level.
+        // Clamp the input value to the valid range of 0.0 to 1.0.
+        val target = (value.coerceIn(0f, 1f) * max).roundToInt()
+        // Log the volume change for debugging purposes.
+        Log.d(TAG, "Setting stream volume to index: $target (raw value: $value, max: $max)")
+        // Set the volume of the music stream.
+        // The third parameter (0) is a flag that specifies whether to show a volume UI.
+        setStreamVolume(AudioManager.STREAM_MUSIC, target, 0)
+    }
+
+/**
+ *  The current screen brightness of this activity's window.
+ *
+ *  This value ranges from 0.0f to 1.0f, where 0.0f is the darkest and 1.0f is the brightest.
+ *  A value of -1.0f indicates that the system's default brightness is being used.
+ *
+ *  Note: Setting this value directly modifies the window's layout attributes.
+ *  Changes may not be immediately reflected if the system is managing the brightness
+ *  automatically (e.g., under automatic brightness control). In such cases, the actual
+ *  brightness may be clamped or overridden by the system.
+ *
+ *  @see android.view.WindowManager.LayoutParams.screenBrightness
+ */
+var SystemFacade.brightness: Float
+    get() = (this as? Activity)?.window?.attributes?.screenBrightness ?: 1f
+    set(value) {
+        val window = (this as? Activity)?.window ?: return
+        val attr = window.attributes
+        // -1f means use system brightness.
+        if (value == -1f)
+            attr.screenBrightness = value
+        else
+        //  Confine value between 0 and 1.
+            attr.screenBrightness = value.coerceIn(0f, 1f)
+        window.attributes = attr
+    }

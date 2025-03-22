@@ -22,8 +22,10 @@ package com.prime.media.old.console
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.os.Build
@@ -41,6 +43,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -113,7 +116,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -145,28 +147,23 @@ import com.google.accompanist.adaptive.VerticalTwoPaneStrategy
 import com.google.accompanist.adaptive.calculateDisplayFeatures
 import com.prime.media.BuildConfig
 import com.prime.media.R
-import com.prime.media.personalize.RoutePersonalize
-import com.zs.core_ui.Anim
-import com.zs.core_ui.ContentElevation
-import com.zs.core_ui.ContentPadding
-import com.zs.core_ui.MediumDurationMills
+import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.SystemFacade
+import com.prime.media.common.brightness
+import com.prime.media.common.preference
+import com.prime.media.common.volume
 import com.prime.media.old.common.AnimatedIconButton
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.common.LocalSystemFacade
-import com.prime.media.common.SystemFacade
-import com.zs.core_ui.LocalWindowSize
 import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.LottieAnimation
 import com.prime.media.old.common.PlayerView
-import com.zs.core_ui.Range
-import com.zs.core_ui.WindowSize
 import com.prime.media.old.common.marque
-import com.prime.media.common.preference
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.core.playback.subtitle
 import com.prime.media.old.core.playback.title
 import com.prime.media.old.effects.AudioFx
+import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.settings.DancingScriptFontFamily
 import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
@@ -184,15 +181,22 @@ import com.primex.material2.OutlinedButton2
 import com.primex.material2.menu.DropDownMenu2
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Colors
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Indication
-import com.zs.core_ui.coil.ReBlurTransformation
+import com.zs.core_ui.LocalWindowSize
+import com.zs.core_ui.MediumDurationMills
+import com.zs.core_ui.Range
+import com.zs.core_ui.WindowSize
 import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
 import com.zs.core_ui.sharedElement
 import com.zs.core_ui.toast.Toast
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
+import kotlin.math.roundToInt
 
 private const val TAG = "ConsoleView"
 
@@ -553,7 +557,7 @@ private fun PlayButton(
         // The tint in this case is derived from the LocalContentColor.
         PLAY_BUTTON_STYLE_SIMPLE ->
             IconButton(
-                modifier = modifier.scale(1.5f),
+                modifier = modifier.scale(1.25f),
                 onClick = onClick,
                 painter = lottieAnimationPainter(
                     R.raw.lt_play_pause,
@@ -1182,6 +1186,7 @@ private fun MainContent(
 
         // VideoSurface
         val isInInspectionMode = LocalInspectionMode.current
+        val facade = LocalSystemFacade.current
         if (isVideo && !removePlayerView && !isInInspectionMode)
             PlayerView(
                 player = state.player,
@@ -1189,8 +1194,8 @@ private fun MainContent(
                 modifier = Modifier
                     .layoutId(Constraints.ID_VIDEO_SURFACE)
                     // TODO - Find Proper Place to store this logic.
-                    // TODO - Add support for other gestures like seek, volume +/-, Brightness +/-
-                    .pointerInput("tapGesture") {
+                    // TODO - Add support for other gestures like seek
+                    .pointerInput("tap_gesture") {
                         var lastTapTime = -1L
                         var tapCount = 1 // Track double tap timing and count
                         detectTapGestures(
@@ -1233,6 +1238,54 @@ private fun MainContent(
                                 state.seek(increment) // Perform seek
                                 // Update message with multiplied seek time
                                 state.message = "${if (isLeftTap) "-" else "+"}${tapCount * 10}s"
+                            }
+                        )
+                    }
+                    .pointerInput("seek_controls") {
+                        val manager = facade.getDeviceService<AudioManager>(Context.AUDIO_SERVICE)
+                        // These are used to keep track of the brightness/volume to make change more
+                        // clean.
+                        var volume = manager.volume
+                        var brightness = facade.brightness
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { change, dragAmount ->
+                                if (state.visibility != Console.VISIBILITY_HIDDEN)
+                                    return@detectVerticalDragGestures
+                                val (width, _) = size
+                                // Get the position of the gesture
+                                val positionX = change.position.x
+                                // Calculate the change in volume or brightness based on the drag amount.
+                                // The dragAmount is in pixels, so we convert it to a normalized value
+                                // The scaling factor
+                                // (-0.001f) was derived empirically.
+                                val real = (dragAmount / 1.dp.toPx()) * -0.001f // scale factor
+
+                                // Check if the drag gesture is on the left side of the screen.
+                                if (positionX < width / 2) {
+                                    //  Volume Control
+                                    //  ----------------
+                                    // Calculate the new volume.
+                                    volume = (volume + real).coerceIn(0f, 1f) // Keep volume within 0-1 range.
+                                    manager.volume = volume                   // Set the system volume.
+                                    // Update the UI message to display the current volume percentage.
+                                    state.message = """🔊 ${(volume * 100).roundToInt()}%"""
+                                } else {
+                                    // Brightness Control
+                                    // -------------------
+                                    val new = (brightness + real)
+                                    // Adjust brightness.  If the user drags downwards and the brightness is
+                                    // already at its minimum (0f), allow it to go to -1f (automatic).
+                                    brightness = if (new < 0f && real < 0f) -1f else new.coerceIn(0f, 1f)
+                                    facade.brightness = brightness           // Set the system brightness.
+                                    // Update the UI message to display the current brightness level.
+                                    if (brightness == -1f)
+                                        state.message = "Ⓐ Automatic"
+                                    else
+                                        state.message = """🔆 ${(brightness * 100).roundToInt()}%"""
+                                }
+                                // Mark the gesture as consumed, so other gestures
+                                // don't also respond to it.
+                                change.consume()
                             }
                         )
                     }
@@ -1597,6 +1650,7 @@ fun Console(state: Console) {
     val isAppearanceLightSystemBars = AppTheme.colors.isAppearanceLightSystemBars
     // Use DisposableEffect to observe the lifecycle events of the current owner (typically the
     // current composable).
+    val facade = LocalSystemFacade.current
     DisposableEffect(key1 = owner) {
         // Define a LifecycleEventObserver to pause playback when the screen is paused.
         val observer = LifecycleEventObserver { _, event ->
@@ -1613,6 +1667,7 @@ fun Console(state: Console) {
             owner.lifecycle.removeObserver(observer)
             // Restore the default color appearance of system bars based on the theme.
             controller?.immersiveMode(false)
+            facade.brightness = -1f // restore back to automatic.
             controller?.isAppearanceLightStatusBars = isAppearanceLightSystemBars
             controller?.isAppearanceLightNavigationBars = isAppearanceLightSystemBars
         }
