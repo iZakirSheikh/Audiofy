@@ -148,7 +148,8 @@ private val onlySurface =
         )
 
         constrain(REF_MESSAGE){
-            linkTo(parent.start, parent.top, parent.end, parent.bottom)
+            linkTo(parent.start, parent.end)
+            top.linkTo(parent.top, ContentPadding.xLarge)
         }
 
         constrain(REF_BACKGROUND) {

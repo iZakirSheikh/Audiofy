@@ -71,6 +71,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ClosedCaption
+import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.GraphicEq
@@ -174,6 +175,7 @@ import com.primex.core.foreground
 import com.primex.core.plus
 import com.primex.core.thenIf
 import com.primex.core.visualEffect
+import com.primex.material2.Divider
 import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
 import com.primex.material2.Label
@@ -789,10 +791,17 @@ private fun More(
             )
 
             // Audio Menu
+            val colors = AppTheme.colors
             DropDownMenu2(
                 expanded = expanded == 2,
                 onDismissRequest = { expanded = 1 },
                 shape = AppTheme.shapes.compact,
+                elevation = if (colors.isLight) 4.dp else 2.dp,
+                border = if (colors.isLight) null else BorderStroke(
+                    1.dp,
+                    colors.onBackground.copy(ContentAlpha.Divider)
+                ),
+
                 content = {
                     DropDownMenuItem(
                         title = "Auto",
@@ -812,6 +821,11 @@ private fun More(
                 expanded = expanded == 3,
                 onDismissRequest = { expanded = 1; },
                 shape = AppTheme.shapes.compact,
+                elevation = if (colors.isLight) 4.dp else 2.dp,
+                border = if (colors.isLight) null else BorderStroke(
+                    1.dp,
+                    colors.onBackground.copy(ContentAlpha.Divider)
+                ),
                 // TODO - Add one option for enabling/adding custom subtitle track.
                 content = {
                     DropDownMenuItem(
@@ -843,7 +857,7 @@ private fun More(
                             val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
                             val facade = LocalSystemFacade.current
                             IconButton(
-                                imageVector = Icons.Outlined.GraphicEq,
+                                imageVector = Icons.Outlined.Tune,
                                 onClick = {
                                     if (useBuiltIn)
                                         controller.navigate(AudioFx.route)
@@ -855,7 +869,7 @@ private fun More(
 
                             // Control Centre
                             IconButton(
-                                imageVector = Icons.Outlined.Tune,
+                                imageVector = Icons.Outlined.ColorLens,
                                 onClick = { controller.navigate(RoutePersonalize()); expanded = 0 }
                             )
                         }
@@ -882,7 +896,7 @@ private fun More(
                     )
 
                     // Lock
-                    DropDownMenuItem(
+                    /*DropDownMenuItem(
                         title = "Lock",
                         subtitle = "Lock/Hide controller",
                         icon = rememberVectorPainter(Icons.Outlined.Lock),
@@ -892,7 +906,7 @@ private fun More(
                             onRequest(REQUEST_TOOGLE_LOCK)
                             expanded = 0
                         }
-                    )
+                    )*/
 
                     // Share
                     // Properties
@@ -933,6 +947,13 @@ private fun Options(
         // restore the visibility back to normal.
         onDismissRequest = { expanded = 0; state.ensureAlwaysVisible(false) }
     )
+
+    // Lock Button
+    if (state.isVideo)
+        IconButton(
+            imageVector = Icons.Outlined.Lock,
+            onClick = { onRequest(REQUEST_TOOGLE_LOCK) },
+        )
 
     // Speed Controller.
     PlaybackSpeed(
@@ -1066,7 +1087,7 @@ private fun Background(
                 model = state.artworkUri,
                 contentDescription = null,
                 modifier = modifier
-                    .blur(100.dp)
+                    .blur(95.dp)
                     .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
                     .visualEffect(ImageBrush.NoiseBrush, overlay = true),
                 contentScale = ContentScale.Crop
@@ -1205,7 +1226,11 @@ private fun MainContent(
                                 REQUEST_TOGGLE_VISIBILITY
                             )
                             },
-                            onLongPress = { onRequest(REQUEST_TOOGLE_LOCK) },
+                            onLongPress = {
+                                if (state.visibility == Console.VISIBILITY_LOCKED) onRequest(
+                                    REQUEST_TOOGLE_LOCK
+                                )
+                            },
                             onDoubleTap = { offset ->
                                 val visibility = state.visibility
                                 val isLocked = visibility == Console.VISIBILITY_LOCKED
@@ -1249,8 +1274,13 @@ private fun MainContent(
                         var brightness = facade.brightness
                         detectVerticalDragGestures(
                             onVerticalDrag = { change, dragAmount ->
-                                if (state.visibility != Console.VISIBILITY_HIDDEN)
+                                if (state.visibility == Console.VISIBILITY_LOCKED) {
+                                    // Show message and return on lock
+                                    onRequest(REQUEST_TOGGLE_VISIBILITY)
                                     return@detectVerticalDragGestures
+                                }
+                                if (state.visibility != Console.VISIBILITY_HIDDEN)
+                                    onRequest(REQUEST_TOGGLE_VISIBILITY)
                                 val (width, _) = size
                                 // Get the position of the gesture
                                 val positionX = change.position.x
@@ -1265,8 +1295,12 @@ private fun MainContent(
                                     //  Volume Control
                                     //  ----------------
                                     // Calculate the new volume.
-                                    volume = (volume + real).coerceIn(0f, 1f) // Keep volume within 0-1 range.
-                                    manager.volume = volume                   // Set the system volume.
+                                    volume = (volume + real).coerceIn(
+                                        0f,
+                                        1f
+                                    ) // Keep volume within 0-1 range.
+                                    manager.volume =
+                                        volume                   // Set the system volume.
                                     // Update the UI message to display the current volume percentage.
                                     state.message = """🔊 ${(volume * 100).roundToInt()}%"""
                                 } else {
@@ -1275,8 +1309,10 @@ private fun MainContent(
                                     val new = (brightness + real)
                                     // Adjust brightness.  If the user drags downwards and the brightness is
                                     // already at its minimum (0f), allow it to go to -1f (automatic).
-                                    brightness = if (new < 0f && real < 0f) -1f else new.coerceIn(0f, 1f)
-                                    facade.brightness = brightness           // Set the system brightness.
+                                    brightness =
+                                        if (new < 0f && real < 0f) -1f else new.coerceIn(0f, 1f)
+                                    facade.brightness =
+                                        brightness           // Set the system brightness.
                                     // Update the UI message to display the current brightness level.
                                     if (brightness == -1f)
                                         state.message = "Ⓐ Automatic"
