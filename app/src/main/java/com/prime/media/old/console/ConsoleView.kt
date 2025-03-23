@@ -74,7 +74,6 @@ import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
-import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.Lock
@@ -1292,18 +1291,6 @@ private fun MainContent(
 
                                 // Check if the drag gesture is on the left side of the screen.
                                 if (positionX < width / 2) {
-                                    //  Volume Control
-                                    //  ----------------
-                                    // Calculate the new volume.
-                                    volume = (volume + real).coerceIn(
-                                        0f,
-                                        1f
-                                    ) // Keep volume within 0-1 range.
-                                    manager.volume =
-                                        volume                   // Set the system volume.
-                                    // Update the UI message to display the current volume percentage.
-                                    state.message = """🔊 ${(volume * 100).roundToInt()}%"""
-                                } else {
                                     // Brightness Control
                                     // -------------------
                                     val new = (brightness + real)
@@ -1318,6 +1305,18 @@ private fun MainContent(
                                         state.message = "Ⓐ Automatic"
                                     else
                                         state.message = """🔆 ${(brightness * 100).roundToInt()}%"""
+                                } else {
+                                    //  Volume Control
+                                    //  ----------------
+                                    // Calculate the new volume.
+                                    volume = (volume + real).coerceIn(
+                                        0f,
+                                        1f
+                                    ) // Keep volume within 0-1 range.
+                                    manager.volume =
+                                        volume                   // Set the system volume.
+                                    // Update the UI message to display the current volume percentage.
+                                    state.message = """🔊 ${(volume * 100).roundToInt()}%"""
                                 }
                                 // Mark the gesture as consumed, so other gestures
                                 // don't also respond to it.

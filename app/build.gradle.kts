@@ -84,8 +84,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 35
-        versionCode = 201
-        versionName = "3.8.0-beta01"
+        versionCode = 202
+        versionName = "3.8.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -106,7 +106,7 @@ android {
         // Add necessary changes to debug apk.
         debug {
             // makes it possible to install both release and debug versions in same device.
-            //applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug"
             resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }
