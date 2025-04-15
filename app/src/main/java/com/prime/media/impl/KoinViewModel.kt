@@ -106,7 +106,7 @@ abstract class KoinViewModel : ScopeViewModel() {
                 append(message)
             }
         },
-        action = "REPORT",
+        action = getText(R.string.report),
         icon = Icons.Outlined.Error,
         accent = Color.OrientRed,
         priority = Toast.PRIORITY_MEDIUM
