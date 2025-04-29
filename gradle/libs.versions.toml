@@ -1,7 +1,7 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 kotlin = "2.1.20"
-compose = "1.8.0-rc03"
+compose = "1.8.0"
 media3 = "1.6.1"
 toolkit = "v2.2.5"
 material_icons = "1.7.8"
@@ -29,7 +29,7 @@ androidx-foundation = { module = "androidx.compose.foundation:foundation", versi
 androidx-animation-graphics = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
 
 # Misc
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.7.8" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.0" }
 coil-compose = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
 kenburnsview = { module = "com.flaviofaria:kenburnsview", version = "1.0.7" }
 wavy-slider = { module = "ir.mahozad.multiplatform:wavy-slider", version = "1.3.0" }
@@ -47,12 +47,12 @@ androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jv
 
 # Accompanist
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.2" }
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.37.2" }
+accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version = "0.37.3" }
 
 
 # Firebase
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.4.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.2" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.3" }
 
 #Compose preview
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
@@ -88,7 +88,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.6" }
-chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.5.3" }
+chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.5.4" }
 
 # Google Play Services
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
