@@ -56,7 +56,7 @@ fun rememberHazeState() = remember(::HazeState)
  */
 fun HazeStyle.Companion.Regular(
     containerColor: Color,
-    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.63f else 0.65f
+    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.52f else 0.65f
 ) = HazeStyle(
     blurRadius = if (containerColor.luminance() >= 0.5f) 38.dp else 80.dp,
     backgroundColor = containerColor,
