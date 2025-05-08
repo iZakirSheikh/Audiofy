@@ -56,13 +56,13 @@ fun rememberHazeState() = remember(::HazeState)
  */
 fun HazeStyle.Companion.Regular(
     containerColor: Color,
-    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.52f else 0.65f
+    tintAlpha: Float = if (containerColor.luminance() >= 0.5) 0.33f else 0.60f
 ) = HazeStyle(
     blurRadius = if (containerColor.luminance() >= 0.5f) 38.dp else 80.dp,
     backgroundColor = containerColor,
     noiseFactor = if (containerColor.luminance() >= 0.5f) 0.5f else 0.25f,
     tints =  listOf(
-        HazeTint(Color.White.copy(0.07f), BlendMode.Luminosity),
+        HazeTint(Color.White.copy(0.05f), BlendMode.Luminosity),
         HazeTint(containerColor.copy(alpha = tintAlpha), blendMode = BlendMode.SrcOver),
     )
 )
