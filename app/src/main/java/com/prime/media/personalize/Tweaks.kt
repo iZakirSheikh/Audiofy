@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.common.preference
@@ -50,7 +51,7 @@ fun Tweaks(
             val colorNavBar by preference(Settings.USE_ACCENT_IN_NAV_BAR)
             Tweak(
                 colorNavBar,
-                "Navbar Accent Color",
+                stringResource(R.string.personalize_scr_navbar_accent_color),
                 icon = Icons.Outlined.ColorLens,
                 onClick = { state[Settings.USE_ACCENT_IN_NAV_BAR] = !colorNavBar }
             )
@@ -58,7 +59,7 @@ fun Tweaks(
             val elevatedArtwork by preference(Settings.ARTWORK_ELEVATED)
             Tweak(
                 elevatedArtwork,
-                "Elevated Artwork",
+                stringResource(R.string.personalize_scr_elevated_artwork),
                 icon = Icons.Outlined.Shower,
                 onClick = { state[Settings.ARTWORK_ELEVATED] = !elevatedArtwork }
             )
@@ -66,7 +67,7 @@ fun Tweaks(
             val borderedArtwork by preference(Settings.ARTWORK_BORDERED)
             Tweak(
                 borderedArtwork,
-                "Artwork Border",
+                stringResource(R.string.personalize_scr_artwork_border),
                 icon = Icons.Outlined.BorderStyle,
                 onClick = { state[Settings.ARTWORK_BORDERED] = !borderedArtwork}
             )

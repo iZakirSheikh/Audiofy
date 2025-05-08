@@ -656,7 +656,7 @@ fun App(
                         else -> Modifier.dynamicBackdrop(
                             if (!portrait) null else provider,
                             HazeStyle.Regular(
-                                if (colors.isLight) colors.accent else colors.background,
+                                colors.background,
                                 if (colors.isLight) 0.24f else 0.63f
                             ),
                             colors.background,

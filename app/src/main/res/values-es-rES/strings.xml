@@ -352,4 +352,22 @@
         <item>Claro</item>
         <item>Sincronizar con el Sistema</item>
     </string-array>
+    <string name="msg_library_help_translate"><b>Únete al esfuerzo de traducción!</b>
+    <font color="grey">\nSi disfrutas de la aplicación, pruébala en tu idioma. <b>Ayúdanos con las traducciones</b> y <i>arregla</i> los que falten.
+        Encuentre información de traducción en nuestra pagina de <b>GitHub</b> o únete a nuestra comunidad de <b>Telegram</b> para asistencia.
+        \nGracias!
+    </font>
+    </string>
+    <string name="translate">Traducir</string>
+    <string name="scr_personalize_unlock_all_s">%s<font color="grey" size="10">\nDesbloquear Todo</font></string>
+    <string name="accent_color">Color de Acento</string>
+    <string name="report">Reportar</string>
+    <string name="personalize_scr_artwork_style">Estilo de las Ilustraciones</string>
+    <string name="manual">Manual</string>
+    <string name="defult">Por Defecto</string>
+    <string name="dynamic">Dinámico</string>
+    <string name="album_art">Carátula del Álbum</string>
+    <string name="personalize_scr_navbar_accent_color">Color de Acento de la Barra de Navegación</string>
+    <string name="personalize_scr_elevated_artwork">Ilustraciones Elevadas</string>
+    <string name="personalize_scr_artwork_border">Borde de ilustraciones</string>
 </resources>

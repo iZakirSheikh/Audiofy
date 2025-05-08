@@ -201,7 +201,7 @@ private fun ColorizationStrategyRow(
                 // TODO - Allow only users to use this strategy if they have paid version.
                 viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Manual;
             },
-            label = "Manual",
+            label = textResource(R.string.manual),
             icon = Icons.Default.ColorLens,
         )
 
@@ -209,7 +209,7 @@ private fun ColorizationStrategyRow(
         ToggleButton(
             selected = current == ColorizationStrategy.Default,
             onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Default },
-            label = "Default",
+            label = textResource(R.string.defult),
             icon = Icons.Default.Deck,
         )
 
@@ -218,14 +218,14 @@ private fun ColorizationStrategyRow(
             onClick = {
                 viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Wallpaper
             },
-            label = "Dynamic",
+            label = textResource(R.string.dynamic),
             icon = Icons.Default.Devices,
         )
 
         ToggleButton(
             selected = current == ColorizationStrategy.Artwork,
             onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Artwork },
-            label = "Album Art",
+            label = textResource(R.string.album_art),
             icon = Icons.Default.Image
         )
 
@@ -328,7 +328,7 @@ fun Personalize(viewState: ViewState) {
                 // Artwork Shapes
                 item() {
                     Header(
-                        "Artwork Style",
+                        textResource(R.string.personalize_scr_artwork_style),
                         drawDivider = true,
                         color = AppTheme.colors.accent,
                         style = AppTheme.typography.bodyMedium,
