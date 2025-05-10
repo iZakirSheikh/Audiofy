@@ -39,7 +39,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -101,7 +100,7 @@ import dev.chrisbanes.haze.haze as observerBackdrop
 
 private const val TAG = "Directory"
 
-private val FloatingTopBarShape = RoundedCornerShape(25)
+private val FloatingTopBarShape = RoundedCornerShape(20)
 private val Colors.floatingTopBarBorder: BorderStroke
 @Composable
 inline get() =  BorderStroke(0.5.dp, VerticalGradient(
@@ -169,7 +168,7 @@ private fun FloatingTopAppBar(
                     .height(52.dp)
                     .dynamicBackdrop(
                         backdropProvider,
-                        HazeStyle.Regular(colors.background),
+                        HazeStyle.Regular(colors.background(0.4.dp)),
                         colors.background,
                         colors.accent
                     )
