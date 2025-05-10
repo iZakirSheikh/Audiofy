@@ -59,23 +59,7 @@ typealias Mapped<T> = Map<CharSequence, List<T>>
  **/
 operator fun <T> SavedStateHandle.get(route: ArgsFactory<T>): T = route.build(this)
 
-/**
- * Adds a composable route to the [NavGraphBuilder] for the given [Route].
- *
- * @param route The [Route] object representing the navigation destination.
- * @param content The composable content to display for this route.
- */
-fun NavGraphBuilder.composable(
-    route: Route,
-    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
-) = composable(
-    route = route.route,
-    content = { id ->
-        CompositionLocalProvider(value = LocalNavAnimatedVisibilityScope provides this) {
-            content(id)
-        }
-    }
-)
+
 
 /**
  * Extracts the domain portion from a [NavDestination]'s route.
@@ -97,23 +81,6 @@ val NavDestination.domain: String?
         return if (index == -1) route else route.substring(0, index)
     }
 
-/**
- * Used to provide access to the [NavHostController] through composition without needing to pass it down the tree.
- *
- * To use this composition local, you can call [LocalNavController.current] to get the [NavHostController].
- * If no [NavHostController] has been set, an error will be thrown.
- *
- * Example usage:
- *
- * ```
- * val navController = LocalNavController.current
- * navController.navigate("destination")
- * ```
- */
-val LocalNavController =
-    staticCompositionLocalOf<NavHostController> {
-        error("no local nav host controller found")
-    }
 
 /**
  * Controls the color of both the status bar and the navigation bar.

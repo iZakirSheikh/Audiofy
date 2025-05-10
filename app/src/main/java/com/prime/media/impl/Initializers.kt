@@ -35,6 +35,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import androidx.appcompat.content.res.AppCompatResources.getDrawable as Drawable
 import coil3.ImageLoader.Builder as ImageLoader
@@ -107,9 +108,9 @@ private val KoinAppModules = module {
     // Declare a singleton instance of Preferences.
     single {
         // Initialize Preferences
-        val preferences = Preferences(get(), "shared_preferences")
+        val preferences = Preferences(get(), "Shared_Preferences")
         // Retrieve the current launch counter value, defaulting to 0 if not set
-        val counter = preferences[Settings.KEY_LAUNCH_COUNTER] ?: 0
+        val counter = preferences[Settings.KEY_LAUNCH_COUNTER]
         // Increment the launch counter for cold starts
         preferences[Settings.KEY_LAUNCH_COUNTER] = counter + 1
         Log.d(TAG, "Cold start counter: ${preferences[Settings.KEY_LAUNCH_COUNTER]}")
@@ -124,4 +125,8 @@ private val KoinAppModules = module {
     //
     factory { MediaProvider(get()) }
     factory { androidContext().resources }
+
+    viewModelOf(::LibraryViewModel)
+    viewModelOf(::SettingsViewModel)
+    viewModelOf(::ConsoleViewModel)
 }
