@@ -1,7 +1,7 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright 2025 sheik
  *
- * Created by 2024 on 02-10-2024.
+ * Created by sheik on 09-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,95 +20,27 @@ package com.prime.media.impl
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.animation.core.AnimationConstants
 import androidx.startup.Initializer
-import coil.Coil
-import com.prime.media.BuildConfig
+import coil3.annotation.DelicateCoilApi
+import coil3.asImage
+import coil3.request.crossfade
 import com.prime.media.R
-import com.prime.media.old.core.playback.Remote
-import com.prime.media.old.directory.playlists.MembersViewModel
-import com.prime.media.old.directory.store.AudiosViewModel
-import com.prime.media.old.impl.AudioFxViewModel
-import com.prime.media.old.impl.ConsoleViewModel
-import com.prime.media.old.impl.FeedbackViewModel
-import com.prime.media.old.impl.LibraryViewModel
-import com.prime.media.old.impl.Remote
-import com.prime.media.old.impl.Repository
-import com.prime.media.old.impl.SystemDelegate
-import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.settings.Settings
-import com.primex.preferences.Preferences
-import com.primex.preferences.Preferences.Companion.invoke
-import com.primex.preferences.invoke
-import com.zs.core.db.Playlists
-import com.zs.core.db.Playlists2
-import com.zs.core.db.Playlists2.Companion.invoke
+import com.zs.compose.theme.snackbar.SnackbarHostState
 import com.zs.core.store.MediaProvider
-import com.zs.core_ui.Anim
-import com.zs.core_ui.coil.MediaMetaDataArtFetcher
-import com.zs.core_ui.toast.ToastHostState
+import com.zs.core.telemetry.Analytics
+import com.zs.preferences.Preferences
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
-import androidx.lifecycle.SavedStateHandle as Handle
-import coil.ImageLoader.Builder as ImageLoader
-import com.google.firebase.FirebaseApp.initializeApp as FirebaseApp
-import com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance as Crashlytics
-import com.zs.ads.AdManager.Companion.initialize as AdManager
-import com.zs.core.playback.PlaybackController.Companion.invoke as PlaybackController
-import com.zs.core_ui.coil.VideoThumbnailFetcher as ThumbnailFetcher
-import kotlin.also as then
+import androidx.appcompat.content.res.AppCompatResources.getDrawable as Drawable
+import coil3.ImageLoader.Builder as ImageLoader
+import coil3.SingletonImageLoader.setUnsafe as Coil
 
 private const val TAG = "Initializers"
-
-private val KoinAppModules = module {
-    // Define Koin modules for dependency injection.
-    // Declare a singleton instance of Preferences.
-    single {
-        // Initialize Preferences
-        val preferences = Preferences(get(), "Shared_Preferences")
-        // Retrieve the current launch counter value, defaulting to 0 if not set
-        val counter = preferences(Settings.KEY_LAUNCH_COUNTER) ?: 0
-        // Increment the launch counter for cold starts
-        preferences[Settings.KEY_LAUNCH_COUNTER] = counter + 1
-        Log.d(TAG, "Cold start counter: ${preferences(Settings.KEY_LAUNCH_COUNTER)}")
-        // Return the preferences instance
-        preferences
-    }
-    single { Playlists2(get()) }
-    single { Repository(get(), get(), get()) }
-    single<Remote> { Remote(get()) }
-    singleOf(::ToastHostState)
-    single { Playlists(get()) }
-    singleOf(::MediaProvider)
-    singleOf(::PlaybackController)
-
-    factory { androidContext().resources }
-    factory() { SystemDelegate(get(), get()) }
-    factory { androidContext().contentResolver }
-    // ViewModels
-    viewModelOf(::SettingsViewModel)
-    viewModelOf(::VideosViewModel)
-    viewModelOf(::MembersViewModel) // remove this later
-    viewModelOf(::GenresViewModel)
-    viewModelOf(::ArtistsViewModel)
-    viewModelOf( ::FoldersViewModel )
-    viewModel { AudioFxViewModel(get()) }
-    viewModel { FeedbackViewModel(get()) }
-    viewModel() { LibraryViewModel(get(), get(), get()) }
-    viewModel() { PersonalizeViewModel() }
-    viewModel() { ConsoleViewModel(get(), get(), get()) }
-    viewModel { (h: Handle) -> TagEditorViewModel(h, get(), get(), get()) }
-    viewModelOf(::PlaylistViewModel)
-    viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
-    viewModelOf(::AlbumsViewModel)
-    viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
-
-}
 
 /**
  * Initializes Koin for dependency injection.
@@ -127,52 +59,69 @@ class KoinInitializer : Initializer<KoinApplication> {
 }
 
 /**
- * Initializes Firebase for crash reporting.
+ * Initializes Analytics for logging and crash reporting.
  */
-class FirebaseInitializer : Initializer<Unit> {
+class AnalyticsInitializer : Initializer<Unit> {
     override fun create(context: Context): Unit {
         Log.d(TAG, "Initializer: starting firebase")
-        FirebaseApp(context)
-        Crashlytics().then { it.isCrashlyticsCollectionEnabled = true }
+        Analytics(context)
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()
 }
 
-/**
- * Initializes Coil for loading images.
- */
+/**Initialize Coil and its components. */
 class CoilInitializer : Initializer<Unit> {
+    @OptIn(DelicateCoilApi::class)
     override fun create(context: Context) {
-        Log.d(TAG, "Initializer: starting Coil")
-        // Get the shared preferences.
-        val preference = GlobalContext.get().get<Preferences>()
-        Log.d(TAG, "Initializer: use MediaMetaDataArtFetcher; ${preference(Settings.USE_LEGACY_ARTWORK_METHOD)}")
-        // Build the ImageLoader with the MediaMetaDataArtFetcher.Factory if the user hasn't opted for the legacy method.
-        val imageLoader =
-            ImageLoader(context)
-                .error(R.drawable.default_art)
-                .crossfade(Anim.DefaultDurationMillis)
-                .components {
-                    if (!preference(Settings.USE_LEGACY_ARTWORK_METHOD))
-                        add(MediaMetaDataArtFetcher.Factory())
-                    add(ThumbnailFetcher.Factory())
-                }
-        // Set the created ImageLoader as the default for Coil.
-        Coil.setImageLoader(imageLoader.build())
+        val error = Drawable(context, R.drawable.ic_error_image_placeholder)!!.asImage()
+        // Construct imageLoader
+        val loader = ImageLoader(context)
+            .error(error)
+            .crossfade(AnimationConstants.DefaultDurationMillis)
+            .components {     /*add(ThumbnailFetcher.Factory()*/ }
+            .build()
+        // set global image loader
+        Coil(loader)
     }
 
-    override fun dependencies(): List<Class<out Initializer<*>?>?> =
-        listOf(KoinInitializer::class.java)
+    override fun dependencies(): MutableList<Class<out Initializer<*>>> =
+        mutableListOf()
 }
 
 /**
  * Initializes AdNetwork.
  */
 class AdNetworkInitializer : Initializer<Unit> {
-    override fun create(context: Context) = AdManager(context, BuildConfig.ADS_APP_ID).then {
+    override fun create(context: Context) {
+        // AdManager(context, BuildConfig.ADS_APP_ID).then {
         Log.d(TAG, "Initializer: starting AdNetworkInitializer")
     }
+
     override fun dependencies(): List<Class<out Initializer<*>?>?> = emptyList()
 }
 
+// Define dependencies here.
+private val KoinAppModules = module {
+    // Define Koin modules for dependency injection.
+    // Declare a singleton instance of Preferences.
+    single {
+        // Initialize Preferences
+        val preferences = Preferences(get(), "shared_preferences")
+        // Retrieve the current launch counter value, defaulting to 0 if not set
+        val counter = preferences[Settings.KEY_LAUNCH_COUNTER] ?: 0
+        // Increment the launch counter for cold starts
+        preferences[Settings.KEY_LAUNCH_COUNTER] = counter + 1
+        Log.d(TAG, "Cold start counter: ${preferences[Settings.KEY_LAUNCH_COUNTER]}")
+        // Return the preferences instance
+        preferences
+    }
+    // Declare a ViewModel dependency (lifecycle managed by Koin).
+    // viewModel { BatteryViewModel(get()) }
+    singleOf(::SnackbarHostState)
+    single { Analytics(get()) }
+
+    //
+    factory { MediaProvider(get()) }
+    factory { androidContext().resources }
+}

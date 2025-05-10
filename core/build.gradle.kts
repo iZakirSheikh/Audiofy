@@ -5,13 +5,20 @@ plugins {
 }
 
 android {
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions { jvmTarget = "11" }
     namespace = "com.zs.core"
-    compileSdk = 34
+    compileSdk = 35
+
     defaultConfig {
         minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -21,19 +28,18 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions { jvmTarget = "1.8" }
+
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.room)
     implementation(libs.google.billing.ktx)
-
+    implementation(libs.bundles.media3)
+    api(libs.bundles.coil)
     ksp(libs.room.compiler)
-    api(libs.bundles.media3)
-    api(libs.mp3agic)
+    implementation(libs.androidx.palette.ktx)
+    //implementation(libs.bundles.analytics)
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright 2025 sheik
  *
- * Created by 2024 on 21-09-2024.
+ * Created by sheik on 09-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,81 +23,118 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
-import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.ComponentActivity
+import com.zs.core.common.PathUtils
+import com.zs.core.store.MediaProvider.Companion.ALBUM_PROJECTION
+import com.zs.core.store.MediaProvider.Companion.ARTIST_PROJECTION
+import com.zs.core.store.MediaProvider.Companion.AUDIO_PROJECTION
 import com.zs.core.store.MediaProvider.Companion.COLUMN_DATE_MODIFIED
 import com.zs.core.store.MediaProvider.Companion.COLUMN_ID
 import com.zs.core.store.MediaProvider.Companion.COLUMN_IS_TRASHED
 import com.zs.core.store.MediaProvider.Companion.COLUMN_MEDIA_TYPE
+import com.zs.core.store.MediaProvider.Companion.COLUMN_MIME_TYPE
 import com.zs.core.store.MediaProvider.Companion.COLUMN_NAME
 import com.zs.core.store.MediaProvider.Companion.COLUMN_PATH
 import com.zs.core.store.MediaProvider.Companion.COLUMN_SIZE
 import com.zs.core.store.MediaProvider.Companion.EXTERNAL_CONTENT_URI
+import com.zs.core.store.MediaProvider.Companion.GENRE_PROJECTION
 import com.zs.core.store.MediaProvider.Companion.MEDIA_TYPE_AUDIO
 import com.zs.core.store.MediaProvider.Companion.MEDIA_TYPE_VIDEO
-import com.zs.core.util.PathUtils
+import com.zs.core.store.MediaProvider.Companion.TRASHED_PROJECTION
+import com.zs.core.store.MediaProvider.Companion.VIDEO_PROJECTION
+import com.zs.core.store.models.Audio
+import com.zs.core.store.models.Audio.Album
+import com.zs.core.store.models.Audio.Artist
+import com.zs.core.store.models.Audio.Genre
+import com.zs.core.store.models.Folder
+import com.zs.core.store.models.Trashed
+import com.zs.core.store.models.Video
 import kotlinx.coroutines.flow.Flow
-import java.io.File as JavaFile
-
-private const val TAG = "MediaProviderImpl"
-
-/**
- * Counts the number of media items in the MediaStore.
- *
- * @param trashed Whether to include trashed items in the count. Defaults to false.
- * @return The number of media items.
- */
-private suspend fun ContentResolver.count(trashed: Boolean = false): Int {
-    val noTrashSelection =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) "$COLUMN_IS_TRASHED != 1" else ""
-    return query2(
-        EXTERNAL_CONTENT_URI,
-        arrayOf(COLUMN_ID),
-        selection = if (!trashed) noTrashSelection else "",
-        transform = { c ->
-            c.count
-        },
-    )
-}
-
-
-private const val ONLY_MUSIC_SELECTION = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-
-private suspend inline fun ContentResolver.getBucketAudios(
-    selection: String,
-    args: Array<String>?,
-    order: String = MediaStore.Audio.Media.TITLE,
-    ascending: Boolean = true,
-    offset: Int = 0,
-    limit: Int = Int.MAX_VALUE
-): List<Audio> {
-    return query2(
-        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-        projection = AUDIO_PROJECTION,
-        selection = selection,
-        args,
-        order,
-        ascending,
-        offset,
-        limit,
-        transform = { c ->
-            List(c.count) {
-                c.moveToPosition(it);
-                Audio(c)
-            }
-        },
-    )
-}
+import java.io.File
 
 internal class MediaProviderImpl(context: Context) : MediaProvider {
+
+    private val TAG = "MediaProviderImpl"
+
+    // TODO - Allow for more types like podcasts etc. as well
+    private val ONLY_MUSIC_SELECTION = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
     private val resolver = context.contentResolver
     override fun observer(uri: Uri): Flow<Boolean> = resolver.observe(uri)
-    override fun register(uri: Uri, onChanged: () -> Unit): ContentObserver =
-        resolver.register(uri, onChanged)
+
+    /**
+     * Counts media items in the MediaStore based on trash state.
+     *
+     * @param type The filter type for counting:
+     *  - 0 = all items (both trashed and non-trashed)
+     *  - 1 = only trashed items
+     *  - 2 = only non-trashed items
+     *
+     * @return The number of matching media items.
+     */
+    private suspend fun count(type: Int): Int {
+        // Build selection condition based on the type:
+        // - API 29+ supports IS_TRASHED column
+        // - Pre-API 29 falls back to basic non-zero ID check
+        val selection = when {
+            type == 0 || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q -> "$COLUMN_ID != 0"   // Count all media items
+            type == 1 -> "$COLUMN_IS_TRASHED = 1"          // Count only trashed items
+            else -> "$COLUMN_IS_TRASHED != 1"      // Count only non-trashed items
+        }
+
+        // Perform the query with the appropriate selection.
+        // Fallback for pre-Android 10 (no IS_TRASHED support)
+        return resolver.query2(
+            EXTERNAL_CONTENT_URI,
+            arrayOf(COLUMN_ID), // Just need IDs to count rows
+            selection = selection,
+            transform = { it.count } // Return row count
+        )
+    }
+
+    /**
+     * Fetches the content URIs for the given media IDs.
+     *
+     * This function queries the MediaStore to determine the typeof each media item (image or video)
+     * based on the provided IDs and constructs the corresponding content URIs.
+     *
+     * @param ids The IDs of the media items to fetch URIs for.
+     * @return A list of content URIs corresponding to the given IDs.
+     */
+    suspend fun fetchContentUri(vararg ids: Long): List<Uri> {
+        // Create a comma-separated string of IDs for the SQL IN clause.
+        val idsString = ids.joinToString(",") { it.toString() }
+
+        // Define the projection to retrieve the ID and media type of each item.
+        val projection = arrayOf(COLUMN_ID, COLUMN_MEDIA_TYPE)
+
+        // Define the selection clause to filter items based on the provided IDs.
+        val selection = "$COLUMN_ID IN ($idsString)"
+
+        // Query the MediaStore and transform the result into a list of content URIs.
+        return resolver.query2(
+            EXTERNAL_CONTENT_URI, // The base content URI for media files
+            projection, // The columns to retrieve
+            selection, // The selection clause to filter results
+            transform = { c ->
+                List(c.count) { index -> // Iterate over the cursor results
+                    c.moveToPosition(index) // Move to the current row
+                    val type = c.getInt(1) // Get the media type (image or video)
+                    // Construct the appropriate content URI based on the media type.
+                    val uri = if (type == MEDIA_TYPE_VIDEO) {
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    } else {
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                    }
+                    ContentUris.withAppendedId(uri, c.getLong(0)) // Append the ID to the URI
+                }
+            }
+        )
+    }
 
     override suspend fun delete(vararg id: Long): Int {
         // Create a comma-separated string of IDs for the SQL IN clause.
@@ -133,11 +170,14 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         if (count == 0) return -1 // error
 
         // Iterate over the file paths and attempt to delete them from the file system.
+        Log.d(TAG, "delete: $count")
         paths.forEach {
+            val file = File(it)
             // Decrement count if file deletion fails
-            if (!JavaFile(it).delete())
+            if (file.exists() && !File(it).delete())
                 count--
         }
+        Log.d(TAG, "delete: $count")
 
         // Return the number of successfully deleted items
         return count
@@ -157,7 +197,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // If the activity is a ComponentActivity, use Activity Result
             // APIs for detailed feedback.
             // Count items before deletion (including trashed)
-            val before = resolver.count(true)
+            val before = count(0)
             // Launch the delete request and get the result.
             val result = activity.launchForResult(
                 request.intentSender
@@ -166,11 +206,11 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // Deletion was canceled by the user
             if (Activity.RESULT_CANCELED == result.resultCode) return -3
             // Count items after deletion (including trashed)
-            val after = resolver.count(true)
-            // Return the number of deleted items
-            if (Activity.RESULT_OK == result.resultCode) return after - before
+            val after = count(0)
             // Log for debugging if result is unexpected
             Log.d(TAG, "delete: before: $before, after: $after")
+            // Return the number of deleted items
+            if (Activity.RESULT_OK == result.resultCode) return before - after
             // Deletion failed for an unknown reason
             return -1
         }
@@ -181,7 +221,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
     }
 
     override suspend fun delete(activity: Activity, vararg id: Long): Int {
-        val uri = resolver.fetchContentUri(*id).toTypedArray()
+        val uri = fetchContentUri(*id).toTypedArray()
         return delete(activity, *uri)
     }
 
@@ -193,7 +233,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // If the activity is a ComponentActivity, use Activity Result
             // APIs for detailed feedback.
             // Count items before deletion (including trashed)
-            val before = resolver.count(false)
+            val before = count(1)
             // Launch the delete request and get the result.
             val result = activity.launchForResult(
                 request.intentSender
@@ -202,11 +242,11 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // Deletion was canceled by the user
             if (Activity.RESULT_CANCELED == result.resultCode) return -3
             // Count items after deletion (including trashed)
-            val after = resolver.count(false)
-            // Return the number of deleted items
-            if (Activity.RESULT_OK == result.resultCode) return before - after
+            val after = count(1)
             // Log for debugging if result is unexpected
-            Log.d(TAG, "delete: before: $before, after: $after")
+            Log.d(TAG, "trash: before: $before, after: $after")
+            // Return the number of deleted items
+            if (Activity.RESULT_OK == result.resultCode) return after - before
             // Deletion failed for an unknown reason
             return -1
         }
@@ -217,7 +257,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
     }
 
     override suspend fun trash(activity: Activity, vararg id: Long): Int {
-        val uri = resolver.fetchContentUri(*id).toTypedArray()
+        val uri = fetchContentUri(*id).toTypedArray()
         return trash(activity, *uri)
     }
 
@@ -229,7 +269,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // If the activity is a ComponentActivity, use Activity Result
             // APIs for detailed feedback.
             // Count items before deletion (including trashed)
-            val before = resolver.count(true)
+            val before = count(1)
             // Launch the delete request and get the result.
             val result = activity.launchForResult(
                 request.intentSender
@@ -238,11 +278,11 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             // Deletion was canceled by the user
             if (Activity.RESULT_CANCELED == result.resultCode) return -3
             // Count items after deletion (including trashed)
-            val after = resolver.count(true)
-            // Return the number of deleted items
-            if (Activity.RESULT_OK == result.resultCode) return after - before
+            val after = count(1)
             // Log for debugging if result is unexpected
-            Log.d(TAG, "delete: before: $before, after: $after")
+            Log.d(TAG, "restored: before: $before, after: $after")
+            // Return the number of deleted items
+            if (Activity.RESULT_OK == result.resultCode) return before - after
             // Deletion failed for an unknown reason
             return -1
         }
@@ -253,187 +293,8 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
     }
 
     override suspend fun restore(activity: Activity, vararg id: Long): Int {
-        val uri = resolver.fetchContentUri(*id).toTypedArray()
+        val uri = fetchContentUri(*id).toTypedArray()
         return restore(activity, *uri)
-    }
-
-    override suspend fun fetchVideoFiles(
-        vararg ids: Long,
-        order: String,
-        ascending: Boolean,
-        offset: Int,
-        limit: Int
-    ): List<Video> {
-        if (ids.isEmpty()) return emptyList()
-        val idsString = ids.joinToString(",") { "$it" }
-        return resolver.query2(
-            uri = EXTERNAL_CONTENT_URI,
-            projection = VIDEO_PROJECTION,
-            ascending = ascending,
-            selection = "$COLUMN_ID IN ($idsString)",
-            // provide args if available.
-            args = null,
-            order = order,
-            offset = offset,
-            limit = limit,
-            transform = { c ->
-                List(c.count) {
-                    c.moveToPosition(it);
-                    Video(c)
-                }
-            },
-        )
-    }
-
-    override suspend fun fetchVideoFiles(
-        filter: String?,
-        order: String,
-        ascending: Boolean,
-        parent: String?,
-        offset: Int,
-        limit: Int
-    ): List<Video> {
-        // TODO - Consider allowing users to specify mediaType as a parameter to customize
-        //  the query.
-        // Compose selection criteria based on user's input and filter settings.
-        // On Android 10 and above, remove trashed items from the query to comply with scoped storage restrictions.
-        // language = SQL
-        val selection = buildString {
-            append("($COLUMN_MEDIA_TYPE = ${MEDIA_TYPE_VIDEO})")
-            // Filter out trashed items on Android 10+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                append(" AND $COLUMN_IS_TRASHED != 1")
-            if (parent != null)
-                append(" AND $COLUMN_PATH LIKE ?")
-            if (filter != null)
-                append(" AND $COLUMN_NAME LIKE ?")
-        }
-
-        // query for files.
-        return resolver.query2(
-            uri = EXTERNAL_CONTENT_URI,
-            projection = VIDEO_PROJECTION,
-            ascending = ascending,
-            selection = selection,
-            // provide args if available.
-            args = when {
-                filter != null && parent != null -> arrayOf("$parent%", "%$filter%")
-                filter == null && parent != null -> arrayOf("$parent%")
-                filter != null && parent == null -> arrayOf("%$filter%")
-                else -> null // when both are null
-            },
-            order = order,
-            offset = offset,
-            limit = limit,
-            transform = { c ->
-                List(c.count) {
-                    c.moveToPosition(it);
-                    Video(c)
-                }
-            },
-        )
-    }
-
-    override suspend fun fetchAlbumAudios(
-        name: String,
-        filter: String?,
-        order: String,
-        ascending: Boolean,
-        offset: Int,
-        limit: Int
-    ): List<Audio> {
-        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
-        val selection = "${MediaStore.Audio.Media.ALBUM} == ?" + like
-        val args = if (filter != null) arrayOf(name, "%$filter%") else arrayOf(name)
-        return resolver.getBucketAudios(selection, args, order, ascending, offset, limit)
-    }
-
-    override suspend fun fetchArtistAudios(
-        name: String,
-        filter: String?,
-        order: String,
-        ascending: Boolean,
-        offset: Int,
-        limit: Int
-    ): List<Audio> {
-        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
-        val selection = "${MediaStore.Audio.Media.ARTIST} == ?" + like
-        val args = if (filter != null) arrayOf(name, "%$filter%") else arrayOf(name)
-        return resolver.getBucketAudios(selection, args, order, ascending, offset, limit)
-    }
-
-    override suspend fun fetchGenreAudios(
-        name: String,
-        filter: String?,
-        order: String,
-        ascending: Boolean,
-        offset: Int,
-        limit: Int
-    ): List<Audio> {
-        //maybe for api 30 we can use directly the genre name.
-        // find the id.
-        val id = resolver.query2(
-            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Audio.Genres._ID),
-            "${MediaStore.Audio.Genres.NAME} == ?",
-            arrayOf(name),
-            limit = 1
-        ) {
-            if (it.count == 0) return emptyList()
-            it.moveToPosition(0)
-            it.getLong(0)
-        }
-
-        // calculate the ids.
-        val list = resolver.query2(
-            MediaStore.Audio.Genres.Members.getContentUri("external", id),
-            arrayOf(MediaStore.Audio.Genres.Members.AUDIO_ID),
-        ) { c ->
-            if (c.count == 0) return emptyList()
-            val buffer = StringBuilder()
-            while (c.moveToNext()) {
-                if (!c.isFirst) buffer.append(",")
-                val element = c.getLong(0)
-                buffer.append("'$element'")
-            }
-            buffer.toString()
-        }
-
-        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
-        return resolver.query2(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            AUDIO_PROJECTION,
-            //language=SQL
-            ONLY_MUSIC_SELECTION + " AND ${MediaStore.Audio.Media._ID} IN ($list)" + like,
-            if (filter != null) arrayOf("%$filter%") else null,
-            order,
-            ascending,
-            offset,
-            limit
-        ) { c ->
-            List(c.count) {
-                c.moveToPosition(it)
-                Audio(c)
-            }
-        }
-    }
-
-    override suspend fun fetchTrashedFiles(offset: Int, limit: Int): List<Trashed> {
-        return resolver.query2(
-            EXTERNAL_CONTENT_URI,
-            TRASHED_PROJECTION,
-            selection = "$COLUMN_IS_TRASHED = 1",
-            offset = offset,
-            limit = limit,
-            order = MediaProvider.COLUMN_DATE_EXPIRES,
-            ascending = false,
-            transform = { c ->
-                List(c.count) { index ->
-                    c.moveToPosition(index)
-                    Trashed(c)
-                }
-            }
-        )
     }
 
     override suspend fun fetchAudioFiles(
@@ -501,58 +362,170 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         )
     }
 
-    override suspend fun fetchFolders(
+    override suspend fun fetchVideoFiles(
+        filter: String?,
+        order: String,
+        ascending: Boolean,
+        parent: String?,
+        offset: Int,
+        limit: Int
+    ): List<Video> {
+        // Compose selection criteria based on user's input and filter settings.
+        // On Android 10 and above, remove trashed items from the query to comply with scoped storage restrictions.
+        // language = SQL
+        val selection = buildString {
+            append("($COLUMN_MEDIA_TYPE = ${MEDIA_TYPE_VIDEO})")
+            // Filter out trashed items on Android 10+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                append(" AND $COLUMN_IS_TRASHED != 1")
+            if (parent != null)
+                append(" AND $COLUMN_PATH LIKE ?")
+            if (filter != null)
+                append(" AND $COLUMN_NAME LIKE ?")
+        }
+
+        // query for files.
+        return resolver.query2(
+            uri = EXTERNAL_CONTENT_URI,
+            projection = VIDEO_PROJECTION,
+            ascending = ascending,
+            selection = selection,
+            // provide args if available.
+            args = when {
+                filter != null && parent != null -> arrayOf("$parent%", "%$filter%")
+                filter == null && parent != null -> arrayOf("$parent%")
+                filter != null && parent == null -> arrayOf("%$filter%")
+                else -> null // when both are null
+            },
+            order = order,
+            offset = offset,
+            limit = limit,
+            transform = { c ->
+                List(c.count) {
+                    c.moveToPosition(it);
+                    Video(c)
+                }
+            },
+        )
+    }
+
+    override suspend fun fetchVideoFiles(
+        vararg ids: Long,
+        order: String,
+        ascending: Boolean,
+        offset: Int,
+        limit: Int
+    ): List<Video> {
+        if (ids.isEmpty()) return emptyList()
+        val idsString = ids.joinToString(",") { "$it" }
+        return resolver.query2(
+            uri = EXTERNAL_CONTENT_URI,
+            projection = VIDEO_PROJECTION,
+            ascending = ascending,
+            selection = "$COLUMN_ID IN ($idsString)",
+            // provide args if available.
+            args = null,
+            order = order,
+            offset = offset,
+            limit = limit,
+            transform = { c ->
+                List(c.count) {
+                    c.moveToPosition(it);
+                    Video(c)
+                }
+            },
+        )
+    }
+
+    override suspend fun fetchAudioFolders(
         filter: String?,
         ascending: Boolean,
         offset: Int,
         limit: Int
     ): List<Folder> {
-        // build a selection for selecting folders.
-        // since these are audio folders, we are excluding not-music.
-        // TODO - maybe include tracks only larger than 30 seconds.
-        val selection = buildString {
-            append(ONLY_MUSIC_SELECTION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                append(" AND $COLUMN_IS_TRASHED != 1")
-            append(" AND ${MediaProvider.COLUMN_MEDIA_DURATION} >= 30000")
-            // Add name filter if provided.
-            if (filter != null)
-                append(" AND $COLUMN_NAME LIKE ?")
-        }
+        // The selection to fetch all folders from the MediaStore.
+        // FixMe - For Android versions below API 10, consider using GroupBy, Count, etc.
+        //         In Android 10 and above, we rely on this current implementation.
+        //         Additionally, explore ways to optimize performance for faster results.
+        // Compose the selection for folders; exclude trashed items for Android 11 and above.
+        //language = SQL
+        val selection =
+            "(${COLUMN_MEDIA_TYPE} = $MEDIA_TYPE_AUDIO)" +
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) " AND $COLUMN_IS_TRASHED != 1" else "" +
+                            if (filter != null) " AND $COLUMN_NAME LIKE ?" else ""
         return resolver.query2(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(
-                MediaProvider.COLUMN_AUDIO_ALBUM_ID,
-                COLUMN_PATH,
-                COLUMN_SIZE,
-                COLUMN_DATE_MODIFIED
-            ),
+            EXTERNAL_CONTENT_URI,
+            arrayOf(COLUMN_ID, COLUMN_PATH, COLUMN_SIZE, COLUMN_DATE_MODIFIED, COLUMN_MIME_TYPE),
             selection = selection,
             if (filter != null) arrayOf("%$filter%") else null,
             order = COLUMN_DATE_MODIFIED,
             ascending = ascending
-        ) { cursor ->
-            buildList {
-                while (cursor.moveToNext()){
-                    val parent = PathUtils.parent(cursor.getString(1))
-                    val albumID = cursor.getLong(0)
-                    val size = cursor.getInt(2)
-                    val modified = cursor.getLong(3) * 1000
-
-                    // check if this folder is in the list already
-                    val index = indexOfFirst { it.path == parent }
-                    if (index == -1) {
-                        this += Folder(albumID, parent, 1, size, modified)
-                        continue // continue to the next iteration
-                    }
-                    // else update the folder
-                    val folder = this[index]
-                    val lastModified = maxOf(folder.lastModified, modified)
-                    // replace this with new one
-                    this[index] = folder.copy(count = folder.count + 1, size = folder.size + size, lastModified = lastModified)
+        ) { c ->
+            val list = ArrayList<Folder>()
+            while (c.moveToNext()) {
+                val path = c.getString(1)
+                val parent = PathUtils.parent(path).let {
+                    if (PathUtils.name(it).startsWith("img", true)) PathUtils.parent(it)
+                    else it
                 }
+                val id = c.getLong(0)
+                val size = c.getInt(2)
+                val lastModified = c.getLong(3) * 1000
+                val index = list.indexOfFirst { it.path == parent }
+                val mimeType = c.getString(4) ?: "video/*"
+                if (index == -1) {
+                    list += Folder(id, mimeType, parent, 1, size, lastModified)
+                    continue
+                }
+
+                val old = list[index]
+                val artwork = if (old.lastModified > lastModified) old.artworkID else id
+                list[index] = Folder(
+                    artwork,
+                    mimeType,
+                    parent,
+                    old.count + 1,
+                    old.size + size,
+                    maxOf(old.lastModified, lastModified)
+                )
             }
+            list
         }
+    }
+
+    override suspend fun fetchVideoFolders(
+        filter: String?,
+        ascending: Boolean,
+        offset: Int,
+        limit: Int
+    ): List<Folder> {
+        TODO("Not yet implemented")
+    }
+
+    private suspend inline fun ContentResolver.getBucketAudios(
+        selection: String,
+        args: Array<String>?,
+        order: String = MediaStore.Audio.Media.TITLE,
+        ascending: Boolean = true,
+        offset: Int = 0,
+        limit: Int = Int.MAX_VALUE
+    ): List<Audio> {
+        return query2(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection = AUDIO_PROJECTION,
+            selection = selection,
+            args,
+            order,
+            ascending,
+            offset,
+            limit,
+            transform = { c ->
+                List(c.count) {
+                    c.moveToPosition(it);
+                    Audio(c)
+                }
+            },
+        )
     }
 
     override suspend fun fetchArtists(
@@ -561,7 +534,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         ascending: Boolean,
         offset: Int,
         limit: Int
-    ): List<Artist> {
+    ): List<Audio.Artist> {
         return resolver.query2(
             MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
             projection = ARTIST_PROJECTION,
@@ -626,6 +599,112 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             List(c.count) {
                 c.moveToPosition(it)
                 Genre(c)
+            }
+        }
+    }
+
+    override suspend fun fetchTrashedFiles(
+        offset: Int,
+        limit: Int
+    ): List<Trashed> {
+        // TODO - Add selection for only Audios and Videos
+        return resolver.query2(
+            EXTERNAL_CONTENT_URI,
+            TRASHED_PROJECTION,
+            selection = "$COLUMN_IS_TRASHED = 1",
+            offset = offset,
+            limit = limit,
+            order = MediaProvider.COLUMN_DATE_EXPIRES,
+            ascending = false,
+            transform = { c ->
+                List(c.count) { index ->
+                    c.moveToPosition(index)
+                    Trashed(c)
+                }
+            }
+        )
+    }
+
+    override suspend fun fetchAlbumAudios(
+        id: Long,
+        filter: String?,
+        order: String,
+        ascending: Boolean,
+        offset: Int,
+        limit: Int
+    ): List<Audio> {
+        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
+        val selection = "${MediaStore.Audio.Media.ALBUM_ID} == ?" + like
+        val args = if (filter != null) arrayOf("$id", "%$filter%") else arrayOf("$id")
+        return resolver.getBucketAudios(selection, args, order, ascending, offset, limit)
+    }
+
+    override suspend fun fetchArtistAudios(
+        id: Long,
+        filter: String?,
+        order: String,
+        ascending: Boolean,
+        offset: Int,
+        limit: Int
+    ): List<Audio> {
+        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
+        val selection = "${MediaStore.Audio.Media.ARTIST_ID} == ?" + like
+        val args = if (filter != null) arrayOf("$id", "%$filter%") else arrayOf("$id")
+        return resolver.getBucketAudios(selection, args, order, ascending, offset, limit)
+    }
+
+    override suspend fun fetchGenreAudios(
+        name: String,
+        filter: String?,
+        order: String,
+        ascending: Boolean,
+        offset: Int,
+        limit: Int
+    ): List<Audio> {
+        //maybe for api 30 we can use directly the genre name.
+        // find the id.
+        val id = resolver.query2(
+            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Genres._ID),
+            "${MediaStore.Audio.Genres.NAME} == ?",
+            arrayOf(name),
+            limit = 1
+        ) {
+            if (it.count == 0) return emptyList()
+            it.moveToPosition(0)
+            it.getLong(0)
+        }
+
+        // calculate the ids.
+        val list = resolver.query2(
+            MediaStore.Audio.Genres.Members.getContentUri("external", id),
+            arrayOf(MediaStore.Audio.Genres.Members.AUDIO_ID),
+        ) { c ->
+            if (c.count == 0) return emptyList()
+            val buffer = StringBuilder()
+            while (c.moveToNext()) {
+                if (!c.isFirst) buffer.append(",")
+                val element = c.getLong(0)
+                buffer.append("'$element'")
+            }
+            buffer.toString()
+        }
+
+        val like = if (filter != null) " AND ${MediaStore.Audio.Media.TITLE} LIKE ?" else ""
+        return resolver.query2(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            AUDIO_PROJECTION,
+            //language=SQL
+            ONLY_MUSIC_SELECTION + " AND ${MediaStore.Audio.Media._ID} IN ($list)" + like,
+            if (filter != null) arrayOf("%$filter%") else null,
+            order,
+            ascending,
+            offset,
+            limit
+        ) { c ->
+            List(c.count) {
+                c.moveToPosition(it)
+                Audio(c)
             }
         }
     }

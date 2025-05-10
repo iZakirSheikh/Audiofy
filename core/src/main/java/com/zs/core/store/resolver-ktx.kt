@@ -1,7 +1,7 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright 2025 sheik
  *
- * Created by Zakir Sheikh on 20-07-2024.
+ * Created by sheik on 09-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package com.zs.core.store
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.Intent
 import android.content.IntentSender
 import android.database.ContentObserver
@@ -51,7 +50,7 @@ private const val DUMMY_SELECTION = "${MediaStore.Audio.Media._ID} != 0"
  * Register [ContentObserver] for change in [uri]
  */
 internal inline fun ContentResolver.register(
-    uri: Uri, crossinline onChanged: () -> Unit
+    uri: Uri, crossinline onChanged: () -> Unit,
 ): ContentObserver {
     val observer = object : ContentObserver(null) {
         override fun onChange(selfChange: Boolean) {
@@ -106,7 +105,7 @@ internal suspend fun ContentResolver.query2(
     order: String = MediaStore.MediaColumns._ID,
     ascending: Boolean = true,
     offset: Int = 0,
-    limit: Int = Int.MAX_VALUE
+    limit: Int = Int.MAX_VALUE,
 ): Cursor {
     return using(Dispatchers.IO) {
         // Use the modern query approach for devices running Android 10 and above
@@ -169,7 +168,7 @@ internal suspend inline fun <T> ContentResolver.query2(
     ascending: Boolean = true,
     offset: Int = 0,
     limit: Int = Int.MAX_VALUE,
-    transform: (Cursor) -> T
+    transform: (Cursor) -> T,
 ): T = query2(uri, projection, selection, args, order, ascending, offset, limit).use(transform)
 
 /**
@@ -178,9 +177,7 @@ internal suspend inline fun <T> ContentResolver.query2(
  * @param request The [IntentSender] to launch.
  * @return An [ActivityResult] wrapped in a [suspendCoroutine].
  */
-internal suspend fun ComponentActivity.launchForResult(
-    request: IntentSender
-): ActivityResult =
+internal suspend fun ComponentActivity.launchForResult(request: IntentSender): ActivityResult =
     suspendCoroutine { cont ->
         var launcher: ActivityResultLauncher<IntentSenderRequest>? = null
         // Assign result to launcher in such a way tha it allows us to
@@ -201,44 +198,3 @@ internal suspend fun ComponentActivity.launchForResult(
         // Launch the activity for result using the IntentSenderRequest object
         launcher.launch(intentSenderRequest)
     }
-
-/**
- * Fetches the content URIs for the given media IDs.
- *
- * This function queries the MediaStore to determine the typeof each media item (image or video)
- * based on the provided IDs and constructs the corresponding content URIs.
- *
- * @param ids The IDs of the media items to fetch URIs for.
- * @return A list of content URIs corresponding to the given IDs.
- */
-internal suspend fun ContentResolver.fetchContentUri(vararg ids: Long): List<Uri> {
-    // Create a comma-separated string of IDs for the SQL IN clause.
-    val idsString = ids.joinToString(",") { it.toString() }
-
-    // Define the projection to retrieve the ID and media type of each item.
-    val projection = arrayOf(MediaProvider.COLUMN_ID, MediaProvider.COLUMN_MEDIA_TYPE)
-
-    // Define the selection clause to filter items based on the provided IDs.
-    val selection = "${MediaProvider.COLUMN_ID} IN ($idsString)"
-
-    // Query the MediaStore and transform the result into a list of content URIs.
-    return query2(
-        MediaProvider.EXTERNAL_CONTENT_URI, // The base content URI for media files
-        projection, // The columns to retrieve
-        selection, // The selection clause to filter results
-        transform = { c ->
-            List(c.count) { index -> // Iterate over the cursor results
-                c.moveToPosition(index) // Move to the current row
-                val type = c.getInt(1) // Get the media type (image or video)
-                // Construct the appropriate content URI based on the media type.
-                val uri = when (type) {
-                    MediaProvider.MEDIA_TYPE_IMAGE -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    MediaProvider.MEDIA_TYPE_AUDIO -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                    else -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                }
-                ContentUris.withAppendedId(uri, c.getLong(0)) // Append the ID to the URI
-            }
-        }
-    )
-}
-

@@ -385,7 +385,7 @@
     </font>
     </string>
     <string name="translate">Translate</string>
-    <string name="scr_personalize_unlock_all_s">%s<font color ='grey' size = "10">\nUnlock All</font></string>
+    <string name="scr_personalize_unlock_all_s">%s<font color='grey' size="10">\nUnlock All</font></string>
     <string name="accent_color">Accent Color</string>
     <string name="report">Report</string>
     <string name="personalize_scr_artwork_style">Artwork Style</string>
@@ -396,4 +396,5 @@
     <string name="personalize_scr_navbar_accent_color">Navbar Accent Color</string>
     <string name="personalize_scr_elevated_artwork">Elevated Artwork</string>
     <string name="personalize_scr_artwork_border">Artwork Border</string>
+    <string name="title_telemetry">Telemetry</string>
 </resources>

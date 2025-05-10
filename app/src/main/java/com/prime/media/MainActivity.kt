@@ -1,99 +1,97 @@
-package com.prime.media
+/*
+ * Copyright 2024 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 20-07-2024.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package com.prime.media
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Downloading
-import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.NavController.OnDestinationChangedListener
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
-import com.google.android.play.core.ktx.requestProgressFlow
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
-import com.google.android.play.core.ktx.status
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
-import com.google.android.play.core.splitinstall.SplitInstallRequest
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.logEvent
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
-import com.prime.media.common.MediaFile
 import com.prime.media.common.SystemFacade
+import com.prime.media.common.WindowStyle
 import com.prime.media.common.domain
-import com.prime.media.common.dynamicFeatureRequest
-import com.prime.media.common.dynamicModuleName
-import com.prime.media.common.isDynamicFeature
-import com.prime.media.common.onEachItem
-import com.prime.media.old.console.Console
-import com.prime.media.old.core.playback.Remote
+import com.prime.media.common.products
+import com.prime.media.console.RouteConsole
+import com.prime.media.library.RouteLibrary
 import com.prime.media.settings.Settings
-import com.primex.core.MetroGreen
-import com.primex.core.MetroGreen2
-import com.primex.core.getText2
-import com.primex.core.runCatching
-import com.primex.preferences.Key
-import com.primex.preferences.Preferences
-import com.primex.preferences.intPreferenceKey
-import com.primex.preferences.invoke
-import com.primex.preferences.longPreferenceKey
-import com.primex.preferences.observeAsState
-import com.primex.preferences.value
-import com.zs.ads.AdData
-import com.zs.ads.AdData.AdImpression
-import com.zs.ads.AdEventListener
-import com.zs.ads.AdManager
-import com.zs.ads.AdSize
-import com.zs.ads.Reward
-import com.zs.core.paymaster.Paymaster
-import com.zs.core.paymaster.purchased
-import com.zs.core_ui.WindowStyle
-import com.zs.core_ui.getPackageInfoCompat
-import com.zs.core_ui.toast.Toast
-import com.zs.core_ui.toast.ToastHostState
+import com.zs.compose.foundation.MetroGreen
+import com.zs.compose.foundation.getText2
+import com.zs.compose.foundation.runCatching
+import com.zs.compose.theme.snackbar.SnackbarDuration
+import com.zs.compose.theme.snackbar.SnackbarHostState
+import com.zs.compose.theme.snackbar.SnackbarResult
+import com.zs.core.billing.Paymaster
+import com.zs.core.billing.Product
+import com.zs.core.billing.Purchase
+import com.zs.core.common.getPackageInfoCompat
+import com.zs.core.common.logEvent
+import com.zs.core.common.showPlatformToast
+import com.zs.core.telemetry.Analytics
+import com.zs.preferences.Key
+import com.zs.preferences.Key.Key1
+import com.zs.preferences.Key.Key2
+import com.zs.preferences.Preferences
+import com.zs.preferences.intPreferenceKey
+import com.zs.preferences.longPreferenceKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.milliseconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
-import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
-import com.zs.core_ui.showPlatformToast as showAndroidToast
+import androidx.navigation.NavController.OnDestinationChangedListener as NavDestListener
 
 private const val TAG = "MainActivity"
 
 // In-app update and review settings
-
 // Maximum staleness days allowed for a flexible update.
 // If the app is older than this, an immediate update will be enforced.
 private const val FLEXIBLE_UPDATE_MAX_STALENESS_DAYS = 2
@@ -104,245 +102,127 @@ private const val MIN_LAUNCHES_BEFORE_REVIEW = 5
 // Number of days to wait before showing the first review prompt.
 private val INITIAL_REVIEW_DELAY = 3.days
 
+// The maximum number of distinct promotional messages to display to the user.
+private val MAX_PROMO_MESSAGES = 2
+
+// The number of app launches to skip between showing consecutive promotional messages.
+// After each promotional message is shown, the app will skip this many launches before
+// potentially showing another promotional message.
+private val PROMO_SKIP_LAUNCHES = 10
+
 // Minimum number of days between subsequent review prompts.
 // Since we cannot confirm if the user actually left a review, we use this interval
 // to avoid prompting too frequently.
 private val STANDARD_REVIEW_DELAY = 5.days
+private val KEY_LAST_REVIEW_TIME = longPreferenceKey(TAG + "_last_review_time", 0)
+private val KEY_APP_VERSION_CODE = intPreferenceKey(TAG + "_app_version_code", -1)
 
-private val KEY_LAST_REVIEW_TIME =
-    longPreferenceKey(TAG + "_last_review_time", 0)
+@Composable
+private inline fun <S, O> Preferences.observeAsState(key: Key<S, O>): State<O?> {
+    val flow = when (key) {
+        is Key1 -> observe(key)
+        is Key2 -> observe(key)
+    }
 
-/**
- * The version code saved in app preferences, required to check if this is an update.
- */
-private val KEY_APP_VERSION_CODE =
-    intPreferenceKey(TAG + "_app_version_code", -1)
-
-/**
- * The epoch time in milliseconds when the ad-free reward period ends.
- */
-private val KEY_AD_FREE_REWARD_MILLS =
-    longPreferenceKey("ad_free_reward_millis", 0L)
-
-// The duration of ad-free time rewarded to the user after watching a promo ad.
-private val AD_FREE_TIME_REWARD = 1.days
-
-private val IAPs = arrayOf(
-    BuildConfig.IAP_NO_ADS,
-    BuildConfig.IAP_TAG_EDITOR_PRO,
-    BuildConfig.IAP_BUY_ME_COFFEE,
-    BuildConfig.IAP_CODEX,
-    BuildConfig.IAP_WIDGETS_PLATFORM,
-    BuildConfig.IAP_PLATFORM_WIDGET_IPHONE,
-    BuildConfig.IAP_PLATFORM_WIDGET_SNOW_CONE,
-    BuildConfig.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE,
-    BuildConfig.IAP_PLATFORM_WIDGET_TIRAMISU,
-    BuildConfig.IAP_PLATFORM_WIDGET_ELONGATE_BEAT,
-    BuildConfig.IAP_PLATFORM_WIDGET_DISK_DYNAMO,
-    BuildConfig.IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC,
-    /*Color Croft Widget bundle*/
-    BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE,
-    BuildConfig.IAP_COLOR_CROFT_GRADIENT_GROVES,
-    BuildConfig.IAP_COLOR_CROFT_GOLDEN_DUST,
-    BuildConfig.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS,
-    BuildConfig.IAP_COLOR_CROFT_ROTATING_GRADEINT,
-    BuildConfig.IAP_COLOR_CROFT_MISTY_DREAM,
-    /*Artwork Shapes*/
-    BuildConfig.IAP_ARTWORK_SHAPE_LEAF,
-    BuildConfig.IAP_ARTWORK_SHAPE_HEART,
-    BuildConfig.IAP_ARTWORK_SHAPE_CIRCLE,
-    BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
-    BuildConfig.IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT,
-    BuildConfig.IAP_ARTWORK_SHAPE_SCOPED_RECT,
-    BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE,
-    BuildConfig.IAP_ARTWORK_SHAPE_WAVY_CIRCLE,
-    BuildConfig.IAP_ARTWORK_SHAPE_DISK,
-    BuildConfig.IAP_ARTWORK_SHAPE_PENTAGON,
-    BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT
-)
+    val first = remember(key.name) {
+        runBlocking { flow.first() }
+    }
+    return flow.collectAsState(initial = first)
+}
 
 /**
- * The number of messages available to be displayed to the user.
- *
- * Each number from 0 until [MESSAGE_COUNT] represents a unique message ID. This can be used
- * to randomly select a message after a fresh start (or a multiple of 3 fresh starts)
- * and display an indefinite message to the user, such as prompting them to purchase
- * a feature like an ad-free experience.
+ * @property inAppUpdateProgress A simple property that represents the progress of the in-app update.
+ *        The progress value is a float between 0.0 and 1.0, indicating the percentage of the
+ *        update that has been completed. The Float.NaN represents a default value when no update
+ *        is going on.
+ * @property timeAppWentToBackground The time in mills until the app was in background state. default value -1L
+ * @property isAuthenticationRequired A boolean flag indicating whether authentication is required.
  */
-private const val MESSAGE_COUNT = 6
-
-class MainActivity :
-    ComponentActivity(),
-    SystemFacade,
-    OnDestinationChangedListener,
-    AdEventListener {
-    // injectables
-    private val toastHostState: ToastHostState by inject()
+class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
+    private val snackbarHostState: SnackbarHostState by inject()
     private val preferences: Preferences by inject()
-
-    // late-init
     private var navController: NavHostController? = null
-    private val advertiser by lazy { AdManager().apply { listener = this@MainActivity } }
+    private val analytics: Analytics by inject()
 
-    @Deprecated("Will be removed soon.")
-    val remote: Remote by inject()
-    val paymaster by lazy {
-        Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, IAPs)
-    }
-    private val splitInstallManager by lazy {
-        val manager = SplitInstallManagerFactory.create(this@MainActivity)
-        // Request progress updates for dynamic feature installation
-        manager.requestProgressFlow()
-            .onEach { state ->
-                when (state.status) {
-                    Flag.DOWNLOADING -> {
-                        // Calculate the download progress as a percentage
-                        val percent =
-                            state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
-                        Log.d("SplitInstall", "Download progress: $percent%")
-                        // Update the progress indicator
-                        inAppTaskProgress = percent
-                    }
-
-                    Flag.INSTALLING, Flag.PENDING -> {
-                        // Set the progress to an indeterminate state
-                        inAppTaskProgress = -1f
-                        Log.d("SplitInstall", "Installing...")
-                    }
-
-                    Flag.INSTALLED -> {
-                        // There is a known issue when observing the state of dynamic module installations.
-                        // If the user has requested the installation of the dynamic module during this session,
-                        // the inAppTaskProgress flag will not be NaN once the state is reached.
-                        // However, if inAppTaskProgress is NaN, it indicates that this callback was triggered due to an app restart,
-                        // and no installation request was made in the current session. Therefore, we can safely ignore this state.
-                        if (inAppTaskProgress.isNaN()) return@onEach
-                        // Hide the progress bar
-                        inAppTaskProgress = Float.NaN
-                        Log.d("SplitInstall", "Module installed successfully!")
-                        // Show a toast message requesting the app restart
-                        val res = toastHostState.showToast(
-                            getString(R.string.msg_apply_changes_restart),
-                            getString(R.string.restart),
-                            priority = Toast.PRIORITY_HIGH
-                        )
-                        // Restart the app if the user chooses to
-                        if (res == Toast.ACTION_PERFORMED)
-                            restart(true)
-                        // The dynamic feature module can now be accessed
-                    }
-
-                    else -> {
-                        // Hide the progress bar for unknown statuses
-                        inAppTaskProgress = Float.NaN
-                        Log.d("SplitInstall", "Unknown status: ${state.status()}")
-                    }
-                }
-            }
-            .launchIn(lifecycleScope)
-        manager
+    private val paymaster by lazy {
+        Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, Paymaster.products)
     }
 
-    // Cache the banner in main activity.
-    private var _bannerViewBackingField: View? by mutableStateOf(null)
-    var bannerAd: View?
-        get() {
-            // If the BannerView has not been attached to a parent yet...
-            val _cachedBannerView = advertiser.banner(this)
-            return if (_cachedBannerView.parent == null) {
-                _bannerViewBackingField = _cachedBannerView
-                _bannerViewBackingField
-            } else _bannerViewBackingField
-        }
-        set(value) {
-            if (value != null)
-                error("Setting a non-null ($value) to bannerAd is not supported. Use null to release the banner.")
-            // Release the cached bannerView and detach it from its parent
-            _bannerViewBackingField = null
-            val _cachedBannerView = advertiser.banner(this)
-            (_cachedBannerView.parent as? ViewGroup)?.removeView(_cachedBannerView)
-            // Reset the backing field to trigger recomposition and indicate banner availability
-            _bannerViewBackingField = _cachedBannerView
-        }
-
-    // some state variables
-    // The states the reflect the change in the dependent variables
-    override var isRewardedVideoAvailable: Boolean by mutableStateOf(false)
-    override var adFreePeriodEndTimeMillis: Long by mutableLongStateOf(0)
-    override var isAdFreeVersion: Boolean by mutableStateOf(false)
-    override val isAdFree: Boolean by derivedStateOf { isAdFreeVersion || isAdFreeRewarded }
-    override val isAdFreeRewarded: Boolean by derivedStateOf { adFreePeriodEndTimeMillis - System.currentTimeMillis() > 0f }
     override var style: WindowStyle by mutableStateOf(WindowStyle())
-    override var inAppTaskProgress: Float by mutableFloatStateOf(Float.NaN)
+    var inAppUpdateProgress by mutableFloatStateOf(Float.NaN)
+        private set
 
-    override fun showPlatformToast(message: String, priority: Int) =
-        showAndroidToast(message, priority)
+    override fun onResume() {
+        super.onResume()
+        paymaster.sync()
+    }
 
-    override fun showPlatformToast(message: Int, priority: Int) =
-        showAndroidToast(message, priority)
+    override fun onDestroy() {
+        paymaster.release()
+        super.onDestroy()
+    }
 
-    fun loadBannerAd(size: AdSize) = advertiser.load(size)
+    override fun showToast(message: String, duration: Int) =
+        showPlatformToast(message, duration)
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <T> getDeviceService(name: String): T = getSystemService(name) as T
-    override fun showToast(
+    override fun showToast(message: Int, duration: Int) =
+        showPlatformToast(message, duration)
+
+    override fun <T> getDeviceService(name: String): T =
+        getSystemService(name) as T
+
+    override fun showSnackbar(
         message: CharSequence,
         icon: ImageVector?,
         accent: Color,
-        priority: Int
+        duration: SnackbarDuration,
     ) {
         lifecycleScope.launch {
-            toastHostState.showToast(message, null, icon, accent, priority)
+            snackbarHostState.showSnackbar(
+                message = message,
+                icon = icon,
+                accent = accent,
+                duration = duration
+            )
         }
     }
 
-    override fun showToast(message: Int, icon: ImageVector?, accent: Color, priority: Int) {
-        lifecycleScope.launch {
-            toastHostState.showToast(resources.getText2(id = message), null, icon, accent, priority)
-        }
-    }
-
-    override fun launch(intent: Intent, options: Bundle?) = startActivity(intent, options)
-    override fun initiatePurchaseFlow(id: String) = paymaster.initiatePurchaseFlow(this, id)
-
-    override fun restart(global: Boolean) {
-        // Get the launch intent for the app's main activity
-        val packageManager = packageManager
-        val intent = packageManager.getLaunchIntentForPackage(packageName)
-
-        // Ensure the intent is not null
-        if (intent == null) {
-            Log.e("AppRestart", "Unable to restart: Launch intent is null")
-            return
-        }
-        // restart just the current activity
-        if (!global) {
-            // Restart just the current activity
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-            finish()  // Finish the current activity to ensure it is restarted
-            return
-        }
-        // Get the main component for the restart task
-        val componentName = intent.component
-        if (componentName == null) {
-            Log.e("AppRestart", "Unable to restart: Component name is null")
-            return
-        }
-        // Create the main restart intent and start the activity
-        val mainIntent = Intent.makeRestartActivityTask(componentName)
-        startActivity(mainIntent)
-        // Terminate the current process to complete the restart
-        Runtime.getRuntime().exit(0)
-    }
+    override fun showSnackbar(
+        message: Int,
+        icon: ImageVector?,
+        accent: Color,
+        duration: SnackbarDuration,
+    ) = showSnackbar(
+        resources.getText2(id = message),
+        icon = icon,
+        accent = accent,
+        duration = duration
+    )
 
     @Composable
-    override fun <S, O> observeAsState(key: Key.Key1<S, O>) = preferences.observeAsState(key)
+    @NonRestartableComposable
+    override fun <S, O> observeAsState(key: Key1<S, O>) =
+        preferences.observeAsState(key = key)
 
     @Composable
-    override fun <S, O> observeAsState(key: Key.Key2<S, O>) = preferences.observeAsState(key)
+    @NonRestartableComposable
+    override fun <S, O> observeAsState(key: Key2<S, O>) =
+        preferences.observeAsState(key = key) as State<O>
 
-    override fun initiateUpdateFlow(report: Boolean) {
+    @Composable
+    @NonRestartableComposable
+    override fun observePurchaseAsState(id: String): State<Purchase?> {
+        return produceState(remember(id) { paymaster.purchases.value.find { it.id == id } }) {
+            paymaster.purchases.map { it.find { it.id == id } }.collect {
+                value = it  // updating purchase
+            }
+        }
+    }
+
+    override fun launch(intent: Intent, options: Bundle?) =
+        startActivity(intent, options)
+
+    override fun launchUpdateFlow(report: Boolean) {
         val manager = AppUpdateManagerFactory.create(this@MainActivity)
         manager.requestUpdateFlow().onEach { result ->
             when (result) {
@@ -356,7 +236,7 @@ class MainActivity :
                         total == downloaded -> Float.NaN
                         else -> downloaded / total.toFloat()
                     }
-                    inAppTaskProgress = progress
+                    inAppUpdateProgress = progress
                 }
 
                 is AppUpdateResult.Downloaded -> {
@@ -373,15 +253,15 @@ class MainActivity :
                         return@onEach
                     }
                     // else show the toast.
-                    val res = toastHostState.showToast(
+                    val res = snackbarHostState.showSnackbar(
                         message = resources.getText2(R.string.msg_new_update_downloaded),
                         action = resources.getText2(R.string.install),
-                        priority = Toast.PRIORITY_HIGH,
+                        duration = SnackbarDuration.Long,
                         accent = Color.MetroGreen,
                         icon = Icons.Outlined.Downloading
                     )
                     // complete update when ever user clicks on action.
-                    if (res == Toast.ACTION_PERFORMED) manager.completeUpdate()
+                    if (res == SnackbarResult.ActionPerformed) manager.completeUpdate()
                 }
 
                 is AppUpdateResult.Available -> {
@@ -398,16 +278,16 @@ class MainActivity :
                 }
             }
         }.catch {
-            Firebase.crashlytics.recordException(it)
+            analytics.record(it)
             if (!report) return@catch
             showToast(R.string.msg_update_check_error)
         }.launchIn(lifecycleScope)
     }
 
-    override fun initiateReviewFlow() {
+    override fun launchReviewFlow() {
         lifecycleScope.launch {
             // Get the app launch count from preferences.
-            val count = preferences.value(Settings.KEY_LAUNCH_COUNTER) ?: 0
+            val count = preferences[Settings.KEY_LAUNCH_COUNTER]
             // Check if the minimum launch count has been reached.
             if (count < MIN_LAUNCHES_BEFORE_REVIEW)
                 return@launch
@@ -421,7 +301,7 @@ class MainActivity :
                 return@launch
             // Get the last time the review prompt was shown.
             // Check if enough time has passed since the last review prompt.
-            val lastAskedTime = preferences.value(KEY_LAST_REVIEW_TIME)
+            val lastAskedTime = preferences[KEY_LAST_REVIEW_TIME]
             if (currentTime - lastAskedTime <= STANDARD_REVIEW_DELAY.inWholeMilliseconds)
                 return@launch
 
@@ -438,238 +318,131 @@ class MainActivity :
         }
     }
 
+    override fun initiatePurchaseFlow(id: String) =
+        paymaster.initiatePurchaseFlow(this, id)
+
+    override fun getProductInfo(id: String): Product? =
+        paymaster.details.value.find { it.id == id }
+
     override fun onDestinationChanged(
-        controller: NavController,
-        destination: NavDestination,
-        arguments: Bundle?
+        cont: NavController,
+        dest: NavDestination,
+        args: Bundle?,
     ) {
-        // Log the event.
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+        analytics.logEvent(Analytics.EVENT_SCREEN_VIEW) {
             // create params for the event.
-            val domain = destination.domain ?: "unknown"
-            Log.d(TAG, "onNavDestChanged: $domain")
-            param(FirebaseAnalytics.Param.SCREEN_NAME, domain)
+            val domain = dest.domain ?: "unknown"
+            putString(Analytics.PARAM_SCREEN_NAME, domain)
         }
     }
 
-    override fun showAd(force: Boolean) {
-        if (isAdFree) return // don't do anything
-        advertiser.show(force)
-    }
-
-    override fun onAdEvent(event: String, data: AdData?) {
-        Log.d(TAG, "onAdEvent: $event, $data")
-        // Update if rewarded video is available
-        if (event == AdManager.AD_EVENT_LOADED) {
-            isRewardedVideoAvailable = advertiser.isRewardedVideoAvailable
-            return
-        }
-    }
-
-    override fun onAdImpression(value: AdImpression?) {
-        Log.d(TAG, "onAdImpression: $value")
-        // Safely cast to AdImpression, return if null// Log ad impression event to Firebase Analytics
-        val data = value ?: return
-        // Log ad impression event to Firebase Analytics
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION) {
-            param(FirebaseAnalytics.Param.AD_PLATFORM, "IronSource")
-            param(FirebaseAnalytics.Param.AD_UNIT_NAME, data.name)
-            param(FirebaseAnalytics.Param.AD_FORMAT, data.format)
-            param(FirebaseAnalytics.Param.AD_SOURCE, data.network)
-            param(FirebaseAnalytics.Param.VALUE, data.revenue)
-            // All IronSource revenue is sent in USD
-            param(FirebaseAnalytics.Param.CURRENCY, "USD")
-        }
-    }
-
-    override fun showRewardedVideo() {
+    private fun showPromoToast(
+        index: Int,
+        delay: Long = 5_000,
+    ) {
+        // This function is designed to display promotional messages identified by index.
+        // - An index of 0 indicates the "What's New" message.
+        // - An index of 1 is used to promote the media player.
+        // - An index of 2 prompts the user to buy a coffee.
+        // If a message cannot be displayed for any reason, the index is incremented by 1 until the
+        // maximum index is reached.
         lifecycleScope.launch {
-            val timeTobeAdded = AD_FREE_TIME_REWARD.inWholeDays
-            // Store the new end time
-            val saved = preferences.value(KEY_AD_FREE_REWARD_MILLS)
-                .coerceAtLeast(System.currentTimeMillis())
-            // Calculate remaining ad-free days for display
-            val remaining = (saved - System.currentTimeMillis()).milliseconds.toString()
-            // log to firebase
-            Firebase.analytics.logEvent("click_claim_reward") {
-                param(FirebaseAnalytics.Param.ITEM_NAME, "claim_reward")
-                param("reward_type", "24hrs_ad_free")
-            }
-            val result = toastHostState.showToast(
-                message = resources.getText2(
-                    R.string.msg_claim_ad_free_reward_ds,
-                    timeTobeAdded,
-                    remaining
-                ),
-                icon = Icons.Outlined.AdsClick,
-                action = getString(R.string.claim).uppercase(),
-                priority = Toast.PRIORITY_HIGH,
-                accent = Color.MetroGreen2
-            )
-            if (result == Toast.ACTION_PERFORMED) {
-                advertiser.showRewardedAd()
-                // Log the ad_claiming_reward event to Firebase
-                Firebase.analytics.logEvent("ad_claiming_reward") {
-                    param("remaining_days", remaining)
-                }
+            if (delay > 0) delay(delay) // delay at least some
+            when (index) {
+                0 -> showSnackbar(
+                    R.string.what_s_new_latest,
+                    duration = SnackbarDuration.Indefinite
+                )
             }
         }
-    }
-
-    override fun onAdRewarded(reward: Reward?, info: AdData.AdInfo?) {
-        // TODO - Maybe use the [reward] to reward the users.
-        // User has watched a rewarded ad, grant ad-free time
-        // Calculate the new end time of the ad-free period
-        val old = preferences.value(KEY_AD_FREE_REWARD_MILLS)
-            .coerceAtLeast(System.currentTimeMillis())
-
-        val new = old + AD_FREE_TIME_REWARD.inWholeMilliseconds
-        // Store the new end time
-        preferences[KEY_AD_FREE_REWARD_MILLS] = new
-        // Calculate remaining ad-free days for display
-        val remaining = TimeUnit.MILLISECONDS.toDays(new - System.currentTimeMillis())
-        // Show a celebratory message to the user
-        // Exit the function as the reward has been processed
-        showToast(
-            message = resources.getText2(
-                R.string.msg_ad_free_time_rewarded_dd,
-                AD_FREE_TIME_REWARD.inWholeDays,
-                remaining
-            ),
-            icon = Icons.Outlined.AdsClick,
-            priority = Toast.PRIORITY_HIGH,
-            accent = Color.MetroGreen,
-        )
-    }
-
-    override fun onPause() {
-        super.onPause()
-        advertiser.onPause(this)
-        Log.d(TAG, "onPause: ")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        paymaster.sync()
-        advertiser.onResume(this)
-        Log.d(TAG, "onResume: ")
-    }
-
-    override fun onDestroy() {
-        paymaster.release()
-        // FIXME - What if no-one called get on advertiser; in this case releasing it actually
-        //  caused it to load ads. but since app is closing this might not be the issue
-        advertiser.release()
-        super.onDestroy()
-        Log.d(TAG, "onDestroy: ")
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        Log.d(TAG, "onNewIntent: $intent")
-        // Check if the intent action is not ACTION_VIEW; if so, return.
         if (intent.action != Intent.ACTION_VIEW)
             return
-        // Obtain the URI from the incoming intent data.
-        val data = intent.data ?: return
-        // Use a coroutine to handle the media item construction and playback.
         lifecycleScope.launch {
-            // Construct a MediaItem using the obtained parameters.
-            // (Currently, details about playback queue setup are missing.)
-            val item = MediaFile(this@MainActivity, data, intent.type)
-            // Play the media item by replacing the existing queue.
-            remote.set(listOf(item))
-            remote.play()
+            // we delay it here because on resume loads lockscreen.
+            // we want this to overlay over lockscreen; hence this.
+            delay(200)
+            // play it
         }
-        // If the intent is related to video content, navigate to the video player screen.
-        navController?.navigate(Console.direction())
-    }
-
-    override fun isInstalled(id: String): Boolean {
-        return splitInstallManager.installedModules.contains(id)
-    }
-
-    override fun initiateFeatureInstall(request: SplitInstallRequest) {
-        splitInstallManager.startInstall(request)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // The app has started from scratch if savedInstanceState is null.
+        Log.d(TAG, "onCreate")
         // This is determined by checking if savedInstanceState is null.
-        val isColdStart =
-            savedInstanceState == null // A cold start occurs when there is no saved instance state.
-        // Set up the splash screen
+        // If null, it's a cold start (first time launch or activity recreated from scratch)
+        val isColdStart = savedInstanceState == null
+        // Configure the splash screen for the app
         initSplashScreen()
+        // Initialize
         if (isColdStart) {
-            // check for updates
-            initiateUpdateFlow()
-            // Handle pending intents after a brief delay to ensure UI readiness
-            // TODO: Replace this with new approach
+            // Trigger update flow
+            launchUpdateFlow()
+            // Promote media player on every 5th launch
+            // TODO - properly handle promotional content.
             lifecycleScope.launch {
-                // Introducing a delay of 1000 milliseconds (1 second) here is essential
-                // to ensure that the UI is fully prepared to receive the intent.
-                // This delay gives the UI components time to initialize and be ready
-                // to handle the incoming intent without any potential issues.
-                delay(1000)
-                onNewIntent(intent)
-            }
-            // show promo message
-            // update the state of variables dependent on payment master.
-            // Observe active purchases and prompt the user to install any purchased dynamic features.
-            paymaster.purchases.onEachItem { purchase ->
-                // Skip if the purchase is not purchased
-                if (!purchase.purchased) return@onEachItem
-                // Update the isAdFreeVersion flag
-                if (purchase.id == BuildConfig.IAP_NO_ADS) {
-                    isAdFreeVersion = purchase.purchased
-                    return@onEachItem
+                // Show "What's New" message if the app version has changed
+                val versionCode = BuildConfig.VERSION_CODE
+                val savedVersionCode = preferences[KEY_APP_VERSION_CODE]
+                if (savedVersionCode != versionCode) {
+                    preferences[KEY_APP_VERSION_CODE] = versionCode
+                    showPromoToast(0) // What's new
+                    return@launch
                 }
-                val details = paymaster.details.value.find { it.id == purchase.id }
-                // Skip if product details are unavailable or the product is not a dynamic feature
-                if (details == null || !details.isDynamicFeature) return@onEachItem
-                // Skip if the dynamic feature is already installed
-                if (isInstalled(details.dynamicModuleName)) return@onEachItem
-                // Prompt the user to install the dynamic feature
-                val response = toastHostState.showToast(
-                    resources.getText2(
-                        id = R.string.msg_install_dynamic_module_ss,
-                        details.title
-                    ),
-                    priority = Toast.PRIORITY_HIGH,
-                    action = resources.getText2(R.string.install)
+                // Promotional messages are displayed only after the app has been launched
+                // more than 5 times (MIN_LAUNCHES_BEFORE_REVIEW).
+                // This ensures that users have had a chance to familiarize themselves with the app
+                // before being presented with these messages.
+                // An index of 0 is reserved for the "What's New" message and is handled separately.
+                // Promotional messages start with index 1.
+                // The index is calculated using the formula: (counter % MAX_PROMO_MESSAGES).coerceAtLeast(1).
+                // Each message is skipped by PROMO_SKIP_LAUNCHES number of launches.
+                val counter = preferences[Settings.KEY_LAUNCH_COUNTER] ?: 0
+                if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
+                    return@launch
+                val newCounter = counter - MIN_LAUNCHES_BEFORE_REVIEW
+                val interval = PROMO_SKIP_LAUNCHES + 1
+                // This line calculates which promotional message to show from a rotating set.
+                Log.d(
+                    TAG,
+                    "Promo(counter=$counter," +
+                            " interval=$interval," +
+                            " newCounter=$newCounter," +
+                            " skip = ${newCounter % interval}," +
+                            " index = ${(newCounter / interval) % MAX_PROMO_MESSAGES + 1} ) "
                 )
-                if (response == Toast.ACTION_PERFORMED)
-                    initiateFeatureInstall(details.dynamicFeatureRequest)
-            }.launchIn(lifecycleScope)
-            // Display promotional messages on every third cold start
-            // show what's new message on click.
-            val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
-            val versionCode = BuildConfig.VERSION_CODE
-            if (savedVersionCode != versionCode) {
-                preferences[KEY_APP_VERSION_CODE] = versionCode
-                showToast(
-                    R.string.what_s_new_toast,
-                    priority = Toast.PRIORITY_HIGH,
-                    icon = Icons.Outlined.Whatshot
-                )
+                if (newCounter % interval == 0) {
+                    val index = (newCounter / interval) % MAX_PROMO_MESSAGES + 1
+                    Log.d(TAG, "onCreate: $index")
+                    showPromoToast(index)
+                }
             }
         }
-        // Set up the window
-        // Window settings are likely handled in AppTheme already, but we ensure it here.
+        // Set up the window to fit the system windows
+        // This setting is usually configured in the app theme, but is ensured here
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Set the content view
+        // Set the content of the activity
         setContent {
             val navController = rememberNavController()
-            // Set the content to Home screen with toastHostState and navController
-            App(toastHostState, navController)
-            // Observe the destination change and initialize navController.
+            // If the action is VIEW, load the content first, regardless
+            // of whether the app is currently locked or not. This allows
+            // users to view shared media directly.
+            // else If authentication is required, move to the lock screen
+            Home(
+                snackbarHostState,
+                navController
+            )
+            // Manage lifecycle-related events and listeners
             DisposableEffect(Unit) {
-                Log.d(TAG, "onCreate - DisposableEffect")
-                // Add this activity as a listener to navController's destination changes
                 navController.addOnDestinationChangedListener(this@MainActivity)
+                // Cover the screen with lock_screen if authentication is required
+                // Only remove this veil when the user authenticates
+                // don't show lock screen because their is dedicated button
+                // if (isAuthenticationRequired) unlock();
                 this@MainActivity.navController = navController
-                // Cleanup the listener when the DisposableEffect is disposed
                 onDispose {
                     navController.removeOnDestinationChangedListener(this@MainActivity)
                     this@MainActivity.navController = null

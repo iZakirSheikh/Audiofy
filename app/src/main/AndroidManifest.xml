@@ -31,7 +31,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.Splash">
-
         <!--Initialize components here-->
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -40,7 +39,7 @@
             tools:node="merge">
             <!--Firebase-->
             <meta-data
-                android:name="com.prime.media.impl.FirebaseInitializer"
+                android:name="com.prime.media.impl.AnalyticsInitializer"
                 android:value="androidx.startup" />
 
             <!-- Koin-->
@@ -57,14 +56,6 @@
                 android:name="com.prime.media.impl.AdNetworkInitializer"
                 android:value="androidx.startup" />
         </provider>
-        <!-- Disable FirebaseInitProvider -->
-        <provider
-            android:name="com.google.firebase.provider.FirebaseInitProvider"
-            android:authorities="${applicationId}.firebaseinitprovider"
-            android:enabled="false"
-            android:exported="false"
-            tools:node="remove" />
-
         <!--Single Activity-->
         <activity
             android:name="com.prime.media.MainActivity"
@@ -106,6 +97,5 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
-
     </application>
 </manifest>

@@ -19,8 +19,5 @@ include(":app")
 
 
 
-include(":codex")
-include(":ads")
-include(":core-ui")
 include(":core")
-include(":widget")
+include(":telemetry")

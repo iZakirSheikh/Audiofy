@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/title_telemetry">
+        <dist:delivery>
+            <dist:on-demand />
+        </dist:delivery>
+        <dist:fusing dist:include="true" />
+    </dist:module>
+
+    <!--Required because we have moved this in telemetry-->
+    <application tools:ignore="MissingApplicationIcon">
+        <!-- This disables the automatic initialization of Firebase when the app starts. -->
+        <!-- Disable FirebaseInitProvider -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            android:enabled="false"
+            android:exported="false"
+            tools:node="remove" />
+    </application>
+</manifest>

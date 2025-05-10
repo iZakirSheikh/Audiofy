@@ -1,52 +1,49 @@
+/*
+ * Copyright 2025 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 10-05-2025.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.prime.media.settings
 
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.unit.dp
-import com.prime.media.BuildConfig
 import com.prime.media.R
+import com.prime.media.common.ColorizationStrategy
+import com.prime.media.common.IAP_ARTWORK_SHAPE_ROUNDED_RECT
+import com.prime.media.common.IAP_PLATFORM_WIDGET_IPHONE
+import com.prime.media.common.NightMode
 import com.prime.media.common.Route
-import com.prime.media.settings.Settings.BLACKLISTED_FILES
-import com.prime.media.settings.Settings.FeedbackIntent
-import com.prime.media.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
-import com.prime.media.settings.Settings.GitHubIssuesPage
-import com.prime.media.settings.Settings.GithubIntent
-import com.prime.media.settings.Settings.MIN_TRACK_LENGTH_SECS
-import com.prime.media.settings.Settings.PrivacyPolicyIntent
-import com.prime.media.settings.Settings.TRASH_CAN_ENABLED
-import com.prime.media.settings.Settings.TelegramIntent
-import com.prime.media.settings.Settings.USE_IN_BUILT_AUDIO_FX
-import com.prime.media.settings.Settings.USE_LEGACY_ARTWORK_METHOD
-import com.primex.core.shapes.SquircleShape
-import com.primex.preferences.IntSaver
-import com.primex.preferences.Key
-import com.primex.preferences.StringSaver
-import com.primex.preferences.booleanPreferenceKey
-import com.primex.preferences.floatPreferenceKey
-import com.primex.preferences.intPreferenceKey
-import com.primex.preferences.stringPreferenceKey
-import com.primex.preferences.stringSetPreferenceKey
-import com.zs.core_ui.NightMode
-import com.zs.core_ui.shape.CompactDisk
-import com.zs.core_ui.shape.HeartShape
-import com.zs.core_ui.shape.NotchedCornerShape
-import com.zs.core_ui.shape.RoundedPolygonShape
-import com.zs.core_ui.shape.RoundedStarShape
-import com.zs.core_ui.shape.SkewedRoundedRectangleShape
-
-private const val TAG = "Settings"
+import com.zs.core.billing.Paymaster
+import com.zs.core.common.Intent
+import com.zs.preferences.IntSaver
+import com.zs.preferences.Key
+import com.zs.preferences.StringSaver
+import com.zs.preferences.booleanPreferenceKey
+import com.zs.preferences.floatPreferenceKey
+import com.zs.preferences.intPreferenceKey
+import com.zs.preferences.stringPreferenceKey
+import com.zs.preferences.stringSetPreferenceKey
 
 private val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
@@ -96,88 +93,52 @@ val FontFamily.Companion.RobotoFontFamily get() = com.prime.media.settings.Robot
 val DancingScriptFontFamily = FontFamily("Dancing Script")
 val FontFamily.Companion.DancingScriptFontFamily get() = com.prime.media.settings.DancingScriptFontFamily
 
-object RouteSettings : Route
-
-/**
- * Represents the available strategies for extracting a source color accent to construct a theme.
- */
-enum class ColorizationStrategy {
-    Manual, Default, Wallpaper, Artwork
-}
-
 private val ColorSaver = object : IntSaver<Color> {
     override fun restore(value: Int): Color = Color(value)
     override fun save(value: Color): Int = value.toArgb()
 }
 
-/**
- * ##### Settings
- *
- * This object contains various preference keys and their default values used throughout the app.
- *
- * @property FeedbackIntent Intent to send feedback via email.
- * @property PrivacyPolicyIntent Intent to view the privacy policy document.
- * @property GitHubIssuesPage Intent to view the GitHub issues page.
- * @property TelegramIntent Intent to open the Telegram support channel.
- * @property GithubIntent Intent to view the GitHub repository.
- * @property MIN_TRACK_LENGTH_SECS The length/duration of the track in mills considered above which to include
- * @property USE_LEGACY_ARTWORK_METHOD The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
- * @property TRASH_CAN_ENABLED Preference key for enabling trash can feature.
- * @property BLACKLISTED_FILES The set of files/ folders that have been excluded from media scanning.
- *
- * @property USE_IN_BUILT_AUDIO_FX Indicates whether to use the built-in audio effects or third-party audio effects.
- *
- * * If set to true, the application will use the built-in audio effects.
- * * If set to false, third-party audio effects may be used, if available.
- * @property GRID_ITEM_SIZE_MULTIPLIER Preference key for the grid item size multiplier (0.6 - 2.0f).
- * Adjust to make grid items smaller or larger.
- *
- */
+object RouteSettings : Route
+
 object Settings {
-    val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
+
+    const val PREFIX_MARKET_URL = "market://details?id="
+    const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
+    const val PKG_MARKET_ID = "com.android.vending"
+
+    val LightAccentColor = Color(0xFF514700)
+    val DarkAccentColor = Color(0xFFD8A25E)
+
+    fun FeedbackIntent(subject: String) = Intent(Intent.ACTION_SENDTO) {
         data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
-        putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
+        putExtra(Intent.EXTRA_SUBJECT, subject)
     }
-    val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW).apply {
+
+    val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW) {
         data =
             Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
     }
-    val GitHubIssuesPage = Intent(Intent.ACTION_VIEW).apply {
+    val GitHubIssuesPage = Intent(Intent.ACTION_VIEW) {
         data = Uri.parse("https://github.com/iZakirSheikh/Audiofy/issues")
     }
-    val TelegramIntent = Intent(Intent.ACTION_VIEW).apply {
+    val TelegramIntent = Intent(Intent.ACTION_VIEW) {
         data = Uri.parse("https://t.me/audiofy_support")
     }
-    val GithubIntent = Intent(Intent.ACTION_VIEW).apply {
+    val GithubIntent = Intent(Intent.ACTION_VIEW) {
         data = Uri.parse("https://github.com/iZakirSheikh/Audiofy")
     }
-    val JoinBetaIntent = Intent(Intent.ACTION_VIEW).apply {
+    val JoinBetaIntent = Intent(Intent.ACTION_VIEW) {
         data = Uri.parse("https://play.google.com/apps/testing/com.prime.player/join")
     }
-    val ShareAppIntent = Intent(Intent.ACTION_SEND).apply {
+    val ShareAppIntent = Intent(Intent.ACTION_SEND) {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, "Hey, check out this cool app: [app link here]")
     }
-    val TranslateIntent = Intent(Intent.ACTION_VIEW).apply {
+    val TranslateIntent = Intent(Intent.ACTION_VIEW) {
         data = Uri.parse("https://crowdin.com/project/audiofy")
     }
 
     private const val PREFIX = "Audiofy"
-
-    private val ArtworkShapeRoundedRect = RoundedCornerShape(15)
-    private val ArtworkShapeHeart = HeartShape
-    private val ArtworkShapeDisk = CompactDisk
-    private val ArtworkShapeCircle = CircleShape
-    private val ArtworkShapeSkewedRect = SkewedRoundedRectangleShape(15.dp, 0.15f)
-    private val ArtworkShapeLeaf = RoundedCornerShape(20, 4, 20, 4)
-    private val ArtworkShapePentagon = RoundedPolygonShape(5, 0.3f)
-    private val ArtworkShapeWavyCircle = RoundedStarShape(15, 0.03)
-    private val ArtworkShapeCutCorneredRect = CutCornerShape(15)
-    private val ArtworkShapeScopedRect = NotchedCornerShape(30.dp)
-    private val ArtworkShapeSquircle = SquircleShape(0.7f)
-
-    val LightAccentColor = Color(0xFF514700)
-    val DarkAccentColor = Color(0xFFD8A25E)
 
     val NIGHT_MODE =
         stringPreferenceKey(
@@ -188,23 +149,6 @@ object Settings {
                 override fun restore(value: String): NightMode = NightMode.valueOf(value)
             }
         )
-
-    fun mapKeyToShape(key: String): Shape =
-        when(key){
-            BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT -> ArtworkShapeRoundedRect
-            BuildConfig.IAP_ARTWORK_SHAPE_HEART -> ArtworkShapeHeart
-            BuildConfig.IAP_ARTWORK_SHAPE_DISK -> ArtworkShapeDisk
-            BuildConfig.IAP_ARTWORK_SHAPE_CIRCLE -> ArtworkShapeCircle
-            BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT -> ArtworkShapeSkewedRect
-            BuildConfig.IAP_ARTWORK_SHAPE_LEAF -> ArtworkShapeLeaf
-            BuildConfig.IAP_ARTWORK_SHAPE_PENTAGON -> ArtworkShapePentagon
-            BuildConfig.IAP_ARTWORK_SHAPE_WAVY_CIRCLE-> ArtworkShapeWavyCircle
-            BuildConfig.IAP_ARTWORK_SHAPE_CUT_CORNORED_RECT -> ArtworkShapeCutCorneredRect
-            BuildConfig.IAP_ARTWORK_SHAPE_SCOPED_RECT -> ArtworkShapeScopedRect
-            BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE -> ArtworkShapeSquircle
-            else -> error("$key is not among shapes mentioned in Settings.")
-        }
-
 
     // For Android versions below 10 (API level 29), this is true by default, meaning
     // system bars are translucent and cannot be toggled.
@@ -267,22 +211,17 @@ object Settings {
     val COLOR_ACCENT_DARK =
         intPreferenceKey("${PREFIX}_color_accent_dark", DarkAccentColor, ColorSaver)
     val GLANCE =
-        stringPreferenceKey("${PREFIX}_glance", BuildConfig.IAP_PLATFORM_WIDGET_IPHONE)
+        stringPreferenceKey("${PREFIX}_glance", Paymaster.IAP_PLATFORM_WIDGET_IPHONE)
     val KEY_LAUNCH_COUNTER =
-        intPreferenceKey("Audiofy_launch_counter")
+        intPreferenceKey("Audiofy_launch_counter", 0)
     val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", false)
 
     /** @see mapKeyToShape */
     val ARTWORK_SHAPE_KEY =
         stringPreferenceKey(
             "${PREFIX}_artwork_shape_key",
-            BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
+            Paymaster.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
         )
-
-    const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
-    const val FALLBACK_GOOGLE_STORE =
-        "http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID
-    const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
 
     val DefaultFontFamily = FontFamily.Default
 }
@@ -291,7 +230,5 @@ object Settings {
 interface SettingsViewState {
     fun <S, O> set(key: Key<S, O>, value: O)
 }
-
-
 
 
