@@ -23,6 +23,6 @@ import com.zs.preferences.Key
 
 class SettingsViewModel : KoinViewModel(), SettingsViewState{
     override fun <S, O> set(key: Key<S, O>, value: O) {
-        TODO("Not yet implemented")
+        preferences[key] = value
     }
 }

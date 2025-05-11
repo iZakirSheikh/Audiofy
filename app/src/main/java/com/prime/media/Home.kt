@@ -180,7 +180,7 @@ private fun NavController.toRoute(route: Route) {
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteLibrary.domain)
+    arrayOf(RouteLibrary.domain, RouteSettings.domain)
 
 /**
  * List of permissions required to run the app.
@@ -277,7 +277,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
 /**
  * A composable function that represents a navigation bar, combining both rail and bottom bar elements.
  *
- * @param typeRail Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
+ * @param isBottomNav Specifies whether the navigation bar includes a [NavigationRail] or [BottomNavigation] component.
  * @param navController The NavController to manage navigation within the navigation bar.
  * @param modifier The modifier for styling and layout customization of the navigation bar.
  */
@@ -310,15 +310,24 @@ private fun NavigationBar(
 
         // Timeline
         NavigationItem(
-            label = { Label(text = textResource(R.string.library_title)) },
+            label = { Label(text = textResource(R.string.home)) },
             icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
             selected = domain == RouteLibrary.domain,
             onClick = { facade.launchReviewFlow(); navController.toRoute(RouteLibrary) },
             isBottomNav = isBottomNav,
             colors = colors
         )
-    }
 
+        // Settings
+        NavigationItem(
+            label = { Label(text = textResource(R.string.settings)) },
+            icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
+            selected = domain == RouteSettings.domain,
+            onClick = { facade.launchReviewFlow(); navController.toRoute(RouteSettings) },
+            isBottomNav = isBottomNav,
+            colors = colors
+        )
+    }
     // Load appropriate navigation bar.
     when {
         !isBottomNav -> SideBar(
@@ -361,9 +370,7 @@ private fun NavigationBar(
     }
 }
 
-/**
- * The main navigation host for the app.
- */
+/** The main navigation host for the app. */
 @Composable
 fun Home(
     snackbarHostState: SnackbarHostState,
@@ -372,14 +379,14 @@ fun Home(
     // dependencies
     val activity = LocalView.current.context as MainActivity
     val clazz = calculateWindowSizeClass(activity = activity)
-    val current = navController.currentDestination
+    val current by navController.currentBackStackEntryAsState()
 
     // properties
     val style = (activity as SystemFacade).style
-    val requiresNavBar = when (style.flagAppNavBar) {
+    val requiresNavBar = when (style.flagNavBarVisibility) {
         WindowStyle.FLAG_APP_NAV_BAR_HIDDEN -> false
         WindowStyle.FLAG_APP_NAV_BAR_VISIBLE -> true
-        else -> current?.domain in DOMAINS_REQUIRING_NAV_BAR  // auto
+        else -> current?.destination?.domain in DOMAINS_REQUIRING_NAV_BAR  // auto
     }
     // Determine the screen orientation.
     // This check assesses whether to display NavRail or BottomBar.

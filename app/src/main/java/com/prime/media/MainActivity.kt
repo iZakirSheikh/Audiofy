@@ -32,7 +32,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,8 +54,6 @@ import com.prime.media.common.SystemFacade
 import com.prime.media.common.WindowStyle
 import com.prime.media.common.domain
 import com.prime.media.common.products
-import com.prime.media.console.RouteConsole
-import com.prime.media.library.RouteLibrary
 import com.prime.media.settings.Settings
 import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.getText2
@@ -139,6 +137,7 @@ private inline fun <S, O> Preferences.observeAsState(key: Key<S, O>): State<O?> 
  * @property isAuthenticationRequired A boolean flag indicating whether authentication is required.
  */
 class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
+
     private val snackbarHostState: SnackbarHostState by inject()
     private val preferences: Preferences by inject()
     private var navController: NavHostController? = null
@@ -147,20 +146,14 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     private val paymaster by lazy {
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, Paymaster.products)
     }
+    //
+    private var _style by mutableIntStateOf(WindowStyle.FLAG_STYLE_AUTO)
+    override var style: WindowStyle
+        get() = WindowStyle(_style)
+        set(value) { _style = value.value }
 
-    override var style: WindowStyle by mutableStateOf(WindowStyle())
     var inAppUpdateProgress by mutableFloatStateOf(Float.NaN)
         private set
-
-    override fun onResume() {
-        super.onResume()
-        paymaster.sync()
-    }
-
-    override fun onDestroy() {
-        paymaster.release()
-        super.onDestroy()
-    }
 
     override fun showToast(message: String, duration: Int) =
         showPlatformToast(message, duration)
@@ -221,6 +214,12 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
 
     override fun launch(intent: Intent, options: Bundle?) =
         startActivity(intent, options)
+
+    override fun initiatePurchaseFlow(id: String) =
+        paymaster.initiatePurchaseFlow(this, id)
+
+    override fun getProductInfo(id: String): Product? =
+        paymaster.details.value.find { it.id == id }
 
     override fun launchUpdateFlow(report: Boolean) {
         val manager = AppUpdateManagerFactory.create(this@MainActivity)
@@ -318,12 +317,6 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }
     }
 
-    override fun initiatePurchaseFlow(id: String) =
-        paymaster.initiatePurchaseFlow(this, id)
-
-    override fun getProductInfo(id: String): Product? =
-        paymaster.details.value.find { it.id == id }
-
     override fun onDestinationChanged(
         cont: NavController,
         dest: NavDestination,
@@ -342,8 +335,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     ) {
         // This function is designed to display promotional messages identified by index.
         // - An index of 0 indicates the "What's New" message.
-        // - An index of 1 is used to promote the media player.
-        // - An index of 2 prompts the user to buy a coffee.
+        // - An index of 1 prompts the user to buy a coffee.
         // If a message cannot be displayed for any reason, the index is incremented by 1 until the
         // maximum index is reached.
         lifecycleScope.launch {
@@ -367,6 +359,17 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             delay(200)
             // play it
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // trigger sync in paymaster
+        paymaster.sync()
+    }
+
+    override fun onDestroy() {
+        paymaster.release()
+        super.onDestroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -431,10 +434,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             // of whether the app is currently locked or not. This allows
             // users to view shared media directly.
             // else If authentication is required, move to the lock screen
-            Home(
-                snackbarHostState,
-                navController
-            )
+            Home(snackbarHostState, navController)
             // Manage lifecycle-related events and listeners
             DisposableEffect(Unit) {
                 navController.addOnDestinationChangedListener(this@MainActivity)

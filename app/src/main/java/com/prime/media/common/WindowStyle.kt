@@ -20,13 +20,8 @@
 
 package com.prime.media.common
 
+import androidx.compose.runtime.Stable
 import com.prime.media.common.WindowStyle.Companion.FLAG_STYLE_AUTO
-
-// Shift and mask constants for 2-bit fields
-private const val SYSTEM_BARS_VISIBILITY_MASK = 0b11000000
-private const val SYSTEM_BARS_APPEARANCE_MASK = 0b00110000
-private const val SYSTEM_BARS_BG_MASK = 0b00001100
-private const val APP_NAV_BAR_MASK = 0b00000011
 
 // Note to myself
 /*
@@ -46,84 +41,79 @@ private const val APP_NAV_BAR_MASK = 0b00000011
  */
 
 /**
- * A value class that encapsulates window style flags for system bars visibility, appearance,
- * background, and app navigation bar visibility.
+ * A value class that encapsulates window style flags for various UI elements.
  *
- * @property flags The integer representation of the window style flags, defaulting to [FLAG_STYLE_AUTO].
+ * @property value The integer representation of the window style flags, defaulting to [FLAG_STYLE_AUTO].
+ * @property flagNavBarVisibility Current App Nav Bar Visibility state as a normalized 3-bit code: AUTO, VISIBLE, HIDDEN
+ * @property flagSystemBarBackground Current System Bars Background state as a normalized 3-bit code: AUTO, TRANSPARENT, TRANSLUCENT
+ * @property flagSystemBarAppearance Current System Bars Appearance state as a normalized 3-bit code:, AUTO, LIGHT, DARK
+ * @property flagSystemBarVisibility Current System Bars Visibility state as a normalized 3-bit code:, AUTO, VISIBLE, HIDDEN
+ * @property flagNavBarPosition Current App Nav Bar Orientation state as a normalized 2-bit code: NONE, SIDE, BOTTOM
+ * @property flagFabVisibility Current FAB Visibility state as a normalized 3-bit code:, AUTO, VISIBLE, HIDDEN
  */
 @JvmInline
-value class WindowStyle(private val flags: Int = FLAG_STYLE_AUTO) {
-    /**
-     * Companion object holding constants for window style flags, used to configure system bars
-     * visibility, appearance, background, and app navigation bar visibility.
-     *
-     * These flags are represented as bitfields occupying specific bits in an integer value.
-     *
-     * @property FLAG_STYLE_AUTO Automatically applies the default window style.
-     *
-     * @property FLAG_SYSTEM_BARS_VISIBILITY_AUTO Automatically applies the default system bars visibility setting.
-     * @property FLAG_SYSTEM_BARS_VISIBLE Makes the system bars (status and navigation) visible. Occupies bit 6.
-     * @property FLAG_SYSTEM_BARS_HIDDEN Hides the system bars (status and navigation). Occupies bit 7.
-     *
-     * @property FLAG_SYSTEM_BARS_APPEARANCE_AUTO Automatically applies the default system bars appearance setting.
-     * @property FLAG_SYSTEM_BARS_APPEARANCE_LIGHT Sets the system bars' appearance to light mode. Occupies bit 4.
-     * @property FLAG_SYSTEM_BARS_APPEARANCE_DARK Sets the system bars' appearance to dark mode. Occupies bit 5.
-     *
-     * @property FLAG_SYSTEM_BARS_BG_AUTO Automatically applies the default system bars background setting.
-     * @property FLAG_SYSTEM_BARS_BG_TRANSPARENT Makes the system bars' background transparent. Occupies bit 2.
-     * @property FLAG_SYSTEM_BARS_BG_TRANSLUCENT Makes the system bars' background translucent. Occupies bit 3.
-     *
-     * @property FLAG_APP_NAV_BAR_AUTO Automatically applies the default app navigation bar visibility setting.
-     * @property FLAG_APP_NAV_BAR_VISIBLE Makes the app navigation bar visible. Occupies bit 0.
-     * @property FLAG_APP_NAV_BAR_HIDDEN Hides the app navigation bar. Occupies bit 1.
-     */
+@Stable
+value class WindowStyle(val value: Int = FLAG_STYLE_AUTO) {
+    //
     companion object {
-        val FLAG_STYLE_AUTO = 0b00000000
+        // 3-bit field masks using bit positions:
+        private const val NAV_BAR_VISIBILITY_MASK = 0b111 shl 0    // Bits 0–2  (3 bits)
+        private const val SYSTEM_BARS_BG_MASK = 0b111 shl 3    // Bits 3–5  (3 bits)
+        private const val SYSTEM_BARS_APPEARANCE_MASK = 0b111 shl 6    // Bits 6–8  (3 bits)
+        private const val SYSTEM_BARS_VISIBILITY_MASK = 0b111 shl 9    // Bits 9–11 (3 bits)
+        private const val NAV_BAR_POSITION_MASK = 0b11 shl 12   // Bits 12–13 (2 bits)
+        private const val FAB_VISIBILITY_MASK = 0b111 shl 14   // Bits 14–16 (3 bits)
 
-        // Flag 1: System Bars Visibility (Bits 6-7)
-        val FLAG_SYSTEM_BARS_VISIBILITY_AUTO = FLAG_STYLE_AUTO
-        val FLAG_SYSTEM_BARS_VISIBLE = 0b01000000 // Bits 6
-        val FLAG_SYSTEM_BARS_HIDDEN = 0b10000000 // Bit 7
+        // Field 1: App Nav Bar Visibility (bits 0–2)
+        const val FLAG_APP_NAV_BAR_VISIBILITY_AUTO = 0b100 shl 0  // AUTO  = bit 2
+        const val FLAG_APP_NAV_BAR_VISIBLE = 0b010 shl 0  // VISIBLE = bit 1
+        const val FLAG_APP_NAV_BAR_HIDDEN = 0b001 shl 0  // HIDDEN  = bit 0
 
-        // Flag 2: System Bars Appearance (Bits 4-5)
-        val FLAG_SYSTEM_BARS_APPEARANCE_AUTO = FLAG_STYLE_AUTO
-        val FLAG_SYSTEM_BARS_APPEARANCE_LIGHT = 0b00010000 // Bit 4
-        val FLAG_SYSTEM_BARS_APPEARANCE_DARK = 0b00100000 // Bit 5
+        // Field 2: System Bars Background (bits 3–5)
+        const val FLAG_SYSTEM_BARS_BG_AUTO = 0b100 shl 3  // AUTO       = bit 5
+        const val FLAG_SYSTEM_BARS_BG_TRANSPARENT = 0b001 shl 3  // TRANSPARENT = bit 3
+        const val FLAG_SYSTEM_BARS_BG_TRANSLUCENT = 0b010 shl 3  // TRANSLUCENT = bit 4
 
-        // Flag 3: System Bars Background (Bits 2-3)
-        val FLAG_SYSTEM_BARS_BG_AUTO = FLAG_STYLE_AUTO
-        val FLAG_SYSTEM_BARS_BG_TRANSPARENT = 0b00000100 // Bit 2
-        val FLAG_SYSTEM_BARS_BG_TRANSLUCENT = 0b00001000 // Bit 3
+        // Field 3: System Bars Appearance (bits 6–8)
+        const val FLAG_SYSTEM_BARS_APPEARANCE_AUTO = 0b100 shl 6  // AUTO  = bit 8
+        const val FLAG_SYSTEM_BARS_APPEARANCE_LIGHT = 0b001 shl 6  // LIGHT = bit 6
+        const val FLAG_SYSTEM_BARS_APPEARANCE_DARK = 0b010 shl 6  // DARK  = bit 7
 
-        // Flag 4: App Nav Bar (Bits 0-1)
-        val FLAG_APP_NAV_BAR_AUTO = FLAG_STYLE_AUTO
-        val FLAG_APP_NAV_BAR_VISIBLE = 0b00000001 // Bit 0
-        val FLAG_APP_NAV_BAR_HIDDEN = 0b00000010 // Bit 1
+        // Field 4: System Bars Visibility (bits 9–11)
+        const val FLAG_SYSTEM_BARS_VISIBILITY_AUTO = 0b100 shl 9  // AUTO    = bit 11
+        const val FLAG_SYSTEM_BARS_VISIBLE = 0b010 shl 9  // VISIBLE = bit 10
+        const val FLAG_SYSTEM_BARS_HIDDEN = 0b001 shl 9  // HIDDEN  = bit 9
+
+        // Field 5: App Nav Bar Position (bits 12–13)
+        const val FLAG_NAV_BAR_POSITION_NONE = 0b00 shl 12 // NONE       = bits 12–13 cleared
+        const val FLAG_NAV_BAR_POSITION_SIDE = 0b01 shl 12 // SIDE       = bit 12
+        const val FLAG_NAV_BAR_POSITION_BOTTOM = 0b10 shl 12 // BOTTOM     = bit 13
+
+        // Field 6: FAB Visibility (bits 14–16)
+        const val FLAG_FAB_VISIBILITY_AUTO = 0b100 shl 14  // AUTO    = bit 16
+        const val FLAG_FAB_VISIBLE = 0b010 shl 14  // VISIBLE = bit 15
+        const val FLAG_FAB_HIDDEN = 0b001 shl 14  // HIDDEN  = bit 14
+
+        // Combined “all‐AUTO” default style (include FAB if desired)
+        const val FLAG_STYLE_AUTO =
+            FLAG_SYSTEM_BARS_APPEARANCE_AUTO or
+                    FLAG_SYSTEM_BARS_BG_AUTO or
+                    FLAG_SYSTEM_BARS_VISIBILITY_AUTO or
+                    FLAG_APP_NAV_BAR_VISIBILITY_AUTO or
+                    FLAG_NAV_BAR_POSITION_NONE or
+                    FLAG_FAB_VISIBILITY_AUTO
+
+        private fun maskOf(flag: Int): Int =
+            when (flag) {
+                FLAG_APP_NAV_BAR_VISIBILITY_AUTO, FLAG_APP_NAV_BAR_VISIBLE, FLAG_APP_NAV_BAR_HIDDEN -> NAV_BAR_VISIBILITY_MASK
+                FLAG_SYSTEM_BARS_BG_AUTO, FLAG_SYSTEM_BARS_BG_TRANSPARENT, FLAG_SYSTEM_BARS_BG_TRANSLUCENT -> SYSTEM_BARS_BG_MASK
+                FLAG_SYSTEM_BARS_APPEARANCE_AUTO, FLAG_SYSTEM_BARS_APPEARANCE_LIGHT, FLAG_SYSTEM_BARS_APPEARANCE_DARK -> SYSTEM_BARS_APPEARANCE_MASK
+                FLAG_SYSTEM_BARS_VISIBILITY_AUTO, FLAG_SYSTEM_BARS_VISIBLE, FLAG_SYSTEM_BARS_HIDDEN -> SYSTEM_BARS_VISIBILITY_MASK
+                FLAG_NAV_BAR_POSITION_NONE, FLAG_NAV_BAR_POSITION_SIDE, FLAG_NAV_BAR_POSITION_BOTTOM -> NAV_BAR_POSITION_MASK
+                FLAG_FAB_VISIBILITY_AUTO, FLAG_FAB_VISIBLE, FLAG_FAB_HIDDEN -> FAB_VISIBILITY_MASK
+                else -> throw IllegalArgumentException("Unknown flag: $flag")
+            }
     }
-
-    /**
-     * Retrieves the System Bars Visibility flag (Bits 6-7)
-     */
-    val flagSystemBarVisibility: Int
-        get() = (flags and SYSTEM_BARS_VISIBILITY_MASK)
-
-    /**
-     * Retrieves the System Bars Appearance flag (Bits 4-5)
-     */
-    val flagSystemBarAppearance: Int
-        get() = (flags and SYSTEM_BARS_APPEARANCE_MASK)
-
-    /**
-     * Retrieves the System Bars Background flag (Bits 2-3)
-     */
-    val flagSystemBarBackground: Int
-        get() = (flags and SYSTEM_BARS_BG_MASK)
-
-    /**
-     * Retrieves the App Nav Bar flag (Bits 0-1)
-     */
-    val flagAppNavBar: Int
-        get() = (flags and APP_NAV_BAR_MASK)
 
     /**
      * Adds a flag to the current window style, ensuring only relevant bits are set.
@@ -133,8 +123,8 @@ value class WindowStyle(private val flags: Int = FLAG_STYLE_AUTO) {
      * @return A new [WindowStyle] instance with the added flag.
      */
     operator fun plus(flag: Int): WindowStyle {
-        val mask = getMaskForFlag(flag)
-        return WindowStyle((flags and mask.inv()) or (flag and mask))
+        val mask = maskOf(flag)
+        return WindowStyle((value and mask.inv()) or (flag and mask))
     }
 
     /**
@@ -145,30 +135,18 @@ value class WindowStyle(private val flags: Int = FLAG_STYLE_AUTO) {
      * @return A new [WindowStyle] instance with the removed flag.
      */
     operator fun minus(flag: Int): WindowStyle {
-        val mask = getMaskForFlag(flag)
-        return WindowStyle(flags and mask.inv())
-    }
-
-    /**
-     * Retrieves the mask corresponding to a given flag.
-     *
-     * @param flag The flag for which the mask is to be retrieved.
-     * @throws IllegalArgumentException If the flag is not recognized.
-     * @return The mask corresponding to the provided flag.
-     */
-    private fun getMaskForFlag(flag: Int): Int {
-        return when (flag) {
-            FLAG_SYSTEM_BARS_VISIBLE, FLAG_SYSTEM_BARS_HIDDEN, FLAG_SYSTEM_BARS_VISIBILITY_AUTO -> SYSTEM_BARS_VISIBILITY_MASK
-            FLAG_SYSTEM_BARS_APPEARANCE_LIGHT, FLAG_SYSTEM_BARS_APPEARANCE_DARK, FLAG_SYSTEM_BARS_APPEARANCE_AUTO -> SYSTEM_BARS_APPEARANCE_MASK
-            FLAG_SYSTEM_BARS_BG_TRANSPARENT, FLAG_SYSTEM_BARS_BG_TRANSLUCENT, FLAG_SYSTEM_BARS_BG_AUTO -> SYSTEM_BARS_BG_MASK
-            FLAG_APP_NAV_BAR_VISIBLE, FLAG_APP_NAV_BAR_HIDDEN, FLAG_APP_NAV_BAR_AUTO -> APP_NAV_BAR_MASK
-            else -> throw IllegalArgumentException("Unknown flag: $flag")
-        }
+        val mask = maskOf(flag)
+        return WindowStyle(value and mask.inv())
     }
 
     override fun toString(): String {
-        return flags.toString(2)
+        return "WindowStyle(value=$value)"
     }
+
+    val flagNavBarVisibility: Int get() = (value and NAV_BAR_VISIBILITY_MASK) shr 0
+    val flagSystemBarBackground: Int get() = (value and SYSTEM_BARS_BG_MASK) shr 3
+    val flagSystemBarAppearance: Int get() = (value and SYSTEM_BARS_APPEARANCE_MASK) shr 6
+    val flagSystemBarVisibility: Int get() = (value and SYSTEM_BARS_VISIBILITY_MASK) shr 9
+    val flagNavBarPosition: Int get() = (value and NAV_BAR_POSITION_MASK) shr 12
+    val flagFabVisibility: Int get() = (value and FAB_VISIBILITY_MASK) shr 14
 }
-
-

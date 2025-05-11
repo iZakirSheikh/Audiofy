@@ -101,7 +101,6 @@ private val ColorSaver = object : IntSaver<Color> {
 object RouteSettings : Route
 
 object Settings {
-
     const val PREFIX_MARKET_URL = "market://details?id="
     const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
     const val PKG_MARKET_ID = "com.android.vending"
@@ -113,7 +112,6 @@ object Settings {
         data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
         putExtra(Intent.EXTRA_SUBJECT, subject)
     }
-
     val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW) {
         data =
             Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
@@ -230,5 +228,3 @@ object Settings {
 interface SettingsViewState {
     fun <S, O> set(key: Key<S, O>, value: O)
 }
-
-
