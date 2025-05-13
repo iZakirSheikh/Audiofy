@@ -20,23 +20,27 @@ package com.prime.media
 
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FeaturedPlayList
+import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Weekend
+import androidx.compose.material.icons.outlined.Headset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
@@ -53,6 +57,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.common.NightMode
 import com.prime.media.common.Route
@@ -63,20 +68,20 @@ import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.LocalSystemFacade
 import com.prime.media.common.compose.background
 import com.prime.media.common.compose.composable
-import com.prime.media.common.compose.observe
 import com.prime.media.common.compose.preference
-import com.prime.media.common.compose.rememberBackgroundProvider
+import com.prime.media.common.compose.rememberAcrylicSurface
+import com.prime.media.common.compose.source
 import com.prime.media.common.domain
 import com.prime.media.common.shapes.EndConcaveShape
-import com.prime.media.console.Console
 import com.prime.media.console.RouteConsole
-import com.prime.media.impl.ConsoleViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
 import com.prime.media.library.RouteLibrary
+import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
+import com.prime.media.videos.RouteVideos
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.ClaretViolet
 import com.zs.compose.foundation.textResource
@@ -85,7 +90,6 @@ import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.OutlinedButton
-import com.zs.compose.theme.WindowSize
 import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.adaptive.NavigationSuiteScaffold
 import com.zs.compose.theme.appbar.AppBarDefaults
@@ -101,6 +105,8 @@ import com.zs.compose.theme.text.Label
 import com.zs.core.common.checkSelfPermissions
 import com.zs.core.common.isAppearanceLightSystemBars
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient as hGradient
+import androidx.compose.ui.graphics.Brush.Companion.verticalGradient as vGradient
 import com.google.accompanist.permissions.rememberMultiplePermissionsState as Permissions
 
 private const val TAG = "Home"
@@ -115,7 +121,7 @@ private val NavRailShape = EndConcaveShape(16.dp)
 
 private val RailBorder = BorderStroke(
     0.5.dp,
-    Brush.horizontalGradient(
+    hGradient(
         listOf(
             Color.Transparent,
             Color.Transparent,
@@ -124,15 +130,6 @@ private val RailBorder = BorderStroke(
         )
     )
 )
-
-/**
- * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
- *
- * @param rail Boolean indicating whether to consume the navigation rail width.
- * @return [WindowSize] with the specified dimension consumed.
- */
-private fun WindowSize.consume(rail: Boolean) =
-    if (rail) consume(width = NAV_RAIL_MIN_WIDTH) else consume(height = BOTTOM_NAV_MIN_HEIGHT)
 
 /**
  * Provides a [Density] object that reflects the user's preferred font scale.
@@ -180,7 +177,7 @@ private fun NavController.toRoute(route: Route) {
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteLibrary.domain, RouteSettings.domain)
+    arrayOf(RouteLibrary.domain, RouteAudios.domain, RouteVideos.domain, RoutePlaylists.domain)
 
 /**
  * List of permissions required to run the app.
@@ -266,13 +263,10 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         val viewModel = koinViewModel<SettingsViewModel>()
         Settings(viewModel)
     }
-
-    // Console
-    composable(RouteConsole) {
-        val viewModel = koinViewModel<ConsoleViewModel>()
-        Console(viewModel)
-    }
 }
+
+
+private val NavIconSize = Modifier.size(20.dp)
 
 /**
  * A composable function that represents a navigation bar, combining both rail and bottom bar elements.
@@ -292,9 +286,11 @@ private fun NavigationBar(
 ) {
     // Get the current theme colors
     val colors = AppTheme.colors
-    val routes = @Composable {
+    val navItems = @Composable {
         // Get the current navigation destination from NavController
         val current by navController.currentBackStackEntryAsState()
+        val facade = LocalSystemFacade.current
+        val domain = current?.destination?.domain
         val colors = NavigationItemDefaults.colors(
             selectedIndicatorColor = if (contentColor == colors.onAccent) contentColor.copy(
                 ContentAlpha.indication
@@ -303,38 +299,78 @@ private fun NavigationBar(
             unselectedIconColor = if (contentColor == colors.onAccent) colors.onAccent else colors.onBackground,
             unselectedTextColor = if (contentColor == colors.onAccent) colors.onAccent else colors.onBackground
         )
-        val domain = current?.destination?.domain
 
-        // Required to launch review.
-        val facade = LocalSystemFacade.current
-
-        // Timeline
+        // Library
         NavigationItem(
             label = { Label(text = textResource(R.string.home)) },
-            icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Weekend,
+                    contentDescription = null,
+                    modifier = NavIconSize
+                )
+            },
             selected = domain == RouteLibrary.domain,
-            onClick = { facade.launchReviewFlow(); navController.toRoute(RouteLibrary) },
+            onClick = { facade.initiateReviewFlow(); navController.toRoute(RouteLibrary) },
             isBottomNav = isBottomNav,
             colors = colors
         )
 
-        // Settings
+        // Audios
         NavigationItem(
-            label = { Label(text = textResource(R.string.settings)) },
-            icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
-            selected = domain == RouteSettings.domain,
-            onClick = { facade.launchReviewFlow(); navController.toRoute(RouteSettings) },
+            label = { Label(text = textResource(R.string.audios)) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.Headset,
+                    contentDescription = null,
+                    modifier = NavIconSize
+                )
+            },
+            selected = domain == RouteAudios.domain,
+            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
             isBottomNav = isBottomNav,
             colors = colors
         )
+
+        // Videos
+        NavigationItem(
+            label = { Label(text = textResource(R.string.videos)) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Subscriptions,
+                    contentDescription = null,
+                    modifier = NavIconSize
+                )
+            },
+            selected = domain == RouteVideos.domain,
+            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
+            isBottomNav = isBottomNav,
+            colors = colors
+        )
+
+        // Playlists
+        NavigationItem(
+            label = { Label(text = textResource(R.string.playlists)) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.FeaturedPlayList,
+                    contentDescription = null,
+                    modifier = NavIconSize
+                )
+            },
+            selected = domain == RoutePlaylists.domain,
+            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
+            isBottomNav = isBottomNav,
+            colors = colors
+        )
+
     }
     // Load appropriate navigation bar.
     when {
         !isBottomNav -> SideBar(
             modifier = Modifier
-                .width(NAV_RAIL_MIN_WIDTH)
-                .clip(NavRailShape)
-                .then(modifier),
+                .then(modifier)
+                .width(NAV_RAIL_MIN_WIDTH),
             windowInsets = AppBarDefaults.sideBarWindowInsets,
             contentColor = contentColor,
             border = RailBorder,
@@ -343,9 +379,7 @@ private fun NavigationBar(
             elevation = 0.dp,
             content = {
                 // Display routes at the top of the navRail.
-                routes()
-                // Some Space between naves and Icon.
-                Spacer(modifier = Modifier.weight(1f))
+                navItems()
             },
         )
 
@@ -355,7 +389,7 @@ private fun NavigationBar(
             elevation = 12.dp,
             border = BorderStroke(
                 0.5.dp,
-                Brush.verticalGradient(
+                vGradient(
                     listOf(
                         if (colors.isLight) colors.background else Color.Gray.copy(0.24f),
                         if (colors.isLight) colors.background.copy(0.3f) else Color.Gray.copy(0.075f),
@@ -365,7 +399,7 @@ private fun NavigationBar(
             shape = CircleShape,
             modifier = modifier.padding(bottom = ContentPadding.medium),
             // Display routes at the contre of available space
-            content = { routes() }
+            content = { navItems() }
         )
     }
 }
@@ -373,6 +407,7 @@ private fun NavigationBar(
 /** The main navigation host for the app. */
 @Composable
 fun Home(
+    origin: Route,
     snackbarHostState: SnackbarHostState,
     navController: NavHostController,
 ) {
@@ -383,7 +418,7 @@ fun Home(
 
     // properties
     val style = (activity as SystemFacade).style
-    val requiresNavBar = when (style.flagNavBarVisibility) {
+    val isNavBarRequired = when (style.flagNavBarVisibility) {
         WindowStyle.FLAG_APP_NAV_BAR_HIDDEN -> false
         WindowStyle.FLAG_APP_NAV_BAR_VISIBLE -> true
         else -> current?.destination?.domain in DOMAINS_REQUIRING_NAV_BAR  // auto
@@ -394,14 +429,13 @@ fun Home(
     // Consider this scenario: a large screen that fits the mobile description, like a desktop screen in portrait mode.
     // In this case, maybe showing the BottomBar is preferable!
     val portrait = clazz.width < Category.Medium
-    val provider = rememberBackgroundProvider()
-
+    val surface = rememberAcrylicSurface()
     // content
     val content = @Composable {
         NavigationSuiteScaffold(
             vertical = portrait,
             snackbarHostState = snackbarHostState,
-            hideNavigationBar = !requiresNavBar,
+            hideNavigationBar = !isNavBarRequired,
             containerColor = AppTheme.colors.background,
             progress = activity.inAppUpdateProgress,
             // Set up the navigation bar using the NavBar composable
@@ -413,7 +447,7 @@ fun Home(
                     when {
                         useAccent -> Background(colors.accent)
                         !portrait -> Background(colors.background(2.dp))
-                        else -> colors.background(provider)
+                        else -> colors.background(surface)
                     },
                     if (useAccent) colors.onAccent else colors.onBackground,
                     navController,
@@ -426,14 +460,15 @@ fun Home(
                 val granted = activity.checkSelfPermissions(REQUIRED_PERMISSIONS)
                 NavHost(
                     navController = navController,
-                    startDestination = if (!granted) RoutePermission() else RouteLibrary(),
+                    startDestination = if (origin != RouteConsole && !granted) RoutePermission() else origin(),
                     builder = navGraphBuilder,
-                    modifier = Modifier.observe(provider)
+                    modifier = Modifier.source(surface),
+                    enterTransition = { scaleIn(tween(220, 90), 0.98f) + fadeIn(tween(700)) },
+                    exitTransition = { fadeOut(tween(700)) },
                 )
             }
         )
     }
-
     // Check if light theme is preferred
     val isDark = run {
         val mode by activity.observeAsState(key = Settings.NIGHT_MODE)
@@ -443,7 +478,6 @@ fun Home(
             NightMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         }
     }
-
     // Setup App Theme and provide necessary dependencies.
     // Provide the navController and window size class to child composable.
     val strategy by activity.observeAsState(Settings.COLORIZATION_STRATEGY)
@@ -465,12 +499,15 @@ fun Home(
                 LocalNavController provides navController,
                 LocalSystemFacade provides (activity as SystemFacade),
                 LocalDensity provides activity.density,
-                LocalWindowSize provides if (!requiresNavBar) clazz else clazz.consume(!portrait),
+                LocalWindowSize provides when {
+                    !isNavBarRequired -> clazz
+                    !portrait -> clazz.consume(BOTTOM_NAV_MIN_HEIGHT)
+                    else -> clazz.consume(NAV_RAIL_MIN_WIDTH)
+                },
                 content = content
             )
         }
     )
-
     // Observe the state of the IMMERSE_VIEW setting
     // Observe the state of the IMMERSE_VIEW setting
     val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)

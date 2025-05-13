@@ -16,10 +16,8 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.prime.media.audios.directory
 
 import com.prime.media.common.Route
 
-object RouteConsole: Route
-
-interface ConsoleViewState
+object RouteAlbums: Route

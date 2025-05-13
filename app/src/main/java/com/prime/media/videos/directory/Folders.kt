@@ -16,10 +16,15 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.prime.media.videos.directory
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.prime.media.common.Route
 
-object RouteConsole: Route
+object RouteVideoFolders: Route
 
-interface ConsoleViewState
+@Composable
+fun Folders(modifier: Modifier = Modifier) {
+
+}

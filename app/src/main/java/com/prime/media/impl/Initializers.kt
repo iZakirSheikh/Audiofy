@@ -28,6 +28,8 @@ import coil3.request.crossfade
 import com.prime.media.R
 import com.prime.media.settings.Settings
 import com.zs.compose.theme.snackbar.SnackbarHostState
+import com.zs.core.db.playlists.Playlists
+import com.zs.core.playback.Relay
 import com.zs.core.store.MediaProvider
 import com.zs.core.telemetry.Analytics
 import com.zs.preferences.Preferences
@@ -121,6 +123,8 @@ private val KoinAppModules = module {
     // viewModel { BatteryViewModel(get()) }
     singleOf(::SnackbarHostState)
     single { Analytics(get()) }
+    single { Playlists(get()) }
+    single { Relay(get()) }
 
     //
     factory { MediaProvider(get()) }
@@ -128,5 +132,4 @@ private val KoinAppModules = module {
 
     viewModelOf(::LibraryViewModel)
     viewModelOf(::SettingsViewModel)
-    viewModelOf(::ConsoleViewModel)
 }

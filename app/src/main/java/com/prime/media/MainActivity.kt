@@ -54,6 +54,8 @@ import com.prime.media.common.SystemFacade
 import com.prime.media.common.WindowStyle
 import com.prime.media.common.domain
 import com.prime.media.common.products
+import com.prime.media.console.RouteConsole
+import com.prime.media.library.RouteLibrary
 import com.prime.media.settings.Settings
 import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.getText2
@@ -67,6 +69,8 @@ import com.zs.core.billing.Purchase
 import com.zs.core.common.getPackageInfoCompat
 import com.zs.core.common.logEvent
 import com.zs.core.common.showPlatformToast
+import com.zs.core.playback.MediaFile
+import com.zs.core.playback.Relay
 import com.zs.core.telemetry.Analytics
 import com.zs.preferences.Key
 import com.zs.preferences.Key.Key1
@@ -133,8 +137,6 @@ private inline fun <S, O> Preferences.observeAsState(key: Key<S, O>): State<O?> 
  *        The progress value is a float between 0.0 and 1.0, indicating the percentage of the
  *        update that has been completed. The Float.NaN represents a default value when no update
  *        is going on.
- * @property timeAppWentToBackground The time in mills until the app was in background state. default value -1L
- * @property isAuthenticationRequired A boolean flag indicating whether authentication is required.
  */
 class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
 
@@ -142,15 +144,20 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     private val preferences: Preferences by inject()
     private var navController: NavHostController? = null
     private val analytics: Analytics by inject()
-
     private val paymaster by lazy {
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, Paymaster.products)
     }
+
+    // This needs to be a non- private; because i require this in composable mini-player.
+    val relay: Relay by inject()
+
     //
     private var _style by mutableIntStateOf(WindowStyle.FLAG_STYLE_AUTO)
     override var style: WindowStyle
         get() = WindowStyle(_style)
-        set(value) { _style = value.value }
+        set(value) {
+            _style = value.value
+        }
 
     var inAppUpdateProgress by mutableFloatStateOf(Float.NaN)
         private set
@@ -221,7 +228,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     override fun getProductInfo(id: String): Product? =
         paymaster.details.value.find { it.id == id }
 
-    override fun launchUpdateFlow(report: Boolean) {
+    override fun initiateUpdateFlow(report: Boolean) {
         val manager = AppUpdateManagerFactory.create(this@MainActivity)
         manager.requestUpdateFlow().onEach { result ->
             when (result) {
@@ -283,7 +290,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }.launchIn(lifecycleScope)
     }
 
-    override fun launchReviewFlow() {
+    override fun initiateReviewFlow() {
         lifecycleScope.launch {
             // Get the app launch count from preferences.
             val count = preferences[Settings.KEY_LAUNCH_COUNTER]
@@ -317,18 +324,6 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }
     }
 
-    override fun onDestinationChanged(
-        cont: NavController,
-        dest: NavDestination,
-        args: Bundle?,
-    ) {
-        analytics.logEvent(Analytics.EVENT_SCREEN_VIEW) {
-            // create params for the event.
-            val domain = dest.domain ?: "unknown"
-            putString(Analytics.PARAM_SCREEN_NAME, domain)
-        }
-    }
-
     private fun showPromoToast(
         index: Int,
         delay: Long = 5_000,
@@ -351,25 +346,46 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        Log.d(TAG, "onNewIntent: $intent")
+        // Check if the intent action is not ACTION_VIEW; if so, return.
         if (intent.action != Intent.ACTION_VIEW)
             return
+        // Obtain the URI from the incoming intent data.
+        val data = intent.data ?: return
+        // Use a coroutine to handle the media item construction and playback.
         lifecycleScope.launch {
-            // we delay it here because on resume loads lockscreen.
-            // we want this to overlay over lockscreen; hence this.
-            delay(200)
-            // play it
+            // Construct a MediaItem using the obtained parameters.
+            // (Currently, details about playback queue setup are missing.)
+            // TODO - Extract artwork using MediaMetaDataRetriever
+            val item = MediaFile(data, mimeType = intent.type)
+            // Play the media item by replacing the existing queue.
+            relay.set(listOf(item))
+            relay.play()
         }
+        // FixMe - Don't navigate if this is main intent; as we have already set it as origin.
+        navController?.navigate(RouteConsole())
     }
 
     override fun onResume() {
         super.onResume()
-        // trigger sync in paymaster
-        paymaster.sync()
+        paymaster.sync()  // trigger sync in paymaster
     }
 
     override fun onDestroy() {
-        paymaster.release()
+        paymaster.release() // Destroy it
         super.onDestroy()
+    }
+
+    override fun onDestinationChanged(
+        cont: NavController,
+        dest: NavDestination,
+        args: Bundle?,
+    ) {
+        analytics.logEvent(Analytics.EVENT_SCREEN_VIEW) {
+            // create params for the event.
+            val domain = dest.domain ?: "unknown"
+            putString(Analytics.PARAM_SCREEN_NAME, domain)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -383,7 +399,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         // Initialize
         if (isColdStart) {
             // Trigger update flow
-            launchUpdateFlow()
+            initiateUpdateFlow()
             // Promote media player on every 5th launch
             // TODO - properly handle promotional content.
             lifecycleScope.launch {
@@ -430,11 +446,12 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         // Set the content of the activity
         setContent {
             val navController = rememberNavController()
-            // If the action is VIEW, load the content first, regardless
-            // of whether the app is currently locked or not. This allows
-            // users to view shared media directly.
-            // else If authentication is required, move to the lock screen
-            Home(snackbarHostState, navController)
+            Home(
+                if (intent.action == Intent.ACTION_VIEW) RouteConsole
+                else RouteLibrary,
+                snackbarHostState,
+                navController
+            )
             // Manage lifecycle-related events and listeners
             DisposableEffect(Unit) {
                 navController.addOnDestinationChangedListener(this@MainActivity)

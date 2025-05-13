@@ -16,10 +16,25 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.zs.core.playback
 
-import com.prime.media.common.Route
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
+import com.zs.core.db.playlists.Playlists
 
-object RouteConsole: Route
+class Playback: MediaLibraryService() {
 
-interface ConsoleViewState
+    companion object {
+
+        private const val TAG = "Playback"
+
+
+
+
+
+    }
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        TODO("Not yet implemented")
+    }
+}

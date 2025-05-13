@@ -91,7 +91,7 @@
     <string name="original_artist">Original Artist</string>
     <string name="publisher">Publisher</string>
     <string name="start">Start</string>
-    <string name="videos">Videos <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></string>
+    <string name="videos">Videos</string>
     <string name="allow">Allow</string>
 
     <!--A plural represents how many items are there-->

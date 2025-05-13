@@ -89,6 +89,8 @@ interface MediaProvider {
         internal const val MEDIA_TYPE_AUDIO = MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO
 
         val EXTERNAL_CONTENT_URI = MediaStore.Files.getContentUri("external")
+        val EXTERNAL_AUDIO_URI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val EXTERNAL_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
 
         private val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
         fun buildAlbumArtUri(id: Long) = ContentUris.withAppendedId(sArtworkUri, id)

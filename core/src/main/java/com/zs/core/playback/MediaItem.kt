@@ -16,10 +16,5 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.zs.core.playback
 
-import com.prime.media.common.Route
-
-object RouteConsole: Route
-
-interface ConsoleViewState

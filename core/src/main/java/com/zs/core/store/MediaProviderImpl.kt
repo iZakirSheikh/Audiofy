@@ -311,26 +311,30 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         // On Android 10 and above, remove trashed items from the query to comply with scoped storage restrictions.
         // language = SQL
         val selection = buildString {
-            append("(${COLUMN_MEDIA_TYPE} = $MEDIA_TYPE_AUDIO) AND $ONLY_MUSIC_SELECTION")
+            append(ONLY_MUSIC_SELECTION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 append(" AND $COLUMN_IS_TRASHED != 1")
             // Filter by parent directory if provided.
-            if (parent != null) append(" AND $COLUMN_PATH LIKE ?")
+            // if (parent != null) append(" AND $COLUMN_PATH LIKE ?")
             // Add name filter if provided.
             if (filter != null)
-                append(" AND $COLUMN_NAME LIKE ?")
+                append(" AND $COLUMN_NAME || ${MediaProvider.COLUMN_AUDIO_ARTIST} || ${MediaProvider.COLUMN_AUDIO_ALBUM} LIKE ?")
         }
-        return resolver.getBucketAudios(
+        return resolver.query2(
+            uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection = AUDIO_PROJECTION,
+            ascending = ascending,
             selection = selection,
-            args = when {
-                filter != null && parent != null -> arrayOf("$parent%", "%$filter%")
-                filter == null && parent != null -> arrayOf("$parent%")
-                filter != null && parent == null -> arrayOf("%$filter%")
-                else -> null // when both are null
-            },
+            args = if (filter != null) arrayOf("%$filter%") else null,
             order = order,
             offset = offset,
             limit = limit,
+            transform = { c ->
+                List(c.count) {
+                    c.moveToPosition(it)
+                    Audio(c)
+                }
+            },
         )
     }
 

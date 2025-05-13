@@ -20,7 +20,6 @@ import com.zs.core.billing.Product
 import com.zs.core.billing.Purchase
 import com.zs.preferences.Key
 
-
 /**
  * An interface defining the methods and properties needed for common app functionality,
  * such as in-app updates, showing ads, and launching the app store.
@@ -77,8 +76,6 @@ interface SystemFacade {
      */
     fun launch(intent: Intent, options: Bundle? = null)
 
-
-
     /**
      * Launches the App Store to open the app details page for a given package.
      *
@@ -118,7 +115,7 @@ interface SystemFacade {
      * @param report If `true`, low-priority issues will be reported to the user using the
      *               ToastHostState channel.
      */
-    fun launchUpdateFlow(report: Boolean = false)
+    fun initiateUpdateFlow(report: Boolean = false)
 
     /**
      * Launches an in-app review process if appropriate.
@@ -126,7 +123,7 @@ interface SystemFacade {
      * This method ensures the review dialog is shown only at suitable intervals based on launch count and time since last prompt.
      * It considers [MIN_LAUNCH_COUNT], [MAX_DAYS_BEFORE_FIRST_REVIEW], and [MAX_DAYS_AFTER_FIRST_REVIEW] to prevent excessive prompting.
      */
-    fun launchReviewFlow()
+    fun initiateReviewFlow()
 
     /**
      * Returns the handle to a system-level service by name.

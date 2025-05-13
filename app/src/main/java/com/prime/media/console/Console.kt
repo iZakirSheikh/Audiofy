@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 10-05-2025.
+ * Created by Zakir Sheikh on 13-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 package com.prime.media.console
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 
 @Composable
 fun Console(viewState: ConsoleViewState) {

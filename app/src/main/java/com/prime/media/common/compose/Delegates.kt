@@ -18,8 +18,6 @@
 
 package com.prime.media.common.compose
 
-import android.annotation.SuppressLint
-import android.os.Build
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.core.AnimationConstants
@@ -35,14 +33,14 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -57,23 +55,14 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottiePainter
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
-import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.composableIf
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.Colors
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import com.zs.compose.theme.Placeholder
 import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.billing.Purchase
 import com.zs.preferences.Key
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeInputScale
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import kotlin.math.roundToInt
 
 private const val TAG = "Delegates"
@@ -195,98 +184,34 @@ inline fun Placeholder(
  * @param vertical `true` for top/bottom fade, `false` for left/right. Defaults to `true`.
  * @return A [Modifier] with the fading edge effect.
  */
+// TODO - Add logic to make fading edge apply/exclude content padding in real one.
 fun Modifier.fadingEdge2(
-    colors: List<Color>,
     length: Dp = 10.dp,
     vertical: Boolean = true,
-) = drawWithContent {
-    drawContent()
-    drawRect(Brush.verticalGradient(colors, endY = length.toPx()))
-    drawRect(Brush.verticalGradient(colors.reversed(), startY = (size.height - length.toPx())))
-}
-
-/** Creates and [remember] s the instance of [HazeState] */
-@Composable
-@NonRestartableComposable
-fun rememberBackgroundProvider() = remember(::HazeState)
-
-fun Modifier.observe(provider: HazeState) = hazeSource(state = provider)
-
-// Reusable mask
-private val PROGRESSIVE_MASK = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
-    Brush.verticalGradient(
-        listOf(
-            Color.Black,
-            Color.Black,
-            Color.Transparent
-        )
-    )
-else
-    Brush.verticalGradient(
-        0.5f to Color.Black,
-        0.8f to Color.Black.copy(0.5f),
-        1.0f to Color.Transparent,
-    )
-
-/**
- * Applies a hazy effect to the background based on the provided [HazeState].
- *
- * This function creates a blurred background with optional noise and tint effects. It provides customization options
- * for blur radius, noise factor, tint color, blend mode, and progressive blurring.
- *
- * @param provider The [HazeState] instance that manages the haze effect.
- * @param containerColor The background color of the container. Defaults to [Colors.background].
- * @param blurRadius The radius of the blur effect. Defaults to 38.dp for light backgrounds (luminance >= 0.5) and 60.dp for dark backgrounds.
- * @param noiseFactor The factor for the noise effect. Defaults to 0.4f for light backgrounds and 0.28f for dark backgrounds. Noise effect is disabled on Android versions below 12.
- * @param tint The color to tint the blurred background with. Defaults to a semi-transparent version of [containerColor].
- * @param blendMode The blend mode to use for the tint. Defaults to [BlendMode.SrcOver].
- * @param luminance controls the luminosity of the blured layer defaults to 0.07f. -1 disables it.
- * @param progressive A float value to control progressive blurring:
- *   - -1f: Progressive blurring is disabled.
- *   - 0f: Bottom to top gradient.
- *   - 1f: Top to bottom gradient.
- *   - Values between 0f and 1f: Intermediate gradient positions.
- *   Progressive blurring is only available on Android 12 and above.
- * @return A [Background] composable with the specified haze effect.
- */
-@SuppressLint("ModifierFactoryExtensionFunction")
-@OptIn(ExperimentalHazeApi::class)
-fun Colors.background(
-    provider: HazeState,
-    containerColor: Color = background(0.4.dp),
-    blurRadius: Dp = if (containerColor.luminance() >= 0.5f) 38.dp else 80.dp,
-    noiseFactor: Float = if (containerColor.luminance() >= 0.5f) 0.5f else 0.25f,
-    tint: Color = containerColor.copy(alpha = if (containerColor.luminance() >= 0.5) 0.63f else 0.65f),
-    luminance: Float = 0.07f,
-    blendMode: BlendMode = BlendMode.SrcOver,
-    progressive: Float = -1f,
-) = Background(
-    Modifier.hazeEffect(state = provider) {
-        this.blurEnabled = true
-        this.blurRadius = blurRadius
-        this.backgroundColor = containerColor
-        // Disable noise factor on Android versions below 12.
-        this.noiseFactor = noiseFactor
-        this.tints = buildList {
-            // apply luminosity just like in Microsoft Acrylic.
-            if (luminance != -1f)
-                this += HazeTint(Color.White.copy(0.07f), BlendMode.Luminosity)
-            this += HazeTint(tint, blendMode = blendMode)
-        }
-        // Configure progressive blurring (if enabled).
-        if (progressive != -1f) {
-            this.progressive = HazeProgressive.verticalGradient(
-                startIntensity = progressive,
-                endIntensity = 0f,
-                preferPerformance = true
+) =
+    graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+        .drawWithContent {
+            drawContent()
+            drawRect(
+                Brush.verticalGradient(
+                    listOf(Color.Black, Color.Transparent),
+                    endY = length.toPx(),
+                    startY = 0f
+                ),
+                blendMode = BlendMode.DstOut,
+                size = size.copy(height = length.toPx())
             )
-            // Adjust input scale for Android versions below 12 for better visuals.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
-                inputScale = HazeInputScale.Fixed(0.5f)
-            mask = PROGRESSIVE_MASK
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color.Black),
+                    startY = size.height - length.toPx(),
+                    endY = size.height
+                ),
+                //  topLeft = Offset(0f, size.height - length.toPx()),
+                // size = size.copy(height = length.toPx()),
+                blendMode = BlendMode.DstOut
+            )
         }
-    }
-)
 
 /**
  * Adds a composable route to the [NavGraphBuilder] for the given [Route].

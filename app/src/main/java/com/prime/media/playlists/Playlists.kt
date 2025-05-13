@@ -16,10 +16,13 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.prime.media.playlists
 
-import com.prime.media.common.Route
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.zs.core.db.playlists.Playlists
 
-object RouteConsole: Route
+@Composable
+fun Playlists(viewState: PlaylistsViewState) {
 
-interface ConsoleViewState
+}

@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package com.prime.media.console
+package com.zs.core.playback
 
-import com.prime.media.common.Route
+import android.net.Uri
 
-object RouteConsole: Route
-
-interface ConsoleViewState
+/**
+ * Represents the current state of the [Playback]
+ */
+class NowPlaying(val uri: Uri)

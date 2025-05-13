@@ -209,17 +209,17 @@ suspend inline operator fun <reified T> SharedPreferences.set(key: String, value
 
 /** Permits property delegation of `val`s using `by` for [Result]. */
 @Suppress("NOTHING_TO_INLINE")
-inline operator fun <T> Result<T>.getValue(thisObj: Any?, property: KProperty<*>): T? = getOrNull()
+internal inline operator fun <T> Result<T>.getValue(thisObj: Any?, property: KProperty<*>): T? = getOrNull()
 
 /**
  * Returns the value if this [Result] is a [Result.Success], or `null` if it is a [Result.Failure].
  */
-operator fun <T> Result<T>.component1(): T? = getOrNull()
+internal operator fun <T> Result<T>.component1(): T? = getOrNull()
 
 /**
  * Returns the exception if this [Result] is a [Result.Failure], or `null` if it is a [Result.Success].
  */
-operator fun <T> Result<T>.component2(): Throwable? = exceptionOrNull()
+internal operator fun <T> Result<T>.component2(): Throwable? = exceptionOrNull()
 
 /**
  * Awaits completion of `this` [ListenableFuture] without blocking a thread.

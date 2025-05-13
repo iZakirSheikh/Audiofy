@@ -35,8 +35,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -73,7 +73,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,13 +81,13 @@ import com.prime.media.R
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.common.IAP_BUY_ME_COFFEE
 import com.prime.media.common.NightMode
-import com.prime.media.common.compose.AudiofyTopAppBar
+import com.prime.media.common.compose.FloatingLargeTopAppBar
 import com.prime.media.common.compose.LocalSystemFacade
 import com.prime.media.common.compose.background
 import com.prime.media.common.compose.fadingEdge2
-import com.prime.media.common.compose.observe
 import com.prime.media.common.compose.preference
-import com.prime.media.common.compose.rememberBackgroundProvider
+import com.prime.media.common.compose.rememberAcrylicSurface
+import com.prime.media.common.compose.source
 import com.zs.compose.foundation.plus
 import com.zs.compose.foundation.textArrayResource
 import com.zs.compose.foundation.textResource
@@ -248,6 +247,18 @@ private inline fun LazyListScope.Appearence(
             onRequestChange = { viewState.set(Settings.NIGHT_MODE, it) },
             values = NightMode.values(),
             modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, TopTileShape)
+        )
+    }
+
+    item(contentType = CONTENT_TYPE_PREF) {
+        val use by preference(Settings.USE_ACCENT_IN_NAV_BAR)
+        SwitchPreference(
+            checked = use,
+            text = textResource(R.string.scr_personalize_accent_nav),
+            onCheckedChange = { should: Boolean ->
+                viewState.set(Settings.USE_ACCENT_IN_NAV_BAR, should)
+            },
+            modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, CentreTileShape)
         )
     }
 
@@ -441,7 +452,7 @@ private fun ColumnScope.AboutUs() {
                 content = {
                     TextButton(
                         textResource(R.string.update_audiofy),
-                        onClick = { facade.launchUpdateFlow(true) })
+                        onClick = { facade.initiateUpdateFlow(true) })
                     TextButton(
                         textResource(R.string.join_the_beta),
                         onClick = { facade.launch(Settings.JoinBetaIntent) },
@@ -495,6 +506,8 @@ private fun ColumnScope.AboutUs() {
     }
 }
 
+private val ContentPadding = Padding(CP.large, vertical = CP.normal)
+
 /**
  * Represents the settings screen.
  */
@@ -503,30 +516,22 @@ fun Settings(viewState: SettingsViewState) {
     // Retrieve the current window size
     val (width, _) = LocalWindowSize.current
     // Determine the two-pane strategy based on window width range
-    // when in mobile portrait; we don't show second pane;
     val strategy = when {
         // TODO  -Replace with OnePane Strategy when updating TwoPane Layout.
         width < Category.Medium -> SinglePaneStrategy
         else -> HorizontalTwoPaneStrategy(0.5f) // Use horizontal layout with 50% split for large screens
     }
-
-    // obtain the padding of BottomNavBar/NavRail
-    val navBarPadding = WindowInsets.contentInsets
-    val isPhoneLayout = width < Category.Medium
-    val provider = rememberBackgroundProvider()
+    val provider = rememberAcrylicSurface()
     val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = AppTheme.colors
-    // Place the content
-    // FIXME: Width < 650dp then screen is single pane what if navigationBars are at end.
     TwoPane(
-        spacing = CP.normal,
+        spacing = 0.dp,
         strategy = strategy,
         topBar = {
-            AudiofyTopAppBar(
-                immersive = false,
+            FloatingLargeTopAppBar(
                 title = { Label(textResource(R.string.settings)) },
-                behavior = topAppBarScrollBehavior,
-                backdrop = colors.background(provider),
+                scrollBehavior = topAppBarScrollBehavior,
+                background = colors.background(provider),
                 insets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
                 navigationIcon = {
                     Icon(
@@ -571,20 +576,15 @@ fun Settings(viewState: SettingsViewState) {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(top = CP.medium)
                     .widthIn(max = sPaneMaxWidth)
-                    .systemBarsPadding()
-                    .padding(navBarPadding),
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.End + WindowInsetsSides.Top)),
                 content = {
                     Header(
                         textResource(R.string.about_us),
                         color = AppTheme.colors.accent,
                         // drawDivider = true,
                         style = AppTheme.typography.title3,
-                        contentPadding = Padding(
-                            vertical = CP.normal,
-                            horizontal = CP.medium
-                        )
+                        contentPadding = Padding(top = CP.normal, end = CP.medium)
                     )
                     AboutUs()
                 }
@@ -595,24 +595,11 @@ fun Settings(viewState: SettingsViewState) {
             val safeInsets = WindowInsets.systemBars.only(WindowInsetsSides.Vertical)
             LazyColumn(
                 state = state,
-                // In immersive mode, add horizontal padding to prevent settings from touching the screen edges.
-                // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
-                // Non-immersive layouts only need vertical padding.
-                contentPadding = Padding(
-                    if (isPhoneLayout) CP.large else CP.medium,
-                    vertical = CP.normal
-                ) + navBarPadding + WindowInsets.contentInsets + safeInsets.asPaddingValues(),
+                contentPadding = ContentPadding + WindowInsets.contentInsets + safeInsets.asPaddingValues(),
                 modifier = Modifier
-                    .observe(provider)
+                    .source(provider)
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .fadingEdge2(
-                        listOf(
-                            AppTheme.colors.background(1.dp),
-                            AppTheme.colors.background.copy(alpha = 0.5f),
-                            Color.Transparent
-                        ),
-                        length = 56.dp
-                    ),
+                    .fadingEdge2(56.dp),
                 content = {
                     //Sponsor
                     item(contentType = "sponsor") {
@@ -650,9 +637,7 @@ fun Settings(viewState: SettingsViewState) {
                         )
                     }
 
-                    item(contentType = "about_us") {
-                        Column { AboutUs() }
-                    }
+                    item { Column { AboutUs() } }
                 }
             )
         }

@@ -98,6 +98,9 @@ private val ColorSaver = object : IntSaver<Color> {
     override fun save(value: Color): Int = value.toArgb()
 }
 
+/**
+ * Represents the route definition for settings screen.
+ */
 object RouteSettings : Route
 
 object Settings {
@@ -105,7 +108,7 @@ object Settings {
     const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
     const val PKG_MARKET_ID = "com.android.vending"
 
-    val LightAccentColor = Color(0xFF514700)
+    val LightAccentColor = /*Color(0xFF514700)*/ Color(0xFF514700)
     val DarkAccentColor = Color(0xFFD8A25E)
 
     fun FeedbackIntent(subject: String) = Intent(Intent.ACTION_SENDTO) {
