@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 13-05-2025.
+ * Created by Zakir Sheikh on 04-02-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,93 @@
 
 package com.prime.media.audios.directory
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.prime.media.R
 import com.prime.media.common.Route
+import com.prime.media.common.compose.LocalNavController
+import com.prime.media.common.compose.directory.Directory
+import com.prime.media.common.compose.directory.DirectoryViewState
+import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.ContentAlpha
+import com.zs.compose.theme.Icon
+import com.zs.compose.theme.Surface
+import com.zs.compose.theme.text.Label
+import com.zs.core.store.models.Audio.Artist
+import com.prime.media.common.compose.ContentPadding as CP
 
 object RouteArtists: Route
+
+
+@Composable
+private fun Artist(
+    value: Artist,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = Modifier
+            .clip(AppTheme.shapes.small)
+            .then(modifier)
+            .padding(vertical = 6.dp, horizontal = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(CP.medium),
+        content = {
+            //
+            Surface(
+                shape = CircleShape,
+                modifier = Modifier.aspectRatio(1.0f),
+                color = AppTheme.colors.onBackground.copy(0.07f),
+                content = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_artist),
+                        contentDescription = null,
+                        modifier = Modifier.wrapContentSize(Alignment.Center).scale(1.6f)
+                    )
+                }
+            )
+
+            // title
+            Label(
+                text = value.name,
+                maxLines = 2,
+                style = AppTheme.typography.body3,
+                textAlign = TextAlign.Center
+            )
+        }
+    )
+}
+
+@Composable
+@NonRestartableComposable
+fun Artists(viewState: DirectoryViewState<Artist>) {
+    val navController = LocalNavController.current
+    Directory(
+        viewState,
+        minSize = 90.dp,
+        key = Artist::id,
+        itemContent = {
+            Artist(
+                it,
+                modifier = Modifier
+                    .animateItem()
+                    .clickable {
+                    },
+            )
+        }
+    )
+}

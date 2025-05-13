@@ -58,6 +58,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.audios.RouteAudios
+import com.prime.media.audios.directory.Albums
+import com.prime.media.audios.directory.Artists
+import com.prime.media.audios.directory.Folders
+import com.prime.media.audios.directory.Genres
+import com.prime.media.audios.directory.RouteAlbums
+import com.prime.media.audios.directory.RouteArtists
+import com.prime.media.audios.directory.RouteAudioFolders
+import com.prime.media.audios.directory.RouteGenres
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.common.NightMode
 import com.prime.media.common.Route
@@ -74,6 +82,10 @@ import com.prime.media.common.compose.source
 import com.prime.media.common.domain
 import com.prime.media.common.shapes.EndConcaveShape
 import com.prime.media.console.RouteConsole
+import com.prime.media.impl.AlbumsViewModel
+import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.impl.FoldersViewModel
+import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
@@ -257,11 +269,35 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         val viewModel = koinViewModel<LibraryViewModel>()
         Library(viewModel)
     }
-
     // Settings
     composable(RouteSettings) {
         val viewModel = koinViewModel<SettingsViewModel>()
         Settings(viewModel)
+    }
+    // Audios
+
+    // Albums
+    composable(RouteAlbums) {
+        val viewState = koinViewModel<AlbumsViewModel>()
+        Albums(viewState)
+    }
+
+    // Artists
+    composable(RouteArtists) {
+        val viewState = koinViewModel<ArtistsViewModel>()
+        Artists(viewState)
+    }
+
+    // Genres
+    composable(RouteGenres) {
+        val viewState = koinViewModel<GenresViewModel>()
+        Genres(viewState)
+    }
+
+    // Folders
+    composable(RouteAudioFolders) {
+        val viewState = koinViewModel<FoldersViewModel>()
+        Folders(viewState)
     }
 }
 

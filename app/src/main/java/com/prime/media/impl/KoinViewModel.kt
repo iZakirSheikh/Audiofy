@@ -40,6 +40,7 @@ import com.zs.compose.theme.snackbar.SnackbarDuration
 import com.zs.compose.theme.snackbar.SnackbarHostState
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.common.showPlatformToast
+import com.zs.core.telemetry.Analytics
 import com.zs.preferences.Preferences
 import org.koin.androidx.scope.ScopeViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -52,6 +53,7 @@ abstract class KoinViewModel : ScopeViewModel() {
     private val resources: Resources by inject()
     private val toastHostState: SnackbarHostState by inject()
     val preferences: Preferences by inject()
+    val analytics: Analytics by inject()
     private val context: Application by inject()
 
     fun ImageVector(@DrawableRes id: Int): ImageVector =

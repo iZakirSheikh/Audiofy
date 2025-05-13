@@ -131,28 +131,41 @@ interface MediaProvider {
         internal val TRASHED_PROJECTION =
             FILE_PROJECTION + COLUMN_DATE_EXPIRES // 7
 
-        internal val ALBUM_PROJECTION
-            get() = arrayOf(
-                MediaStore.Audio.Albums._ID, //0
-                MediaStore.Audio.Albums.ALBUM,//1
-                MediaStore.Audio.Albums.ARTIST, //2
-                MediaStore.Audio.Albums.FIRST_YEAR, //3
-                MediaStore.Audio.Albums.LAST_YEAR, // 4,
-                MediaStore.Audio.Albums.NUMBER_OF_SONGS, // 5
+        internal val ALBUM_PROJECTION = arrayOf(
+            MediaStore.Audio.Albums._ID, //0
+            MediaStore.Audio.Albums.ALBUM,//1
+            MediaStore.Audio.Albums.ARTIST, //2
+            MediaStore.Audio.Albums.FIRST_YEAR, //3
+            MediaStore.Audio.Albums.LAST_YEAR, // 4,
+            MediaStore.Audio.Albums.NUMBER_OF_SONGS, // 5
+        )
+
+        internal val ARTIST_PROJECTION = arrayOf(
+            MediaStore.Audio.Artists._ID,// 0
+            MediaStore.Audio.Artists.ARTIST, // 1,
+            MediaStore.Audio.Artists.NUMBER_OF_TRACKS, // 2
+            MediaStore.Audio.Artists.NUMBER_OF_ALBUMS, // 3
+        )
+
+        internal val GENRE_PROJECTION = arrayOf(
+            MediaStore.Audio.Genres._ID, //0
+            MediaStore.Audio.Genres.NAME,//1
+        )
+
+        internal val AUDIO_FOLDER_PROJECTION =
+            arrayOf(
+                COLUMN_AUDIO_ALBUM_ID,
+                COLUMN_PATH,
+                COLUMN_SIZE,
+                COLUMN_DATE_MODIFIED
             )
 
-        internal val ARTIST_PROJECTION
-            get() = arrayOf(
-                MediaStore.Audio.Artists._ID,// 0
-                MediaStore.Audio.Artists.ARTIST, // 1,
-                MediaStore.Audio.Artists.NUMBER_OF_TRACKS, // 2
-                MediaStore.Audio.Artists.NUMBER_OF_ALBUMS, // 3
-            )
-
-        internal val GENRE_PROJECTION
-            get() = arrayOf(
-                MediaStore.Audio.Genres._ID, //0
-                MediaStore.Audio.Genres.NAME,//1
+        internal val VIDEO_FOLDER_PROJECTION =
+            arrayOf(
+                COLUMN_ID,
+                COLUMN_PATH,
+                COLUMN_SIZE,
+                COLUMN_DATE_MODIFIED
             )
 
         /**

@@ -30,12 +30,12 @@ import com.zs.core.store.MediaProvider
  * @property size The size of the folder in bytes.
  */
 class Folder(
-    @JvmField internal val artworkID: Long,
-    @JvmField internal val mimeType: String,
-    @JvmField val path: String,
-    @JvmField val count: Int,
-    @JvmField val size: Int,
-    @JvmField val lastModified: Long
+    @JvmField internal var artworkID: Long,
+    @JvmField internal var mimeType: String,
+    @JvmField var path: String,
+    @JvmField var count: Int,
+    @JvmField var size: Int,
+    @JvmField var lastModified: Long
 ) {
     val artworkUri
         get() = when {

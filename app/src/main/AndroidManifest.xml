@@ -61,6 +61,7 @@
             android:name="com.prime.media.MainActivity"
             android:configChanges="orientation|screenSize|screenLayout"
             android:exported="true"
+            android:windowSoftInputMode="adjustNothing"
             android:launchMode="singleTask">
 
             <!--Activity's Intent Filter-->

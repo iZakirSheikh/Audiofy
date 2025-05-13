@@ -21,6 +21,7 @@ package com.prime.media.common
 import android.net.Uri
 import android.view.Window
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -140,3 +141,11 @@ inline operator fun <reified T : Any> SavedStateHandle.invoke(key: String): T? {
     // Safely cast the result to the requested type.
     return result as T
 }
+
+/**
+ * Retrieves the trimmed, non-empty string representation of the text field's content.
+ * If the trimmed text is empty, returns `null`.
+ *
+ * @return The trimmed text as a [String], or `null` if the trimmed text is empty.
+ */
+val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }

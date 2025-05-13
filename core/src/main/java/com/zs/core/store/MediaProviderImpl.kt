@@ -36,13 +36,10 @@ import com.zs.core.store.MediaProvider.Companion.COLUMN_DATE_MODIFIED
 import com.zs.core.store.MediaProvider.Companion.COLUMN_ID
 import com.zs.core.store.MediaProvider.Companion.COLUMN_IS_TRASHED
 import com.zs.core.store.MediaProvider.Companion.COLUMN_MEDIA_TYPE
-import com.zs.core.store.MediaProvider.Companion.COLUMN_MIME_TYPE
 import com.zs.core.store.MediaProvider.Companion.COLUMN_NAME
 import com.zs.core.store.MediaProvider.Companion.COLUMN_PATH
-import com.zs.core.store.MediaProvider.Companion.COLUMN_SIZE
 import com.zs.core.store.MediaProvider.Companion.EXTERNAL_CONTENT_URI
 import com.zs.core.store.MediaProvider.Companion.GENRE_PROJECTION
-import com.zs.core.store.MediaProvider.Companion.MEDIA_TYPE_AUDIO
 import com.zs.core.store.MediaProvider.Companion.MEDIA_TYPE_VIDEO
 import com.zs.core.store.MediaProvider.Companion.TRASHED_PROJECTION
 import com.zs.core.store.MediaProvider.Companion.VIDEO_PROJECTION
@@ -441,6 +438,9 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         )
     }
 
+
+
+
     override suspend fun fetchAudioFolders(
         filter: String?,
         ascending: Boolean,
@@ -453,13 +453,18 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         //         Additionally, explore ways to optimize performance for faster results.
         // Compose the selection for folders; exclude trashed items for Android 11 and above.
         //language = SQL
-        val selection =
-            "(${COLUMN_MEDIA_TYPE} = $MEDIA_TYPE_AUDIO)" +
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) " AND $COLUMN_IS_TRASHED != 1" else "" +
-                            if (filter != null) " AND $COLUMN_NAME LIKE ?" else ""
+        //TODO - consider making this not music only
+        val selection = buildString {
+            append("($ONLY_MUSIC_SELECTION)")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                append(" AND $COLUMN_IS_TRASHED != 1")
+            if (filter != null)
+                append(" AND $COLUMN_NAME LIKE ?")
+        }
+        // Query MediaStore to fetch audio file information and group them by their parent folder path.
         return resolver.query2(
-            EXTERNAL_CONTENT_URI,
-            arrayOf(COLUMN_ID, COLUMN_PATH, COLUMN_SIZE, COLUMN_DATE_MODIFIED, COLUMN_MIME_TYPE),
+            MediaProvider.EXTERNAL_AUDIO_URI,
+            MediaProvider.AUDIO_FOLDER_PROJECTION,
             selection = selection,
             if (filter != null) arrayOf("%$filter%") else null,
             order = COLUMN_DATE_MODIFIED,
@@ -467,31 +472,23 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         ) { c ->
             val list = ArrayList<Folder>()
             while (c.moveToNext()) {
-                val path = c.getString(1)
-                val parent = PathUtils.parent(path).let {
-                    if (PathUtils.name(it).startsWith("img", true)) PathUtils.parent(it)
-                    else it
-                }
+                val parent = PathUtils.parent(c.getString(1))
                 val id = c.getLong(0)
                 val size = c.getInt(2)
                 val lastModified = c.getLong(3) * 1000
                 val index = list.indexOfFirst { it.path == parent }
-                val mimeType = c.getString(4) ?: "video/*"
+                // If this folder is already in the map, update its aggregated data.
                 if (index == -1) {
-                    list += Folder(id, mimeType, parent, 1, size, lastModified)
+                    list += Folder(id, "audio/*", parent, 1, size, lastModified)
                     continue
                 }
-
                 val old = list[index]
                 val artwork = if (old.lastModified > lastModified) old.artworkID else id
-                list[index] = Folder(
-                    artwork,
-                    mimeType,
-                    parent,
-                    old.count + 1,
-                    old.size + size,
-                    maxOf(old.lastModified, lastModified)
-                )
+                old.artworkID = artwork
+                old.count = old.count + 1
+                old.size = old.size + size
+                old.lastModified = maxOf(old.lastModified, lastModified)
+                old.mimeType = "audio/*"
             }
             list
         }
@@ -503,7 +500,51 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         offset: Int,
         limit: Int
     ): List<Folder> {
-        TODO("Not yet implemented")
+        // The selection to fetch all folders from the MediaStore.
+        // FixMe - For Android versions below API 10, consider using GroupBy, Count, etc.
+        //         In Android 10 and above, we rely on this current implementation.
+        //         Additionally, explore ways to optimize performance for faster results.
+        // Compose the selection for folders; exclude trashed items for Android 11 and above.
+        //language = SQL
+        //TODO - consider making this not music only
+        val selection = buildString {
+            append("($COLUMN_ID != -1)")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                append(" AND $COLUMN_IS_TRASHED != 1")
+            if (filter != null)
+                append(" AND $COLUMN_PATH LIKE ?")
+        }
+        // Query MediaStore to fetch audio file information and group them by their parent folder path.
+        return resolver.query2(
+            MediaProvider.EXTERNAL_VIDEO_URI,
+            MediaProvider.VIDEO_FOLDER_PROJECTION,
+            selection = selection,
+            if (filter != null) arrayOf("%$filter%") else null,
+            order = COLUMN_DATE_MODIFIED,
+            ascending = ascending
+        ) { c ->
+            val list = ArrayList<Folder>()
+            while (c.moveToNext()) {
+                val parent = PathUtils.parent(c.getString(1))
+                val id = c.getLong(0)
+                val size = c.getInt(2)
+                val lastModified = c.getLong(3) * 1000
+                val index = list.indexOfFirst { it.path == parent }
+                // If this folder is already in the map, update its aggregated data.
+                if (index == -1) {
+                    list += Folder(id, "video/*", parent, 1, size, lastModified)
+                    continue
+                }
+                val old = list[index]
+                val artwork = if (old.lastModified > lastModified) old.artworkID else id
+                old.artworkID = artwork
+                old.count = old.count + 1
+                old.size = old.size + size
+                old.lastModified = maxOf(old.lastModified, lastModified)
+                old.mimeType = "video/*"
+            }
+            list
+        }
     }
 
     private suspend inline fun ContentResolver.getBucketAudios(
