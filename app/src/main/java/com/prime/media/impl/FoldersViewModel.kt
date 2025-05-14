@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
@@ -39,6 +40,8 @@ import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
+import com.prime.media.common.compose.FilterDefaults
+import com.prime.media.common.compose.FilterDefaults.FilterSaver
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.get
@@ -48,7 +51,6 @@ import com.zs.compose.foundation.castTo
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Folder
-import com.zs.preferences.StringSaver
 import com.zs.preferences.stringPreferenceKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
@@ -62,35 +64,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import java.util.Locale
 
-private val ORDER_BY_DATE_MODIFIED =
-    Action(R.string.date_modified, id = MediaProvider.COLUMN_DATE_MODIFIED)
-private val ORDER_BY_TITLE = Action(R.string.title, id = MediaProvider.COLUMN_NAME)
-private val ORDER_BY_NONE = Action(R.string.none, id = "order_by_none")
-
-private val FilterSaver = object : StringSaver<Filter?> {
-    val delimiter = " | "
-    override fun restore(value: String): Filter? {
-        if (value.isEmpty()) return null
-        val (first, second) = value.split(delimiter, limit = 2)
-        val order = when (second) {
-            ORDER_BY_DATE_MODIFIED.id -> ORDER_BY_DATE_MODIFIED
-            ORDER_BY_TITLE.id -> ORDER_BY_TITLE
-            else -> ORDER_BY_NONE
-        }
-        return (first == "0") to order
-    }
-
-    override fun save(value: Filter?): String {
-        if (value == null) return ""
-        val first = if (value.first == true) "1" else "0"
-        val second = value.second.id
-        return "$first$delimiter$second"
-    }
-}
-
-private val Folder.firstTitleChar
-    inline get() = name.uppercase(Locale.ROOT)[0].toString()
-
 // Folders
 @OptIn(ExperimentalCoroutinesApi::class)
 class FoldersViewModel(
@@ -98,45 +71,67 @@ class FoldersViewModel(
     provider: MediaProvider
 ) : KoinViewModel(), DirectoryViewState<Folder> {
 
+
+    private val ORDER_BY_DATE_MODIFIED = FilterDefaults.ORDER_BY_DATE_MODIFIED
+    private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
+    private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
+
+    private val Action.toMediaStoreOrder
+        get() = when (this) {
+            ORDER_BY_TITLE -> MediaProvider.COLUMN_NAME
+            ORDER_BY_DATE_MODIFIED -> MediaProvider.COLUMN_DATE_MODIFIED
+            else -> MediaProvider.COLUMN_DATE_MODIFIED
+        }
+
+    // FIXME: Might cause crash.
+    private val Folder.firstTitleChar
+        inline get() = name.uppercase(Locale.ROOT)[0].toString()
+
     // Deterimine whose folders to load
     val ofAudios = handle[RouteFolders]
     val observable: Uri =
         if (ofAudios) MediaProvider.EXTERNAL_AUDIO_URI else MediaProvider.EXTERNAL_VIDEO_URI
-    private val keyFilter =
+    private val filterKey =
         stringPreferenceKey(
             if (ofAudios == true) "folders_filter_audios" else "folders_filter_videos",
             null,
-            FilterSaver
+            FilterSaver {
+                when (it) {
+                    ORDER_BY_TITLE.id -> ORDER_BY_TITLE
+                    ORDER_BY_DATE_MODIFIED.id -> ORDER_BY_DATE_MODIFIED
+                    else -> ORDER_BY_NONE
+                }
+            }
         )
 
     override val title: CharSequence = buildAnnotatedString {
         append(if (ofAudios) "Audio" else "Video")
-        withStyle(ParagraphStyle(lineHeightStyle = LineHeightStyle(
-            alignment = LineHeightStyle.Alignment.Center,
-            trim = LineHeightStyle.Trim.Both // Remove whitespace from both top and bottom
-        ))) {
-            withStyle(SpanStyle(fontSize = 12.sp, color = Color.DarkGray)) {
-                append( getText(R.string.folders))
+        withStyle(
+            ParagraphStyle(
+                lineHeightStyle = LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both // Remove whitespace from both top and bottom
+                )
+            )
+        ) {
+            withStyle(SpanStyle(fontSize = 10.sp, color = Color.DarkGray, fontWeight = FontWeight.Normal)) {
+                append(getText(R.string.folders))
             }
         }
     }
 
+
     override val orders: List<Action> =
         listOf(ORDER_BY_NONE, ORDER_BY_DATE_MODIFIED, ORDER_BY_TITLE)
-
     override val query: TextFieldState = TextFieldState()
     override var filter: Filter by mutableStateOf(
-        preferences[keyFilter] ?: (true to ORDER_BY_DATE_MODIFIED)
+        preferences[filterKey] ?: (true to ORDER_BY_DATE_MODIFIED)
     )
 
     override fun filter(ascending: Boolean, order: Action) {
         if (ascending == filter.first && order == filter.second) return
-        // means only change in ascending happened
-        // we don't support that, in order none.
-        if (order == filter.second && order == ORDER_BY_NONE && filter.first != ascending)
-            return
         val newFilter = ascending to order
-        preferences[keyFilter] = newFilter
+        preferences[filterKey] = newFilter
         filter = newFilter
     }
 

@@ -64,7 +64,7 @@ private fun Album(
             AsyncImage(
                 model = value.artworkUri,
                 modifier = Modifier
-                    .shadow(8.dp, AppTheme.shapes.small)
+                    .shadow(8.dp, AppTheme.shapes.medium)
                     .background(AppTheme.colors.background)
                     .fillMaxWidth()
                     .aspectRatio(0.65f),

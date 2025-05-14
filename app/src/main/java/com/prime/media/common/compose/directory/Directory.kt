@@ -19,6 +19,7 @@
 package com.prime.media.common.compose.directory
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -65,9 +66,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.prime.media.R
+import com.prime.media.common.Action
 import com.prime.media.common.compose.Filters
+import com.prime.media.common.compose.FloatingActionMenu
 import com.prime.media.common.compose.FloatingLargeTopAppBar
 import com.prime.media.common.compose.LocalNavController
+import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.background
 import com.prime.media.common.compose.emit
 import com.prime.media.common.compose.fadingEdge2
@@ -117,6 +121,7 @@ private val ContentPadding = Padding(start = CP.normal, end = CP.normal, bottom 
 fun <T> Directory(
     viewState: DirectoryViewState<T>,
     minSize: Dp = DEFAULT_MIN_SIZE,
+    onActionClick: ((item: Action) -> Unit)? = null,
     key: ((item: T) -> Any)? = null,
     itemContent: @Composable LazyGridItemScope.(item: T) -> Unit
 ) {
@@ -159,53 +164,60 @@ fun <T> Directory(
         },
         floatingActionButton = {
             // animate visibility based on show is
-            AnimatedVisibility(
-                isSearchVisible,
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically(),
+            val value = if (viewState.focused != null) 0 else if (isSearchVisible) 1 else -1
+            AnimatedContent(
+                value,
                 modifier = Modifier
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(bottom = CP.medium)
                     .windowInsetsPadding(WindowInsets.ime),
-                content = {
-                    val requester = remember { FocusRequester() }
-                    TextField(
-                        state = viewState.query,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = null
-                            )
-                        },
-                        placeholder = { Label(text = stringResource(R.string.search_placeholder)) },
-                        label = { Label(text = stringResource(R.string.search)) },
-                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
-                        modifier = Modifier
-                            .widthIn(min = 320.dp)
-                            .focusRequester(requester)
-                            .clip(AppTheme.shapes.medium)
-                            .background(AppTheme.colors.background(surface)),
-                        trailingIcon = {
-                            IconButton(
-                                Icons.Default.Close,
-                                onClick = {
-                                    if (viewState.query.text.isNotEmpty())
-                                        viewState.query.clearText()
-                                    else
-                                        isSearchVisible = false
-                                },
-                                contentDescription = null
-                            )
-                        },
-                    )
+            ) { type ->
+                when (type) {
+                    -1 -> return@AnimatedContent
+                    0 -> FloatingActionMenu(colors.background(surface)) {
+                        OverflowMenu(viewState.actions, onActionClick!!, collapsed = 4)
+                    }
 
-                    // Request focus when the search view becomes visible
-                    DisposableEffect(Unit) {
-                        requester.requestFocus()
-                        onDispose(requester::restoreFocusedChild)
+                    1 -> {
+                        val requester = remember { FocusRequester() }
+                        TextField(
+                            state = viewState.query,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Search,
+                                    contentDescription = null
+                                )
+                            },
+                            placeholder = { Label(text = stringResource(R.string.search_placeholder)) },
+                            label = { Label(text = stringResource(R.string.search)) },
+                            colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+                            modifier = Modifier
+                                .widthIn(min = 320.dp)
+                                .focusRequester(requester)
+                                .clip(AppTheme.shapes.medium)
+                                .background(AppTheme.colors.background(surface)),
+                            trailingIcon = {
+                                IconButton(
+                                    Icons.Default.Close,
+                                    onClick = {
+                                        if (viewState.query.text.isNotEmpty())
+                                            viewState.query.clearText()
+                                        else
+                                            isSearchVisible = false
+                                    },
+                                    contentDescription = null
+                                )
+                            },
+                        )
+
+                        // Request focus when the search view becomes visible
+                        DisposableEffect(Unit) {
+                            requester.requestFocus()
+                            onDispose(requester::restoreFocusedChild)
+                        }
                     }
                 }
-            )
+            }
         },
         content = {
             // Collect the data from the viewState, initially null representing loading state.
@@ -270,7 +282,11 @@ fun <T> Directory(
                         )
 
                         // Spacer
-                        item(contentType = "spacer", span = fullLineSpan, key = "${header}_items_end") {
+                        item(
+                            contentType = "spacer",
+                            span = fullLineSpan,
+                            key = "${header}_items_end"
+                        ) {
                             Spacer(Modifier.padding(vertical = CP.normal))
                         }
                     }

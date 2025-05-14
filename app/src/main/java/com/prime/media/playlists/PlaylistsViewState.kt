@@ -18,8 +18,13 @@
 
 package com.prime.media.playlists
 
+import com.prime.media.common.Action
 import com.prime.media.common.Route
+import com.prime.media.common.compose.directory.DirectoryViewState
+import com.zs.core.db.playlists.Playlist
 
-object RoutePlaylists: Route
+object RoutePlaylists : Route
 
-interface PlaylistsViewState
+interface PlaylistsViewState : DirectoryViewState<Playlist> {
+    fun onAction(playlist: Playlist, action: Action)
+}

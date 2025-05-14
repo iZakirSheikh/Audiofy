@@ -28,30 +28,56 @@ import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
+import com.prime.media.common.compose.FilterDefaults
+import com.prime.media.common.compose.FilterDefaults.FilterSaver
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio.Artist
+import com.zs.preferences.stringPreferenceKey
 import java.util.Locale
 
 // Artists
 class ArtistsViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Artist>(provider) {
-
     override val uri: Uri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI
 
     private val Artist.firstTitleChar
         inline get() = name.uppercase(Locale.ROOT)[0].toString()
-    private val ARTISTS_ORDER_BY_TITLE = Action(R.string.title, id = MediaStore.Audio.Artists.ARTIST)
-    private val ARTISTS_ORDER_BY_NONE = Action(R.string.none, id = MediaStore.Audio.Artists._ID)
+    private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
+    private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
 
+    override fun filter(ascending: Boolean, order: Action) {
+        super.filter(ascending, order)
+        preferences[filterKey] = ascending to order
+    }
 
-    override var filter: Filter by mutableStateOf(true to ARTISTS_ORDER_BY_TITLE)
+    val filterKey =
+        stringPreferenceKey(
+            "artist_filter_key",
+            null,
+            FilterSaver {
+                when (it) {
+                    ORDER_BY_TITLE.id -> ORDER_BY_TITLE
+                    else -> ORDER_BY_NONE
+                }
+            }
+        )
+    override var filter: Filter by mutableStateOf(
+        preferences[filterKey] ?: (true to ORDER_BY_TITLE)
+    )
+
     override val title: CharSequence = getText(R.string.artists)
-    override val orders: List<Action> = listOf(ARTISTS_ORDER_BY_NONE, ARTISTS_ORDER_BY_TITLE)
+    override val orders: List<Action> = listOf(ORDER_BY_NONE, ORDER_BY_TITLE)
+
+    private val Action.toMediaStoreOrder
+        get() = when (this) {
+            ORDER_BY_TITLE -> MediaStore.Audio.Artists.ARTIST
+            else -> MediaStore.Audio.Artists.DEFAULT_SORT_ORDER
+        }
 
     override suspend fun fetch(filter: Filter, query: String?): Mapped<Artist> {
         val (ascending, order) = filter
-        val result = provider.fetchArtists(query, order.id, ascending)
+        val result = provider.fetchArtists(query, order.toMediaStoreOrder, ascending)
         return when (order) {
-            ARTISTS_ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
+            ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
             else -> result.groupBy { "" }
         }
     }

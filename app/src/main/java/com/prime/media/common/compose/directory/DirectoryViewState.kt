@@ -32,6 +32,13 @@ interface DirectoryViewState<T> {
 
     val title: CharSequence
 
+    var focused: T?
+        get() = null
+        set(value) {
+            TODO("Not yet implemented!")
+        }
+    val actions: List<Action> get() = emptyList()
+
     val orders: List<Action>
     val data: StateFlow<Mapped<T>?>
 

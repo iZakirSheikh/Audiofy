@@ -346,7 +346,7 @@ fun Library(viewState: LibraryViewState) {
                 modifier = Modifier
                     .source(provider)
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .fadingEdge2(length = 30.dp),
+                    .fadingEdge2(length = 50.dp),
                 content = content
             )
 

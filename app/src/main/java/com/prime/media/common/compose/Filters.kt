@@ -18,6 +18,7 @@
 
 package com.prime.media.common.compose
 
+import android.provider.MediaStore
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -29,12 +30,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.FilterAltOff
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Straighten
+import androidx.compose.material.icons.outlined.Title
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.zs.compose.foundation.composableIf
@@ -46,9 +53,50 @@ import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.SelectableChip
 import com.zs.compose.theme.text.Label
+import com.zs.preferences.StringSaver
 
 private val REC_SPACING =
     Arrangement.spacedBy(ContentPadding.small)
+
+object FilterDefaults {
+
+    val ORDER_NONE get() =  Action(R.string.none,  id = "filter_by_none")
+    val ORDER_BY_TITLE get() = Action(R.string.title,  id = "filter_by_title")
+    val ORDER_BY_ARTIST get() = Action(R.string.artist,  id = "filter_by_artist")
+    val ORDER_BY_DATE_MODIFIED get() = Action(R.string.date_added,id = "filter_by_date_modified")
+    val ORDER_BY_DATE_LENGTH get() = Action(R.string.length,  id = "filter_by_date_length")
+
+
+    val NO_FILTER get() =  Filter(true, ORDER_NONE)
+
+    /**
+     * Creates a [StringSaver] for serializing and deserializing a [Filter] object.
+     *
+     * A [Filter] is represented as a `Pair<Boolean?, Action>`, and this saver converts it to a string using
+     * a delimiter and reconstructs it when restoring.
+     *
+     * @param action A function that takes an action ID [String] and returns the corresponding [Action].
+     * @return A [StringSaver] capable of saving and restoring a nullable [Filter].
+     */
+    inline fun FilterSaver(crossinline action: (id: String) -> Action): StringSaver<Filter?> {
+        return object : StringSaver<Filter?> {
+            val delimiter = " | "
+            override fun restore(value: String): Filter? {
+                if (value.isEmpty()) return null
+                val (first, second) = value.split(delimiter, limit = 2)
+                val order = action(second)
+                return (first == "0") to order
+            }
+
+            override fun save(value: Filter?): String {
+                if (value == null) return ""
+                val first = if (value.first == true) "1" else "0"
+                val second = value.second.id
+                return "$first$delimiter$second"
+            }
+        }
+    }
+}
 
 // TODO - Migrate to LazyRow instead.
 
@@ -100,7 +148,7 @@ fun Filters(
                     disabledBackgroundColor = AppTheme.colors.accent.copy(ContentAlpha.disabled)
                 ),
                 // if order_id is none- dont allow this.
-                enabled = !order.id.contains("none"),
+                enabled = order != FilterDefaults.ORDER_NONE,
                 modifier = Modifier
                     .padding(end = ContentPadding.medium),
                 shape = AppTheme.shapes.small
@@ -123,7 +171,7 @@ fun Filters(
                     content = {
                         Label(label, modifier = Modifier.padding(padding))
                     },
-                    leadingIcon = composableIf (value.icon != null){
+                    leadingIcon = composableIf(value.icon != null) {
                         Icon(value.icon!!, contentDescription = label.toString())
                     },
                     colors = colors,
