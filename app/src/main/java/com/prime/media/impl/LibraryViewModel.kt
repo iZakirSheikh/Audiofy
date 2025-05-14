@@ -23,6 +23,7 @@ package com.prime.media.impl
 import android.util.Log
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import com.prime.media.common.debounceAfterFirst
 import com.prime.media.library.LibraryViewState
 import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.db.playlists.Playlists
@@ -54,7 +55,7 @@ class LibraryViewModel(
         // the flow is re-evaluated.
         provider
             .observer(MediaProvider.EXTERNAL_AUDIO_URI)
-            .debounce(500L)
+            .debounceAfterFirst(500L)
             // Use flatMapLatest to cancel the previous flow and start a new one
             // whenever the external content URI changes.
             .flatMapLatest { _ ->
@@ -85,7 +86,7 @@ class LibraryViewModel(
 
     override val newlyAdded = provider
         .observer(MediaProvider.EXTERNAL_AUDIO_URI)
-        .debounce(500L)
+        .debounceAfterFirst(500L)
         .map {
             provider.fetchAudioFiles(
                 order = MediaProvider.COLUMN_DATE_MODIFIED,

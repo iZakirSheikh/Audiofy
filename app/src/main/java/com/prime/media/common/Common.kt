@@ -18,23 +18,19 @@
 
 package com.prime.media.common
 
+import android.content.Context
 import android.net.Uri
+import android.text.format.Formatter
 import android.view.Window
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import com.prime.media.common.Route.ArgsFactory
-import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
 
 /**
  * Represents a sorting order and associated grouping or ordering action.
@@ -59,8 +55,6 @@ typealias Mapped<T> = Map<CharSequence, List<T>>
  * @return The args object of type [T] containing the deserialized arguments.
  **/
 operator fun <T> SavedStateHandle.get(route: ArgsFactory<T>): T = route.build(this)
-
-
 
 /**
  * Extracts the domain portion from a [NavDestination]'s route.
@@ -149,3 +143,40 @@ inline operator fun <reified T : Any> SavedStateHandle.invoke(key: String): T? {
  * @return The trimmed text as a [String], or `null` if the trimmed text is empty.
  */
 val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }
+
+@OptIn(FlowPreview::class)
+
+/**
+ * Returns a flow that mirrors the original flow, but debounces emissions after the first one.
+ *
+ * The first emission from the original flow is emitted immediately. Subsequent emissions
+ * are debounced by the specified [delayMillis].
+ *
+ * @param delayMillis The duration in milliseconds to debounce subsequent emissions.
+ * @return A flow that debounces emissions after the first one.
+ *
+ * @see [debounce]
+ */
+fun <T> Flow<T>.debounceAfterFirst(delayMillis: Long): Flow<T> {
+    var firstEmission = true
+    return this
+        .debounce {
+            if (firstEmission) {
+                firstEmission = false
+                0L
+            } else {
+                delayMillis
+            }
+        }
+}
+
+/**
+ * Formats a file size in bytes to a human-readable string.
+ *
+ * @param bytes Thefile size in bytes.
+ * @return The formatted file size string.
+ */
+fun Context.fileSizeFormatted(bytes: Long) =
+    Formatter.formatFileSize(this, bytes)
+
+

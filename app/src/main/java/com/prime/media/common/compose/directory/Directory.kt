@@ -25,8 +25,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -56,8 +58,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.prime.media.R
 import com.prime.media.common.compose.Filters
 import com.prime.media.common.compose.FloatingLargeTopAppBar
@@ -82,6 +88,8 @@ import com.zs.compose.theme.adaptive.Scaffold
 import com.zs.compose.theme.adaptive.contentInsets
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.text.Label
+import com.zs.compose.theme.text.LocalTextStyle
+import com.zs.compose.theme.text.Text
 import com.zs.compose.theme.text.TextField
 import com.zs.compose.theme.text.TextFieldDefaults
 import com.zs.compose.theme.text.TonalHeader
@@ -91,6 +99,8 @@ import com.prime.media.common.compose.ContentPadding as CP
 import com.zs.compose.foundation.textResource as stringResource
 
 private val DEFAULT_MIN_SIZE = 80.dp
+
+private val ContentPadding = Padding(start = CP.normal, end = CP.normal, bottom = CP.normal)
 
 /**
  * A generic composable for displaying categorized lists (directories) like playlists, folders, etc.
@@ -126,7 +136,7 @@ fun <T> Directory(
         fabPosition = if (width > height) FabPosition.End else FabPosition.Center,
         topBar = {
             FloatingLargeTopAppBar(
-                title = { Label(viewState.title) },
+                title = { Label(viewState.title, maxLines = 2) },
                 scrollBehavior = topAppBarScrollBehavior,
                 background = colors.background(surface),
                 insets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
@@ -153,7 +163,10 @@ fun <T> Directory(
                 isSearchVisible,
                 enter = fadeIn() + slideInVertically(),
                 exit = fadeOut() + slideOutVertically(),
-                modifier = Modifier.widthIn(min = 300.dp) .windowInsetsPadding(WindowInsets.navigationBars)  .padding(bottom = CP.medium).windowInsetsPadding(WindowInsets.ime),
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(bottom = CP.medium)
+                    .windowInsetsPadding(WindowInsets.ime),
                 content = {
                     val requester = remember { FocusRequester() }
                     TextField(
@@ -168,8 +181,9 @@ fun <T> Directory(
                         label = { Label(text = stringResource(R.string.search)) },
                         colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
                         modifier = Modifier
+                            .widthIn(min = 320.dp)
                             .focusRequester(requester)
-                            .clip(AppTheme.shapes.large)
+                            .clip(AppTheme.shapes.medium)
                             .background(AppTheme.colors.background(surface)),
                         trailingIcon = {
                             IconButton(
@@ -203,11 +217,13 @@ fun <T> Directory(
                 columns = GridCells.Adaptive(minSize * multiplier),
                 verticalArrangement = CP.SmallArrangement,
                 horizontalArrangement = CP.SmallArrangement,
-                contentPadding = Padding(horizontal = CP.normal) + WindowInsets.contentInsets,
+                contentPadding = ContentPadding + WindowInsets.contentInsets + WindowInsets.systemBars.only(
+                    WindowInsetsSides.Bottom
+                ).asPaddingValues(),
                 modifier = Modifier
                     .source(surface)
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .fadingEdge2(40.dp),
+                    .fadingEdge2(50.dp),
                 content = {
                     // Emit state: Get the album data, if null, return from LazyVerticalGrid content.
                     val values = emit(data) ?: return@LazyVerticalGrid
@@ -218,11 +234,11 @@ fun <T> Directory(
                         span = fullLineSpan,
                         content = {
                             Filters(
-                                viewState.order,
+                                viewState.filter,
                                 viewState.orders,
                                 onRequest = {
                                     when {
-                                        it == null -> viewState.filter(!viewState.order.first)
+                                        it == null -> viewState.filter(!viewState.filter.first)
                                         else -> viewState.filter(order = it)
                                     }
                                 }
@@ -252,6 +268,11 @@ fun <T> Directory(
                             contentType = { "item" },
                             itemContent = itemContent
                         )
+
+                        // Spacer
+                        item(contentType = "spacer", span = fullLineSpan, key = "${header}_items_end") {
+                            Spacer(Modifier.padding(vertical = CP.normal))
+                        }
                     }
                 }
             )

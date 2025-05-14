@@ -23,10 +23,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.ui.Alignment
@@ -42,7 +40,6 @@ import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.Surface
 import com.zs.compose.theme.text.Label
@@ -51,6 +48,8 @@ import com.prime.media.common.compose.ContentPadding as CP
 
 object RouteArtists: Route
 
+
+private val IconModifier  = Modifier.wrapContentSize(Alignment.Center).scale(1.6f)
 
 @Composable
 private fun Artist(
@@ -63,17 +62,19 @@ private fun Artist(
             .then(modifier)
             .padding(vertical = 6.dp, horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(CP.medium),
+        horizontalAlignment = Alignment.CenterHorizontally,
         content = {
             //
             Surface(
                 shape = CircleShape,
                 modifier = Modifier.aspectRatio(1.0f),
-                color = AppTheme.colors.onBackground.copy(0.07f),
+                color = AppTheme.colors.background(1.dp),
+                contentColor = AppTheme.colors.onBackground,
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_artist),
                         contentDescription = null,
-                        modifier = Modifier.wrapContentSize(Alignment.Center).scale(1.6f)
+                        modifier = IconModifier,
                     )
                 }
             )
@@ -82,7 +83,7 @@ private fun Artist(
             Label(
                 text = value.name,
                 maxLines = 2,
-                style = AppTheme.typography.body3,
+                style = AppTheme.typography.label3,
                 textAlign = TextAlign.Center
             )
         }

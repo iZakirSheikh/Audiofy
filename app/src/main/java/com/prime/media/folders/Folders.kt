@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 04-02-2025.
+ * Created by Zakir Sheikh on 14-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,8 @@
  * limitations under the License.
  */
 
-package com.prime.media.audios.directory
+package com.prime.media.folders
 
-import android.content.Context
-import android.os.Environment
-import android.text.format.Formatter
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,46 +38,38 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import coil3.compose.AsyncImage
 import com.prime.media.common.Route
+import com.prime.media.common.Route.ArgsFactory
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.compose.directory.DirectoryViewState
-import com.zs.compose.foundation.runCatching
+import com.prime.media.common.fileSizeFormatted
+import com.prime.media.common.invoke
 import com.zs.compose.foundation.shapes.SquircleShape
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.text.Label
+import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Folder
-import java.io.File
 
-object RouteAudioFolders : Route
+object RouteFolders : Route, ArgsFactory<Boolean> {
 
-/**
- * Formats a file size in bytes to a human-readable string.
- *
- * @param bytes Thefile size in bytes.
- * @return The formatted file size string.
- */
-private fun Context.formattedFileSize(bytes: Long) =
-    Formatter.formatFileSize(this, bytes)
+    private const val PARAM_IS_OF_AUDIOS = "param_is_of_audios"
 
-/**
- * Checks if a given path corresponds to removable storage.
- *
- * @param path The path to check.
- * @return True if the path is on removable storage, false otherwise.
- */
-private fun isRemovableStorage(path: String): Boolean {
-    val externalStorageDirectory = Environment.getExternalStorageDirectory().absolutePath
-    return runCatching(TAG) {
-        !path.startsWith(externalStorageDirectory) && Environment.isExternalStorageRemovable(
-            File(
-                path
-            ))
-    } == true
+    override val route: String = "$domain/{${PARAM_IS_OF_AUDIOS}}"
+
+
+    override fun invoke(ofAudios: Boolean): String {
+        return "$domain/${ofAudios}"
+    }
+
+    override fun build(handle: SavedStateHandle): Boolean {
+        return handle<Boolean>(PARAM_IS_OF_AUDIOS) == true
+    }
 }
 
 private const val TAG = "Folders"
@@ -115,7 +104,7 @@ private fun Folder(
                     }
                 )
 
-                val isRemovable = isRemovableStorage(value.path)
+                val isRemovable = PathUtils.isRemovableStorage(value.path)
                 if (!isRemovable) return@Box
                 Icon(
                     imageVector = Icons.Outlined.SdStorage,
@@ -143,7 +132,7 @@ private fun Folder(
 
         // More Info
         Label(
-            text = "${value.count} Files - ${ctx.formattedFileSize(value.size.toLong())}",
+            text = "${value.count} Files - ${ctx.fileSizeFormatted(value.size.toLong())}",
             style = AppTheme.typography.body3,
             color = AppTheme.colors.onBackground.copy(ContentAlpha.medium),
             modifier = Modifier.padding(start = ContentPadding.medium),

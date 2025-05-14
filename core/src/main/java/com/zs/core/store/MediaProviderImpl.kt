@@ -508,7 +508,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         //language = SQL
         //TODO - consider making this not music only
         val selection = buildString {
-            append("($COLUMN_ID != -1)")
+            append("($COLUMN_ID != 0)")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 append(" AND $COLUMN_IS_TRASHED != 1")
             if (filter != null)

@@ -51,6 +51,7 @@ interface MediaProvider {
         const val COLUMN_NAME = MediaStore.Files.FileColumns.TITLE
         const val COLUMN_MIME_TYPE = MediaStore.Files.FileColumns.MIME_TYPE
         const val COLUMN_PATH = MediaStore.Files.FileColumns.DATA
+        const val COLUMN_RELATIVE = MediaStore.Files.FileColumns.RELATIVE_PATH
         const val COLUMN_DATE_ADDED = MediaStore.Files.FileColumns.DATE_ADDED
         const val COLUMN_DATE_MODIFIED = MediaStore.Files.FileColumns.DATE_MODIFIED
         const val COLUMN_SIZE = MediaStore.Files.FileColumns.SIZE

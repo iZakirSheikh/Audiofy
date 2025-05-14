@@ -60,11 +60,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.audios.RouteAudios
 import com.prime.media.audios.directory.Albums
 import com.prime.media.audios.directory.Artists
-import com.prime.media.audios.directory.Folders
 import com.prime.media.audios.directory.Genres
 import com.prime.media.audios.directory.RouteAlbums
 import com.prime.media.audios.directory.RouteArtists
-import com.prime.media.audios.directory.RouteAudioFolders
 import com.prime.media.audios.directory.RouteGenres
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.common.NightMode
@@ -82,6 +80,8 @@ import com.prime.media.common.compose.source
 import com.prime.media.common.domain
 import com.prime.media.common.shapes.EndConcaveShape
 import com.prime.media.console.RouteConsole
+import com.prime.media.folders.Folders
+import com.prime.media.folders.RouteFolders
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.ArtistsViewModel
 import com.prime.media.impl.FoldersViewModel
@@ -295,7 +295,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     }
 
     // Folders
-    composable(RouteAudioFolders) {
+    composable(RouteFolders) {
         val viewState = koinViewModel<FoldersViewModel>()
         Folders(viewState)
     }

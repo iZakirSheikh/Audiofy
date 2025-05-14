@@ -30,11 +30,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material.icons.outlined.Grain
+import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.VideoFile
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,12 +46,11 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.audios.directory.RouteAlbums
 import com.prime.media.audios.directory.RouteArtists
-import com.prime.media.audios.directory.RouteAudioFolders
 import com.prime.media.audios.directory.RouteGenres
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.shapes.FolderShape
-import com.prime.media.videos.directory.RouteVideoFolders
+import com.prime.media.folders.RouteFolders
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
@@ -146,15 +146,15 @@ fun Shortcuts(
              Spacer(modifier = Modifier.fillMaxWidth())
             // Audio Folders
             Shortcut(
-                onAction = { navigator.navigate(RouteAudioFolders()) },
-                icon = Icons.Outlined.Audiotrack,
-                label = "Audio folders",
+                onAction = { navigator.navigate(RouteFolders(true)) },
+                icon = Icons.Outlined.LibraryMusic,
+                label = "Audio",
             )
 
             Shortcut(
-                onAction = { navigator.navigate(RouteVideoFolders()) },
-                icon = Icons.Outlined.VideoFile,
-                label = "Video folders",
+                onAction = { navigator.navigate(RouteFolders(false)) },
+                icon = Icons.Outlined.VideoLibrary,
+                label = "Video",
             )
 
             Spacer(modifier = Modifier.fillMaxWidth())

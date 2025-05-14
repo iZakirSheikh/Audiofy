@@ -18,12 +18,17 @@
 
 package com.zs.core.common
 
+import android.os.Environment
 import org.jetbrains.annotations.Contract
+import java.io.File
 
 /**
  * A scope for [PathUtils] functions.
  */
 object PathUtils {
+
+    private const val TAG = "PathUtils"
+
     /**
      * The Unix separator character.
      */
@@ -74,4 +79,19 @@ object PathUtils {
     @Contract(pure = true)
     fun areAncestorsHidden(path: String): Boolean =
         path.contains(HIDDEN_PATTERN)
+
+    /**
+     * Checks if a given path corresponds to removable storage.
+     *
+     * @param path The path to check.
+     * @return True if the path is on removable storage, false otherwise.
+     */
+    fun isRemovableStorage(path: String): Boolean {
+        val externalStorageDirectory = Environment.getExternalStorageDirectory().absolutePath
+        val res = runCatching(TAG) {
+            !path.startsWith(externalStorageDirectory) &&
+                    Environment.isExternalStorageRemovable(File(path))
+        }
+        return res == true
+    }
 }

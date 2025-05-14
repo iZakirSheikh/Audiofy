@@ -37,8 +37,8 @@ interface DirectoryViewState<T> {
 
     // filter.
     val query: TextFieldState
-    val order: Filter
+    val filter: Filter
 
     // actions
-    fun filter(ascending: Boolean = this.order.first, order: Action = this.order.second)
+    fun filter(ascending: Boolean = this.filter.first, order: Action = this.filter.second)
 }

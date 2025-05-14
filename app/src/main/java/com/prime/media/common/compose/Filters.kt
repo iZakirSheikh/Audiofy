@@ -42,6 +42,7 @@ import com.zs.compose.foundation.fadingEdge
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Chip
 import com.zs.compose.theme.ChipDefaults
+import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.SelectableChip
 import com.zs.compose.theme.text.Label
@@ -94,8 +95,12 @@ fun Filters(
                 },
                 colors = ChipDefaults.chipColors(
                     backgroundColor = AppTheme.colors.accent,
-                    contentColor = AppTheme.colors.onAccent
+                    contentColor = AppTheme.colors.onAccent,
+                    disabledContentColor = AppTheme.colors.onAccent.copy(ContentAlpha.disabled),
+                    disabledBackgroundColor = AppTheme.colors.accent.copy(ContentAlpha.disabled)
                 ),
+                // if order_id is none- dont allow this.
+                enabled = !order.id.contains("none"),
                 modifier = Modifier
                     .padding(end = ContentPadding.medium),
                 shape = AppTheme.shapes.small
