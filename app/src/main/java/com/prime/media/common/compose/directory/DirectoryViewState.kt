@@ -19,32 +19,44 @@
 package com.prime.media.common.compose.directory
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
-import com.prime.media.common.Action
 import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Represents the common interface among directories
- * @property data
+ *
+ * This interface defines the common properties and behaviors expected from
+ * a view state representing a directory of items.
+ *
+ * @param T The type of data items within the directory.
+ * @property title The title of the directory, displayed in the top app bar.
+ * @property focused The currently focused item within the directory. Defaults to `null`.
+ * @property actions The list of available actions for the directory. These actions care displayed in the top app bar if [focused] is null or an action menu. Defaults to an empty list.
+ * @property primaryAction The primary action for the directory, typically used for a Floating Action Button (FAB). Defaults to `null`.
+ * @property favicon The icon to be used in place of the navigation icon in the top app bar. Defaults to `null`. If null, a back button might be shown.
+ * @property orders The list of available actions for ordering the directory items.
+ * @property data A [StateFlow] emitting the [Mapped] data for the directory.
+ * @property query A [TextFieldState] representing the current search query for filtering.
+ * @property filter A [Filter] object containing the current filtering parameters (e.g., sort order and ascending/descending).
  */
 interface DirectoryViewState<T> {
 
     val title: CharSequence
+    val primaryAction: Action? get() =  null
+    val favicon: ImageVector? get() =  null
+    val actions: List<Action> get() = emptyList()
+    val orders: List<Action>
+    val query: TextFieldState
+    val filter: Filter
 
     var focused: T?
         get() = null
-        set(value) {
-            TODO("Not yet implemented!")
-        }
-    val actions: List<Action> get() = emptyList()
+        set(value) = error("Not implemented yet!")
 
-    val orders: List<Action>
     val data: StateFlow<Mapped<T>?>
-
-    // filter.
-    val query: TextFieldState
-    val filter: Filter
 
     // actions
     fun filter(ascending: Boolean = this.filter.first, order: Action = this.filter.second)

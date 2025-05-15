@@ -29,6 +29,13 @@ object PathUtils {
 
     private const val TAG = "PathUtils"
 
+    // Regex to validate folder names similar to Windows/Android rules, ensuring the name is not blank,
+    // does not start with an underscore, and does not contain special characters overall.
+    // ^(?!_): Ensures the name does not start with an underscore.
+    // [\\p{L}\\p{N}]: The first character must be a letter or a number.
+    // [^<>:\"/\\|?*\\s]*$: The subsequent characters must not be any special characters.
+    val VALID_NAME_REGEX = Regex("^(?!_)[\\p{L}\\p{N}][\\p{L}\\p{N}^<>:\"/\\\\|?*\\s]*$")
+
     /**
      * The Unix separator character.
      */

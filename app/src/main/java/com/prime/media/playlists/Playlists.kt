@@ -20,9 +20,64 @@ package com.prime.media.playlists
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.zs.core.db.playlists.Playlists
+import androidx.compose.ui.unit.dp
+import com.prime.media.common.Action
+import com.prime.media.common.compose.directory.Directory
+import com.prime.media.common.compose.scale
+import androidx.compose.foundation.combinedClickable as clickable
+
+private val MIN_CELL_WIDTH = 120.dp
 
 @Composable
 fun Playlists(viewState: PlaylistsViewState) {
 
+    val focused = viewState.focused
+    NewPlaylist(
+        viewState.showEditDialog,
+        focused,
+        onConfirm = { newPlaylist ->
+            when {
+                newPlaylist == null -> {}
+                focused != null -> viewState.update(newPlaylist)
+                else -> viewState.create(newPlaylist)
+            }
+            viewState.focused = null
+            viewState.showEditDialog = false
+        }
+    )
+
+    Directory(
+        viewState,
+        minSize = MIN_CELL_WIDTH,
+        onActionClick = viewState::onAction
+    ) { playlist ->
+        // TODO Explore the use of derived state to calculate the 'focused' value
+        //  instead of directly comparing 'highlighted' and 'playlist'. Derived state can improve
+        //  performance and ensure consistency.
+        // Determine if the current playlist is focused (selected)
+        val focused = focused == playlist
+
+        PlaylistItem(
+            value = playlist,
+            focused = focused,
+            modifier = Modifier
+                .animateItem()
+                .clickable(
+                    null,
+                    indication = scale(),
+                    // On long click, toggle the focused state of the playlist item
+                    onLongClick = {
+                        viewState.focused = if (!focused) playlist else null
+                    },
+                    onClick = {
+                        when {
+                            focused -> viewState.focused = null // If already focused, unfocused it
+                            viewState.focused != null -> viewState.focused =
+                                playlist // make it move focus
+                            else -> error("Not implemented yet!.")/*navController.navigate(Members.direction(playlist.name)) */// Navigate to the playlist details
+                        }
+                    }
+                )
+        )
+    }
 }

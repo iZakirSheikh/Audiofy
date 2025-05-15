@@ -87,9 +87,11 @@ import com.prime.media.impl.ArtistsViewModel
 import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
+import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.library.Library
 import com.prime.media.library.RouteLibrary
+import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
@@ -126,8 +128,8 @@ private const val TAG = "Home"
 private val NAV_RAIL_MIN_WIDTH = 106.dp
 private val BOTTOM_NAV_MIN_HEIGHT = 56.dp
 
-private val LightAccentColor = Color.ClaretViolet
-private val DarkAccentColor = Color(0xFFD8A25E)
+private val LightAccentColor = Settings.LightAccentColor
+private val DarkAccentColor = Settings.DarkAccentColor
 
 private val NavRailShape = EndConcaveShape(16.dp)
 
@@ -299,6 +301,12 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         val viewState = koinViewModel<FoldersViewModel>()
         Folders(viewState)
     }
+
+    // Playlists
+    composable(RoutePlaylists) {
+        val viewModel = koinViewModel< PlaylistsViewModel>()
+        Playlists(viewModel)
+    }
 }
 
 
@@ -395,7 +403,7 @@ private fun NavigationBar(
                 )
             },
             selected = domain == RoutePlaylists.domain,
-            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
+            onClick = { facade.initiateReviewFlow(); navController.toRoute(RoutePlaylists) },
             isBottomNav = isBottomNav,
             colors = colors
         )

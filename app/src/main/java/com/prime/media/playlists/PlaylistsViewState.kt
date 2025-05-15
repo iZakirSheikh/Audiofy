@@ -26,5 +26,15 @@ import com.zs.core.db.playlists.Playlist
 object RoutePlaylists : Route
 
 interface PlaylistsViewState : DirectoryViewState<Playlist> {
-    fun onAction(playlist: Playlist, action: Action)
+
+    var showEditDialog: Boolean
+
+    fun onAction(action: Action)
+
+    fun create(value: Playlist)
+
+    fun delete(playlist: Playlist)
+
+    fun update(playlist: Playlist)
+
 }

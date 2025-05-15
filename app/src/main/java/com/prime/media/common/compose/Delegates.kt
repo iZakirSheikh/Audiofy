@@ -19,6 +19,7 @@
 package com.prime.media.common.compose
 
 import androidx.annotation.RawRes
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.Easing
@@ -301,3 +302,16 @@ inline fun <S, O> preference(key: Key.Key2<S, O>): androidx.compose.runtime.Stat
 @Stable
 fun purchase(id: String): State<Purchase?> =
     LocalSystemFacade.current.observePurchaseAsState(id)
+
+@Composable
+inline fun <S> ProvideAnimationScope(
+    target: S,
+    modifier: Modifier = Modifier,
+    crossinline content: @Composable() AnimatedContentScope.(targetState: S) -> Unit
+) {
+    AnimatedContent(target, modifier) { value ->
+        CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+            content(value)
+        }
+    }
+}

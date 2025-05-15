@@ -136,4 +136,5 @@ private val KoinAppModules = module {
     viewModelOf(::ArtistsViewModel)
     viewModelOf(::GenresViewModel)
     viewModelOf(::FoldersViewModel)
+    viewModelOf(::PlaylistsViewModel)
 }

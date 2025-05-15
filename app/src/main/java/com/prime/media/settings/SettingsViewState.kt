@@ -109,7 +109,7 @@ object Settings {
     const val PKG_MARKET_ID = "com.android.vending"
 
     val LightAccentColor = /*Color(0xFF514700)*/ Color(0xFF514700)
-    val DarkAccentColor = Color(0xFFD8A25E)
+    val DarkAccentColor = /*Color(0xFFD8A25E)*/ Color(0xFF7d6c1e)
 
     fun FeedbackIntent(subject: String) = Intent(Intent.ACTION_SENDTO) {
         data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
