@@ -35,9 +35,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Settings
@@ -86,7 +86,7 @@ import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.adaptive.HorizontalTwoPaneStrategy
 import com.zs.compose.theme.adaptive.SinglePaneStrategy
 import com.zs.compose.theme.adaptive.TwoPane
-import com.zs.compose.theme.adaptive.contentInsets
+import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.AdaptiveLargeTopAppBar
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.appbar.TopAppBarScrollBehavior
@@ -154,7 +154,7 @@ private fun LibraryTopAppBar(
                     },
                     modifier = Modifier
                         .thenIf(!immersive) {
-                            graphicsLayer{
+                            graphicsLayer {
                                 clip = true
                                 shape = AppBarDefaults.FloatingTopBarShape
                                 this.alpha = alpha
@@ -172,7 +172,7 @@ private fun LibraryTopAppBar(
             if (alpha < 0.9) {
                 Spacer(
                     modifier = Modifier
-                        .graphicsLayer(){
+                        .graphicsLayer() {
                             this.alpha = lerp(1f, 0f, alpha * 3f)
                         }
                         .thenIf(!immersive) { clip(AppBarDefaults.FloatingTopBarShape) }
@@ -221,24 +221,24 @@ fun Library(viewState: LibraryViewState) {
     }
 
     // obtain the padding of BottomNavBar/NavRail
-    val navBarPadding = WindowInsets.contentInsets
-    val provider = rememberAcrylicSurface()
+    val inAppNavBarInsets = WindowInsets.content
+    val surface = rememberAcrylicSurface()
     val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = AppTheme.colors
-
     // Layout
     TwoPane(
         spacing = CP.normal,
         strategy = strategy,
+        // TODO - Observe if AppNavBar is Positioned in Side or Bottom.
         topBar = {
-            // TODO - Observe if AppNavBar is PPositioned in Side or Bottom.
             LibraryTopAppBar(
-                strategy is SinglePaneStrategy,
-                viewState,
-                topAppBarScrollBehavior,
-                colors.background(provider),
+                immersive = strategy is SinglePaneStrategy,
+                viewState = viewState,
+                behavior = topAppBarScrollBehavior,
+                background = colors.background(surface),
             )
         },
+        // Show only when strategy is TwoPane.
         secondary = {
             if (strategy is SinglePaneStrategy) return@TwoPane
             val insets =
@@ -277,79 +277,76 @@ fun Library(viewState: LibraryViewState) {
                 }
             )
         },
+        //
         primary = {
-            val content: LazyListScope.() -> Unit = {
-                // Shortcuts.
-                if (strategy is SinglePaneStrategy) {
-                    // header
-                    item(contentType = "header") {
+            LazyColumn(
+                modifier = Modifier
+                    .source(surface)
+                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    .fadingEdge2(length = 50.dp),
+                contentPadding = PaddingValues(
+                    if (strategy is SinglePaneStrategy) CP.normal else 0.dp,
+                    vertical = CP.medium
+                ) +
+                        (WindowInsets.content
+                            .union(inAppNavBarInsets)
+                            .union(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)))
+                            .asPaddingValues(),
+                content = {
+                    // Shortcuts.
+                    if (strategy is SinglePaneStrategy) {
+                        // header
+                        item(contentType = "header") {
+                            LibraryHeader(
+                                text = textResource(R.string.library_shortcuts),
+                                padding = PaddingValues.Zero
+                            )
+                        }
+                        // Shortcuts
+                        item {
+                            Shortcuts(
+                                Modifier
+                                    .padding(horizontal = CP.medium)
+                                    .fillMaxWidth(),
+                            )
+                        }
+                    }
+                    // Resents.
+                    item {
                         LibraryHeader(
-                            text = textResource(R.string.library_shortcuts),
-                            padding = PaddingValues.Zero
+                            modifier = Modifier.fillMaxWidth() then HeaderMargin,
+                            text = textResource(R.string.library_history),
                         )
                     }
-                    // Shortcuts
                     item {
-                        Shortcuts(
-                            Modifier
-                                .padding(horizontal = CP.medium)
+                        Recents(
+                            viewState,
+                            modifier = Modifier.clip(AppTheme.shapes.xLarge),
+                        )
+                    }
+
+                    item {
+                        Promotions(
+                            modifier = Modifier
+                                .padding(horizontal = CP.medium, vertical = CP.medium)
                                 .fillMaxWidth(),
                         )
                     }
-                }
-                item {
-                    // Resents.
-                    LibraryHeader(
-                        modifier = Modifier.fillMaxWidth() then HeaderMargin,
-                        text = textResource(R.string.library_history),
-                    )
-                }
-                item {
-                    Recents(
-                        viewState,
-                        modifier = Modifier.clip(AppTheme.shapes.xLarge),
-                    )
-                }
-
-                item {
-                    Promotions(
-                        modifier = Modifier
-                            .padding(horizontal = CP.medium, vertical = CP.medium)
-                            .fillMaxWidth(),
-                        )
-                }
-
-                item {
                     // Newly Added
-                    LibraryHeader(
-                        modifier = Modifier.fillMaxWidth() then HeaderMargin,
-                        text = textResource(id = R.string.library_recently_added),
-                    )
+                    item {
+                        LibraryHeader(
+                            modifier = Modifier.fillMaxWidth() then HeaderMargin,
+                            text = textResource(id = R.string.library_recently_added),
+                        )
+                    }
+                    item {
+                        NewlyAdded(
+                            viewState,
+                            modifier = Modifier.clip(AppTheme.shapes.xLarge)
+                        )
+                    }
                 }
-                item {
-                    NewlyAdded(
-                        viewState,
-                        modifier = Modifier.clip(AppTheme.shapes.xLarge)
-                    )
-                }
-            }
-            //
-            val padding = WindowInsets.contentInsets +
-                    navBarPadding +
-                    WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() +
-                    PaddingValues(
-                        vertical = CP.medium,
-                        horizontal = if (strategy is SinglePaneStrategy) CP.normal else 0.dp
-                    )
-            LazyColumn(
-                contentPadding = padding,
-                modifier = Modifier
-                    .source(provider)
-                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .fadingEdge2(length = 50.dp),
-                content = content
             )
-
         }
     )
 }

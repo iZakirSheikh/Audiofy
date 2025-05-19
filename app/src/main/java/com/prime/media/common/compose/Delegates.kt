@@ -175,6 +175,9 @@ inline fun Placeholder(
     )
 }
 
+
+private val MASK_TOP_EDGE = listOf(Color.Black, Color.Transparent)
+private val MASK_BOTTOM_EDGE = listOf(Color.Transparent, Color.Black)
 /**
  * Applies a fading edge effect to content.
  *
@@ -189,30 +192,25 @@ inline fun Placeholder(
 fun Modifier.fadingEdge2(
     length: Dp = 10.dp,
     vertical: Boolean = true,
-) =
-    graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-        .drawWithContent {
-            drawContent()
-            drawRect(
-                Brush.verticalGradient(
-                    listOf(Color.Black, Color.Transparent),
-                    endY = length.toPx(),
-                    startY = 0f
-                ),
-                blendMode = BlendMode.DstOut,
-                size = size.copy(height = length.toPx())
-            )
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color.Black),
-                    startY = size.height - length.toPx(),
-                    endY = size.height
-                ),
-                //  topLeft = Offset(0f, size.height - length.toPx()),
-                // size = size.copy(height = length.toPx()),
-                blendMode = BlendMode.DstOut
-            )
-        }
+) = graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).drawWithContent {
+    drawContent()
+    drawRect(
+        Brush.verticalGradient(
+            MASK_TOP_EDGE, endY = length.toPx(), startY = 0f
+        ), blendMode = BlendMode.DstOut, size = size.copy(height = length.toPx())
+    )
+    drawRect(
+        brush = Brush.verticalGradient(
+            colors = MASK_BOTTOM_EDGE,
+            startY = size.height - length.toPx(),
+            endY = size.height
+        ),
+        //  topLeft = Offset(0f, size.height - length.toPx()),
+        // size = size.copy(height = length.toPx()),
+        blendMode = BlendMode.DstOut
+    )
+}
+
 
 /**
  * Adds a composable route to the [NavGraphBuilder] for the given [Route].
@@ -303,6 +301,21 @@ inline fun <S, O> preference(key: Key.Key2<S, O>): androidx.compose.runtime.Stat
 fun purchase(id: String): State<Purchase?> =
     LocalSystemFacade.current.observePurchaseAsState(id)
 
+/**
+ * A composable function that provides an [AnimatedContentScope] to its content.
+ *
+ * This function is a wrapper around [AnimatedContent] that also provides the
+ * [AnimatedContentScope] through a [CompositionLocalProvider] using [LocalNavAnimatedVisibilityScope].
+ * This allows child composables to access the animation scope, for example, to coordinate
+ * animations.
+ *
+ * @param S The type of the [target] state.
+ * @param target The target state for the [AnimatedContent]. When this state changes,
+ *               [AnimatedContent] will animate between the old and new content.
+ * @param modifier Optional [Modifier] to be applied to the [AnimatedContent].
+ * @param content A lambda that receives the [AnimatedContentScope] and the current [targetState].
+ *                This is where you define the content that will be animated.
+ */
 @Composable
 inline fun <S> ProvideAnimationScope(
     target: S,

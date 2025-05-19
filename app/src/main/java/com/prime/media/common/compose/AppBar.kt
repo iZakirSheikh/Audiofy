@@ -18,7 +18,6 @@
 
 package com.prime.media.common.compose
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -28,29 +27,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.Colors
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.appbar.FloatingLargeTopAppBar
 import com.zs.compose.theme.appbar.TopAppBarScrollBehavior
 import com.zs.compose.theme.appbar.TopAppBarStyle
-
-private val Colors.border
-    get() = BorderStroke(
-        0.5.dp,
-        Brush.verticalGradient(
-            listOf(
-                if (isLight) background else Color.Gray.copy(0.24f),
-                if (isLight) background.copy(0.3f) else Color.Gray.copy(0.075f),
-            )
-        )
-    )
 
 @Composable
 @NonRestartableComposable
@@ -78,7 +63,7 @@ fun FloatingLargeTopAppBar(
             modifier = Modifier
                 .shadow(androidx.compose.ui.unit.lerp(100.dp, 0.dp, fraction / .05f), AppBarDefaults.FloatingTopBarShape)
                 .thenIf(fraction == 0f) {
-                    border(colors.border, AppBarDefaults.FloatingTopBarShape)
+                    border(colors.shine, AppBarDefaults.FloatingTopBarShape)
                 }
                 .background(background)
                 .fillMaxSize()

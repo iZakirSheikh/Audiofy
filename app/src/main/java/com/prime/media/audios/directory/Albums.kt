@@ -18,7 +18,6 @@
 
 package com.prime.media.audios.directory
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -42,10 +41,9 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.text.Label
-import com.zs.core.store.models.Audio
 import com.zs.core.store.models.Audio.Album
-import com.zs.compose.foundation.textResource as stringResource
 import com.prime.media.common.compose.ContentPadding as CP
+import com.zs.compose.foundation.textResource as stringResource
 
 object RouteAlbums : Route
 

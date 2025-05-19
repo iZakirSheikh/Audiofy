@@ -1,21 +1,3 @@
-/*
- * Copyright 2025 Zakir Sheikh
- *
- * Created by Zakir Sheikh on 10-05-2025.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.prime.media.settings
 
 import android.content.Intent
@@ -34,6 +16,16 @@ import com.prime.media.common.IAP_ARTWORK_SHAPE_ROUNDED_RECT
 import com.prime.media.common.IAP_PLATFORM_WIDGET_IPHONE
 import com.prime.media.common.NightMode
 import com.prime.media.common.Route
+import com.prime.media.settings.Settings.BLACKLISTED_FILES
+import com.prime.media.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
+import com.prime.media.settings.Settings.GitHubIssuesPage
+import com.prime.media.settings.Settings.GithubIntent
+import com.prime.media.settings.Settings.MIN_TRACK_LENGTH_SECS
+import com.prime.media.settings.Settings.PrivacyPolicyIntent
+import com.prime.media.settings.Settings.TRASH_CAN_ENABLED
+import com.prime.media.settings.Settings.TelegramIntent
+import com.prime.media.settings.Settings.USE_IN_BUILT_AUDIO_FX
+import com.prime.media.settings.Settings.USE_LEGACY_ARTWORK_METHOD
 import com.zs.core.billing.Paymaster
 import com.zs.core.common.Intent
 import com.zs.preferences.IntSaver
@@ -44,6 +36,10 @@ import com.zs.preferences.floatPreferenceKey
 import com.zs.preferences.intPreferenceKey
 import com.zs.preferences.stringPreferenceKey
 import com.zs.preferences.stringSetPreferenceKey
+
+private const val TAG = "Settings"
+
+object RouteSettings : Route
 
 private val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
@@ -93,28 +89,43 @@ val FontFamily.Companion.RobotoFontFamily get() = com.prime.media.settings.Robot
 val DancingScriptFontFamily = FontFamily("Dancing Script")
 val FontFamily.Companion.DancingScriptFontFamily get() = com.prime.media.settings.DancingScriptFontFamily
 
-private val ColorSaver = object : IntSaver<Color> {
-    override fun restore(value: Int): Color = Color(value)
-    override fun save(value: Color): Int = value.toArgb()
-}
-
 /**
- * Represents the route definition for settings screen.
+ * ##### Settings
+ *
+ * This object contains various preference keys and their default values used throughout the app.
+ *
+ * @property FeedbackIntent Intent to send feedback via email.
+ * @property PrivacyPolicyIntent Intent to view the privacy policy document.
+ * @property GitHubIssuesPage Intent to view the GitHub issues page.
+ * @property TelegramIntent Intent to open the Telegram support channel.
+ * @property GithubIntent Intent to view the GitHub repository.
+ * @property MIN_TRACK_LENGTH_SECS The length/duration of the track in mills considered above which to include
+ * @property USE_LEGACY_ARTWORK_METHOD The method to use for fetching artwork. default uses legacy (i.e.) MediaStore.
+ * @property TRASH_CAN_ENABLED Preference key for enabling trash can feature.
+ * @property BLACKLISTED_FILES The set of files/ folders that have been excluded from media scanning.
+ *
+ * @property USE_IN_BUILT_AUDIO_FX Indicates whether to use the built-in audio effects or third-party audio effects.
+ *
+ * * If set to true, the application will use the built-in audio effects.
+ * * If set to false, third-party audio effects may be used, if available.
+ * @property GRID_ITEM_SIZE_MULTIPLIER Preference key for the grid item size multiplier (0.6 - 2.0f).
+ * Adjust to make grid items smaller or larger.
+ *
  */
-object RouteSettings : Route
-
 object Settings {
+    //
     const val PREFIX_MARKET_URL = "market://details?id="
     const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
     const val PKG_MARKET_ID = "com.android.vending"
-
+    // Default Accents
     val LightAccentColor = /*Color(0xFF514700)*/ Color(0xFF514700)
     val DarkAccentColor = /*Color(0xFFD8A25E)*/ Color(0xFF7d6c1e)
-
-    fun FeedbackIntent(subject: String) = Intent(Intent.ACTION_SENDTO) {
-        data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
-        putExtra(Intent.EXTRA_SUBJECT, subject)
+    //
+    val ColorSaver = object : IntSaver<Color> {
+        override fun restore(value: Int): Color = Color(value)
+        override fun save(value: Color): Int = value.toArgb()
     }
+    // Intents
     val PrivacyPolicyIntent = Intent(Intent.ACTION_VIEW) {
         data =
             Uri.parse("https://docs.google.com/document/d/1AWStMw3oPY8H2dmdLgZu_kRFN-A8L6PDShVuY8BAhCw/edit?usp=sharing")
@@ -139,8 +150,8 @@ object Settings {
         data = Uri.parse("https://crowdin.com/project/audiofy")
     }
 
+    // Keys
     private const val PREFIX = "Audiofy"
-
     val NIGHT_MODE =
         stringPreferenceKey(
             "${PREFIX}_night_mode",
@@ -201,8 +212,7 @@ object Settings {
         }
     )
 
-    val SIGNATURE =
-        stringPreferenceKey("${PREFIX}_signature")
+    val SIGNATURE = stringPreferenceKey("${PREFIX}_signature")
     val ARTWORK_BORDERED =
         booleanPreferenceKey("${PREFIX}_artwork_bordered", false)
 
@@ -227,6 +237,9 @@ object Settings {
     val DefaultFontFamily = FontFamily.Default
 }
 
+/**
+ * Represents the state of the Settings screen.
+ */
 @Stable
 interface SettingsViewState {
     fun <S, O> set(key: Key<S, O>, value: O)

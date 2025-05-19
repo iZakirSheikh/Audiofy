@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavDestination
-import com.prime.media.common.Route.ArgsFactory
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
@@ -46,15 +45,6 @@ typealias Filter = Pair<Boolean, Action>
  * @param T The type of items in the list.
  */
 typealias Mapped<T> = Map<CharSequence, List<T>>
-
-/**
- * Retrieves the [SafeArgs] object of type[T] associated with the given [SafeArgs] instance
- * from this [SavedStateHandle].
- *
- * @param route The [SafeArgs] instance representing the navigation route and arguments.
- * @return The args object of type [T] containing the deserialized arguments.
- **/
-operator fun <T> SavedStateHandle.get(route: ArgsFactory<T>): T = route.build(this)
 
 /**
  * Extracts the domain portion from a [NavDestination]'s route.
@@ -178,5 +168,3 @@ fun <T> Flow<T>.debounceAfterFirst(delayMillis: Long): Flow<T> {
  */
 fun Context.fileSizeFormatted(bytes: Long) =
     Formatter.formatFileSize(this, bytes)
-
-

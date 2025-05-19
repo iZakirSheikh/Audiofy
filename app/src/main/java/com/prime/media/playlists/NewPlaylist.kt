@@ -19,16 +19,7 @@
 package com.prime.media.playlists
 
 import android.view.Gravity
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine
 import androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
 import androidx.compose.material.icons.Icons
@@ -41,7 +32,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -56,7 +46,6 @@ import com.zs.compose.theme.Button
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalWindowSize
-import com.zs.compose.theme.WindowSize
 import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.appbar.TopAppBar
 import com.zs.compose.theme.minimumInteractiveComponentSize
@@ -65,11 +54,8 @@ import com.zs.compose.theme.text.OutlinedTextField
 import com.zs.core.common.PathUtils
 import com.zs.core.db.playlists.Playlist
 import androidx.compose.foundation.text.input.rememberTextFieldState as TextFieldValue
-import com.prime.media.common.compose.ContentPadding as CP
 
 private const val TAG = "NewPlaylist"
-
-private val hPadding = PaddingValues(horizontal = CP.normal, vertical = CP.medium)
 
 /**
  * A composable that edits or generates a new playlist.
@@ -83,17 +69,18 @@ fun NewPlaylist(
     onConfirm: (value: Playlist?) -> Unit,
 ) {
     val (width, height) = LocalWindowSize.current
+    if (!expanded) return
+    val title = TextFieldValue(value?.name ?: "")
+    val desc = TextFieldValue(value?.desc ?: "")
+    val isError by remember {
+        derivedStateOf { !PathUtils.VALID_NAME_REGEX.matches(title.text) }
+    }
     AlertDialog(
-        expanded = expanded,
         onDismissRequest = { onConfirm(null) },
-        title = {
+        shape = AppTheme.shapes.medium,
+        topBar = {
             TopAppBar(
-                title = {
-                    Label(
-                        textResource(R.string.scr_new_playlists_title),
-                        maxLines = 2
-                    )
-                },
+                title = { Label(textResource(R.string.scr_new_playlists_title), maxLines = 2) },
                 navigationIcon = {
                     Icon(
                         Icons.Outlined.PlaylistAdd,
@@ -112,8 +99,8 @@ fun NewPlaylist(
                 background = Background(AppTheme.colors.background(2.dp))
             )
         },
-        shape = AppTheme.shapes.small,
         content = {
+            //
             val view = LocalView.current
             val dialogWindowProvider = view.parent as? DialogWindowProvider
             if ((width < Category.Medium || height < Category.Medium) && dialogWindowProvider != null) {
@@ -122,60 +109,49 @@ fun NewPlaylist(
                     dialogWindowProvider.window.setGravity(gravity)
                 }
             }
-            Column {
-                // Title
-                val title = TextFieldValue(value?.name ?: "")
-                val isError by remember {
-                    derivedStateOf { !PathUtils.VALID_NAME_REGEX.matches(title.text) }
-                }
-                OutlinedTextField(
-                    title,
-                    shape = AppTheme.shapes.small,
-                    label = { Label(stringResource(R.string.playlists_enter_playlist_name)) },
-                    modifier = Modifier
-                        .padding(hPadding)
-                        .fillMaxWidth(),
-                    lineLimits = SingleLine,
-                    leadingIcon = {
-                        Icon(Icons.Outlined.Title, contentDescription = null)
-                    },
-                    placeholder = {
-                        Label(stringResource(R.string.playlists_text_field_placeholder))
-                    },
-                    isError = isError
-                )
 
-                // Desc
-                val desc = TextFieldValue(value?.desc ?: "")
-                OutlinedTextField(
-                    desc,
-                    label = { Label("Desc") },
-                    shape = AppTheme.shapes.small,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(hPadding)
-                        .weight(1f, false),
-                    lineLimits = MultiLine(minHeightInLines = 5),
-                    placeholder = { Label(stringResource(R.string.playlists_playlist_desc_placeholder)) }
-                )
+            // Title
+            OutlinedTextField(
+                title,
+                shape = AppTheme.shapes.small,
+                label = { Label(stringResource(R.string.playlists_enter_playlist_name)) },
+                modifier = Modifier
+                    .fillMaxWidth(),
+                lineLimits = SingleLine,
+                leadingIcon = {
+                    Icon(Icons.Outlined.Title, contentDescription = null)
+                },
+                placeholder = {
+                    Label(stringResource(R.string.playlists_text_field_placeholder))
+                },
+                isError = isError
+            )
 
-                Button(
-                    stringResource(if (value == null) R.string.create else R.string.update),
-                    onClick = {
-                        onConfirm(
-                            value?.clone(title.text.toString(), desc.text.toString())
-                                ?: Playlist(title.text.toString(), desc.text.toString())
-                        )
-                    },
-                    icon = Icons.Outlined.PlaylistAddCircle,
-                    modifier = Modifier
-                        .padding(hPadding)
-                        .align(Alignment.End),
-                    elevation = null,
-                    enabled = !isError
-                )
-            }
+            // Desc
+            OutlinedTextField(
+                desc,
+                label = { Label("Desc") },
+                shape = AppTheme.shapes.small,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, false),
+                lineLimits = MultiLine(minHeightInLines = 5),
+                placeholder = { Label(stringResource(R.string.playlists_playlist_desc_placeholder)) }
+            )
         },
-        modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+        bottomBar = {
+            Button(
+                stringResource(if (value == null) R.string.create else R.string.update),
+                onClick = {
+                    onConfirm(
+                        value?.clone(title.text.toString(), desc.text.toString())
+                            ?: Playlist(title.text.toString(), desc.text.toString())
+                    )
+                },
+                icon = Icons.Outlined.PlaylistAddCircle,
+                elevation = null,
+                enabled = !isError
+            )
+        }
     )
 }

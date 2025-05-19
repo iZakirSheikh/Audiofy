@@ -23,4 +23,14 @@ import android.net.Uri
 /**
  * Represents the current state of the [Playback]
  */
-class NowPlaying(val uri: Uri)
+class NowPlaying(
+    val title: String,
+    val subtitle: String,
+    val artwork: Uri?,
+    val speed: Float,
+    val duration: Long,
+    val position: Long,
+    val favourite: Boolean,
+    val playing: Boolean,
+    val mimeType: String,
+)

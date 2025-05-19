@@ -258,7 +258,7 @@
     <string name="dive_in">Dive In!</string>
     <string name="home">Home</string>
     <string name="msg_update_check_error"><b>Error</b>\nOops an unknown error occurred while checking for update.</string>
-    <string name="scr_new_playlists_title">Playlist\n<font color='grey' size='11'><b>Craft</b> your own playlist or <b>edit</b> an existing one.</font></string>
+    <string name="scr_new_playlists_title">Playlist\n<font color='grey' size='11'><sup><b>Craft</b> your own playlist or <b>edit</b> an existing one.</sup></font></string>
     <string name="remove">Remove</string>
     <string name="play_order">Play order</string>
     <string name="scr_playlist_files_d"><font color='grey' size="11">%1$d\n</font>Files</string>

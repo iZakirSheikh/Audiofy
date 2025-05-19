@@ -39,7 +39,6 @@ import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Surface
 import com.zs.compose.theme.text.Label
 import com.zs.core.store.models.Audio.Genre

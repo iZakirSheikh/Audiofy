@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 04-02-2025.
+ * Created by Zakir Sheikh on 19-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
@@ -91,7 +90,7 @@ import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.adaptive.FabPosition
 import com.zs.compose.theme.adaptive.Scaffold
-import com.zs.compose.theme.adaptive.contentInsets
+import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.sharedBounds
@@ -104,20 +103,11 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState as GridState
 import com.prime.media.common.compose.ContentPadding as CP
 import com.zs.compose.foundation.textResource as stringResource
 
+
 private val DEFAULT_MIN_SIZE = 80.dp
 
 // The default padding to content
 private val ContentPadding = Padding(start = CP.normal, end = CP.normal, bottom = CP.normal)
-
-private val Padding.asWindowInsets
-    @Composable
-    @NonRestartableComposable
-    get() = WindowInsets(
-        top = calculateTopPadding(),
-        bottom = calculateBottomPadding(),
-        left = calculateLeftPadding(LocalLayoutDirection.current),
-        right = calculateRightPadding(LocalLayoutDirection.current)
-    )
 
 //
 private const val SHOW_FAB = 0
@@ -125,8 +115,10 @@ private const val SHOW_SEARCH_VIEW = 1
 private const val SHOW_ACTION_MENU = 2
 private const val SHOW_NONE = -1
 
+//
 val FabSharedAnimModifier = Modifier.sharedBounds("fab")
 
+//
 @Composable
 @NonRestartableComposable
 private fun SearchView(
@@ -194,10 +186,9 @@ fun <T> Directory(
     val (width, height) = LocalWindowSize.current
     // Properties
     val surface = rememberAcrylicSurface()
-    val inAppNavInsets = WindowInsets.contentInsets
+    val inAppNavInsets = WindowInsets.content
     val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = AppTheme.colors
-
     // Handle back navigation.
     val navController = LocalNavController.current
     val onNavigateUp: () -> Unit = {
@@ -208,14 +199,13 @@ fun <T> Directory(
         }
     }
     BackHandler(enabled = isSearchVisible || viewState.focused != null, onNavigateUp)
-
+    //
     val showFab = when {
         viewState.focused != null -> SHOW_ACTION_MENU
         isSearchVisible -> SHOW_SEARCH_VIEW
         viewState.primaryAction != null -> SHOW_FAB
         else -> SHOW_NONE
     }
-
     //
     Scaffold(
         fabPosition = when {
@@ -223,6 +213,7 @@ fun <T> Directory(
             width > height -> FabPosition.End
             else -> FabPosition.Center
         },
+        //
         topBar = {
             FloatingLargeTopAppBar(
                 title = { Label(viewState.title, maxLines = 2) },
@@ -237,6 +228,7 @@ fun <T> Directory(
                             contentDescription = viewState.title.toString(),
                             modifier = Modifier.minimumInteractiveComponentSize()
                         )
+                    // Else add navigate-up button
                     IconButton(
                         icon = Icons.AutoMirrored.Filled.ReplyAll,
                         contentDescription = null,
@@ -258,12 +250,13 @@ fun <T> Directory(
                 }
             )
         },
+        //
         floatingActionButton = {
             ProvideAnimationScope(
                 showFab,
                 Modifier.windowInsetsPadding(
                     WindowInsets.ime
-                        .union(inAppNavInsets.asWindowInsets)
+                        .union(inAppNavInsets)
                         .union(WindowInsets.navigationBars)
                 ),
                 content = { value ->
@@ -299,14 +292,15 @@ fun <T> Directory(
                 }
             )
         },
+        //
         content = {
             // Collect the data from the viewState, initially null representing loading state.
             // Get the grid item size multiplier from user preferences.
             val data by viewState.data.collectAsState()
             val multiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
-            val padding = ContentPadding + inAppNavInsets +
-                    WindowInsets.contentInsets +
-                    WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues()
+            val padding = ContentPadding +
+                    inAppNavInsets.union(WindowInsets.content).union(WindowInsets.systemBars)
+                        .asPaddingValues()
             LazyVerticalGrid(
                 state = state,
                 columns = GridCells.Adaptive(minSize * multiplier),
@@ -323,7 +317,7 @@ fun <T> Directory(
                     val values = emit(data) ?: return@LazyVerticalGrid
                     // Filters: Display the filters section.
                     item(
-                        "",
+                        "directory_filters",
                         contentType = "filters",
                         span = fullLineSpan,
                         content = {
@@ -341,21 +335,22 @@ fun <T> Directory(
                     )
                     //
                     for ((header, values) in values) {
-                        if (header.isNotBlank()) // only show this if non-blank.
-                            stickyHeader(
-                                state,
-                                header,
-                                contentType = "header",
-                                content = {
-                                    Box(
-                                        modifier = Modifier
-                                            .animateItem()
-                                            .padding(horizontal = 6.dp),
-                                        content = { TonalHeader(header) }
-                                    )
-                                }
-                            )
+                        // only show this if non-blank.
+                        if (header.isNotBlank()) stickyHeader(
+                            state,
+                            header,
+                            contentType = "header",
+                            content = {
+                                Box(
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .padding(horizontal = 6.dp),
+                                    content = { TonalHeader(header) }
+                                )
+                            }
+                        )
 
+                        //
                         items(
                             values,
                             key = key,
@@ -372,7 +367,8 @@ fun <T> Directory(
                             Spacer(Modifier.padding(vertical = CP.normal))
                         }
                     }
-                }
+
+                    }
             )
         }
     )

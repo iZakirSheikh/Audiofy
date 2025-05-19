@@ -21,7 +21,6 @@
 package com.prime.media.common
 
 import androidx.compose.runtime.Stable
-import com.prime.media.common.WindowStyle.Companion.FLAG_STYLE_AUTO
 
 // Note to myself
 /*
@@ -143,10 +142,10 @@ value class WindowStyle(val value: Int = FLAG_STYLE_AUTO) {
         return "WindowStyle(value=$value)"
     }
 
-    val flagNavBarVisibility: Int get() = (value and NAV_BAR_VISIBILITY_MASK) shr 0
-    val flagSystemBarBackground: Int get() = (value and SYSTEM_BARS_BG_MASK) shr 3
-    val flagSystemBarAppearance: Int get() = (value and SYSTEM_BARS_APPEARANCE_MASK) shr 6
-    val flagSystemBarVisibility: Int get() = (value and SYSTEM_BARS_VISIBILITY_MASK) shr 9
-    val flagNavBarPosition: Int get() = (value and NAV_BAR_POSITION_MASK) shr 12
-    val flagFabVisibility: Int get() = (value and FAB_VISIBILITY_MASK) shr 14
+    val flagNavBarVisibility: Int get() = (value and NAV_BAR_VISIBILITY_MASK)
+    val flagSystemBarBackground: Int get() = (value and SYSTEM_BARS_BG_MASK)
+    val flagSystemBarAppearance: Int get() = (value and SYSTEM_BARS_APPEARANCE_MASK)
+    val flagSystemBarVisibility: Int get() = (value and SYSTEM_BARS_VISIBILITY_MASK)
+    val flagNavBarPosition: Int get() = (value and NAV_BAR_POSITION_MASK)
+    val flagFabVisibility: Int get() = (value and FAB_VISIBILITY_MASK)
 }

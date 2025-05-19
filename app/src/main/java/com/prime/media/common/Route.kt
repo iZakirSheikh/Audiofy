@@ -18,8 +18,6 @@
 
 package com.prime.media.common
 
-import androidx.lifecycle.SavedStateHandle
-
 private val SPLIT_REGEX = Regex("(?=[A-Z])")
 
 /**
@@ -49,30 +47,4 @@ interface Route {
      * @return The navigation direction for this route.
      */
     operator fun invoke(): String = route
-
-    /**
-     * An interface for factories that can build arguments for a [Route] from a
-     * [SavedStateHandle] and construct a navigation direction string from those arguments.
-     *
-     * @param T The type of the arguments for this route.
-     */
-    interface ArgsFactory<T> {
-
-        /**
-         * Builds the arguments for this route from the provided [SavedStateHandle].
-         *
-         * @param from The [SavedStateHandle] to use for building the arguments.
-         * @return The arguments for this route.
-         */
-        fun build(from: SavedStateHandle): T
-
-        /**
-         * Constructs the navigation direction for this route, replacing placeholders in [route]
-         * with the provided arguments.
-         *
-         * @param arg The arguments to use for constructing the direction.
-         */
-        operator fun invoke(arg: T): String
-    }
 }
-

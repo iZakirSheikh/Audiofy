@@ -21,3 +21,5 @@ package com.prime.media.videos
 import com.prime.media.common.Route
 
 object RouteVideos: Route
+
+interface VideosViewState

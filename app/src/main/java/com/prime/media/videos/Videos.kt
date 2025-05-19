@@ -18,3 +18,9 @@
 
 package com.prime.media.videos
 
+import androidx.compose.runtime.Composable
+
+@Composable
+fun Videos(viewState: VideosViewState) {
+
+}

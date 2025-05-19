@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import coil3.compose.AsyncImage
 import com.prime.media.common.Route
-import com.prime.media.common.Route.ArgsFactory
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
@@ -56,21 +55,16 @@ import com.zs.compose.theme.text.Label
 import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Folder
 
-object RouteFolders : Route, ArgsFactory<Boolean> {
-
-    private const val PARAM_IS_OF_AUDIOS = "param_is_of_audios"
-
+object RouteFolders : Route {
+    const val PARAM_IS_OF_AUDIOS = "param_is_of_audios"
     override val route: String = "$domain/{${PARAM_IS_OF_AUDIOS}}"
 
-
-    override fun invoke(ofAudios: Boolean): String {
-        return "$domain/${ofAudios}"
-    }
-
-    override fun build(handle: SavedStateHandle): Boolean {
-        return handle<Boolean>(PARAM_IS_OF_AUDIOS) == true
-    }
+    override fun invoke(): String  = invoke(true)
+    operator fun invoke(ofAudios: Boolean): String = "$domain/${ofAudios}"
 }
+
+operator fun SavedStateHandle.get(handle: RouteFolders) =
+    this<Boolean>(handle.PARAM_IS_OF_AUDIOS) == true
 
 private const val TAG = "Folders"
 private val FOLDER_SHAPE = SquircleShape(0.55f)

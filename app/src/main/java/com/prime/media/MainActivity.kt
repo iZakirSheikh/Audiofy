@@ -139,7 +139,6 @@ private inline fun <S, O> Preferences.observeAsState(key: Key<S, O>): State<O?> 
  *        is going on.
  */
 class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
-
     private val snackbarHostState: SnackbarHostState by inject()
     private val preferences: Preferences by inject()
     private var navController: NavHostController? = null
@@ -324,10 +323,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }
     }
 
-    private fun showPromoToast(
-        index: Int,
-        delay: Long = 5_000,
-    ) {
+    private fun showPromoToast(index: Int, delay: Long = 5_000) {
         // This function is designed to display promotional messages identified by index.
         // - An index of 0 indicates the "What's New" message.
         // - An index of 1 prompts the user to buy a coffee.
@@ -376,11 +372,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         super.onDestroy()
     }
 
-    override fun onDestinationChanged(
-        cont: NavController,
-        dest: NavDestination,
-        args: Bundle?,
-    ) {
+    override fun onDestinationChanged(cont: NavController, dest: NavDestination, args: Bundle?) {
         analytics.logEvent(Analytics.EVENT_SCREEN_VIEW) {
             // create params for the event.
             val domain = dest.domain ?: "unknown"
@@ -419,7 +411,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
                 // Promotional messages start with index 1.
                 // The index is calculated using the formula: (counter % MAX_PROMO_MESSAGES).coerceAtLeast(1).
                 // Each message is skipped by PROMO_SKIP_LAUNCHES number of launches.
-                val counter = preferences[Settings.KEY_LAUNCH_COUNTER] ?: 0
+                val counter = preferences[Settings.KEY_LAUNCH_COUNTER]
                 if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
                     return@launch
                 val newCounter = counter - MIN_LAUNCHES_BEFORE_REVIEW
@@ -446,9 +438,15 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         // Set the content of the activity
         setContent {
             val navController = rememberNavController()
+            // If the action is VIEW, load the content first, regardless
+            // of whether the app is currently locked or not. This allows
+            // users to view shared media directly.
+            // else If authentication is required, move to the lock screen
             Home(
-                if (intent.action == Intent.ACTION_VIEW) RouteConsole
-                else RouteLibrary,
+                when {
+                    intent.action == Intent.ACTION_VIEW -> RouteConsole
+                    else -> RouteLibrary
+                },
                 snackbarHostState,
                 navController
             )

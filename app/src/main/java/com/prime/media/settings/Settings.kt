@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -47,7 +48,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
@@ -73,6 +73,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -112,7 +113,7 @@ import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.adaptive.HorizontalTwoPaneStrategy
 import com.zs.compose.theme.adaptive.SinglePaneStrategy
 import com.zs.compose.theme.adaptive.TwoPane
-import com.zs.compose.theme.adaptive.contentInsets
+import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Header
@@ -230,7 +231,7 @@ private inline fun LazyListScope.General(
     }
 }
 
-/** Represents items that are related to appearence of the App. */
+/** Represents items that are related to appearance of the App. */
 private inline fun LazyListScope.Appearence(
     viewState: SettingsViewState,
 ) {
@@ -506,8 +507,6 @@ private fun ColumnScope.AboutUs() {
     }
 }
 
-private val ContentPadding = Padding(CP.large, vertical = CP.normal)
-
 /**
  * Represents the settings screen.
  */
@@ -516,22 +515,27 @@ fun Settings(viewState: SettingsViewState) {
     // Retrieve the current window size
     val (width, _) = LocalWindowSize.current
     // Determine the two-pane strategy based on window width range
+    // when in mobile portrait; we don't show second pane;
     val strategy = when {
         // TODO  -Replace with OnePane Strategy when updating TwoPane Layout.
         width < Category.Medium -> SinglePaneStrategy
         else -> HorizontalTwoPaneStrategy(0.5f) // Use horizontal layout with 50% split for large screens
     }
-    val provider = rememberAcrylicSurface()
+    // obtain the padding of BottomNavBar/NavRail
+    val inAppNavBarInsets = WindowInsets.content
+    val surface = rememberAcrylicSurface()
     val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = AppTheme.colors
+
+    // Place the content
     TwoPane(
-        spacing = 0.dp,
+        spacing = CP.normal,
         strategy = strategy,
         topBar = {
             FloatingLargeTopAppBar(
                 title = { Label(textResource(R.string.settings)) },
                 scrollBehavior = topAppBarScrollBehavior,
-                background = colors.background(provider),
+                background = colors.background(surface),
                 insets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
                 navigationIcon = {
                     Icon(
@@ -541,30 +545,18 @@ fun Settings(viewState: SettingsViewState) {
                     )
                 },
                 actions = {
+                    // Join our telegram channel
                     val facade = LocalSystemFacade.current
-                    // Feedback
                     IconButton(
-                        icon = Icons.Outlined.AlternateEmail,
+                        icon = Icons.Outlined.Textsms,
                         contentDescription = null,
-                        onClick = { facade.launch(Settings.FeedbackIntent("")) },
-                    )
-                    // Star on Github
-                    IconButton(
-                        icon = Icons.Outlined.DataObject,
-                        contentDescription = null,
-                        onClick = { facade.launch(Settings.GithubIntent) },
+                        onClick = { facade.launch(Settings.TelegramIntent) },
                     )
                     // Report Bugs on Github.
                     IconButton(
                         icon = Icons.Outlined.BugReport,
                         contentDescription = null,
                         onClick = { facade.launch(Settings.GitHubIssuesPage) },
-                    )
-                    // Join our telegram channel
-                    IconButton(
-                        icon = Icons.Outlined.Textsms,
-                        contentDescription = null,
-                        onClick = { facade.launch(Settings.TelegramIntent) },
                     )
                 }
             )
@@ -576,30 +568,46 @@ fun Settings(viewState: SettingsViewState) {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
+                    .padding(top = CP.medium)
                     .widthIn(max = sPaneMaxWidth)
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.End + WindowInsetsSides.Top)),
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.union(inAppNavBarInsets).only(
+                            WindowInsetsSides.Vertical + WindowInsetsSides.End
+                        )
+                    ),
                 content = {
                     Header(
-                        textResource(R.string.about_us),
+                        stringResource(R.string.about_us),
                         color = AppTheme.colors.accent,
                         // drawDivider = true,
                         style = AppTheme.typography.title3,
-                        contentPadding = Padding(top = CP.normal, end = CP.medium)
+                        contentPadding = Padding(
+                            vertical = CP.normal,
+                            horizontal = CP.medium
+                        )
                     )
                     AboutUs()
                 }
             )
+
         },
         primary = {
             val state = rememberLazyListState()
-            val safeInsets = WindowInsets.systemBars.only(WindowInsetsSides.Vertical)
             LazyColumn(
                 state = state,
-                contentPadding = ContentPadding + WindowInsets.contentInsets + safeInsets.asPaddingValues(),
+                // In immersive mode, add horizontal padding to prevent settings from touching the screen edges.
+                // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
+                // Non-immersive layouts only need vertical padding.
+                contentPadding = Padding(
+                    horizontal = if (strategy is SinglePaneStrategy) CP.large else CP.medium, CP.normal
+                ) + (WindowInsets.content.union(WindowInsets.systemBars)
+                    .union(inAppNavBarInsets).only(
+                        WindowInsetsSides.Vertical
+                    )).asPaddingValues(),
                 modifier = Modifier
-                    .source(provider)
+                    .source(surface)
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .fadingEdge2(56.dp),
+                    .fadingEdge2(length = 56.dp),
                 content = {
                     //Sponsor
                     item(contentType = "sponsor") {
@@ -609,14 +617,14 @@ fun Settings(viewState: SettingsViewState) {
                     // General
                     item(contentType = CONTENT_TYPE_HEADER) {
                         GroupHeader(
-                            text = textResource(id = R.string.general),
+                            text = stringResource(id = R.string.general),
                             padding = Padding(CP.normal, CP.small, CP.normal, CP.xLarge)
                         )
                     }
                     General(viewState)
 
                     // Appearance
-                    item(CONTENT_TYPE_HEADER) { GroupHeader(text = textResource(id = R.string.appearance)) }
+                    item(CONTENT_TYPE_HEADER) { GroupHeader(text = stringResource(id = R.string.appearance)) }
                     Appearence(viewState = viewState)
 
                     // AboutUs
@@ -626,7 +634,7 @@ fun Settings(viewState: SettingsViewState) {
 
                     item(contentType = CONTENT_TYPE_HEADER) {
                         Header(
-                            textResource(R.string.about_us),
+                            stringResource(R.string.about_us),
                             color = AppTheme.colors.accent,
                             //drawDivider = true,
                             style = AppTheme.typography.title3,
@@ -637,7 +645,9 @@ fun Settings(viewState: SettingsViewState) {
                         )
                     }
 
-                    item { Column { AboutUs() } }
+                    item(contentType = "about_us") {
+                        Column { AboutUs() }
+                    }
                 }
             )
         }

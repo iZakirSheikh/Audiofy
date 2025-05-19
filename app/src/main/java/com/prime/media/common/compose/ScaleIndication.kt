@@ -71,14 +71,7 @@ private class ScaleIndicationNode(
         }
     }
 }
-
-
-@Stable
-fun scale(
-): IndicationNodeFactory {
-    return ScaleIndicationNodeFactory
-}
-
+//
 private object ScaleIndicationNodeFactory : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode {
         return ScaleIndicationNode(interactionSource)
@@ -87,4 +80,21 @@ private object ScaleIndicationNodeFactory : IndicationNodeFactory {
     override fun hashCode(): Int = -1
 
     override fun equals(other: Any?) = other === this
+}
+
+/**
+ * Creates and remembers a [ScaleIndicationNodeFactory] that will produce
+ * [ScaleIndicationNode] instances.
+ *
+ * [ScaleIndicationNode] is a [DrawModifierNode] that animates the scale of the composable
+ * when a [PressInteraction.Press] is received. The composable scales down to `0.9f`
+ * around the [PressInteraction.Press.pressPosition] when pressed, and animates
+ * back to its original scale (`1f`) when the press is released or cancelled.
+ *
+ * @return A [ScaleIndicationNodeFactory] that produces [ScaleIndicationNode] instances.
+ */
+@Stable
+fun scale(
+): IndicationNodeFactory {
+    return ScaleIndicationNodeFactory
 }

@@ -25,6 +25,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 object RouteLibrary: Route
 
+/**
+ * Represents the state of the library screen.
+ */
 interface LibraryViewState {
     /**
      * The recently played tracks.
