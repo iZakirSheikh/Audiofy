@@ -18,8 +18,29 @@
 
 package com.prime.media.audios
 
+import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import com.prime.media.common.Route
 
-object RouteAudios : Route
+private const val ARG_SOURCE = "arg_source"
+private const val ARG_KEY = "arg_key"
+
+object RouteAudios : Route {
+    const val SOURCE_ALL = "source_all"
+    const val SOURCE_FOLDER = "source_folder"
+    const val SOURCE_ARTIST = "source_artist"
+    const val SOURCE_ALBUM = "source_album"
+    const val SOURCE_GENRE = "source_genre"
+
+    override val route: String =
+        "$domain/{$ARG_SOURCE}/{$ARG_KEY}"
+
+
+    operator fun invoke(source: String, arg: String) =
+        "$domain/$source/${Uri.encode(arg)}"
+}
+
+operator fun SavedStateHandle.get(key: RouteAudios) =
+    (get<String>(ARG_SOURCE) ?: RouteAudios.SOURCE_ALL) to get<String>(ARG_KEY)
 
 interface AudiosViewState

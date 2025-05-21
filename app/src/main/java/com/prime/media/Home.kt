@@ -39,7 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -58,6 +61,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.prime.media.audios.Audios
+import com.prime.media.audios.AudiosViewState
 import com.prime.media.audios.RouteAudios
 import com.prime.media.audios.directory.Albums
 import com.prime.media.audios.directory.Artists
@@ -127,11 +132,41 @@ private const val TAG = "Home"
 private val SIDE_BAR_WIDTH = 100.dp
 
 /**
- * The set of domains that require the navigation bar to be shown.
- * For other domains, the navigation bar will be hidden.
+ * Determines the primary navigation route domain from the current [NavController] back stack.
+ *
+ * This extension property observes the current back stack entry and identifies the domain of
+ * the top-level destination if it's one of the known primary routes (Library, Audios, Videos,
+ * Playlists) and has no arguments.
+ *
+ * The result is memoized using [remember] and updated efficiently with [derivedStateOf]
+ * whenever the back stack changes.
+ *
+ * @return A [State] holding the domain string of the primary route, or `null` if none is active.
  */
-private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(RouteLibrary.domain, RouteAudios.domain, RouteVideos.domain, RoutePlaylists.domain)
+private val NavController.primary: State<String?>
+    @Composable
+    inline get() {
+        // Observe the current back stack entry as state
+        val entry by currentBackStackEntryAsState()
+        return remember {
+            derivedStateOf {
+                val dest = entry?.destination ?: return@derivedStateOf null
+
+                // Check if the destination is one of the known top-level domains
+                val isPrimary = when (dest.domain) {
+                    RouteLibrary.domain -> true
+                    RouteAudios.domain -> true
+                    RouteVideos.domain -> true
+                    RoutePlaylists.domain -> true
+                    else -> false
+                }
+
+                // Return domain only if it's a top-level screen and has no args
+                if (isPrimary && dest.arguments.isEmpty()) dest.domain else null
+            }
+        }
+    }
+
 private val NavIconSizeModifier = Modifier.size(20.dp)
 private val NavRailShape = EndConcaveShape(12.dp)
 private val NavRailBorder = BorderStroke(
@@ -270,7 +305,12 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         val viewModel = koinViewModel<SettingsViewModel>()
         Settings(viewModel)
     }
+
     // Audios
+    composable(RouteAudios) {
+        val viewState = object: AudiosViewState{}
+        Audios(viewState)
+    }
 
     // Albums
     composable(RouteAlbums) {
@@ -322,8 +362,6 @@ private fun NavigationBar(
     // Get the current theme colors
     val colors = AppTheme.colors
     val routes = @Composable {
-        // Get the current navigation destination from NavController
-        val current by navController.currentBackStackEntryAsState()
         val colors = NavigationItemDefaults.colors(
             selectedIndicatorColor = if (contentColor == colors.onAccent) contentColor.copy(
                 ContentAlpha.indication
@@ -332,7 +370,7 @@ private fun NavigationBar(
             unselectedIconColor = if (contentColor == colors.onAccent) colors.onAccent else colors.onBackground,
             unselectedTextColor = if (contentColor == colors.onAccent) colors.onAccent else colors.onBackground
         )
-        val domain = current?.destination?.domain
+        val domain by navController.primary
 
         // Required to launch review.
         val facade = LocalSystemFacade.current
@@ -363,7 +401,7 @@ private fun NavigationBar(
                 )
             },
             selected = domain == RouteAudios.domain,
-            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
+            onClick = { facade.initiateReviewFlow(); navController.toRoute(RouteAudios) },
             isBottomNav = isBottomAligned,
             colors = colors
         )
@@ -436,14 +474,14 @@ fun Home(
     // dependencies
     val activity = LocalView.current.context as MainActivity
     val clazz = calculateWindowSizeClass(activity = activity)
-    val current by navController.currentBackStackEntryAsState()
+    val primary by navController.primary
 
     // properties
     val style = (activity as SystemFacade).style
     val requiresNavBar = when (style.flagNavBarVisibility) {
         WindowStyle.FLAG_APP_NAV_BAR_HIDDEN -> false
         WindowStyle.FLAG_APP_NAV_BAR_VISIBLE -> true
-        else -> current?.destination?.domain in DOMAINS_REQUIRING_NAV_BAR  // auto
+        else -> primary != null // auto
     }
     // Determine the screen orientation.
     // This check assesses whether to display NavRail or BottomBar.
@@ -511,6 +549,7 @@ fun Home(
         accent = when {
             strategy == ColorizationStrategy.Wallpaper && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
                 dynamicAccentColor(activity, isDark)
+
             isDark -> Settings.DarkAccentColor
             else -> Settings.LightAccentColor
         },
