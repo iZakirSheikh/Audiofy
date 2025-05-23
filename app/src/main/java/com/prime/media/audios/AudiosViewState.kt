@@ -22,25 +22,34 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import com.prime.media.common.Route
 
-private const val ARG_SOURCE = "arg_source"
-private const val ARG_KEY = "arg_key"
+private const val PARAM_ARG = "param_arg"
+private const val PARAM_SOURCE = "param_source"
 
 object RouteAudios : Route {
+    // Don't change value of these as these are required to remember filter keys.
     const val SOURCE_ALL = "source_all"
     const val SOURCE_FOLDER = "source_folder"
     const val SOURCE_ARTIST = "source_artist"
     const val SOURCE_ALBUM = "source_album"
     const val SOURCE_GENRE = "source_genre"
 
-    override val route: String =
-        "$domain/{$ARG_SOURCE}/{$ARG_KEY}"
+    override val route: String = "$domain/{$PARAM_SOURCE}/{$PARAM_ARG}"
 
-
-    operator fun invoke(source: String, arg: String) =
-        "$domain/$source/${Uri.encode(arg)}"
+    /** Navigates to files of folder identified by [source] providing args*/
+    operator fun invoke(source: String, key: String = ""): String =
+        "$domain/${source}/${Uri.encode(key)}"
 }
 
-operator fun SavedStateHandle.get(key: RouteAudios) =
-    (get<String>(ARG_SOURCE) ?: RouteAudios.SOURCE_ALL) to get<String>(ARG_KEY)
+operator fun SavedStateHandle.get(route: RouteAudios) =
+// FixMe: This is a workaround for a potential issue where navigation arguments
+//       might not be null as expected when navigating without explicit arguments.
+//       Investigate why the arguments are sometimes populated with keys
+//       instead of being null. This `takeIf` ensures that we only use the
+//       arguments if they don't seem to be the default placeholder keys.
+//       A more robust solution would be to understand and fix the root cause
+    //       of this behavior in the navigation logic.
+    (get<String>(PARAM_SOURCE).takeIf { it?.contains(PARAM_SOURCE) == false }
+        ?: RouteAudios.SOURCE_ALL) to get<String>(PARAM_ARG).takeIf { it?.contains(PARAM_ARG) == false }
+
 
 interface AudiosViewState

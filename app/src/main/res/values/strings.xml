@@ -402,4 +402,7 @@
     <string name="personalize_scr_elevated_artwork">Elevated Artwork</string>
     <string name="personalize_scr_artwork_border">Artwork Border</string>
     <string name="title_telemetry">Telemetry</string>
+    <string name="audio_library_title">
+          Audio <b>Library</b>\n  <font size="10"> <sup><sup>Organize. Discover. Enjoy.</sup></sup> </font>
+    </string>
 </resources>

@@ -60,7 +60,7 @@ interface MediaProvider {
 
         // Audio file properties
         const val COLUMN_AUDIO_NUMBER_OF_TRACKS = MediaStore.Audio.AudioColumns.TRACK
-        const val COLUMN_AUDIO_ALBUM = MediaStore.Audio.AudioColumns.TRACK
+        const val COLUMN_AUDIO_ALBUM = MediaStore.Audio.AudioColumns.ALBUM
         const val COLUMN_AUDIO_ARTIST = MediaStore.Audio.AudioColumns.ARTIST
         const val COLUMN_AUDIO_COMPOSER = MediaStore.Audio.AudioColumns.COMPOSER
         const val COLUMN_AUDIO_YEAR = MediaStore.Audio.AudioColumns.YEAR

@@ -19,18 +19,28 @@
 package com.prime.media.impl
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
+import com.prime.media.common.SelectionTracker.Level
+import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.DirectoryViewState
+import com.prime.media.common.compose.directory.FilesViewState
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.store.MediaProvider
+import com.zs.preferences.Key.Key2
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -80,4 +90,97 @@ abstract class LocalDirectoryViewModel<T>(
         }
         // make sure the flow is released after sometime.
         .stateIn(viewModelScope, WhileSubscribed(), null)
+}
+
+abstract class FilesViewModel<T>(): KoinViewModel(), FilesViewState<T> {
+
+    // Represents the
+    override fun clear() = selected.clear()
+    override val selected = mutableStateListOf<Long>()
+    override val isInSelectionMode: Boolean by derivedStateOf(selected::isNotEmpty)
+    override val allSelected: Boolean by derivedStateOf {
+        // FixMe: For now this seems reasonable.
+        //      However take the example of the case when size is same but ids are different
+        selected.size == data?.values?.sumOf { it.size }
+    }
+
+    /**
+     * Consumes the currently selected items and returns them as an array.
+     *
+     * This function creates a new array containing the selected items, clears the `selected` list, and returns the array.
+     * @return An array containing the previously selected items.
+     */
+    fun consume(): LongArray {
+        // Efficiently convert the list to an array.
+        val data = selected.toLongArray()
+        // Clear the selected items list.
+        selected.clear()
+        Log.d(TAG, "consume: ${data.size}")
+        return data
+    }
+
+    abstract val T.id: Long
+
+    override fun selectAll() {
+        val data = data ?: return
+        // Iterate through all items in the data and select them if they are not already selected.
+        data.forEach {( _, items) ->
+            items.forEach { item ->
+                val id = item.id
+                if (!selected.contains(id)) {
+                    selected.add(id)
+                }
+            }
+        }
+    }
+
+    override fun select(id: Long) {
+        val contains = selected.contains(id)
+        if (contains) selected.remove(id) else selected.add(id)
+    }
+
+    fun evaluateGroupSelectionLevel(key: String): Level {
+        // Return NONE if data is not available.
+        val data = data?.get(key) ?: return Level.NONE
+        // Count selected
+        val count = data.count { it.id in selected }
+        return when (count) {
+            data.size -> Level.FULL // All items in the group are selected.
+            in 1..data.size -> Level.PARTIAL // Some items in the group are selected.
+            else -> Level.NONE // No items in the group are selected.
+        }
+    }
+
+    override fun isGroupSelected(key: String) =
+        derivedStateOf { evaluateGroupSelectionLevel(key) }
+
+    override fun select(key: String) {
+        // Return if data is not available.
+        val data = data ?: return
+        // Get the current selection level of the group.
+        val level = evaluateGroupSelectionLevel(key)
+        // Get the IDs of all items in the group.
+        val all = data[key]?.map { it.id } ?: emptyList()
+        // Update the selected items based on the group selection level.
+        when (level) {
+            Level.NONE -> selected.addAll(all) // Select all items in the group.
+            Level.PARTIAL -> selected.addAll(all.filterNot { it in selected }) // Select only unselected items.
+            Level.FULL -> selected.removeAll(all.filter { it in selected }) // Deselect all selected items.
+        }
+    }
+
+    override var data: Mapped<T>? by mutableStateOf(null)
+    override val query: TextFieldState = TextFieldState()
+    abstract val filterKey: Key2<String, Filter?>
+    abstract override var filter: Filter
+    override fun filter(order: Action, ascending: Boolean) {
+        if (ascending == filter.first && order == filter.second) return
+        // means only change in ascending happened
+        // we don't support that, in order none.
+        if (order == filter.second && order == FilterDefaults.ORDER_NONE && filter.first != ascending)
+            return
+        val newFilter = ascending to order
+        preferences[filterKey] = newFilter
+        filter = newFilter
+    }
 }

@@ -19,10 +19,15 @@
 package com.prime.media.common.compose.directory
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
+import com.prime.media.common.SelectionTracker
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -60,4 +65,21 @@ interface DirectoryViewState<T> {
 
     // actions
     fun filter(ascending: Boolean = this.filter.first, order: Action = this.filter.second)
+}
+
+interface FilesViewState<T>: SelectionTracker {
+    var info: MetaData
+    val data: Mapped<T>?
+
+    val filter: Filter
+    val orders: List<Action>
+    val query: TextFieldState
+
+    val actions: List<Action>
+
+    fun play(from: T? = null)
+
+    fun filter(order: Action = filter.second, ascending: Boolean = filter.first)
+
+    fun shuffle()
 }

@@ -62,7 +62,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.audios.Audios
-import com.prime.media.audios.AudiosViewState
 import com.prime.media.audios.RouteAudios
 import com.prime.media.audios.directory.Albums
 import com.prime.media.audios.directory.Artists
@@ -91,6 +90,7 @@ import com.prime.media.folders.Folders
 import com.prime.media.folders.RouteFolders
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.ArtistsViewModel
+import com.prime.media.impl.AudiosViewModel
 import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
@@ -308,7 +308,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
 
     // Audios
     composable(RouteAudios) {
-        val viewState = object: AudiosViewState{}
+        val viewState = koinViewModel<AudiosViewModel>()
         Audios(viewState)
     }
 
