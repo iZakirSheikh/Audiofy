@@ -24,6 +24,7 @@ import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.Share
@@ -122,16 +123,14 @@ class AudiosViewModel(
     val extra = _args.second
 
     override var info: MetaData by mutableStateOf(
-        MetaData(
-            when (source) {
-                SOURCE_ALL -> getText(R.string.audio_library_title)
-                SOURCE_FOLDER -> getText(R.string.folder) with "$extra"
-                SOURCE_ARTIST -> getText(R.string.artist) with "name"
-                SOURCE_ALBUM -> getText(R.string.album) with "name"
-                SOURCE_GENRE -> getText(R.string.genre) with "name"
-                else -> error("$TAG unknown source: $source")
-            }
-        )
+        when (source) {
+            SOURCE_ALL -> MetaData(getText(R.string.audio_library_title), icon = Icons.Outlined.LibraryBooks)
+            SOURCE_FOLDER -> MetaData(getText(R.string.folder) with "$extra")
+            SOURCE_ARTIST -> MetaData(getText(R.string.artist) with "name")
+            SOURCE_ALBUM -> MetaData(getText(R.string.album) with "name")
+            SOURCE_GENRE -> MetaData(getText(R.string.genre) with "name")
+            else -> error("$TAG unknown source: $source")
+        }
     )
 
     override val Audio.id: Long get() = this.id
@@ -175,12 +174,13 @@ class AudiosViewModel(
                 this += GO_TO_ALBUM
             if (!isInSelectionMode && source != SOURCE_ALBUM)
                 this += GO_TO_ARTIST
+            if (!isInSelectionMode)
+                this += EDIT
             this += SHARE
             this += DELETE
             if (!allSelected) this += SELECT_ALL
             if (!isInSelectionMode) {
                 this += INFO
-                this += EDIT
             }
         }
     }

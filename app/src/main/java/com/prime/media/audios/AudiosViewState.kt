@@ -21,6 +21,8 @@ package com.prime.media.audios
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import com.prime.media.common.Route
+import com.prime.media.common.compose.directory.FilesViewState
+import com.zs.core.store.models.Audio
 
 private const val PARAM_ARG = "param_arg"
 private const val PARAM_SOURCE = "param_source"
@@ -52,4 +54,4 @@ operator fun SavedStateHandle.get(route: RouteAudios) =
         ?: RouteAudios.SOURCE_ALL) to get<String>(PARAM_ARG).takeIf { it?.contains(PARAM_ARG) == false }
 
 
-interface AudiosViewState
+interface AudiosViewState: FilesViewState<Audio>

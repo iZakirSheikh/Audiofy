@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -54,6 +55,7 @@ import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.HorizontalDivider
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.IconToggleButton
@@ -70,13 +72,15 @@ fun FloatingActionMenu(
     background: Background,
     modifier: Modifier = Modifier,
     contentColor: Color = AppTheme.colors.onBackground,
-    insets: PaddingValues?= null,
+    insets: PaddingValues? = null,
     border: BorderStroke? = BorderStroke(
         0.5.dp,
         Brush.verticalGradient(
             listOf(
                 if (AppTheme.colors.isLight) AppTheme.colors.background else Color.Gray.copy(0.24f),
-                if (AppTheme.colors.isLight) AppTheme.colors.background.copy(0.3f) else Color.Gray.copy(0.075f),
+                if (AppTheme.colors.isLight) AppTheme.colors.background.copy(0.3f) else Color.Gray.copy(
+                    0.075f
+                ),
             )
         )
     ),
@@ -115,15 +119,17 @@ fun FloatingActionMenu(
     background: Background,
     modifier: Modifier = Modifier,
     contentColor: Color = AppTheme.colors.onBackground,
-    insets: PaddingValues?= null,
-    border: BorderStroke? = BorderStroke(0.5.dp, Brush.verticalGradient(
+    insets: PaddingValues? = null,
+    border: BorderStroke? = BorderStroke(
+        0.5.dp, Brush.verticalGradient(
             listOf(
                 if (AppTheme.colors.isLight) AppTheme.colors.background else Color.Gray.copy(0.24f),
                 if (AppTheme.colors.isLight) AppTheme.colors.background.copy(0.3f) else Color.Gray.copy(
                     0.075f
                 ),
             )
-        )),
+        )
+    ),
     content: @Composable RowScope.() -> Unit,
 ) {
     CompositionLocalProvider(
@@ -147,54 +153,151 @@ fun FloatingActionMenu(
     )
 }
 
+
 /**
- * A composable function that displays a row of menu items followed by a more button.
+ * A composable function that displays a row of quick-access action items,
+ * followed by an overflow menu button (three dots) that reveals remaining actions.
  *
- * @param items The list of menu items to display.
- * @param onItemClicked Callback invoked when a menu item is clicked.
- * @param collapsed The number of items in collapsed state in this state only icon is displayed.
+ * The items are divided based on their visual presentation:
+ * - **Collapsed items**: Displayed directly as icons in the horizontal row.
+ * - **Expanded items**: Displayed in a dropdown menu shown when clicking the "more" button.
+ *
+ * The behavior is controlled by the `collapsed` and `expanded` parameters:
+ *
+ * @param items The complete list of actions to show (each action may include a label, icon, etc.).
+ * @param onItemClicked A callback invoked when any menu item (either row or dropdown) is selected.
+ * @param collapsed Number of items to show directly in the row. Only their icons are shown.
+ * @param expanded Controls how remaining items are divided inside the dropdown:
+ *  - `-1`: All remaining items are shown as menu entries in the dropdown.
+ *  - Positive: This many items are shown as top menu items; the rest are icons in a row at the bottom.
+ *  - Negative: The absolute value is shown as icons in a row at the top; the rest go into the menu below.
  */
 @Composable
 inline fun RowScope.OverflowMenu(
     items: List<Action>,
     noinline onItemClicked: (item: Action) -> Unit,
-    collapsed: Int = 2
+    collapsed: Int = 2,
+    expanded: Int = -1
 ) {
     val size = items.size
-    // Early return if this has no items
-    if (size == 0)
-        return
-    // Display the first 'collapsed' number of items as IconButtons
+    if (size == 0) return // Nothing to render
+
+    // Show first `collapsed` items as IconButtons directly in the row
     repeat(minOf(size, collapsed)) { index ->
         val item = items[index]
         IconButton(
-            icon = requireNotNull(item.icon) {
-                "Collapsed Icon must not be null"
-            }, // Icon is required for collapsed items
+            icon = item.icon ?: Icons.Outlined.BrokenImage, // Fallback for missing icons
             onClick = { onItemClicked(item) },
             contentDescription = stringResource(item.label),
             enabled = item.enabled
         )
     }
-    // If all items are already displayed, return
-    if (size <= collapsed)
-        return
 
-    // State to control the expanded state of the dropdown menu
-    val (expanded, onDismissRequest) = remember { mutableStateOf(false) }
-    // IconToggleButton to show/hide the dropdown menu
-    IconToggleButton(expanded, onDismissRequest) {
-        Icon(Icons.Outlined.MoreVert, contentDescription = "more") // Icon for the "more" button
+    // All items already shown, no need for dropdown
+    if (size <= collapsed) return
 
-        // DropdownMenu to display the remaining items
-        DropDownMenu(expanded, onDismissRequest = { onDismissRequest(false) }, modifier = Modifier.widthIn(min = 180.dp)) {
-            repeat(size - collapsed) { index ->
-                val item = items[index + collapsed]
-                DropDownMenuItem(
-                    title = stringResource(item.label),
-                    onClick = { onItemClicked(item); onDismissRequest(false) },
-                    icon = item.icon, // Icon is optional for dropdown items
-                )
+    // Dropdown menu toggle state
+    val (show, onDismissRequest) = remember { mutableStateOf(false) }
+
+    // "More" button to toggle dropdown visibility
+    IconToggleButton(checked = show, onCheckedChange = { onDismissRequest(it) }) {
+        Icon(Icons.Outlined.MoreVert, contentDescription = "More actions")
+
+        // DropdownMenu: shows remaining items beyond the collapsed count
+        DropDownMenu(
+            expanded = show,
+            onDismissRequest = { onDismissRequest(false) },
+            modifier = Modifier.widthIn(min = 180.dp)
+        ) {
+            val remaining = size - collapsed
+
+            when {
+                // Case 1: Show all remaining items as dropdown entries
+                expanded == -1 -> {
+                    repeat(remaining) { index ->
+                        val item = items[collapsed + index]
+                        DropDownMenuItem(
+                            title = stringResource(item.label),
+                            onClick = {
+                                onItemClicked(item)
+                                onDismissRequest(false)
+                            },
+                            icon = item.icon
+                        )
+                    }
+                }
+
+                // Case 2: Show `expanded` items in dropdown and rest as row icons at bottom
+                expanded > 0 -> {
+                    val dropdownCount = minOf(remaining, expanded)
+                    val overflowCount = remaining - dropdownCount
+
+                    // Top section: Dropdown menu items
+                    repeat(dropdownCount) { index ->
+                        val item = items[collapsed + index]
+                        DropDownMenuItem(
+                            title = stringResource(item.label),
+                            onClick = {
+                                onItemClicked(item)
+                                onDismissRequest(false)
+                            },
+                            icon = item.icon
+                        )
+                    }
+
+                    // Divider if needed between dropdown and bottom row
+                    if (overflowCount > 0) {
+                        HorizontalDivider()
+                    } else return@DropDownMenu
+
+                    // Bottom section: Row of icon buttons inside dropdown
+                    Row {
+                        repeat(overflowCount) { index ->
+                            val item = items[collapsed + dropdownCount + index]
+                            IconButton(
+                                icon = requireNotNull(item.icon) { "Collapsed Icon must not be null" },
+                                onClick = { onItemClicked(item) },
+                                contentDescription = stringResource(item.label),
+                                enabled = item.enabled
+                            )
+                        }
+                    }
+                }
+
+                // Case 3: Negative `expanded`: Row icons first, then remaining as dropdown items
+                else -> {
+                    val dropdownCount = minOf(remaining, -expanded)
+                    val overflowCount = remaining - dropdownCount
+
+                    // Bottom section: Row of icon buttons inside dropdown
+                    if (overflowCount > 0) {
+                        Row {
+                            repeat(overflowCount) { index ->
+                                val item = items[collapsed + dropdownCount + index]
+                                IconButton(
+                                    icon = requireNotNull(item.icon) { "Collapsed Icon must not be null" },
+                                    onClick = { onItemClicked(item) },
+                                    contentDescription = stringResource(item.label),
+                                    enabled = item.enabled
+                                )
+                            }
+                        }
+                        HorizontalDivider()
+                    }
+
+                    // Bottom section: Dropdown menu items
+                    repeat(dropdownCount) { index ->
+                        val item = items[collapsed + index]
+                        DropDownMenuItem(
+                            title = stringResource(item.label),
+                            onClick = {
+                                onItemClicked(item)
+                                onDismissRequest(false)
+                            },
+                            icon = item.icon
+                        )
+                    }
+                }
             }
         }
     }

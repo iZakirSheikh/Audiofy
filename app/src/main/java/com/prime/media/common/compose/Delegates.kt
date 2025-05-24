@@ -28,6 +28,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
@@ -37,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -57,7 +59,10 @@ import com.airbnb.lottie.compose.rememberLottiePainter
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.zs.compose.foundation.composableIf
+import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.Icon
+import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import com.zs.compose.theme.Placeholder
 import com.zs.compose.theme.text.Label
@@ -97,13 +102,57 @@ fun lottieAnimationPainter(
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val duration2 = composition?.duration?.roundToInt() ?: AnimationConstants.DefaultDurationMillis
     val progress by animateFloatAsState(
-        targetValue = if (atEnd) progressRange.start else progressRange.endInclusive,
+        targetValue = if (!atEnd) progressRange.start else progressRange.endInclusive,
         label = "Lottie $id",
         animationSpec = tween(if (duration == -1) duration2 else duration, easing = easing)
     )
     return rememberLottiePainter(
         composition = composition,
         progress = progress,
+    )
+}
+
+/**
+ * A composable function that displays a Lottie animation as an icon.
+ * This function uses [lottieAnimationPainter] to render the animation and behaves like an [Icon].
+ * The animation plays based on the `atEnd` parameter, animating between the start and end frames.
+ *
+ * @param id The raw resource ID of the Lottie animation file.
+ * @param contentDescription Text used by accessibility services to describe what this icon represents.
+ * @param modifier The [Modifier] to be applied to this icon.
+ * @param atEnd A boolean indicating whether the animation should be at its end state.
+ *              When this value changes, the animation transitions between the start and end of the `progressRange`.
+ * @param scale A factor to scale the size of the icon. Defaults to 1f (no scaling).
+ * @param progressRange A [ClosedFloatingPointRange] specifying the start and end progress values for the animation.
+ *                      Defaults to 0f..1f, representing the full animation.
+ * @param duration The duration of the animation transition in milliseconds.
+ *                 Defaults to -1, which means the duration will be derived from the Lottie composition.
+ * @param easing The [Easing] function to be used for the animation transition.
+ *               Defaults to [FastOutSlowInEasing].
+ */
+@Composable
+inline fun LottieAnimatedIcon(
+    @RawRes id: Int,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    atEnd: Boolean = false,
+    scale: Float = 1f,
+    progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    duration: Int = -1,
+    tint: Color = LocalContentColor.current,
+    easing: Easing = FastOutSlowInEasing
+) {
+    Icon(
+        painter = lottieAnimationPainter(
+            id = id,
+            atEnd = atEnd,
+            duration = duration,
+            progressRange = progressRange,
+            easing = easing
+        ),
+        tint = tint,
+        contentDescription = contentDescription,
+        modifier = modifier.size(24.dp).scale(scale),
     )
 }
 
@@ -178,6 +227,7 @@ inline fun Placeholder(
 
 private val MASK_TOP_EDGE = listOf(Color.Black, Color.Transparent)
 private val MASK_BOTTOM_EDGE = listOf(Color.Transparent, Color.Black)
+
 /**
  * Applies a fading edge effect to content.
  *

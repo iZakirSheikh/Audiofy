@@ -19,6 +19,7 @@
 package com.prime.media.common.compose.directory
 
 import android.net.Uri
+import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * A data class representing the metadata associated with list of files.
@@ -26,6 +27,7 @@ import android.net.Uri
  * This class is used to store common information that can be displayed or used for sorting/filtering.
  *
  * @property title The primary title or name of the media item or directory.
+ * @property icon An optional icon to show in toobar at navigation icon place.
  * @property artwork An optional URI or path to an image representing the artwork for this metadata.
  *                  Defaults to `null` if no artwork is available.
  * @property cardinality An optional integer representing a count associated with the list.
@@ -37,6 +39,7 @@ import android.net.Uri
  */
 data class MetaData(
     val title: CharSequence,
+    val icon: ImageVector? = null,
     val artwork: Uri? = null,
     val cardinality: Int = -1,
     val dateModified: Long = -1L
