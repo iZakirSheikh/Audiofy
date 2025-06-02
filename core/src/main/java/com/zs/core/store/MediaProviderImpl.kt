@@ -327,10 +327,17 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             offset = offset,
             limit = limit,
             transform = { c ->
-                List(c.count) {
+              val list =   MutableList(c.count) {
                     c.moveToPosition(it)
                     Audio(c)
                 }
+                if (parent == null)
+                    return@query2 list
+                // This section filters the results, retaining only files that are direct children
+                // of the specified folder. Files residing in subfolders are excluded.
+                // TODO: Investigate using a 'LIKE' clause to initially filter non-matching paths,
+                //  and then refine further to exclude subfolders.
+                list.filter { PathUtils.parent(it.path) == parent }
             },
         )
     }
@@ -699,27 +706,13 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
     }
 
     override suspend fun fetchGenreAudios(
-        name: String,
+        id: Long,
         filter: String?,
         order: String,
         ascending: Boolean,
         offset: Int,
         limit: Int
     ): List<Audio> {
-        //maybe for api 30 we can use directly the genre name.
-        // find the id.
-        val id = resolver.query2(
-            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Audio.Genres._ID),
-            "${MediaStore.Audio.Genres.NAME} == ?",
-            arrayOf(name),
-            limit = 1
-        ) {
-            if (it.count == 0) return emptyList()
-            it.moveToPosition(0)
-            it.getLong(0)
-        }
-
         // calculate the ids.
         val list = resolver.query2(
             MediaStore.Audio.Genres.Members.getContentUri("external", id),

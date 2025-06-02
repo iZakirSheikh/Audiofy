@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.Route
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
@@ -98,6 +99,7 @@ fun Genres(viewState: DirectoryViewState<Genre>) {
                 modifier = Modifier
                     .animateItem()
                     .clickable {
+                        navController.navigate(RouteAudios(RouteAudios.SOURCE_GENRE, "${it.id}"))
                     },
             )
         }

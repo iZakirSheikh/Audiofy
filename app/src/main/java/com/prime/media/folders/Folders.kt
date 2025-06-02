@@ -38,15 +38,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
 import coil3.compose.AsyncImage
-import com.prime.media.common.Route
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
-import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.fileSizeFormatted
-import com.prime.media.common.invoke
+import com.prime.media.videos.RouteVideos
 import com.zs.compose.foundation.shapes.SquircleShape
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
@@ -55,19 +53,8 @@ import com.zs.compose.theme.text.Label
 import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Folder
 
-object RouteFolders : Route {
-    const val PARAM_IS_OF_AUDIOS = "param_is_of_audios"
-    override val route: String = "$domain/{${PARAM_IS_OF_AUDIOS}}"
-
-    override fun invoke(): String  = invoke(true)
-    operator fun invoke(ofAudios: Boolean): String = "$domain/${ofAudios}"
-}
-
-operator fun SavedStateHandle.get(handle: RouteFolders) =
-    this<Boolean>(handle.PARAM_IS_OF_AUDIOS) == true
-
 private const val TAG = "Folders"
-private val FOLDER_SHAPE = SquircleShape(0.55f)
+private val FOLDER_SHAPE = SquircleShape(0.66f)
 
 @Composable
 private fun Folder(
@@ -135,7 +122,7 @@ private fun Folder(
 )
 
 @Composable
-fun Folders(viewState: DirectoryViewState<Folder>) {
+fun Folders(viewState: FoldersViewState) {
     val navController = LocalNavController.current
     Directory(
         viewState,
@@ -147,8 +134,16 @@ fun Folders(viewState: DirectoryViewState<Folder>) {
                 modifier = Modifier
                     .animateItem()
                     .clickable {
-//                        val direction = Audios.direction(Audios.GET_FROM_FOLDER, it.path)
-//                        navController.navigate(direction)
+                        when (viewState.ofAudios) {
+                            true -> navController.navigate(
+                                RouteAudios(
+                                    RouteAudios.SOURCE_FOLDER,
+                                    it.path
+                                )
+                            )
+
+                            false -> navController.navigate(RouteVideos(/*it.path*/))
+                        }
                     },
             )
         }

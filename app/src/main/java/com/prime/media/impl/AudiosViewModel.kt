@@ -35,8 +35,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
@@ -60,6 +62,7 @@ import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
+import com.zs.core.common.PathUtils
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import com.zs.preferences.Key
@@ -92,11 +95,21 @@ private val Action.toAndroidOrder
         else -> MediaStore.Audio.Media.DEFAULT_SORT_ORDER
     }
 
+private val MetaTitleSpanStyle = SpanStyle(color = Color.Gray, fontSize = 11.sp)
+private val MetaTitleParagraphStyle = ParagraphStyle(
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Top,
+        trim = LineHeightStyle.Trim.Both
+    )
+)
+
 private infix fun CharSequence.with(extra: CharSequence? = null) = buildAnnotatedString {
     append(this@with)
     if (extra == null) return@buildAnnotatedString
-    withStyle(SpanStyle(color = Color.Gray, fontSize = 11.sp)) {
-        append("\n$extra")
+    withStyle(MetaTitleParagraphStyle) {
+        withStyle(MetaTitleSpanStyle) {
+            append("$extra")
+        }
     }
 }
 
@@ -124,8 +137,12 @@ class AudiosViewModel(
 
     override var info: MetaData by mutableStateOf(
         when (source) {
-            SOURCE_ALL -> MetaData(getText(R.string.audio_library_title), icon = Icons.Outlined.LibraryBooks)
-            SOURCE_FOLDER -> MetaData(getText(R.string.folder) with "$extra")
+            SOURCE_ALL -> MetaData(
+                getText(R.string.audio_library_title),
+                icon = Icons.Outlined.LibraryBooks
+            )
+
+            SOURCE_FOLDER -> MetaData(getText(R.string.folder) with "${PathUtils.name(extra!!)}")
             SOURCE_ARTIST -> MetaData(getText(R.string.artist) with "name")
             SOURCE_ALBUM -> MetaData(getText(R.string.album) with "name")
             SOURCE_GENRE -> MetaData(getText(R.string.genre) with "name")
@@ -212,7 +229,13 @@ class AudiosViewModel(
                 order = order,
                 ascending = ascending,
             )
-            // SOURCE_GENRE -> provider.fetchGenreAudios(extra!!.toLong(), order =order, ascending = ascending, )
+
+            SOURCE_GENRE -> provider.fetchGenreAudios(
+                extra!!.toLong(),
+                order = order,
+                ascending = ascending,
+            )
+
             else -> TODO("$source not implemented yet!")
         }
 
@@ -227,7 +250,7 @@ class AudiosViewModel(
         }
 
         // Group data.
-        data = when(filter.second){
+        data = when (filter.second) {
             ORDER_BY_ALBUM -> files.groupBy { it.album }
             ORDER_BY_ARTIST -> files.groupBy { it.artist }
             ORDER_BY_LENGTH -> TODO("$TAG ${filter.second} not Implemented yet!.")
@@ -236,6 +259,7 @@ class AudiosViewModel(
                 val mills = System.currentTimeMillis()
                 DateUtils.getRelativeTimeSpanString(it.dateModified, mills, DateUtils.DAY_IN_MILLIS)
             }
+
             ORDER_BY_NONE -> files.groupBy { "" }
             else -> files.groupBy { it.firstTitleChar }
         }

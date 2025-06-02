@@ -414,7 +414,7 @@ interface MediaProvider {
      * @see fetchAlbumAudio
      */
     suspend fun fetchGenreAudios(
-        name: String,
+        id: Long,
         filter: String? = null,
         order: String = MediaStore.Audio.Media.TITLE,
         ascending: Boolean = true,

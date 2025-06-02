@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -37,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.Route
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
@@ -117,6 +117,7 @@ fun Artists(viewState: DirectoryViewState<Artist>) {
                 modifier = Modifier
                     .animateItem()
                     .clickable {
+                        navController.navigate(RouteAudios(RouteAudios.SOURCE_ARTIST, "${it.id}"))
                     },
             )
         }

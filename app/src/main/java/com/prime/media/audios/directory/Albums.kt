@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.prime.media.R
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.Route
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
@@ -101,8 +102,7 @@ fun Albums(viewState: DirectoryViewState<Album>) {
                 modifier = Modifier
                     .animateItem()
                     .clickable {
-//                        val direction = Audios.direction(Audios.GET_FROM_ALBUM, it.title)
-//                        navController.navigate(direction)
+                        navController.navigate(RouteAudios(RouteAudios.SOURCE_ALBUM, "${it.id}"))
                     },
             )
         }

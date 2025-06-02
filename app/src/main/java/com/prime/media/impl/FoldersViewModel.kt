@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
+import com.prime.media.audios.RouteAudios
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
@@ -45,6 +46,7 @@ import com.prime.media.common.compose.FilterDefaults.FilterSaver
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
+import com.prime.media.folders.FoldersViewState
 import com.prime.media.folders.RouteFolders
 import com.prime.media.folders.get
 import com.zs.compose.foundation.castTo
@@ -69,7 +71,7 @@ import java.util.Locale
 class FoldersViewModel(
     handle: SavedStateHandle,
     provider: MediaProvider
-) : KoinViewModel(), DirectoryViewState<Folder> {
+) : KoinViewModel(), FoldersViewState {
 
 
     private val ORDER_BY_DATE_MODIFIED = FilterDefaults.ORDER_BY_DATE_MODIFIED
@@ -88,7 +90,7 @@ class FoldersViewModel(
         inline get() = name.uppercase(Locale.ROOT)[0].toString()
 
     // Deterimine whose folders to load
-    val ofAudios = handle[RouteFolders]
+    override val ofAudios = handle[RouteFolders]
     val observable: Uri =
         if (ofAudios) MediaProvider.EXTERNAL_AUDIO_URI else MediaProvider.EXTERNAL_VIDEO_URI
     private val filterKey =
@@ -172,4 +174,5 @@ class FoldersViewModel(
         }
         // make sure the flow is released after sometime.
         .stateIn(viewModelScope, WhileSubscribed(), null)
+
 }
