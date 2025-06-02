@@ -61,6 +61,7 @@ import com.prime.media.common.SystemFacade
 import com.zs.compose.foundation.composableIf
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.Colors
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
@@ -378,3 +379,12 @@ inline fun <S> ProvideAnimationScope(
         }
     }
 }
+
+val Colors.lightShadowColor
+    inline get() = if (isLight) Color.White else Color.White.copy(
+        0.025f
+    )
+val Colors.darkShadowColor
+    inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(
+        0.6f
+    )

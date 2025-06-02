@@ -20,6 +20,7 @@ package com.prime.media.audios
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,8 +39,8 @@ import com.prime.media.common.compose.LottieAnimatedIcon
 import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.directory.Files
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.IconButton
-import com.zs.compose.theme.ListItem
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Label
@@ -47,11 +48,12 @@ import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import androidx.compose.foundation.combinedClickable as clickable
 
-private val GraphicsModifier = Modifier.graphicsLayer() {
+private val ArtworkGraphicsModifier = Modifier.graphicsLayer() {
     scaleX = 0.85f; scaleY = 0.85f; this.shadowElevation = 4.dp.toPx();
     shape = CircleShape
     clip = true
 }
+private val AudioItemPadding = PaddingValues(horizontal = ContentPadding.large)
 
 @Composable
 private fun Audio(
@@ -59,7 +61,8 @@ private fun Audio(
     actions: @Composable (() -> Unit),
     modifier: Modifier = Modifier
 ) {
-    ListItem(
+    // TODO - use list item; once alignment is added to it.
+    BaseListItem(
         subheading = { Label(text = value.artist) },
         overline = { Label(text = value.album) },
         heading = {
@@ -77,12 +80,14 @@ private fun Audio(
                 contentDescription = null,
                 modifier = Modifier
                     .border(2.dp, LocalContentColor.current, shape = CircleShape)
-                    .then(GraphicsModifier)
+                    .then(ArtworkGraphicsModifier)
                     .background(AppTheme.colors.background(1.dp))
                     .size(50.dp),
             )
         },
         trailing = actions,
+        centerAlign = true,
+        padding = AudioItemPadding,
         modifier = modifier
     )
 }
@@ -100,12 +105,14 @@ fun Audios(viewState: AudiosViewState) {
         itemContent = { value ->
             Audio(
                 value = value,
-                modifier = Modifier.clickable(
-                    onClick = {
-                        if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
-                    },
-                    onLongClick = { viewState.select(value.id) }
-                ),
+                modifier = Modifier
+                    .animateItem()
+                    .clickable(
+                        onClick = {
+                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
+                        },
+                        onLongClick = { viewState.select(value.id) }
+                    ),
                 actions = {
                     // show checkbox
                     if (viewState.isInSelectionMode)

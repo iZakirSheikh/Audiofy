@@ -26,6 +26,7 @@ import com.prime.media.settings.Settings.TRASH_CAN_ENABLED
 import com.prime.media.settings.Settings.TelegramIntent
 import com.prime.media.settings.Settings.USE_IN_BUILT_AUDIO_FX
 import com.prime.media.settings.Settings.USE_LEGACY_ARTWORK_METHOD
+import com.zs.compose.foundation.BlueLilac
 import com.zs.core.billing.Paymaster
 import com.zs.core.common.Intent
 import com.zs.preferences.IntSaver
@@ -118,7 +119,7 @@ object Settings {
     const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
     const val PKG_MARKET_ID = "com.android.vending"
     // Default Accents
-    val LightAccentColor = /*Color(0xFF514700)*/ Color(0xFF514700)
+    val LightAccentColor = /*Color(0xFF514700)*/ Color.BlueLilac
     val DarkAccentColor = /*Color(0xFFD8A25E)*/ Color(0xFF7d6c1e)
     //
     val ColorSaver = object : IntSaver<Color> {

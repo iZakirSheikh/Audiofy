@@ -59,6 +59,7 @@ private fun Genre(
             //
             Surface (
                 color = Color.Transparent,
+                contentColor = AppTheme.colors.onBackground,
                 border = BorderStroke(3.dp, AppTheme.colors.onBackground),
                 shape = CircleShape,
                 modifier = Modifier.aspectRatio(1.0f),

@@ -18,6 +18,7 @@
 
 package com.prime.media.audios.directory
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.ui.Alignment
@@ -39,6 +41,7 @@ import com.prime.media.common.Route
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.compose.directory.DirectoryViewState
+import com.zs.compose.foundation.shadow
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.Surface
@@ -46,10 +49,13 @@ import com.zs.compose.theme.text.Label
 import com.zs.core.store.models.Audio.Artist
 import com.prime.media.common.compose.ContentPadding as CP
 
-object RouteArtists: Route
+object RouteArtists : Route
 
 
-private val IconModifier  = Modifier.wrapContentSize(Alignment.Center).scale(1.6f)
+private val IconModifier = Modifier
+    .wrapContentSize(Alignment.Center)
+    .scale(1.45f)
+private val shape = RoundedCornerShape(50, 50, 50, 15)
 
 @Composable
 private fun Artist(
@@ -66,8 +72,15 @@ private fun Artist(
         content = {
             //
             Surface(
-                shape = CircleShape,
-                modifier = Modifier.aspectRatio(1.0f),
+                modifier = Modifier
+                    .aspectRatio(1.0f)
+                    .shadow(
+                        elevation = 4.dp,
+                        lightShadowColor = AppTheme.colors.lightShadowColor,
+                        darkShadowColor = AppTheme.colors.darkShadowColor,
+                        shape = shape,
+                    )
+                    .background(AppTheme.colors.background(1.dp)),
                 color = AppTheme.colors.background(1.dp),
                 contentColor = AppTheme.colors.onBackground,
                 content = {
@@ -96,7 +109,7 @@ fun Artists(viewState: DirectoryViewState<Artist>) {
     val navController = LocalNavController.current
     Directory(
         viewState,
-        minSize = 90.dp,
+        minSize = 80.dp,
         key = Artist::id,
         itemContent = {
             Artist(

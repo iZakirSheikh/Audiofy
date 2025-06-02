@@ -164,39 +164,3 @@ fun <T> LazyGridScope.emit(
     return data?.takeIf { it.isNotEmpty() }
 }
 
-/**
- * A sticky header implementation that respects the top padding of the content.
- * This should be removed when an official solution is provided.
- * Currently, the only issue is that the sticky layout and the next item overlap before moving,
- * while the sticky header should start moving when the next item is about to become sticky.
- *
- * @param state The state of the LazyGrid.
- * @param key The key for the sticky header item.
- * @param contentType The type of content for the sticky header.
- * @param content The composable content for the sticky header.
- */
-fun LazyListScope.stickyHeader(
-    state: LazyListState,
-    key: Any? = null,
-    contentType: Any? = null,
-    content: @Composable LazyItemScope.() -> Unit
-) {
-    stickyHeader(
-        key = key,
-        contentType = contentType,
-        content = {
-            // TODO - Added parameter isPinned and fix the issue causing it to overlap.
-            Layout (content = { content() }) { measurables, constraints ->
-                val placeable = measurables[0].measure(constraints)
-                val width = constraints.constrainWidth(placeable.width)
-                val height = constraints.constrainHeight(placeable.height)
-                layout(width, height) {
-                    val posY = coordinates?.positionInParent()?.y?.toInt() ?: 0
-                    val paddingTop = state.layoutInfo.beforeContentPadding
-                    var top = (paddingTop - posY).coerceIn(0, paddingTop)
-                    placeable.placeRelative(0, top)
-                }
-            }
-        }
-    )
-}

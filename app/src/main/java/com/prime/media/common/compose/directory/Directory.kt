@@ -57,8 +57,8 @@ import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.RemoveCircle
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material.icons.rounded.ShuffleOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -92,7 +92,6 @@ import com.prime.media.common.compose.preference
 import com.prime.media.common.compose.rememberAcrylicSurface
 import com.prime.media.common.compose.shine
 import com.prime.media.common.compose.source
-import com.prime.media.common.compose.stickyHeader
 import com.prime.media.settings.Settings
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.background
@@ -100,13 +99,14 @@ import com.zs.compose.foundation.fullLineSpan
 import com.zs.compose.foundation.plus
 import com.zs.compose.foundation.stickyHeader
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.Button
+import com.zs.compose.theme.ButtonDefaults
 import com.zs.compose.theme.FilledTonalButton
 import com.zs.compose.theme.FloatingActionButton
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
-import com.zs.compose.theme.OutlinedButton
 import com.zs.compose.theme.adaptive.FabPosition
 import com.zs.compose.theme.adaptive.Scaffold
 import com.zs.compose.theme.adaptive.content
@@ -518,22 +518,28 @@ fun <T> Files(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = CP.MediumArrangement,
                                 content = {
-                                    val modifier = Modifier
-                                        .weight(1f)
-                                        .height(42.dp)
-                                    OutlinedButton(
-                                        text = androidx.compose.ui.res.stringResource(id = R.string.shuffle),
+                                    val modifier = Modifier.weight(1f).height(42.dp)
+                                    // Shuffle
+                                    FilledTonalButton (
+                                        content = {
+                                            Icon(Icons.Rounded.ShuffleOn, contentDescription = null)
+                                            Spacer(Modifier.padding(horizontal = ButtonDefaults.IconSpacing))
+                                            Label(text = androidx.compose.ui.res.stringResource(id = R.string.shuffle))
+                                        },
                                         onClick = viewState::shuffle,
-                                        icon = Icons.Outlined.Shuffle,
-                                        shape = AppTheme.shapes.medium,
+                                        shapes = ButtonDefaults.shapes,
                                         modifier = modifier
                                     )
 
-                                    FilledTonalButton(
-                                        text = androidx.compose.ui.res.stringResource(R.string.play),
+                                    // play
+                                    Button (
+                                        content = {
+                                            Icon(Icons.Outlined.PlaylistPlay, contentDescription = null)
+                                            Spacer(Modifier.padding(horizontal = ButtonDefaults.IconSpacing))
+                                            Label(text = androidx.compose.ui.res.stringResource(R.string.play))
+                                        },
                                         onClick = viewState::play,
-                                        icon = Icons.Outlined.PlaylistPlay,
-                                        shape = AppTheme.shapes.medium,
+                                        shapes = ButtonDefaults.shapes,
                                         modifier = modifier
                                     )
                                 }
