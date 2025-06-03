@@ -18,6 +18,8 @@
 
 package com.zs.core.store.models
 
+import android.content.ContentUris
+import android.provider.MediaStore
 import com.zs.core.common.PathUtils
 import com.zs.core.store.MediaProvider
 
@@ -41,7 +43,7 @@ class Folder(
         get() = when {
             artworkID == -1L -> null
             mimeType.startsWith("audio") -> MediaProvider.buildAlbumArtUri(artworkID)
-            else -> MediaProvider.contentUri(artworkID)
+            else -> ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, artworkID)
         }
 
 

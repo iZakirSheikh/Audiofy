@@ -118,7 +118,7 @@ fun Audios(viewState: AudiosViewState) {
                     if (viewState.isInSelectionMode)
                         return@Audio LottieAnimatedIcon(
                             R.raw.lt_checkbox,
-                            duration = 1300,
+                            animationSpec = AppTheme.motionScheme.slowSpatialSpec(),
                             atEnd = value.id in selected, // if fav
                             contentDescription = null,
                             progressRange = 0.05f..0.30f,
@@ -134,7 +134,7 @@ fun Audios(viewState: AudiosViewState) {
                         IconButton(onClick = { /*Action fav*/ }) {
                             LottieAnimatedIcon(
                                 R.raw.lt_twitter_heart_filled_unfilled,
-                                duration = 800,
+                                //duration = 800,
                                 atEnd = false, // if fav
                                 contentDescription = null,
                                 progressRange = 0.13f..0.95f,

@@ -22,8 +22,8 @@ import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -59,7 +59,6 @@ import com.airbnb.lottie.compose.rememberLottiePainter
 import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.zs.compose.foundation.composableIf
-import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.compose.theme.Icon
@@ -96,16 +95,15 @@ private const val TAG = "Delegates"
 fun lottieAnimationPainter(
     @RawRes id: Int,
     atEnd: Boolean,
-    duration: Int = -1,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    easing: Easing = FastOutSlowInEasing,
+    animationSpec: AnimationSpec<Float>? = null,
 ): Painter {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val duration2 = composition?.duration?.roundToInt() ?: AnimationConstants.DefaultDurationMillis
     val progress by animateFloatAsState(
         targetValue = if (!atEnd) progressRange.start else progressRange.endInclusive,
         label = "Lottie $id",
-        animationSpec = tween(if (duration == -1) duration2 else duration, easing = easing)
+        animationSpec = animationSpec ?: tween(duration2)
     )
     return rememberLottiePainter(
         composition = composition,
@@ -139,21 +137,21 @@ inline fun LottieAnimatedIcon(
     atEnd: Boolean = false,
     scale: Float = 1f,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    duration: Int = -1,
     tint: Color = LocalContentColor.current,
-    easing: Easing = FastOutSlowInEasing
+    animationSpec: AnimationSpec<Float>? = null,
 ) {
     Icon(
         painter = lottieAnimationPainter(
             id = id,
             atEnd = atEnd,
-            duration = duration,
             progressRange = progressRange,
-            easing = easing
+           animationSpec = animationSpec
         ),
         tint = tint,
         contentDescription = contentDescription,
-        modifier = modifier.size(24.dp).scale(scale),
+        modifier = modifier
+            .size(24.dp)
+            .scale(scale),
     )
 }
 

@@ -54,7 +54,7 @@ import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Folder
 
 private const val TAG = "Folders"
-private val FOLDER_SHAPE = SquircleShape(0.66f)
+private val FOLDER_SHAPE = SquircleShape(0.55f)
 
 @Composable
 private fun Folder(
@@ -81,7 +81,7 @@ private fun Folder(
                         .background(AppTheme.colors.background(elevation = elevation)),
                     contentScale = ContentScale.Crop,
                     onError = {
-                        Log.d(TAG, "Folder: ${it.result.throwable.message}")
+                        Log.d(TAG, "Folder: ${it.result.throwable.localizedMessage}")
                     }
                 )
 
