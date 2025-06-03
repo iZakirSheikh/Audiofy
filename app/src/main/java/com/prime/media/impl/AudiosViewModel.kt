@@ -18,29 +18,15 @@
 
 package com.prime.media.impl
 
+import android.net.Uri
 import android.provider.MediaStore
 import android.text.format.DateUtils
-import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.QueueMusic
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.outlined.LibraryBooks
-import androidx.compose.material.icons.outlined.PlaylistAdd
-import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ParagraphStyle
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
@@ -57,100 +43,55 @@ import com.prime.media.common.EDIT
 import com.prime.media.common.Filter
 import com.prime.media.common.GO_TO_ALBUM
 import com.prime.media.common.GO_TO_ARTIST
-import com.prime.media.common.INFO
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
-import com.prime.media.common.debounceAfterFirst
-import com.prime.media.common.raw
 import com.zs.core.common.PathUtils
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import com.zs.preferences.Key
 import com.zs.preferences.stringPreferenceKey
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "AudiosViewModel"
-
-private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
-private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
-private val ORDER_BY_DATE_MODIFIED = FilterDefaults.ORDER_BY_DATE_MODIFIED
-private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
-private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
-private val ORDER_BY_LENGTH get() = Action(R.string.length, id = "filter_by_length")
 
 private val Audio.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
 
-private val Action.toAndroidOrder
-    get() = when (this.id) {
-        ORDER_BY_DATE_MODIFIED.id -> MediaProvider.COLUMN_DATE_MODIFIED
-        ORDER_BY_TITLE.id -> MediaProvider.COLUMN_NAME
-        ORDER_BY_ALBUM.id -> MediaProvider.COLUMN_AUDIO_ALBUM
-        ORDER_BY_ARTIST.id -> MediaProvider.COLUMN_AUDIO_ARTIST
-        ORDER_BY_LENGTH.id -> MediaProvider.COLUMN_MEDIA_DURATION
-        else -> MediaStore.Audio.Media.DEFAULT_SORT_ORDER
-    }
-
-private val MetaTitleSpanStyle = SpanStyle(color = Color.Gray, fontSize = 11.sp)
-private val MetaTitleParagraphStyle = ParagraphStyle(
-    lineHeightStyle = LineHeightStyle(
-        alignment = LineHeightStyle.Alignment.Top,
-        trim = LineHeightStyle.Trim.Both
-    )
-)
-
-private infix fun CharSequence.with(extra: CharSequence? = null) = buildAnnotatedString {
-    append(this@with)
-    if (extra == null) return@buildAnnotatedString
-    withStyle(MetaTitleParagraphStyle) {
-        withStyle(MetaTitleSpanStyle) {
-            append("$extra")
-        }
-    }
-}
-
-// actions
-private val ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
-private val PLAY_NEXT = Action(R.string.play_next, Icons.Outlined.SkipNext)
-private val ADD_TO_QUEUE = Action(R.string.add_to_queue, Icons.AutoMirrored.Outlined.QueueMusic)
-private val GO_TO_ARTIST = Action.GO_TO_ARTIST
-private val GO_TO_ALBUM = Action.GO_TO_ALBUM
-private val DELETE = Action(R.string.delete, Icons.Default.DeleteOutline)
-private val SHARE = Action(R.string.share, Icons.Outlined.Share)
-private val SELECT_ALL = Action(R.string.select_all, Icons.Outlined.SelectAll)
-private val INFO = Action.INFO
-private val EDIT = Action.EDIT
-
-
 class AudiosViewModel(
     handle: SavedStateHandle,
     private val provider: MediaProvider
-) : FilesViewModel<Audio>(), AudiosViewState {
+) : StoreViewModel<Audio>(provider), AudiosViewState {
+    private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
+    private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
 
-    val _args = handle[RouteAudios]
-    val source = _args.first;
-    val extra = _args.second
-
-    override var info: MetaData by mutableStateOf(
-        when (source) {
-            SOURCE_ALL -> MetaData(
-                getText(R.string.audio_library_title),
-                icon = Icons.Outlined.LibraryBooks
-            )
-
-            SOURCE_FOLDER -> MetaData(getText(R.string.folder) with "${PathUtils.name(extra!!)}")
-            SOURCE_ARTIST -> MetaData(getText(R.string.artist) with "name")
-            SOURCE_ALBUM -> MetaData(getText(R.string.album) with "name")
-            SOURCE_GENRE -> MetaData(getText(R.string.genre) with "name")
-            else -> error("$TAG unknown source: $source")
-        }
-    )
+    //
+    private val ACTION_EDIT = Action.EDIT
+    private val ACTION_GO_TO_ARTIST = Action.GO_TO_ARTIST
+    private val ACTION_GO_TO_ALBUM = Action.GO_TO_ALBUM
 
     override val Audio.id: Long get() = this.id
+    val _args = handle[RouteAudios]
+    val source = _args.first; val extra = _args.second
+
+    private val Action.toAndroidOrder
+        get() = when (this.id) {
+            ORDER_BY_DATE_MODIFIED.id -> MediaProvider.COLUMN_DATE_MODIFIED
+            ORDER_BY_TITLE.id -> MediaProvider.COLUMN_NAME
+            ORDER_BY_ALBUM.id -> MediaProvider.COLUMN_AUDIO_ALBUM
+            ORDER_BY_ARTIST.id -> MediaProvider.COLUMN_AUDIO_ARTIST
+            ORDER_BY_LENGTH.id -> MediaProvider.COLUMN_MEDIA_DURATION
+            else -> MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+        }
+
+    override val contentUri: Uri = when (source) {
+        SOURCE_ALL, SOURCE_FOLDER -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        SOURCE_ALBUM -> MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
+        SOURCE_ARTIST -> MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI
+        SOURCE_GENRE -> MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI
+        else -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    }
 
     override val filterKey: Key.Key2<String, Filter?> = stringPreferenceKey(
         "${source}_filter",
@@ -166,6 +107,7 @@ class AudiosViewModel(
             }
         }
     )
+
     override var filter: Filter by mutableStateOf(
         preferences[filterKey] ?: FilterDefaults.NO_FILTER
     )
@@ -181,64 +123,48 @@ class AudiosViewModel(
             ORDER_BY_ARTIST
     }
 
-
     override val actions: List<Action> by derivedStateOf {
         buildList {
-            this += ADD_TO_PLAYLIST
-            this += PLAY_NEXT
-            this += ADD_TO_QUEUE
+            this += ACTION_ADD_TO_PLAYLIST
+            this += ACTION_PLAY_NEXT
+            this += ACTION_ADD_TO_QUEUE
             if (!isInSelectionMode && source != SOURCE_ALBUM)
-                this += GO_TO_ALBUM
+                this += ACTION_GO_TO_ALBUM
             if (!isInSelectionMode && source != SOURCE_ALBUM)
-                this += GO_TO_ARTIST
+                this += ACTION_GO_TO_ARTIST
             if (!isInSelectionMode)
-                this += EDIT
-            this += SHARE
-            this += DELETE
-            if (!allSelected) this += SELECT_ALL
+                this += ACTION_EDIT
+            this += ACTION_SHARE
+            this += ACTION_DELETE
+            if (!allSelected) this += ACTION_SELECT_ALL
             if (!isInSelectionMode) {
-                this += INFO
+                this += ACTION_INFO
             }
         }
     }
 
-    override fun play(from: Audio?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun shuffle() {
-        TODO("Not yet implemented")
-    }
-
-    private suspend fun fetch(
-        query: String?,
-        ascending: Boolean,
-        order: String
-    ): Unit {
-
-        val files = when (source) {
-            SOURCE_ALL, SOURCE_FOLDER -> provider.fetchAudioFiles(query, order, ascending, extra)
-            SOURCE_ARTIST -> provider.fetchArtistAudios(
-                extra!!.toLong(),
-                order = order,
-                ascending = ascending,
-            )
-
-            SOURCE_ALBUM -> provider.fetchAlbumAudios(
-                extra!!.toLong(),
-                order = order,
-                ascending = ascending,
-            )
-
-            SOURCE_GENRE -> provider.fetchGenreAudios(
-                extra!!.toLong(),
-                order = order,
-                ascending = ascending,
-            )
-
-            else -> TODO("$source not implemented yet!")
+    override var info: MetaData by mutableStateOf(
+        when (source) {
+            SOURCE_ALL -> MetaData(getText(R.string.audio_library_title), icon = Icons.Outlined.LibraryBooks)
+            SOURCE_FOLDER -> MetaData(getText(R.string.folder), "${PathUtils.name(extra!!)}")
+            SOURCE_ARTIST -> MetaData(getText(R.string.artist), "name")
+            SOURCE_ALBUM -> MetaData(getText(R.string.album), "name")
+            SOURCE_GENRE -> MetaData(getText(R.string.genre), "name")
+            else -> error("$TAG unknown source: $source")
         }
+    )
 
+    override suspend fun refresh(query: String?, ascending: Boolean, order: Action) {
+        val order = order.toAndroidOrder
+        val files = with(provider) {
+            when (source) {
+                SOURCE_ALL, SOURCE_FOLDER -> fetchAudioFiles(query, order, ascending, extra)
+                SOURCE_ARTIST -> fetchArtistAudios(extra!!.toLong(), order = order, ascending = ascending)
+                SOURCE_ALBUM -> fetchAlbumAudios(extra!!.toLong(), order = order, ascending = ascending)
+                SOURCE_GENRE -> fetchGenreAudios(extra!!.toLong(), order = order, ascending = ascending)
+                else -> TODO("$source not implemented yet!")
+            }
+        }
         // Emit only if query is null or empty
         if (query.isNullOrBlank()) {
             val latest = files.maxByOrNull { it.dateModified }
@@ -248,36 +174,32 @@ class AudiosViewModel(
                 cardinality = files.size
             )
         }
-
         // Group data.
         data = when (filter.second) {
+            ORDER_BY_NONE -> files.groupBy { "" }
+            ORDER_BY_TITLE -> files.groupBy { it.firstTitleChar }
             ORDER_BY_ALBUM -> files.groupBy { it.album }
             ORDER_BY_ARTIST -> files.groupBy { it.artist }
-            ORDER_BY_LENGTH -> TODO("$TAG ${filter.second} not Implemented yet!.")
-            ORDER_BY_TITLE -> files.groupBy { it.firstTitleChar }
             ORDER_BY_DATE_MODIFIED -> files.groupBy {
                 val mills = System.currentTimeMillis()
-                DateUtils.getRelativeTimeSpanString(it.dateModified, mills, DateUtils.DAY_IN_MILLIS)
+                DateUtils.getRelativeTimeSpanString(
+                    /* time = */ it.dateModified,
+                    /* now = */ mills,
+                    /* minResolution = */ DateUtils.DAY_IN_MILLIS
+                )
             }
-
-            ORDER_BY_NONE -> files.groupBy { "" }
-            else -> files.groupBy { it.firstTitleChar }
+            ORDER_BY_LENGTH -> files.groupBy { audio ->
+                when {
+                    audio.duration < TimeUnit.MINUTES.toMillis(2) -> getText(R.string.audios_scr_less_then_2_mins)
+                    audio.duration < TimeUnit.MINUTES.toMillis(5) -> getText(R.string.audios_scr_less_than_5_mins)
+                    audio.duration < TimeUnit.MINUTES.toMillis(10) -> getText(R.string.audios_scr_less_than_10_mins)
+                    else -> getText(R.string.audios_scr_greater_than_10_mins)
+                }
+            }
+            // groupby length
+            else -> error("Invalid order passed. $order")
         }
     }
 
-    init {
-        //
-        combine(
-            flow = provider.observer(MediaProvider.EXTERNAL_AUDIO_URI),
-            flow2 = snapshotFlow(query::raw),
-            flow3 = snapshotFlow(::filter),
-            transform = { _, query, filter -> Triple(query, filter.first, filter.second) }
-        ).debounceAfterFirst(300)
-            .onEach() { (query, ascending, order) -> fetch(query, ascending, order.toAndroidOrder) }
-            .catch { exception ->
-                Log.d(TAG, "provider: ${exception.stackTraceToString()}")
-                val action = report(exception.message ?: getText(R.string.msg_unknown_error))
-            }
-            .launchIn(viewModelScope)
-    }
+    init { flow.launchIn(viewModelScope) }
 }

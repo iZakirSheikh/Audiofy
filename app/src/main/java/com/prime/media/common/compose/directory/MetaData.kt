@@ -19,7 +19,23 @@
 package com.prime.media.common.compose.directory
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.ParagraphStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
+
+private val MetaTitleSpanStyle = SpanStyle(color = Color.Gray, fontSize = 11.sp)
+private val MetaTitleParagraphStyle = ParagraphStyle(
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Top,
+        trim = LineHeightStyle.Trim.Both
+    )
+)
 
 /**
  * A data class representing the metadata associated with list of files.
@@ -37,10 +53,31 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *                        or folder associated with this metadata was last modified.
  *                        Defaults to `-1L` if not applicable or unknown.
  */
+@Immutable
 data class MetaData(
     val title: CharSequence,
     val icon: ImageVector? = null,
     val artwork: Uri? = null,
     val cardinality: Int = -1,
     val dateModified: Long = -1L
-)
+) {
+    constructor(
+        title: CharSequence,
+        subtitle: CharSequence,
+        artwork: Uri? = null,
+        icon: ImageVector? = null
+    ) : this(
+        title = buildAnnotatedString {
+            append(title)
+            withStyle(MetaTitleParagraphStyle) {
+                withStyle(MetaTitleSpanStyle) {
+                    append("$subtitle")
+                }
+            }
+        },
+        icon = icon,
+        artwork = artwork,
+        cardinality = -1,
+        dateModified = -1L
+    )
+}
