@@ -45,12 +45,14 @@ import com.prime.media.common.GO_TO_ALBUM
 import com.prime.media.common.GO_TO_ARTIST
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
+import com.prime.media.common.ellipsize
 import com.zs.core.common.PathUtils
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import com.zs.preferences.Key
 import com.zs.preferences.stringPreferenceKey
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.runBlocking
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -58,6 +60,10 @@ private const val TAG = "AudiosViewModel"
 
 private val Audio.firstTitleChar
     inline get() = name.uppercase(Locale.ROOT)[0].toString()
+
+private fun MediaProvider.getArtistName(id: Long) = runBlocking { getArtist(id) }.name.ellipsize(12)
+private fun MediaProvider.getAlbumName(id: Long) = runBlocking { getAlbum(id) }.title.ellipsize(12)
+private fun MediaProvider.getGenreName(id: Long) = runBlocking { getGenre(id) }.name.ellipsize(12)
 
 class AudiosViewModel(
     handle: SavedStateHandle,
@@ -146,10 +152,10 @@ class AudiosViewModel(
     override var info: MetaData by mutableStateOf(
         when (source) {
             SOURCE_ALL -> MetaData(getText(R.string.audio_library_title), icon = Icons.Outlined.LibraryBooks)
-            SOURCE_FOLDER -> MetaData(getText(R.string.folder), "${PathUtils.name(extra!!)}")
-            SOURCE_ARTIST -> MetaData(getText(R.string.artist), "name")
-            SOURCE_ALBUM -> MetaData(getText(R.string.album), "name")
-            SOURCE_GENRE -> MetaData(getText(R.string.genre), "name")
+            SOURCE_FOLDER -> MetaData(PathUtils.name(extra!!).ellipsize(12), extra)
+            SOURCE_ARTIST -> MetaData(provider.getArtistName(extra!!.toLong()), getText(R.string.artist))
+            SOURCE_ALBUM -> MetaData(provider.getAlbumName(extra!!.toLong()), getText(R.string.album))
+            SOURCE_GENRE -> MetaData(provider.getGenreName(extra!!.toLong()), getText(R.string.genre))
             else -> error("$TAG unknown source: $source")
         }
     )

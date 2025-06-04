@@ -259,6 +259,8 @@ interface MediaProvider {
         limit: Int = Int.MAX_VALUE
     ): List<Artist>
 
+    suspend fun getArtist(id: Long): Artist
+
     /**
      * @see fetchFolders
      */
@@ -270,6 +272,8 @@ interface MediaProvider {
         limit: Int = Int.MAX_VALUE
     ): List<Album>
 
+    suspend fun getAlbum(id: Long): Album
+
     /**
      * @see fetchFolders
      */
@@ -280,6 +284,8 @@ interface MediaProvider {
         offset: Int = 0,
         limit: Int = Int.MAX_VALUE
     ): List<Genre>
+
+    suspend fun getGenre(id: Long): Genre
 
     /**
      * Retrieves a list of trashed files.

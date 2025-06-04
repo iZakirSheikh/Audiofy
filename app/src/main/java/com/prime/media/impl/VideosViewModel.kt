@@ -32,6 +32,7 @@ import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
+import com.prime.media.common.ellipsize
 import com.prime.media.videos.RouteVideos
 import com.prime.media.videos.VideosViewState
 import com.prime.media.videos.get
@@ -86,7 +87,7 @@ class VideosViewModel(
     override var info: MetaData by mutableStateOf(
         when (parent) {
             null -> MetaData(getText(R.string.video_library_title))
-            else -> MetaData(getText(R.string.folder), "${PathUtils.name(parent!!)}")
+            else -> MetaData(PathUtils.name(parent).ellipsize(12), PathUtils.parent(parent))
         },
     )
 

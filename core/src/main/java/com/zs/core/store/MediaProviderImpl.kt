@@ -586,7 +586,7 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         ascending: Boolean,
         offset: Int,
         limit: Int
-    ): List<Audio.Artist> {
+    ): List<Artist> {
         return resolver.query2(
             MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
             projection = ARTIST_PROJECTION,
@@ -601,6 +601,18 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
                 c.moveToPosition(it)
                 Artist(c)
             }
+        }
+    }
+
+    override suspend fun getArtist(id: Long): Artist {
+        return resolver.query2(
+            MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+            projection = ARTIST_PROJECTION,
+            selection = "${MediaStore.Audio.Artists._ID} == $id",
+            limit = 1,
+        ) { c ->
+            c.moveToPosition(0)
+            Artist(c)
         }
     }
 
@@ -631,6 +643,18 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
         }
     }
 
+    override suspend fun getAlbum(id: Long): Album {
+        return resolver.query2(
+            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+            projection = ALBUM_PROJECTION,
+            selection ="${MediaStore.Audio.Albums.ALBUM_ID} == $id",
+            limit = 1,
+        ) { c ->
+            c.moveToNext()
+            Album(c)
+        }
+    }
+
     override suspend fun fetchGenres(
         filter: String?,
         order: String,
@@ -652,6 +676,18 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
                 c.moveToPosition(it)
                 Genre(c)
             }
+        }
+    }
+
+    override suspend fun getGenre(id: Long): Genre {
+        return resolver.query2(
+            MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+            projection = GENRE_PROJECTION,
+            selection ="${MediaStore.Audio.Genres._ID} == $id",
+            limit = 1,
+        ) { c ->
+            c.moveToNext()
+            Genre(c)
         }
     }
 
@@ -746,4 +782,6 @@ internal class MediaProviderImpl(context: Context) : MediaProvider {
             }
         }
     }
+
+
 }
