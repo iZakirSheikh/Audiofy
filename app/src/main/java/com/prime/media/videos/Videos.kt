@@ -18,9 +18,199 @@
 
 package com.prime.media.videos
 
+
+import android.text.format.DateUtils
+import android.text.format.Formatter
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
+import com.prime.media.R
+import com.prime.media.common.compose.ContentPadding
+import com.prime.media.common.compose.LottieAnimatedIcon
+import com.prime.media.common.compose.OverflowMenu
+import com.prime.media.common.compose.directory.Files
+import com.zs.compose.foundation.SignalWhite
+import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.BaseListItem
+import com.zs.compose.theme.ContentAlpha
+import com.zs.compose.theme.IconButton
+import com.zs.compose.theme.LocalContentColor
+import com.zs.compose.theme.minimumInteractiveComponentSize
+import com.zs.compose.theme.text.Label
+import com.zs.compose.theme.text.Text
+import com.zs.core.common.PathUtils
+import com.zs.core.store.models.Video
+import androidx.compose.foundation.combinedClickable as clickable
+import com.prime.media.common.compose.ContentPadding as CP
+
+private const val TAG = "Video"
+
+private val VideoItemPadding = PaddingValues(horizontal = ContentPadding.large)
+private val VideoThumbnailModifier = Modifier.size(128.dp, 72.dp)
+
+/**
+ * Represents the [Video] list item.
+ */
+@Composable
+private fun Video(
+    value: Video,
+    actions: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BaseListItem(
+        modifier = modifier,
+        trailing = actions,
+        padding = VideoItemPadding,
+        centerAlign = true,
+        // Title
+        overline = {
+            Label(
+                value.name,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                style = AppTheme.typography.body2
+            )
+        },
+        // Path
+        heading = {
+            Text(
+                PathUtils.parent(value.path),
+                overflow = TextOverflow.StartEllipsis,
+                maxLines = 1,
+                style = AppTheme.typography.label2,
+                modifier = Modifier.padding(vertical = CP.small),
+                color = LocalContentColor.current.copy(ContentAlpha.medium)
+            )
+        },
+        // Properties
+        subheading = {
+            val ctx = LocalContext.current
+            val color = AppTheme.colors.onBackground
+            val style =
+                SpanStyle(color.copy(ContentAlpha.medium), background = color.copy(0.12f))
+            Label(
+                buildAnnotatedString {
+                    withStyle(style) {
+                        append(" ${Formatter.formatShortFileSize(ctx, value.size)} ")
+                    }
+                    append("  ")
+                    withStyle(style) {
+                        append(" ")
+                        append(stringResource(R.string.postfix_p_s, value.height))
+                        append(" ")
+                    }
+                },
+                fontWeight = FontWeight.SemiBold,
+                style = AppTheme.typography.label3
+            )
+        },
+        // Thumbnail
+        leading = {
+            Box(
+                modifier = Modifier.clip(AppTheme.shapes.small) then VideoThumbnailModifier,
+                content = {
+                    // Thumbnail
+                    Image(
+                        rememberAsyncImagePainter(value.contentUri),
+                        contentDescription = value.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize()
+                    )
+
+                    // Duration
+                    Label(
+                        " ${DateUtils.formatElapsedTime(value.duration / 1000)} ",
+                        modifier = Modifier
+                            .padding(end = CP.small, bottom = CP.small)
+                            .background(Color.Black.copy(0.36f), AppTheme.shapes.small)
+                            .padding(1.dp)
+                            .align(Alignment.BottomEnd),
+                        color = Color.SignalWhite,
+                        style = AppTheme.typography.label3,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            )
+        }
+    )
+}
 
 @Composable
 fun Videos(viewState: VideosViewState) {
-
+    val selected = viewState.selected
+    Files(
+        viewState,
+        onTapAction = {},
+        key = Video::id,
+        itemContent = { value ->
+            Video(
+                value = value,
+                modifier = Modifier
+                    .animateItem()
+                    .clickable(
+                        onClick = {
+                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
+                        },
+                        onLongClick = { viewState.select(value.id) }
+                    ),
+                actions = {
+                    // show checkbox
+                    if (viewState.isInSelectionMode)
+                        return@Video LottieAnimatedIcon(
+                            R.raw.lt_checkbox,
+                            animationSpec = AppTheme.motionScheme.slowSpatialSpec(),
+                            atEnd = value.id in selected, // if fav
+                            contentDescription = null,
+                            progressRange = 0.05f..0.30f,
+                            scale = 1.6f,
+                            tint = Color.Unspecified,
+                            modifier = Modifier
+                                .minimumInteractiveComponentSize()
+                                .padding(end = ContentPadding.medium)
+                        )
+                    // else show overflow menu.
+                    Row {
+                        // Favourite icon
+                        IconButton(onClick = { /*Action fav*/ }) {
+                            LottieAnimatedIcon(
+                                R.raw.lt_twitter_heart_filled_unfilled,
+                                //duration = 800,
+                                atEnd = false, // if fav
+                                contentDescription = null,
+                                progressRange = 0.13f..0.95f,
+                                scale = 3.5f,
+                                tint = Color.Unspecified
+                            )
+                        }
+                        // Menu.
+                        OverflowMenu(
+                            collapsed = 0,
+                            items = viewState.actions,
+                            onItemClicked = {},
+                            expanded = 5
+                        )
+                    }
+                }
+            )
+        }
+    )
 }

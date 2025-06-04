@@ -96,6 +96,7 @@ import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
+import com.prime.media.impl.VideosViewModel
 import com.prime.media.library.Library
 import com.prime.media.library.RouteLibrary
 import com.prime.media.playlists.Playlists
@@ -103,6 +104,7 @@ import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.prime.media.videos.RouteVideos
+import com.prime.media.videos.Videos
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -341,6 +343,12 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         val viewModel = koinViewModel<PlaylistsViewModel>()
         Playlists(viewModel)
     }
+
+    // Videos
+    composable(RouteVideos){
+        val viewState = koinViewModel<VideosViewModel>()
+        Videos(viewState)
+    }
 }
 
 /**
@@ -417,7 +425,7 @@ private fun NavigationBar(
                 )
             },
             selected = domain == RouteVideos.domain,
-            onClick = { facade.initiateReviewFlow(); /*navController.toRoute(RouteSettings)*/ },
+            onClick = { facade.initiateReviewFlow(); navController.toRoute(RouteVideos) },
             isBottomNav = isBottomAligned,
             colors = colors
         )

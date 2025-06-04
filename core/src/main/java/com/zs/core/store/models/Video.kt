@@ -18,7 +18,9 @@
 
 package com.zs.core.store.models
 
+import android.content.ContentUris
 import android.database.Cursor
+import android.provider.MediaStore
 import com.zs.core.store.MediaProvider
 
 /**
@@ -52,6 +54,9 @@ class Video(
     @JvmField val height: Int,
     @JvmField val orientation: Int
 ) {
+
+    val contentUri
+        get() = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
 
     internal constructor(cursor: Cursor) : this(
         id = cursor.getLong(0),

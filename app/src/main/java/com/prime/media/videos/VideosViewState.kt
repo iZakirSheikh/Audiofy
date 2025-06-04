@@ -18,8 +18,22 @@
 
 package com.prime.media.videos
 
+import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import com.prime.media.common.Route
+import com.prime.media.common.compose.directory.FilesViewState
+import com.zs.core.store.models.Video
 
-object RouteVideos: Route
+private const val PARAM_ARG = "param_parent"
 
-interface VideosViewState
+object RouteVideos: Route {
+    override val route: String = "$domain/{${PARAM_ARG}}"
+
+    operator fun invoke(parent: String) =
+        "$domain/${Uri.encode(parent)}"
+}
+
+operator fun SavedStateHandle.get(route: RouteVideos) =
+    get<String>(PARAM_ARG).takeIf { it?.contains(PARAM_ARG) == false }
+
+interface VideosViewState: FilesViewState<Video>

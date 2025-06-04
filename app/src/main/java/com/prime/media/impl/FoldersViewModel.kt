@@ -26,24 +26,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.ParagraphStyle
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
-import com.prime.media.audios.RouteAudios
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.FilterDefaults.FilterSaver
-import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.prime.media.folders.FoldersViewState
@@ -106,21 +97,8 @@ class FoldersViewModel(
             }
         )
 
-    override val title: CharSequence = buildAnnotatedString {
-        append(if (ofAudios) "Audio" else "Video")
-        withStyle(
-            ParagraphStyle(
-                lineHeightStyle = LineHeightStyle(
-                    alignment = LineHeightStyle.Alignment.Center,
-                    trim = LineHeightStyle.Trim.Both // Remove whitespace from both top and bottom
-                )
-            )
-        ) {
-            withStyle(SpanStyle(fontSize = 10.sp, color = Color.DarkGray, fontWeight = FontWeight.Normal)) {
-                append(getText(R.string.folders))
-            }
-        }
-    }
+    override val title: CharSequence =
+        getText(if (ofAudios) R.string.audio_folders_title else R.string.video_folders_title)
 
 
     override val orders: List<Action> =

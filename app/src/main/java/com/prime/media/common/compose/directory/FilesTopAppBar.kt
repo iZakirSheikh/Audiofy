@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -195,6 +196,7 @@ fun FilesTopAppBar(
                 Text(
                     text = info.title,
                     maxLines = 2,
+                    fontWeight = FontWeight.Light,
                     lineHeight = 24.sp,
                     modifier = Modifier
                         .road(Alignment.CenterStart, Alignment.TopStart)

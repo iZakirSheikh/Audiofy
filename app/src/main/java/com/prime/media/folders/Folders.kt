@@ -18,43 +18,79 @@
 
 package com.prime.media.folders
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.prime.media.R
 import com.prime.media.audios.RouteAudios
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.fileSizeFormatted
 import com.prime.media.videos.RouteVideos
-import com.zs.compose.foundation.shapes.SquircleShape
+import com.zs.compose.foundation.foreground
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.text.Label
 import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Folder
+import kotlin.math.abs
 
 private const val TAG = "Folders"
-private val FOLDER_SHAPE = SquircleShape(0.55f)
+private val FOLDER_SHAPE =
+    RoundedCornerShape(13)
+
+private fun colorFrom(name: String): Color {
+    val hash = abs(name.hashCode())
+
+    // Restrict hue to warm tones: orange → red → brownish
+    val warmHue = 10f + (hash % 40)      // 10° to 50°
+
+    // Low-to-mid saturation for muted tones
+    val saturation = 0.3f + (hash % 20) / 100f  // 0.3 to 0.5
+
+    // Lowered lightness (for a more grounded, warm background)
+    val lightness = 0.38f + (hash % 10) / 100f   // 0.68 to 0.78
+
+    return Color.hsl(warmHue, saturation, lightness)
+}
+
+val IndicatorModifier = Modifier.graphicsLayer {
+    clip = true
+    scaleX = 0.93f
+    shape = FOLDER_SHAPE
+}
+val ImageModifier = Modifier
+    .graphicsLayer {
+        shape = FOLDER_SHAPE
+        clip = true
+        translationY = 6.dp.toPx()
+    }
+    .aspectRatio(1.7f / 1f)
+    .foreground(Color.Black.copy(0.3f))
+
 
 @Composable
 private fun Folder(
@@ -66,25 +102,32 @@ private fun Folder(
         .then(modifier),
     horizontalAlignment = Alignment.Start,
     content = {
-        val elevation = if (kotlin.random.Random.nextBoolean()) 0.5.dp else 1.dp
-        // Image
-        Log.d(TAG, "Folder: ${value.artworkUri}")
+
+        // Top Image
         Box(
             content = {
+                // IndicatorLine
+                Spacer(
+                    Modifier
+                        .then(IndicatorModifier)
+                        .matchParentSize()
+                        .drawBehind() {
+                            drawRect(colorFrom(value.name), size = size.copy(height = 5.dp.toPx()))
+                        }
+                )
+
+                // Image
+                val elevation = if (kotlin.random.Random.nextBoolean()) 0.5.dp else 1.dp
                 AsyncImage(
                     model = value.artworkUri,
                     contentDescription = value.name,
                     modifier = Modifier
-                        .aspectRatio(1.0f)
-                        .padding(ContentPadding.small)
-                        .shadow(2.dp, FOLDER_SHAPE)
+                        .then(ImageModifier)
                         .background(AppTheme.colors.background(elevation = elevation)),
-                    contentScale = ContentScale.Crop,
-                    onError = {
-                        Log.d(TAG, "Folder: ${it.result.throwable.localizedMessage}")
-                    }
+                    contentScale = ContentScale.Crop
                 )
 
+                //
                 val isRemovable = PathUtils.isRemovableStorage(value.path)
                 if (!isRemovable) return@Box
                 Icon(
@@ -96,14 +139,15 @@ private fun Folder(
                         .padding(8.dp),
                     tint = Color.White
                 )
-            },
+            }
         )
+
 
         val ctx = LocalContext.current
         // TextLabel
         Label(
             modifier = Modifier.padding(
-                top = ContentPadding.medium,
+                top = ContentPadding.normal,
                 start = ContentPadding.medium
             ),
             style = AppTheme.typography.body2,
@@ -113,7 +157,11 @@ private fun Folder(
 
         // More Info
         Label(
-            text = "${value.count} Files - ${ctx.fileSizeFormatted(value.size.toLong())}",
+            text = pluralStringResource(
+                R.plurals.files_d,
+                value.count,
+                value.count
+            ) + " - " + ctx.fileSizeFormatted(value.size.toLong()),
             style = AppTheme.typography.body3,
             color = AppTheme.colors.onBackground.copy(ContentAlpha.medium),
             modifier = Modifier.padding(start = ContentPadding.medium),
@@ -127,23 +175,23 @@ fun Folders(viewState: FoldersViewState) {
     Directory(
         viewState,
         key = Folder::path,
-        minSize = 90.dp,
+        minSize = 100.dp,
         itemContent = {
             Folder(
                 it,
                 modifier = Modifier
                     .animateItem()
                     .clickable {
-                        when (viewState.ofAudios) {
-                            true -> navController.navigate(
-                                RouteAudios(
+                        navController.navigate(
+                            when {
+                                viewState.ofAudios -> RouteAudios(
                                     RouteAudios.SOURCE_FOLDER,
                                     it.path
                                 )
-                            )
 
-                            false -> navController.navigate(RouteVideos(/*it.path*/))
-                        }
+                                else -> RouteVideos(it.path)
+                            }
+                        )
                     },
             )
         }

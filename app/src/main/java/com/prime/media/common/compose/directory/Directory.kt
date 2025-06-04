@@ -74,8 +74,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.SelectionTracker
@@ -114,6 +116,7 @@ import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.text.Label
+import com.zs.compose.theme.text.Text
 import com.zs.compose.theme.text.TextField
 import com.zs.compose.theme.text.TextFieldDefaults
 import com.zs.compose.theme.text.TonalHeader
@@ -234,7 +237,14 @@ fun <T> Directory(
         //
         topBar = {
             FloatingLargeTopAppBar(
-                title = { Label(viewState.title, maxLines = 2) },
+                title = {
+                    Text(
+                        viewState.title,
+                        maxLines = 2,
+                        fontWeight = FontWeight.Light,
+                        lineHeight = 24.sp,
+                    )
+                },
                 scrollBehavior = topAppBarScrollBehavior,
                 background = colors.background(surface),
                 insets = WindowInsets.systemBars.only(WindowInsetsSides.Top),

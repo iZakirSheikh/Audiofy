@@ -405,4 +405,14 @@
     <string name="audio_library_title">
           Audio <b>Library</b>\n  <font size="10"> <sup><sup>Organize. Discover. Enjoy.</sup></sup> </font>
     </string>
+    <string name="video_library_title">
+          Video <b>Library</b>\n  <font size="10"> <sup><sup>Keep It Local. Keep It Yours.</sup></sup> </font>
+    </string>
+
+    <string name="video_folders_title"><b>Video</b> Folders<font size="10"> <sup><sup>\nTune into Your Collection.</sup></sup> </font></string>
+    <string name="audio_folders_title"><b>Audio</b> Folders<font size="10"> <sup><sup>\nLights, Camera, Organized.</sup></sup> </font></string>
+    <plurals name="files_d">
+        <item quantity="one">1 file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
 </resources>
