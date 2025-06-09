@@ -144,7 +144,7 @@ fun NewPlaylist(
                 stringResource(if (value == null) R.string.create else R.string.update),
                 onClick = {
                     onConfirm(
-                        value?.clone(title.text.toString(), desc.text.toString())
+                        value?.copy(title.text.toString(), desc.text.toString())
                             ?: Playlist(title.text.toString(), desc.text.toString())
                     )
                 },

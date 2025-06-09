@@ -38,7 +38,7 @@ import androidx.room.PrimaryKey
  * @property artwork The artwork associated with the playlist. Default is null.
  */
 @Entity(tableName = "tbl_playlists")
-data class Playlist @Deprecated("This is used by Room internally") internal constructor(
+class Playlist @Deprecated("This is used by Room internally") internal constructor(
     @JvmField val name: String,
     @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "playlist_id") val id: Long = 0,
     @JvmField @ColumnInfo(defaultValue = "") val desc: String = "",
@@ -56,8 +56,41 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
      *
      * **Note** - calling copy method is error and this should be called instead.
      */
-    fun clone(name: String = this.name, desc: String = this.desc) =
-        this.copy(name = name, this.id, desc = desc, this.dateCreated, System.currentTimeMillis())
+    fun copy(name: String = this.name, desc: String = this.desc) =
+        Playlist(name, id, desc, dateCreated, dateModified)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Playlist
+
+        if (id != other.id) return false
+        if (dateCreated != other.dateCreated) return false
+        if (dateModified != other.dateModified) return false
+        if (count != other.count) return false
+        if (name != other.name) return false
+        if (desc != other.desc) return false
+        if (artwork != other.artwork) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + dateCreated.hashCode()
+        result = 31 * result + dateModified.hashCode()
+        result = 31 * result + count
+        result = 31 * result + name.hashCode()
+        result = 31 * result + desc.hashCode()
+        result = 31 * result + (artwork?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String {
+        return "Playlist(name='$name', id=$id, desc='$desc', dateCreated=$dateCreated, dateModified=$dateModified, count=$count, artwork=$artwork)"
+    }
+
 
     @Ignore
     var count: Int = -1
@@ -87,7 +120,7 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
         )],
         indices = [Index(value = ["playlist_id", "uri"], unique = false)]
     )
-    data class Track @Deprecated("This is meant to be used by Room internally.") constructor(
+    class Track @Deprecated("This is meant to be used by Room internally.") constructor(
         @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "track_id") val id: Long = 0,
         @JvmField @ColumnInfo(name = "playlist_id") var playlistID: Long,
         @JvmField @ColumnInfo(name = "play_order") var order: Int,
@@ -107,5 +140,39 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
             artwork: String? = null,
             mimeType: String? = null
         ) : this(0L, -1L, -1, uri, title, subtitle, artwork, mimeType)
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Track
+
+            if (id != other.id) return false
+            if (playlistID != other.playlistID) return false
+            if (order != other.order) return false
+            if (uri != other.uri) return false
+            if (title != other.title) return false
+            if (subtitle != other.subtitle) return false
+            if (artwork != other.artwork) return false
+            if (mimeType != other.mimeType) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = id.hashCode()
+            result = 31 * result + playlistID.hashCode()
+            result = 31 * result + order
+            result = 31 * result + uri.hashCode()
+            result = 31 * result + title.hashCode()
+            result = 31 * result + subtitle.hashCode()
+            result = 31 * result + (artwork?.hashCode() ?: 0)
+            result = 31 * result + (mimeType?.hashCode() ?: 0)
+            return result
+        }
+
+        override fun toString(): String {
+            return "Track(id=$id, playlistID=$playlistID, order=$order, uri='$uri', title='$title', subtitle='$subtitle', artwork=$artwork, mimeType=$mimeType)"
+        }
     }
 }
