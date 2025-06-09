@@ -41,7 +41,7 @@ import androidx.room.PrimaryKey
 data class Playlist @Deprecated("This is used by Room internally") internal constructor(
     @JvmField val name: String,
     @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "playlist_id") val id: Long = 0,
-    @ColumnInfo(defaultValue = "") val desc: String = "",
+    @JvmField @ColumnInfo(defaultValue = "") val desc: String = "",
     @JvmField @ColumnInfo(name = "date_created") val dateCreated: Long = System.currentTimeMillis(),
     @JvmField @ColumnInfo(name = "date_modified") val dateModified: Long = dateCreated,
 ) {
@@ -79,7 +79,6 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
      */
     @Entity(
         tableName = "tbl_playlist_members",
-        primaryKeys = ["playlist_id", "uri"],
         foreignKeys = [ForeignKey(
             entity = Playlist::class,
             parentColumns = ["playlist_id"],
@@ -89,6 +88,7 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
         indices = [Index(value = ["playlist_id", "uri"], unique = false)]
     )
     data class Track @Deprecated("This is meant to be used by Room internally.") constructor(
+        @JvmField @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "track_id") val id: Long = 0,
         @JvmField @ColumnInfo(name = "playlist_id") var playlistID: Long,
         @JvmField @ColumnInfo(name = "play_order") var order: Int,
         @JvmField @ColumnInfo(name = "uri") val uri: String,
@@ -106,11 +106,6 @@ data class Playlist @Deprecated("This is used by Room internally") internal cons
             uri: String,
             artwork: String? = null,
             mimeType: String? = null
-        ) :
-                this(-1L, -1, uri, title, subtitle, artwork, mimeType)
-
+        ) : this(0L, -1L, -1, uri, title, subtitle, artwork, mimeType)
     }
 }
-
-
-

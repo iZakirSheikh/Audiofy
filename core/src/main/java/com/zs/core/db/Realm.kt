@@ -67,6 +67,53 @@ private val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
+private val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Step 1: Create the new table with track_id as primary key
+        //language=RoomSql
+        db.execSQL(
+            """
+            CREATE TABLE new_tbl_playlist_members (
+                track_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                playlist_id INTEGER NOT NULL,
+                uri TEXT NOT NULL,
+                play_order INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                subtitle TEXT NOT NULL,
+                artwork_uri TEXT DEFAULT NULL,
+                mime_type TEXT DEFAULT NULL,
+                FOREIGN KEY(playlist_id) REFERENCES tbl_playlists(playlist_id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+
+        // Step 2: Copy existing data into new table
+        //language=RoomSql
+        db.execSQL(
+            """
+            INSERT INTO new_tbl_playlist_members 
+                (playlist_id, play_order, uri, title, subtitle, artwork_uri, mime_type)
+            SELECT 
+                playlist_id, play_order, uri, title, subtitle, artwork_uri, mime_type
+            FROM tbl_playlist_members
+            """.trimIndent()
+        )
+
+        // Step 3: Drop the old table
+        //language=RoomSql
+        db.execSQL("DROP TABLE tbl_playlist_members")
+
+        // Step 4: Rename the new table to the original name
+        //language=RoomSql
+        db.execSQL("ALTER TABLE new_tbl_playlist_members RENAME TO tbl_playlist_members")
+
+        // Step 5 (optional but recommended): Recreate the index on (playlist_id, uri)
+        //language=RoomSql
+        db.execSQL("CREATE INDEX index_tbl_playlist_members_playlist_id_uri ON tbl_playlist_members(playlist_id, uri)")
+    }
+}
+
+
 private const val DB_NAME = "realm_db"
 
 private val CALLBACK = object : Callback() {
@@ -85,7 +132,7 @@ private val CALLBACK = object : Callback() {
     }
 }
 
-@Database(entities = [Playlist::class, Track::class], version = 4, exportSchema = false)
+@Database(entities = [Playlist::class, Track::class], version = 5, exportSchema = false)
 internal abstract class Realm : RoomDatabase() {
     companion object {
         // Singleton prevents multiple instances of database opening at the
@@ -105,7 +152,7 @@ internal abstract class Realm : RoomDatabase() {
                     // do something stupid.
                     //.allowMainThreadQueries()
                     .fallbackToDestructiveMigrationFrom(0, 1, 2)
-                    .addMigrations(MIGRATION_3_4)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                     .build()
 
                 INSTANCE = instance
