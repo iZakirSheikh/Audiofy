@@ -94,6 +94,7 @@ import com.prime.media.impl.AudiosViewModel
 import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
+import com.prime.media.impl.MembersViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
@@ -101,6 +102,8 @@ import com.prime.media.library.Library
 import com.prime.media.library.RouteLibrary
 import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylists
+import com.prime.media.playlists.members.Members
+import com.prime.media.playlists.members.RouteMembers
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.prime.media.videos.RouteVideos
@@ -348,6 +351,11 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RouteVideos){
         val viewState = koinViewModel<VideosViewModel>()
         Videos(viewState)
+    }
+    // Members
+    composable(RouteMembers) {
+        val viewState = koinViewModel<MembersViewModel>()
+        Members(viewState)
     }
 }
 

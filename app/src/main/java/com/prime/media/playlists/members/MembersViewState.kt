@@ -18,8 +18,25 @@
 
 package com.prime.media.playlists.members
 
+import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import com.prime.media.common.Route
+import com.prime.media.common.compose.directory.FilesViewState
+import com.zs.core.db.playlists.Playlist.Track
 
-object RouteMembers: Route
 
-interface MembersViewState
+private const val PARAM_PLAYLIST_NAME = "param_name"
+
+object RouteMembers : Route {
+
+    override val route: String = "$domain/{$PARAM_PLAYLIST_NAME}/"
+
+    /** Navigates to files of folder identified by [source] providing args*/
+    operator fun invoke(source: String, key: String = ""): String =
+        "$domain/${source}/${Uri.encode(key)}"
+}
+
+operator fun SavedStateHandle.get(route: RouteMembers) =
+    get<String>(PARAM_PLAYLIST_NAME).takeIf { it?.contains(PARAM_PLAYLIST_NAME) == false }
+
+interface MembersViewState: FilesViewState<Track>

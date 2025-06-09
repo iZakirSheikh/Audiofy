@@ -50,11 +50,13 @@ import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.shapes.FolderShape
 import com.prime.media.folders.RouteFolders
+import com.prime.media.playlists.members.RouteMembers
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.ripple
 import com.zs.compose.theme.text.Label
+import com.zs.core.playback.Relay
 
 /**
  * Composable function to create a clickable shortcut with an icon and label.
@@ -159,7 +161,7 @@ fun Shortcuts(
             Spacer(modifier = Modifier.fillMaxWidth())
             // Favourites
             Shortcut(
-                onAction = { /*navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE))*/ },
+                onAction = { navigator.navigate(RouteMembers(Relay.PLAYLIST_FAVOURITE)) },
                 icon = Icons.Outlined.FolderSpecial,
                 label = textResource(id = R.string.favourite),
             )

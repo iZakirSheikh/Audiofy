@@ -411,6 +411,7 @@
 
     <string name="video_folders_title"><b>Video</b> Folders<font size="10"> <sup><sup>\nTune into Your Collection.</sup></sup> </font></string>
     <string name="audio_folders_title"><b>Audio</b> Folders<font size="10"> <sup><sup>\nLights, Camera, Organized.</sup></sup> </font></string>
+    <string name="scr_members_favourite_playlist_title">Favourites<font size="10"> <sup><sup>\nOnly the Essentials.</sup></sup> </font></string>
     <plurals name="files_d">
         <item quantity="one">1 file</item>
         <item quantity="other">%d files</item>

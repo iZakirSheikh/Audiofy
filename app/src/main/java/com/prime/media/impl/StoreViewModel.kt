@@ -54,12 +54,8 @@ abstract class StoreViewModel<T>(
    val ORDER_BY_LENGTH get() = Action(R.string.length, id = "filter_by_length")
 
     // common actions
-    val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
-    val ACTION_PLAY_NEXT = Action(R.string.play_next, Icons.Outlined.SkipNext)
-    val ACTION_ADD_TO_QUEUE = Action(R.string.add_to_queue, Icons.AutoMirrored.Outlined.QueueMusic)
     val ACTION_DELETE = Action(R.string.delete, Icons.Default.DeleteOutline)
     val ACTION_SHARE = Action(R.string.share, Icons.Outlined.Share)
-    val ACTION_SELECT_ALL = Action(R.string.select_all, Icons.Outlined.SelectAll)
     val ACTION_INFO = Action.INFO
 
     abstract suspend fun refresh(query: String?, ascending: Boolean, order: Action)

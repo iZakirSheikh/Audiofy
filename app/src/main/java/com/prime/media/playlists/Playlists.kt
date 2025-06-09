@@ -21,8 +21,10 @@ package com.prime.media.playlists
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.directory.Directory
 import com.prime.media.common.compose.scale
+import com.prime.media.playlists.members.RouteMembers
 import androidx.compose.foundation.combinedClickable as clickable
 
 private val MIN_CELL_WIDTH = 120.dp
@@ -32,9 +34,7 @@ fun Playlists(viewState: PlaylistsViewState) {
 
     val focused = viewState.focused
     NewPlaylist(
-        viewState.showEditDialog,
-        focused,
-        onConfirm = { newPlaylist ->
+        viewState.showEditDialog, focused, onConfirm = { newPlaylist ->
             when {
                 newPlaylist == null -> {}
                 focused != null -> viewState.update(newPlaylist)
@@ -42,13 +42,11 @@ fun Playlists(viewState: PlaylistsViewState) {
             }
             viewState.focused = null
             viewState.showEditDialog = false
-        }
-    )
+        })
 
+    val navController = LocalNavController.current
     Directory(
-        viewState,
-        minSize = MIN_CELL_WIDTH,
-        onActionClick = viewState::onAction
+        viewState, minSize = MIN_CELL_WIDTH, onActionClick = viewState::onAction
     ) { playlist ->
         // TODO Explore the use of derived state to calculate the 'focused' value
         //  instead of directly comparing 'highlighted' and 'playlist'. Derived state can improve
@@ -62,21 +60,17 @@ fun Playlists(viewState: PlaylistsViewState) {
             modifier = Modifier
                 .animateItem()
                 .clickable(
-                    null,
-                    indication = scale(),
+                    null, indication = scale(),
                     // On long click, toggle the focused state of the playlist item
                     onLongClick = {
                         viewState.focused = if (!focused) playlist else null
-                    },
-                    onClick = {
+                    }, onClick = {
                         when {
                             focused -> viewState.focused = null // If already focused, unfocused it
                             viewState.focused != null -> viewState.focused =
                                 playlist // make it move focus
-                            else -> error("Not implemented yet!.")/*navController.navigate(Members.direction(playlist.name)) */// Navigate to the playlist details
+                            else -> navController.navigate(RouteMembers(playlist.name)) // Navigate to the playlist details
                         }
-                    }
-                )
-        )
+                    }))
     }
 }

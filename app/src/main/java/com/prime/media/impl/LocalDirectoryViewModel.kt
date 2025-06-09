@@ -21,6 +21,11 @@ package com.prime.media.impl
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -93,6 +98,12 @@ abstract class LocalDirectoryViewModel<T>(
 }
 
 abstract class FilesViewModel<T>(): KoinViewModel(), FilesViewState<T> {
+
+    //common actions
+    val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
+    val ACTION_PLAY_NEXT = Action(R.string.play_next, Icons.Outlined.SkipNext)
+    val ACTION_ADD_TO_QUEUE = Action(R.string.add_to_queue, Icons.AutoMirrored.Outlined.QueueMusic)
+    val ACTION_SELECT_ALL = Action(R.string.select_all, Icons.Outlined.SelectAll)
 
     // Represents the
     override fun clear() = selected.clear()
