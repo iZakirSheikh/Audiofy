@@ -22,7 +22,7 @@ import android.media.audiofx.Equalizer
 import android.net.Uri
 import kotlinx.coroutines.flow.Flow
 
-class RelayImpl : Relay {
+class RemoteImpl : Remote {
 
     override val state: Flow<NowPlaying>
         get() = TODO("Not yet implemented")

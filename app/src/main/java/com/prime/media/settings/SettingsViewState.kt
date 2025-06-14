@@ -119,7 +119,7 @@ object Settings {
     const val PREFIX_MARKET_FALLBACK = "http://play.google.com/store/apps/details?id="
     const val PKG_MARKET_ID = "com.android.vending"
     // Default Accents
-    val LightAccentColor = /*Color(0xFF514700)*/ Color.BlueLilac
+    val LightAccentColor = Color(0xFF514700)
     val DarkAccentColor = /*Color(0xFFD8A25E)*/ Color(0xFF7d6c1e)
     //
     val ColorSaver = object : IntSaver<Color> {

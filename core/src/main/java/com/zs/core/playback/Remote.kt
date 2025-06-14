@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Represents the controller for [Playback]
  */
-interface Relay {
+interface Remote {
 
     val state: Flow<NowPlaying>
     val queue: Flow<List<MediaFile>>
@@ -211,9 +211,9 @@ interface Relay {
         const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
 
         /**
-         * Constructs a new instance of [Relay].
+         * Constructs a new instance of [Remote].
          */
-        operator fun invoke(context: Context): Relay = RelayImpl()
+        operator fun invoke(context: Context): Remote = RemoteImpl()
     }
 }
 

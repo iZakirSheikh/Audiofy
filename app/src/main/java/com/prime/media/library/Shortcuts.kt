@@ -56,7 +56,7 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.ripple
 import com.zs.compose.theme.text.Label
-import com.zs.core.playback.Relay
+import com.zs.core.playback.Remote
 
 /**
  * Composable function to create a clickable shortcut with an icon and label.
@@ -161,7 +161,7 @@ fun Shortcuts(
             Spacer(modifier = Modifier.fillMaxWidth())
             // Favourites
             Shortcut(
-                onAction = { navigator.navigate(RouteMembers(Relay.PLAYLIST_FAVOURITE)) },
+                onAction = { navigator.navigate(RouteMembers(Remote.PLAYLIST_FAVOURITE)) },
                 icon = Icons.Outlined.FolderSpecial,
                 label = textResource(id = R.string.favourite),
             )

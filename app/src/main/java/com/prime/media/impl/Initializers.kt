@@ -30,7 +30,7 @@ import com.prime.media.settings.Settings
 import com.zs.compose.theme.snackbar.SnackbarHostState
 import com.zs.core.coil.VideoThumbnailFetcher
 import com.zs.core.db.playlists.Playlists
-import com.zs.core.playback.Relay
+import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.core.telemetry.Analytics
 import com.zs.preferences.Preferences
@@ -125,7 +125,7 @@ private val KoinAppModules = module {
     singleOf(::SnackbarHostState)
     single { Analytics(get()) }
     single { Playlists(get()) }
-    single { Relay(get()) }
+    single { Remote(get()) }
 
     //
     factory { MediaProvider(get()) }

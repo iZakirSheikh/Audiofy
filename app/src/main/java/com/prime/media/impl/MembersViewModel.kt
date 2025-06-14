@@ -23,7 +23,6 @@ package com.prime.media.impl
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlaylistRemove
-import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +48,7 @@ import com.prime.media.playlists.members.get
 import com.zs.compose.foundation.castTo
 import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.db.playlists.Playlists
-import com.zs.core.playback.Relay
+import com.zs.core.playback.Remote
 import com.zs.preferences.Key
 import com.zs.preferences.stringPreferenceKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -81,7 +80,7 @@ class MembersViewModel(
     override var info: MetaData  = let {
         val playlist = runBlocking { playlists[playlistName] }
         when (playlistName) {
-            Relay.PLAYLIST_FAVOURITE -> MetaData(
+            Remote.PLAYLIST_FAVOURITE -> MetaData(
                 getText(R.string.scr_members_favourite_playlist_title),
                 null,
                 playlist?.artwork?.toUri(),

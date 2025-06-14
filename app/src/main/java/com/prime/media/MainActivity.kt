@@ -70,7 +70,7 @@ import com.zs.core.common.getPackageInfoCompat
 import com.zs.core.common.logEvent
 import com.zs.core.common.showPlatformToast
 import com.zs.core.playback.MediaFile
-import com.zs.core.playback.Relay
+import com.zs.core.playback.Remote
 import com.zs.core.telemetry.Analytics
 import com.zs.preferences.Key
 import com.zs.preferences.Key.Key1
@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     }
 
     // This needs to be a non- private; because i require this in composable mini-player.
-    val relay: Relay by inject()
+    val relay: Remote by inject()
 
     //
     private var _style by mutableIntStateOf(WindowStyle.FLAG_STYLE_AUTO)

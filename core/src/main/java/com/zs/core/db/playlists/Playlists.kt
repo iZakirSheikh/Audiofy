@@ -54,7 +54,7 @@ import kotlinx.coroutines.flow.onEach
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @Dao
-interface Playlists {
+abstract class Playlists {
 
     companion object {
         /**
@@ -87,21 +87,24 @@ interface Playlists {
      * @return the cardinality of playlists stored in the table playlist
      */
     @Query("SELECT COUNT(*) FROM tbl_playlists")
-    suspend fun count(): Int
+    abstract suspend fun count(): Int
 
+    /**
+     * @return the number of [Track]s in Playlists [id]
+     */
     @Query("SELECT COUNT(*) FROM tbl_playlist_members WHERE playlist_id = :id")
-    suspend fun count(id: Long): Int
+    abstract suspend fun count(id: Long): Int
 
     /**
      * @return artwork of the last item in the playlist represented by [id]
      */
     @Query("SELECT artwork_uri FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order DESC LIMIT 1")
     @Deprecated("For internal use only")
-    suspend fun _artwork(id: Long): String?
+    internal abstract suspend fun _artwork(id: Long): String?
 
     @Query("SELECT * FROM tbl_playlists WHERE playlist_id = :id")
     @Deprecated("For internal use only")
-    suspend fun _get(id: Long): Playlist?
+    internal abstract suspend fun _get(id: Long): Playlist?
 
     suspend operator fun get(id: Long): Playlist? = _get(id)?.apply{
         count = count(id)
@@ -110,7 +113,7 @@ interface Playlists {
 
     @Query("SELECT * FROM tbl_playlists WHERE name = :name")
     @Deprecated("For internal use only")
-    suspend fun _get(name: String): Playlist?
+    internal abstract suspend fun _get(name: String): Playlist?
 
     suspend operator fun get(name: String): Playlist? = _get(name)?.apply{
         count = count(id)
@@ -121,11 +124,11 @@ interface Playlists {
      * Checks if [Playlist] [name] exits
      */
     @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlists WHERE name == :name)")
-    suspend fun exists(name: String): Boolean
+    abstract suspend fun exists(name: String): Boolean
 
     @Query("SELECT * FROM tbl_playlists WHERE (:query IS NULL OR name LIKE '%' || :query || '%') AND name NOT GLOB '_*'")
     @Deprecated("For internal use only")
-    fun _observe(query: String? = null): Flow<List<Playlist>>
+    internal abstract fun _observe(query: String? = null): Flow<List<Playlist>>
 
     fun observe(query: String? = null) = _observe(query).onEach { playlists ->
         playlists.onEach { playlist ->
@@ -135,22 +138,22 @@ interface Playlists {
     }
 
     @Insert
-    suspend fun insert(playlist: Playlist): Long
+    abstract suspend fun insert(playlist: Playlist): Long
 
     @Query("DELETE FROM tbl_playlists WHERE playlist_id == :id")
-    suspend fun delete(id: Long): Int
+    abstract suspend fun delete(id: Long): Int
 
     @Update
-    suspend fun update(playlist: Playlist): Int
+    abstract suspend fun update(playlist: Playlist): Int
 
     /**
      * Observes the [Playlist] spacified by the name.
      */
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members LEFT JOIN tbl_playlists ON tbl_playlist_members.playlist_id == tbl_playlists.playlist_id WHERE tbl_playlists.name == :name AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY tbl_playlist_members.play_order ASC")
-    fun observer(name: String, query: String? = null): Flow<List<Track>>
+    abstract fun observer(name: String, query: String? = null): Flow<List<Track>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY play_order ASC ")
-    fun observe(id: Long, query: String? = null): Flow<List<Track>>
+    abstract fun observe(id: Long, query: String? = null): Flow<List<Track>>
 }
