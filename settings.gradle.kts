@@ -21,3 +21,4 @@ include(":app")
 
 include(":core")
 include(":telemetry")
+include(":feature:codex")

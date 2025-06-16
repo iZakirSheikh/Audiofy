@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 android {
-    namespace = "com.zs.telemetry"
+    namespace = "com.zs.feature.codex"
     compileSdk = 35
 
     defaultConfig {
@@ -14,7 +14,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles("proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -28,5 +31,8 @@ android {
 
 dependencies {
     implementation(project(":app"))
-    implementation(libs.bundles.analytics)
+    // To add media3 software decoders and extensions
+    implementation(libs.nextlib){
+        exclude(group = "com.google.errorprone", module = "error_prone_annotations")
+    }
 }

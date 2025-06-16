@@ -77,7 +77,7 @@ android {
             "-Xnon-local-break-continue"
         )
     }
-    dynamicFeatures += setOf(":telemetry")
+    dynamicFeatures += setOf(":telemetry", ":feature:codex")
     // dynamicFeatures += setOf(":telemetry")
     // Config. the compose compiler
     composeCompiler {

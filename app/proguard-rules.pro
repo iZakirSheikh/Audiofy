@@ -45,7 +45,7 @@
 }
 
 ## Don't remove classes from feature modules
--keepclassmembers class com.prime.codex.** {
+-keepclassmembers class com.zs.feature.codex.** {
     public static * Codex(android.content.Context);
 }
 -keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
