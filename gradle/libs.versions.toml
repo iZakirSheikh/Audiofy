@@ -1,7 +1,7 @@
 [versions]
-agp = "8.10.1"
-kotlin = "2.1.21"
-compose = "1.9.0-alpha04"
+agp = "8.11.0"
+kotlin = "2.2.0"
+compose = "1.9.0-beta01"
 media3 = "1.7.1"
 toolkit = "3.7.0-dev"
 material_icons = "1.7.8"
@@ -11,7 +11,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
-room = "2.7.1"
+room = "2.7.2"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -19,9 +19,9 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 google-service = { id = "com.google.gms.google-services", version = "4.4.2" }
-crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.3" }
+crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.4" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
-ksp = { id = "com.google.devtools.ksp", version = "2.1.21-2.0.1" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.3" }
@@ -30,20 +30,20 @@ androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.0" }
-androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.0.4" }
-chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.2" }
+androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
+chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.4" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
-lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.6" }
-saket-zoomable = { module = "me.saket.telephoto:zoomable", version = "0.15.1" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.7" }
+saket-zoomable = { module = "me.saket.telephoto:zoomable", version = "0.16.0" }
 
 # Androidx compose
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.2" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.3" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 
 # Toolkit
@@ -54,11 +54,11 @@ toolkit-theme = { module = "com.github.prime-zs.toolkit:theme", version.ref = "t
 # coil3
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
-avif-coder-coil = { module = "com.github.awxkee:avif-coder-coil", version = "2.0.8" }
+avif-coder-coil = { module = "com.github.awxkee:avif-coder-coil", version = "2.1.2" }
 
 #  Firebase
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.4.0" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.3" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.4" }
 
 # Play app-review
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
