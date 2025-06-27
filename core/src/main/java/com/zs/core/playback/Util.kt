@@ -19,8 +19,17 @@
 package com.zs.core.playback
 
 import android.annotation.SuppressLint
+import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 
 /**
  * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
@@ -40,3 +49,51 @@ internal fun DynamicRendererFactory(context: Context): DefaultRenderersFactory? 
         ) as? DefaultRenderersFactory // Static method, so first argument is null
     }.getOrNull()
 }
+
+
+/**
+ * Checks if the given URI is from a third-party source.
+ *
+ * This property evaluates whether the URI scheme is "content://" and the authority
+ * is not equal to [MediaStore.AUTHORITY]. If these conditions are met, it indicates
+ * that the URI is from a third-party source.
+ *
+ * @context uri The URI to be checked.
+ * @return `true` if the URI is from a third-party source, `false` otherwise.
+ */
+internal val Uri.isThirdPartyUri
+    get() = scheme == ContentResolver.SCHEME_CONTENT && authority != MediaStore.AUTHORITY
+
+/**
+ * Returns all the [MediaItem]s of [Player] in their natural order.
+ *
+ * @return A list of [MediaItem]s in the player's natural order.
+ */
+inline val Player.mediaItems get() = List(this.mediaItemCount, ::getMediaItemAt)
+
+/**
+ * returns the positions array from the [DefaultShuffleOrder]
+ *
+ * FixMe: Extracts array from player using reflection.
+ */
+internal val Player.orders: IntArray
+    @OptIn(UnstableApi::class)
+    get() {
+        require(this is ExoPlayer)
+        val f1 = this.javaClass.getDeclaredField("shuffleOrder")
+        f1.isAccessible = true
+        val order2 = f1.get(this)
+        require(order2 is DefaultShuffleOrder)
+        val f2 = order2.javaClass.getDeclaredField("shuffled")
+        f2.isAccessible = true
+        return f2.get(order2) as IntArray
+    }
+
+/**
+ * The queue property represents the list of media items in the player's queue.
+ * If shuffle mode is not enabled, the queue will contain the media items in their natural order.
+ * If shuffle mode is enabled, the queue will contain the media items in the order specified by the 'orders' list.
+ *
+ * @return The list of media items in the player's queue.
+ */
+val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::getMediaItemAt)
