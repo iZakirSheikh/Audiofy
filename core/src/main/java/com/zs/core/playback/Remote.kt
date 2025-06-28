@@ -196,7 +196,7 @@ interface Remote {
     @SuppressLint("UnsafeOptInUsageError")
     companion object {
 
-        const val UNINITIALIZED_SLEEP_TIME_MILLIS = -1L
+        const val SLEEP_TIME_UNSET = -1L
 
         const val POSITION_UNSET = C.POSITION_UNSET
         const val TIME_UNSET = C.TIME_UNSET
@@ -212,13 +212,16 @@ interface Remote {
 
         //
         private const val PREFIX = "com.prime.player"
-        private const val ACTION_AUDIO_SESSION_ID = "$PREFIX.action.AUDIO_SESSION_ID"
-        private const val EXTRA_AUDIO_SESSION_ID = "$PREFIX.extra.AUDIO_SESSION_ID"
-        private const val ACTION_SCHEDULE_SLEEP_TIME = "$PREFIX.action.SCHEDULE_SLEEP_TIME"
-        private const val EXTRA_SCHEDULED_TIME_MILLS = "$PREFIX.extra.AUDIO_SESSION_ID"
-        private const val ACTION_EQUALIZER_CONFIG = "$PREFIX.extra.EQUALIZER"
-        private const val EXTRA_EQUALIZER_ENABLED = "$PREFIX.extra.EXTRA_EQUALIZER_ENABLED"
-        private const val EXTRA_EQUALIZER_PROPERTIES = "$PREFIX.extra.EXTRA_EQUALIZER_PROPERTIES"
+        internal const val ACTION_AUDIO_SESSION_ID = "$PREFIX.action.AUDIO_SESSION_ID"
+        internal const val EXTRA_AUDIO_SESSION_ID = "$PREFIX.extra.AUDIO_SESSION_ID"
+        internal const val ACTION_SCHEDULE_SLEEP_TIME = "$PREFIX.action.SCHEDULE_SLEEP_TIME"
+        internal const val EXTRA_SCHEDULED_TIME_MILLS = "$PREFIX.extra.AUDIO_SESSION_ID"
+        internal const val ACTION_EQUALIZER_CONFIG = "$PREFIX.extra.EQUALIZER"
+        internal const val EXTRA_EQUALIZER_ENABLED = "$PREFIX.extra.EXTRA_EQUALIZER_ENABLED"
+        internal const val EXTRA_EQUALIZER_PROPERTIES = "$PREFIX.extra.EXTRA_EQUALIZER_PROPERTIES"
+
+        // The roots for accessing global playlists
+        internal const val ROOT_QUEUE = "com.prime.player.queue"
 
 
         /**

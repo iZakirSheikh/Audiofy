@@ -156,4 +156,12 @@ abstract class Playlists {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY play_order ASC ")
     abstract fun observe(id: Long, query: String? = null): Flow<List<Track>>
+
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id ORDER BY play_order ASC")
+    abstract suspend fun getTracks(id: Long): List<Track>
+
+    suspend fun getTracks(name: String): List<Track> {
+        val x = get(name) ?: return emptyList()
+        return getTracks(x.id)
+    }
 }

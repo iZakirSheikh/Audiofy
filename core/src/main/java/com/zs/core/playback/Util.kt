@@ -22,6 +22,7 @@ import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
@@ -30,6 +31,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import androidx.media3.session.SessionResult
 
 /**
  * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
@@ -97,3 +99,13 @@ internal val Player.orders: IntArray
  * @return The list of media items in the player's queue.
  */
 val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::getMediaItemAt)
+
+/**
+ * A short-hand for creating a [SessionResult] with the given code and arguments.
+ *
+ * @param code The result code.
+ * @param args A lambda function to apply additional arguments to the [Bundle].
+ * @see [SessionResult]
+ */
+internal inline fun SessionResult(code: Int, args: Bundle.() -> Unit) =
+    SessionResult(code, Bundle().apply(args))
