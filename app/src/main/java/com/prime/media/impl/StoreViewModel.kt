@@ -35,6 +35,7 @@ import com.prime.media.common.INFO
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
+import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -42,8 +43,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 abstract class StoreViewModel<T>(
-    provider: MediaProvider
-): FilesViewModel<T>() {
+    provider: MediaProvider,  remote: Remote
+): FilesViewModel<T>(remote) {
 
     private val TAG = "StoreViewModel"
 
@@ -61,14 +62,6 @@ abstract class StoreViewModel<T>(
     abstract suspend fun refresh(query: String?, ascending: Boolean, order: Action)
 
     abstract val contentUri: Uri
-
-    override fun play(from: T?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun shuffle() {
-        TODO("Not yet implemented")
-    }
 
     val flow by lazy {
         combine(

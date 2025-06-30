@@ -44,6 +44,8 @@ import com.prime.media.common.compose.directory.FilesViewState
 import com.prime.media.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.zs.compose.theme.snackbar.SnackbarResult
+import com.zs.core.playback.MediaFile
+import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.preferences.Key.Key2
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
@@ -55,6 +57,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlin.random.Random.Default.nextInt
 
 private const val TAG = "LocalDirectoryViewModel"
 
@@ -97,7 +101,7 @@ abstract class LocalDirectoryViewModel<T>(
         .stateIn(viewModelScope, WhileSubscribed(), null)
 }
 
-abstract class FilesViewModel<T>(): KoinViewModel(), FilesViewState<T> {
+abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesViewState<T> {
 
     //common actions
     val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
@@ -131,6 +135,7 @@ abstract class FilesViewModel<T>(): KoinViewModel(), FilesViewState<T> {
     }
 
     abstract val T.id: Long
+    abstract val T.asMediaFile: MediaFile
 
     override fun selectAll() {
         val data = data ?: return
@@ -194,4 +199,28 @@ abstract class FilesViewModel<T>(): KoinViewModel(), FilesViewState<T> {
         preferences[filterKey] = newFilter
         filter = newFilter
     }
+
+    private fun play(index: Int, shuffle: Boolean){
+        viewModelScope.launch {
+            val result = runCatching {
+                // Determine the items to focus on for the action.
+                val focused = when {
+                    // If there are selected items, consume them.
+                    // "consume()" clears the selection and returns the selected item IDs.
+                    selected.isNotEmpty() -> consume().let {selected -> data?.values?.flatten()?.filter { it.id in selected } }
+                    // Otherwise, if no items are selected, consider all items in the current view as focused.
+                    else -> data?.values?.flatten()
+                }
+                if (focused.isNullOrEmpty())
+                    error("Illegal state.")
+                remote.setMediaFiles(focused.map {it.asMediaFile})
+                remote.shuffle(shuffle)
+                remote.play(true)
+                showPlatformToast(message = "Playing\nPlaying tracks enjoy.")
+            }
+        }
+    }
+
+    override fun play(index: Int) = play(index, false)
+    override fun shuffle() = play(-1, true)
 }

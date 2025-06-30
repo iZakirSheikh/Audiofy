@@ -37,6 +37,8 @@ import com.prime.media.videos.RouteVideos
 import com.prime.media.videos.VideosViewState
 import com.prime.media.videos.get
 import com.zs.core.common.PathUtils
+import com.zs.core.playback.MediaFile
+import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Video
 import com.zs.preferences.Key
@@ -49,11 +51,14 @@ private val Video.firstTitleChar
 
 class VideosViewModel(
     handle: SavedStateHandle,
+    remote: Remote,
     private val provider: MediaProvider,
-) : StoreViewModel<Video>(provider), VideosViewState {
+) : StoreViewModel<Video>(provider, remote), VideosViewState {
 
     override val contentUri: Uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     override val Video.id: Long get() = this.id
+    override val Video.asMediaFile: MediaFile
+        get() = TODO("Not yet implemented")
     val parent = handle[RouteVideos]
     override val filterKey: Key.Key2<String, Filter?> = stringPreferenceKey(
         if (parent == null) "video_library_filter" else "video_folder_filter",

@@ -47,6 +47,8 @@ import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
 import com.prime.media.common.ellipsize
 import com.zs.core.common.PathUtils
+import com.zs.core.playback.MediaFile
+import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import com.zs.preferences.Key
@@ -67,8 +69,9 @@ private fun MediaProvider.getGenreName(id: Long) = runBlocking { getGenre(id) }.
 
 class AudiosViewModel(
     handle: SavedStateHandle,
+    remote: Remote,
     private val provider: MediaProvider
-) : StoreViewModel<Audio>(provider), AudiosViewState {
+) : StoreViewModel<Audio>(provider, remote), AudiosViewState {
     private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
     private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
 
@@ -78,6 +81,9 @@ class AudiosViewModel(
     private val ACTION_GO_TO_ALBUM = Action.GO_TO_ALBUM
 
     override val Audio.id: Long get() = this.id
+    override val Audio.asMediaFile: MediaFile
+        get() = MediaFile(uri, name, artist, artworkUri, mimeType)
+
     val _args = handle[RouteAudios]
     val source = _args.first; val extra = _args.second
 

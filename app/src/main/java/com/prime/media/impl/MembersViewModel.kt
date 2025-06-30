@@ -48,6 +48,7 @@ import com.prime.media.playlists.members.get
 import com.zs.compose.foundation.castTo
 import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.db.playlists.Playlists
+import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
 import com.zs.preferences.Key
 import com.zs.preferences.stringPreferenceKey
@@ -71,10 +72,12 @@ private val ACTION_REMOVE =
 
 
 class MembersViewModel(
-    handle: SavedStateHandle, val playlists: Playlists
-) : FilesViewModel<Track>(), MembersViewState {
+    handle: SavedStateHandle, val playlists: Playlists, remote: Remote
+) : FilesViewModel<Track>(remote), MembersViewState {
 
     override val Track.id: Long get() = this.id
+    override val Track.asMediaFile: MediaFile
+        get() = TODO("Not yet implemented")
     val playlistName = handle[RouteMembers]!!
     override val orders: List<Action> = listOf(ORDER_NONE, ORDER_BY_TITLE, ORDER_BY_DATE_MODIFIED)
     override var info: MetaData  = let {
@@ -115,13 +118,6 @@ class MembersViewModel(
         }
     }
 
-    override fun play(from: Track?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun shuffle() {
-        TODO("Not yet implemented")
-    }
 
     val observable = combine(
         flow = snapshotFlow(query::raw),

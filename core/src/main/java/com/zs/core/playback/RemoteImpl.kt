@@ -18,85 +18,61 @@
 
 package com.zs.core.playback
 
-import android.media.audiofx.Equalizer
-import android.net.Uri
+import android.content.ComponentName
+import android.content.Context
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.SessionToken
+import com.zs.core.common.await
 import kotlinx.coroutines.flow.Flow
 
-class RemoteImpl : Remote {
+internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.Listener {
 
-    override val state: Flow<NowPlaying>
-        get() = TODO("Not yet implemented")
-    override val queue: Flow<List<MediaFile>>
-        get() = TODO("Not yet implemented")
+    // TODO: currently a quickfix requirement. find better alternative.
+    private fun Context.browser(listener: MediaBrowser.Listener) =
+        MediaBrowser
+            .Builder(this, SessionToken(this, ComponentName(this, Playback::class.java)))
+            .setListener(listener)
+            .buildAsync()
 
-    override suspend fun connect() {
-        TODO("Not yet implemented")
+    // TODO: A quickfix, find better alternative of doing this.
+    // The fBrowser variable is lazily initialized with context.browser(this).
+    // Whenever fBrowser is accessed, the getter checks if the current value is cancelled.
+    // If it is cancelled, it re-initializes fBrowser with a new context.browser(this).
+    // Otherwise, it retains the current value.
+    // The goal is to ensure that fBrowser always holds a valid browser context,
+    // reinitializing it if the current one has been cancelled.
+    private var fBrowser = context.browser(this)
+        get() {
+            field = if (field.isCancelled) context.browser(this) else field
+            return field
+        }
+
+    override val state: Flow<NowPlaying?> get() = TODO("Not yet implemented")
+    override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
+
+    override suspend fun setMediaFiles(values: List<MediaFile>): Int {
+        val browser = fBrowser.await()
+        // make sure the items are distinct.
+        val list = values.distinctBy { it.mediaUri }
+        // set the media items; this will automatically clear the old ones.
+        browser.setMediaItems(list.map(MediaFile::value))
+        // return how many have been added to the list.
+        return list.size
     }
 
-    override suspend fun set(values: List<MediaFile>): Int {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun add(
-        values: List<MediaFile>,
-        index: Int
-    ): Int {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun remove(key: Uri): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun shuffle(shuffle: Boolean) {
+        val browser = fBrowser.await()
+        browser.shuffleModeEnabled = shuffle
     }
 
     override suspend fun clear() {
-        TODO("Not yet implemented")
+        val browser = fBrowser.await()
+        browser.clearMediaItems()
     }
 
     override suspend fun play(playWhenReady: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun toggleShuffle(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun pause() {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun skipToNext() {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun skipToPrev() {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun seekTo(position: Int, mills: Long) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun seekTo(uri: Uri, mills: Long): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun cycleRepeatMode(): Int {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun move(from: Int, to: Int): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun setSleepTimeAt(mills: Long) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun setEqualizer(eq: Equalizer?) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getEqualizer(priority: Int): Equalizer {
-        TODO("Not yet implemented")
+        val browser = fBrowser.await()
+        browser.playWhenReady = playWhenReady
+        browser.play()
     }
 }

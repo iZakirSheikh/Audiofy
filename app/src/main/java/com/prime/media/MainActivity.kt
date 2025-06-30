@@ -355,7 +355,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             // TODO - Extract artwork using MediaMetaDataRetriever
             val item = MediaFile(data, mimeType = intent.type)
             // Play the media item by replacing the existing queue.
-            relay.set(listOf(item))
+            relay.setMediaFiles(listOf(item))
             relay.play()
         }
         // FixMe - Don't navigate if this is main intent; as we have already set it as origin.

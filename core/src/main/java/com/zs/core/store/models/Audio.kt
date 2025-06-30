@@ -18,7 +18,9 @@
 
 package com.zs.core.store.models
 
+import android.content.ContentUris
 import android.database.Cursor
+import android.provider.MediaStore
 import com.zs.core.store.MediaProvider
 
 /**
@@ -59,6 +61,10 @@ class Audio(
     @JvmField val tracks: Int,
     @JvmField val albumArtist: String,
 ) {
+    val uri
+        get() = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+    val artworkUri get() = MediaProvider.buildAlbumArtUri(albumId)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -134,7 +140,11 @@ class Audio(
      *
      * @see android.provider.MediaStore.Audio.Genres
      */
-    class Genre(@JvmField val id: Long, @JvmField val name: String, @JvmField val cardinality: Int = -1) {
+    class Genre(
+        @JvmField val id: Long,
+        @JvmField val name: String,
+        @JvmField val cardinality: Int = -1
+    ) {
         internal constructor(cursor: Cursor) : this(
             id = cursor.getLong(0),
             name = cursor.getString(1) ?: MediaProvider.UNKNOWN_STRING,
