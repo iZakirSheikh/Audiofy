@@ -38,7 +38,7 @@ import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.compose.FilterDefaults
-import com.prime.media.common.debounceAfterFirst
+import com.zs.core.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.prime.media.playlists.PlaylistsViewState
 import com.zs.compose.foundation.RedViolet

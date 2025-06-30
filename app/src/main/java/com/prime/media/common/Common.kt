@@ -33,9 +33,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavDestination
 import com.prime.media.R
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.debounce
 
 /**
  * Represents a sorting order and associated grouping or ordering action.
@@ -139,32 +136,6 @@ inline operator fun <reified T : Any> SavedStateHandle.invoke(key: String): T? {
  * @return The trimmed text as a [String], or `null` if the trimmed text is empty.
  */
 val TextFieldState.raw get() = text.trim().toString().ifEmpty { null }
-
-@OptIn(FlowPreview::class)
-
-/**
- * Returns a flow that mirrors the original flow, but debounces emissions after the first one.
- *
- * The first emission from the original flow is emitted immediately. Subsequent emissions
- * are debounced by the specified [delayMillis].
- *
- * @param delayMillis The duration in milliseconds to debounce subsequent emissions.
- * @return A flow that debounces emissions after the first one.
- *
- * @see [debounce]
- */
-fun <T> Flow<T>.debounceAfterFirst(delayMillis: Long): Flow<T> {
-    var firstEmission = true
-    return this
-        .debounce {
-            if (firstEmission) {
-                firstEmission = false
-                0L
-            } else {
-                delayMillis
-            }
-        }
-}
 
 /**
  * Formats a file size in bytes to a human-readable string.

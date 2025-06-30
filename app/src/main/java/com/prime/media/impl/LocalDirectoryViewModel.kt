@@ -41,7 +41,7 @@ import com.prime.media.common.SelectionTracker.Level
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.compose.directory.FilesViewState
-import com.prime.media.common.debounceAfterFirst
+import com.zs.core.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.playback.MediaFile
@@ -58,7 +58,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.random.Random.Default.nextInt
 
 private const val TAG = "LocalDirectoryViewModel"
 

@@ -108,6 +108,7 @@ import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.prime.media.videos.RouteVideos
 import com.prime.media.videos.Videos
+import com.prime.media.widget.MiniPlayer
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -116,6 +117,7 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.OutlinedButton
 import com.zs.compose.theme.WindowSize.Category
+import com.zs.compose.theme.adaptive.FabPosition
 import com.zs.compose.theme.adaptive.NavigationSuiteScaffold
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.appbar.FloatingBottomNavigationBar
@@ -510,11 +512,13 @@ fun Home(
     // content
     val content = @Composable {
         NavigationSuiteScaffold(
+            fabPosition = FabPosition.End,
             vertical = portrait,
             snackbarHostState = snackbarHostState,
             hideNavigationBar = !requiresNavBar,
             containerColor = AppTheme.colors.background,
             progress = activity.inAppUpdateProgress,
+            floatingActionButton = { MiniPlayer() },
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val useAccent by preference(Settings.USE_ACCENT_IN_NAV_BAR)

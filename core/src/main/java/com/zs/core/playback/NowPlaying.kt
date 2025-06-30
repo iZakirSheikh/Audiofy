@@ -32,5 +32,41 @@ class NowPlaying(
     val position: Long,
     val favourite: Boolean,
     val playing: Boolean,
-    val mimeType: String,
-)
+    val mimeType: String?,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NowPlaying
+
+        if (speed != other.speed) return false
+        if (duration != other.duration) return false
+        if (position != other.position) return false
+        if (favourite != other.favourite) return false
+        if (playing != other.playing) return false
+        if (title != other.title) return false
+        if (subtitle != other.subtitle) return false
+        if (artwork != other.artwork) return false
+        if (mimeType != other.mimeType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = speed.hashCode()
+        result = 31 * result + duration.hashCode()
+        result = 31 * result + position.hashCode()
+        result = 31 * result + favourite.hashCode()
+        result = 31 * result + playing.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + subtitle.hashCode()
+        result = 31 * result + (artwork?.hashCode() ?: 0)
+        result = 31 * result + (mimeType?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String {
+        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playing=$playing, mimeType=$mimeType)"
+    }
+}

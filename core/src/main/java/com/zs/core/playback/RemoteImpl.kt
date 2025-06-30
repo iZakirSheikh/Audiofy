@@ -20,20 +20,55 @@ package com.zs.core.playback
 
 import android.content.ComponentName
 import android.content.Context
+import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.common.await
+import com.zs.core.common.debounceAfterFirst
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+
+// TODO: currently a quickfix requirement. find better alternative.
+private fun Context.browser(listener: MediaBrowser.Listener) =
+    MediaBrowser
+        .Builder(this, SessionToken(this, ComponentName(this, Playback::class.java)))
+        .setListener(listener)
+        .buildAsync()
+
+private val MediaBrowser.state: NowPlaying?
+    get() {
+        val current = currentMediaItem
+        if (current == null) return null
+        return NowPlaying(
+            current?.title.toString(),
+            current?.subtitle.toString(),
+            current?.artworkUri,
+            this.playbackParameters.speed,
+            this.contentDuration,
+            this.contentPosition,
+            false,
+            this.playWhenReady,
+            current?.mimeType
+        )
+    }
+
+/**
+ * Player events that trigger state change.
+ */
+private val UPDATE_EVENTS = intArrayOf(
+    Player.EVENT_TIMELINE_CHANGED,
+    Player.EVENT_PLAYBACK_STATE_CHANGED,
+    Player.EVENT_REPEAT_MODE_CHANGED,
+    Player.EVENT_IS_PLAYING_CHANGED,
+    Player.EVENT_IS_LOADING_CHANGED,
+    Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+    Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+    Player.EVENT_MEDIA_ITEM_TRANSITION
+)
+
 
 internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.Listener {
-
-    // TODO: currently a quickfix requirement. find better alternative.
-    private fun Context.browser(listener: MediaBrowser.Listener) =
-        MediaBrowser
-            .Builder(this, SessionToken(this, ComponentName(this, Playback::class.java)))
-            .setListener(listener)
-            .buildAsync()
-
     // TODO: A quickfix, find better alternative of doing this.
     // The fBrowser variable is lazily initialized with context.browser(this).
     // Whenever fBrowser is accessed, the getter checks if the current value is cancelled.
@@ -47,7 +82,29 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
             return field
         }
 
-    override val state: Flow<NowPlaying?> get() = TODO("Not yet implemented")
+
+
+    override val state: Flow<NowPlaying?> = callbackFlow {
+            // init browser
+            val browser = fBrowser.await()
+            val observer = object : Player.Listener {
+                override fun onEvents(player: Player, events: Player.Events) {
+                    if (!events.containsAny(*UPDATE_EVENTS))
+                        return
+                    trySend(browser.state)
+                }
+            }
+
+            // register
+            send(browser.state)
+            browser.addListener(observer)
+            // un-register on cancel
+            awaitClose {
+                browser.removeListener(observer)
+            }
+        }.debounceAfterFirst(400)
+
+
     override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
 
     override suspend fun setMediaFiles(values: List<MediaFile>): Int {
