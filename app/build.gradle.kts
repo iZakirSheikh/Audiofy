@@ -22,7 +22,7 @@ android {
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
     // Android SDK version
-    compileSdk = 35
+    compileSdk = 36
     namespace = "com.prime.media"
     // Java version
     compileOptions {
@@ -34,8 +34,8 @@ android {
     defaultConfig {
         applicationId = "com.prime.player"
         minSdk = 21
-        targetSdk = 35
-        versionCode = 1000
+        targetSdk = 36
+        versionCode = 1001
         versionName = "4.0.0-dev"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
