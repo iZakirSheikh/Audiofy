@@ -183,4 +183,5 @@
 # IronSource Rules ENd ==================
 
 #Firebase
--keep class com.google.firebase.encoders.json.NumberedEnum { *; }
+#-keep class com.google.firebase.encoders.json.NumberedEnum { *; }
+-dontwarn com.google.firebase.encoders.json.NumberedEnum
