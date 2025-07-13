@@ -1,7 +1,7 @@
 [versions]
-agp = "8.11.0"
+agp = "8.11.1"
 kotlin = "2.2.0"
-compose = "1.9.0-beta01"
+compose = "1.9.0-beta02"
 media3 = "1.7.1"
 toolkit = "3.7.0-dev"
 material_icons = "1.7.8"
@@ -29,9 +29,9 @@ androidx-activity = { module = "androidx.activity:activity", version = "1.10.1" 
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.0" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.1" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
-chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.4" }
+chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.6" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
@@ -57,13 +57,13 @@ coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 avif-coder-coil = { module = "com.github.awxkee:avif-coder-coil", version = "2.1.2" }
 
 #  Firebase
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.4.0" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "22.5.0" }
 firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version = "19.4.4" }
 
 # Play app-review
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
 play-app-review-ktx = { module = "com.google.android.play:review-ktx", version = "2.0.1" }
-google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "7.1.1" }
+google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "8.0.0" }
 
 # Icons
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "material_icons" }

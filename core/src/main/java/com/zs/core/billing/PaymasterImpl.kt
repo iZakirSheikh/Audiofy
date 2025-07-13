@@ -24,6 +24,7 @@ import android.util.Log
 import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase.PurchaseState
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.acknowledgePurchase
@@ -60,7 +61,9 @@ internal class PaymasterImpl(
     private val scope = CoroutineScope(Dispatchers.IO)
     private var delayReconnectMills = RECONNECT_TIMER_START_MILLISECONDS
     private val inAppBilling =
-        BillingClient(context).setListener(this).enablePendingPurchases().build()
+        BillingClient(context).setListener(this).enablePendingPurchases(
+            PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+        ).build()
 
     override val purchases = MutableStateFlow(emptyList<Purchase>())
     override val details = MutableStateFlow(emptyList<Product>())

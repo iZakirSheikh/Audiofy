@@ -20,6 +20,14 @@ package com.prime.media.console
 
 import com.prime.media.common.Route
 
-object RouteConsole: Route
+object RouteConsole: Route {
+
+    const val SHARED_ELEMENT_PLAYING_BARS = "shared_element_playing_bars"
+    const val SHARED_ELEMENT_CONTROLS = "shared_element_controls"
+    const val SHARED_ELEMENT_BACKGROUND = "shared_element_background"
+    const val SHARED_ELEMENT_ARTWORK = "shared_element_artwork"
+    const val SHARED_ELEMENT_TITLE = "shared_element_title"
+    const val SHARED_ELEMENT_SUBTITLE = "shared_element_subtitle"
+}
 
 interface ConsoleViewState

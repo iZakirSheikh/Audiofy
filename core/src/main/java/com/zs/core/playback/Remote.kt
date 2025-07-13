@@ -20,6 +20,7 @@ package com.zs.core.playback
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.annotation.FloatRange
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import com.zs.core.db.playlists.Playlists
@@ -80,8 +81,15 @@ interface Remote {
      * @see [Player.playWhenReady]
      */
     suspend fun play(playWhenReady: Boolean = true)
+    suspend fun pause()
+
+    suspend fun togglePlay()
 
     suspend fun shuffle(shuffle: Boolean)
+
+    suspend fun skipToNext()
+    suspend fun skipToPrevious()
+    suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
 
     /** Clears the queue if loaded otherwise does nothing. */
     suspend fun clear()

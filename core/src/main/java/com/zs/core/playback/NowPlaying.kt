@@ -24,8 +24,8 @@ import android.net.Uri
  * Represents the current state of the [Playback]
  */
 class NowPlaying(
-    val title: String,
-    val subtitle: String,
+    val title: String?,
+    val subtitle: String?,
     val artwork: Uri?,
     val speed: Float,
     val duration: Long,
@@ -34,6 +34,8 @@ class NowPlaying(
     val playing: Boolean,
     val mimeType: String?,
 ) {
+    // This time when this was generated.
+    val timeStamp = System.currentTimeMillis()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -41,9 +41,9 @@ private val MediaBrowser.state: NowPlaying?
         val current = currentMediaItem
         if (current == null) return null
         return NowPlaying(
-            current?.title.toString(),
-            current?.subtitle.toString(),
-            current?.artworkUri,
+            current.title?.toString(),
+            current.subtitle?.toString(),
+            current.artworkUri,
             this.playbackParameters.speed,
             this.contentDuration,
             this.contentPosition,
@@ -83,26 +83,25 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         }
 
 
-
     override val state: Flow<NowPlaying?> = callbackFlow {
-            // init browser
-            val browser = fBrowser.await()
-            val observer = object : Player.Listener {
-                override fun onEvents(player: Player, events: Player.Events) {
-                    if (!events.containsAny(*UPDATE_EVENTS))
-                        return
-                    trySend(browser.state)
-                }
+        // init browser
+        val browser = fBrowser.await()
+        val observer = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                if (!events.containsAny(*UPDATE_EVENTS))
+                    return
+                trySend(browser.state)
             }
+        }
 
-            // register
-            send(browser.state)
-            browser.addListener(observer)
-            // un-register on cancel
-            awaitClose {
-                browser.removeListener(observer)
-            }
-        }.debounceAfterFirst(400)
+        // register
+        send(browser.state)
+        browser.addListener(observer)
+        // un-register on cancel
+        awaitClose {
+            browser.removeListener(observer)
+        }
+    }.debounceAfterFirst(100)
 
 
     override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
@@ -125,6 +124,38 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     override suspend fun clear() {
         val browser = fBrowser.await()
         browser.clearMediaItems()
+    }
+
+    override suspend fun pause() {
+        val browser = fBrowser.await()
+        browser.pause()
+    }
+
+    override suspend fun togglePlay() {
+        val browser = fBrowser.await()
+        if (browser.isPlaying)
+            pause()
+        else {
+            play(true)
+        }
+    }
+
+    override suspend fun skipToNext() {
+        val browser = fBrowser.await()
+        browser.seekToNextMediaItem()
+    }
+
+    override suspend fun skipToPrevious() {
+        val browser = fBrowser.await()
+        browser.seekToPreviousMediaItem()
+    }
+
+    override suspend fun seekTo(pct: Float) {
+        val browser = fBrowser.await()
+        val duration = browser.duration
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET )
+            return
+        browser.seekTo((duration * pct).toLong())
     }
 
     override suspend fun play(playWhenReady: Boolean) {

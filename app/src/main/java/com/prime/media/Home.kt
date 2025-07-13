@@ -26,9 +26,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FeaturedPlayList
@@ -111,6 +116,7 @@ import com.prime.media.videos.Videos
 import com.prime.media.widget.MiniPlayer
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.textResource
+import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
@@ -350,7 +356,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     }
 
     // Videos
-    composable(RouteVideos){
+    composable(RouteVideos) {
         val viewState = koinViewModel<VideosViewModel>()
         Videos(viewState)
     }
@@ -518,7 +524,14 @@ fun Home(
             hideNavigationBar = !requiresNavBar,
             containerColor = AppTheme.colors.background,
             progress = activity.inAppUpdateProgress,
-            floatingActionButton = { MiniPlayer() },
+            floatingActionButton = {
+                MiniPlayer(
+                    surface = surface,
+                    modifier = Modifier.thenIf(!requiresNavBar && portrait) {
+                        windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                    }
+                )
+            },
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val useAccent by preference(Settings.USE_ACCENT_IN_NAV_BAR)

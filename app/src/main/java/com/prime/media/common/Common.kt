@@ -156,3 +156,4 @@ val Action.Companion.INFO get() =  ACTION_INFO
 val Action.Companion.GO_TO_ALBUM get() = ACTION_GO_TO_ALBUM
 val Action.Companion.GO_TO_ARTIST get() = ACTION_GO_TO_ARTIST
 val Action.Companion.EDIT get() = ACTION_EDIT
+

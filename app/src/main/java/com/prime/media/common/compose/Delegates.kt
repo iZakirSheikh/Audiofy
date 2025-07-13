@@ -53,6 +53,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieDynamicProperties
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottiePainter
@@ -95,6 +96,7 @@ private const val TAG = "Delegates"
 fun lottieAnimationPainter(
     @RawRes id: Int,
     atEnd: Boolean,
+    dynamicProperties: LottieDynamicProperties?= null,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     animationSpec: AnimationSpec<Float>? = null,
 ): Painter {
@@ -107,6 +109,7 @@ fun lottieAnimationPainter(
     )
     return rememberLottiePainter(
         composition = composition,
+        dynamicProperties = dynamicProperties,
         progress = progress,
     )
 }
@@ -169,6 +172,8 @@ inline fun LottieAnimatedIcon(
 fun lottieAnimationPainter(
     @RawRes id: Int,
     speed: Float = 1f,
+    isPlaying: Boolean = true,
+    dynamicProperties: LottieDynamicProperties?= null,
     repeatMode: RepeatMode = RepeatMode.Restart,
     iterations: Int = Int.MAX_VALUE,
 ): Painter {
@@ -177,11 +182,14 @@ fun lottieAnimationPainter(
         composition = composition,
         iterations = iterations,
         speed = speed,
+        isPlaying = isPlaying,
         reverseOnRepeat = repeatMode == RepeatMode.Reverse,
     )
     return rememberLottiePainter(
         composition = composition,
-        progress = progress
+        progress = progress,
+
+        dynamicProperties = dynamicProperties
     )
 }
 
