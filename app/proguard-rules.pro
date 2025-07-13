@@ -51,7 +51,6 @@
 -keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
 # Deon't obscate names of those objects that implements SafeArgs and Route
 -keepnames class * implements com.prime.media.common.Route
--keepnames class * implements com.prime.media.common.SafeArgs
 
 # IronSource Proguard Rules
 # TODO - Remove once SDK is changed.
@@ -182,3 +181,6 @@
 #For Android
 -keep class * extends android.app.Activity
 # IronSource Rules ENd ==================
+
+#Firebase
+-keep class com.google.firebase.encoders.json.NumberedEnum { *; }
