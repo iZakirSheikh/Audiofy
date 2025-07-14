@@ -49,6 +49,7 @@ import com.prime.media.common.ellipsize
 import com.zs.core.common.PathUtils
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
+import com.zs.core.playback.toMediaFile
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
 import com.zs.preferences.Key
@@ -82,7 +83,7 @@ class AudiosViewModel(
 
     override val Audio.id: Long get() = this.id
     override val Audio.asMediaFile: MediaFile
-        get() = MediaFile(uri, name, artist, artworkUri, mimeType)
+        get() = toMediaFile()
 
     val _args = handle[RouteAudios]
     val source = _args.first; val extra = _args.second

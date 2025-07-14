@@ -25,6 +25,7 @@ import android.provider.MediaStore
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StyleSpan
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.zs.core.db.playlists.Playlist
@@ -211,3 +212,4 @@ internal fun MediaItem.toTrack(playlistId: Long, order: Int) =
         artwork = mediaMetadata.artworkUri?.toString(),
         mimeType = mimeType
     )
+

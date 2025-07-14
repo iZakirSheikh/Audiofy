@@ -121,6 +121,12 @@ fun Recents(
         modifier = modifier,
         content = {
             val values = emit(false, recents) ?: return@LazyRow item { Spacer(Modifier) }
+
+            // Ensure first item is visible by adding a spacer at the front
+            item(contentType = "library_list_spacer") {
+                Spacer(modifier = Modifier)
+            }
+
             items(values, key = Track::uri) {
                 Recent(
                     it.title,             // Use the item's title

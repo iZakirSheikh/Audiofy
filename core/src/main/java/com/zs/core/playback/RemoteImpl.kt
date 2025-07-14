@@ -20,11 +20,14 @@ package com.zs.core.playback
 
 import android.content.ComponentName
 import android.content.Context
+import android.net.Uri
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
+import com.zs.core.playback.mediaUri
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -156,6 +159,22 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET )
             return
         browser.seekTo((duration * pct).toLong())
+    }
+
+    override suspend fun indexOf(uri: Uri): Int {
+        val browser = fBrowser.await()
+        repeat(browser.mediaItemCount) { pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.requestMetadata.mediaUri == uri) return pos
+        }
+        return Remote.INDEX_UNSET
+    }
+
+    override suspend fun seekTo(index: Int, mills: Long): Boolean {
+        val browser = fBrowser.await()
+        if (index == Remote.INDEX_UNSET && mills == Remote.TIME_UNSET) return false
+        browser.seekTo(index, mills)
+        return true
     }
 
     override suspend fun play(playWhenReady: Boolean) {

@@ -20,6 +20,7 @@ package com.zs.core.playback
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import androidx.annotation.FloatRange
 import androidx.media3.common.C
 import androidx.media3.common.Player
@@ -39,6 +40,7 @@ interface Remote {
 
         const val POSITION_UNSET = C.POSITION_UNSET
         const val TIME_UNSET = C.TIME_UNSET
+        const val INDEX_UNSET = C.INDEX_UNSET
 
         // The standard global playlists.
         val PLAYLIST_FAVOURITE = Playlists.PRIVATE_PLAYLIST_PREFIX + "favourite"
@@ -89,7 +91,15 @@ interface Remote {
 
     suspend fun skipToNext()
     suspend fun skipToPrevious()
+
+    /** Skips to [index] in queue and seeks to [mills]; returns `true` if successful. */
+    suspend fun seekTo(index: Int = Remote.INDEX_UNSET, mills: Long = Remote.TIME_UNSET): Boolean
+
     suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
+
+    /** Returns the index of [MediaFile] represented by the [uri] or [Remote.INDEX_UNSET] */
+    suspend fun indexOf(uri: Uri): Int
+
 
     /** Clears the queue if loaded otherwise does nothing. */
     suspend fun clear()

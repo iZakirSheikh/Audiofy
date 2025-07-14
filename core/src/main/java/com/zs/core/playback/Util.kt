@@ -25,6 +25,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -32,6 +33,8 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.SessionResult
+import com.zs.core.db.playlists.Playlist
+import com.zs.core.store.models.Audio
 
 /**
  * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
@@ -109,3 +112,32 @@ val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::g
  */
 internal inline fun SessionResult(code: Int, args: Bundle.() -> Unit) =
     SessionResult(code, Bundle().apply(args))
+
+/**
+ * Converts a [Playlist.Track] to a [MediaFile].
+ *
+ * This function takes a [Playlist.Track] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, title, subtitle, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Playlist.Track].
+ *
+ * @return A [MediaFile] representation of the [Playlist.Track].
+ */
+fun Playlist.Track.toMediaFile() = MediaFile(
+    Uri.parse(uri),
+    title = title,
+    subtitle = subtitle,
+    artwork?.toUri(),
+    mimeType
+)
+
+/**
+ * Converts an [Audio] object to a [MediaFile].
+ *
+ * This function takes an [Audio] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, name, artist, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Audio] object.
+ *
+ * @return A [MediaFile] representation of the [Audio] object.
+ */
+fun Audio.toMediaFile() =
+    MediaFile(uri, name, artist, artworkUri, mimeType)
