@@ -21,6 +21,7 @@ package com.zs.core.db.playlists
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
@@ -164,4 +165,26 @@ abstract class Playlists {
         val x = get(name) ?: return emptyList()
         return getTracks(x.id)
     }
+
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID")
+    abstract suspend fun clear(playlistID: Long): Int
+
+    // members
+    @Insert
+    abstract suspend fun insert(tracks: List<Track>): List<Long>
+
+    /**
+     * Delete the [Playlist.Member] where [Playlist.Member.order] > [order]
+     */
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id == :playlistId AND play_order >= :order")
+    internal abstract suspend fun _delete(playlistId: Long, order: Int): Int
+
+    @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id == :playlistId AND uri == :uri")
+    internal abstract suspend fun _get(playlistId: Long, uri: String): Track?
+
+    /**
+     * This is not the recommended way to do it.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun update(member: Track): Long
 }

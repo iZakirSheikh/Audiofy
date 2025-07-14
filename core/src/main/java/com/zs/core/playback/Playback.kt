@@ -72,19 +72,19 @@ import androidx.media3.common.AudioAttributes.Builder as AudioAttributes
 private const val TAG = "Playback"
 
 // Keys for SharedPreferences.
-private val PREF_KEY_SHUFFLE_MODE = "_shuffle"
-private val PREF_KEY_REPEAT_MODE = "_repeat_mode"
-private val PREF_KEY_INDEX = "_index"
-private val PREF_KEY_BOOKMARK = "_bookmark"
-private val PREF_KEY_RECENT_PLAYLIST_LIMIT = "_max_recent_size"
-private val PREF_KEY_EQUALIZER_ENABLED = "_equalizer_enabled"
-private val PREF_KEY_EQUALIZER_PROPERTIES = "_equalizer_properties"
-private val PREF_KEY_CLOSE_WHEN_REMOVED = "_stop_playback_when_removed"
-private val PREF_KEY_ORDERS = "_orders"
+private const val PREF_KEY_SHUFFLE_MODE = "_shuffle"
+private const val PREF_KEY_REPEAT_MODE = "_repeat_mode"
+private const val PREF_KEY_INDEX = "_index"
+private const val PREF_KEY_BOOKMARK = "_bookmark"
+private const val PREF_KEY_RECENT_PLAYLIST_LIMIT = "_max_recent_size"
+private const val PREF_KEY_EQUALIZER_ENABLED = "_equalizer_enabled"
+private const val PREF_KEY_EQUALIZER_PROPERTIES = "_equalizer_properties"
+private const val PREF_KEY_CLOSE_WHEN_REMOVED = "_stop_playback_when_removed"
+private const val PREF_KEY_ORDERS = "_orders"
 
 //
 private const val SAVE_POSITION_DELAY_MILLS = 5_000L
-private val LIST_ITEM_DELIMITER = ';'
+private const val LIST_ITEM_DELIMITER = ';'
 
 class Playback : MediaLibraryService(), Callback, Player.Listener {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -195,12 +195,12 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     )
                 }
             }
+            // Regardless of whether errors occurred during state restoration or not, add the current
+            // class as a player listener
+            player.addListener(this@Playback)
+            // Initialize the audio effects;
+            onAudioSessionIdChanged(-1)
         }
-        // Regardless of whether errors occurred during state restoration or not, add the current
-        // class as a player listener
-        player.addListener(this@Playback)
-        // Initialize the audio effects;
-        onAudioSessionIdChanged(-1)
     }
 
     /**
@@ -276,47 +276,89 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onMediaItemTransition(
         mediaItem: MediaItem?, reason: Int
     ) {
-        // save current index in preference
+        // Save the current media item index in SharedPreferences.
         scope.launch { preferences[PREF_KEY_INDEX] = player.currentMediaItemIndex }
-
-        // Add the media item to the "recent" playlist if the mediaItem is not null
-        // and its media URI is not from a third-party source. Third-party content URIs
-        // are unplayable after an app reboot.
-        // FIXME - Disabling saving of videos in history for now.
-        if (mediaItem == null || mediaItem.mediaUri?.isThirdPartyUri == true) return
-        if (mediaItem.mimeType?.startsWith("video/") == true) return
-        // else save file in history
-        scope.launch(Dispatchers.IO) {
-            val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
-            // playlists.addToRecent(mediaItem, limit.toLong())
-        }
+        // Notify connected controllers that the children of the root queue have changed.
+        // This ensures UIs are updated to reflect the new current item.
         session.notifyChildrenChanged(Remote.ROOT_QUEUE, 0, null)
+
+        // If the mediaItem is null (e.g., end of playlist) or it's a third-party URI,
+        // do not proceed with adding it to the "Recent" playlist.
+        if (mediaItem == null || mediaItem.mediaUri?.isThirdPartyUri == true) return
+
+        // Save the file in the "Recent" playlist.
+        // TODO: Implement a delay before saving to "Recent". This ensures only items
+        //  viewed for a certain duration are added, improving the relevance of the "Recent" list.
+        // TODO: Also, consider saving bookmarks for these recent items, using the URI as the key.
+        scope.launch {
+            // Get the limit for the number of items in the "Recent" playlist from preferences.
+            val limit = preferences[PREF_KEY_RECENT_PLAYLIST_LIMIT, 50]
+
+            // Get the ID of the "Recent" playlist. If it doesn't exist, create it.
+            val playlistId = playlists[Remote.PLAYLIST_RECENT]?.id
+                ?: playlists.insert(Playlist(name = Remote.PLAYLIST_RECENT))
+
+            // Retrieve the "Recent" playlist.
+            val playlist = playlists[playlistId]!!
+            // Update the 'dateModified' of the playlist.
+            // FIXME: Find a more efficient way to update the playlist's modification timestamp
+            //  without necessarily needing to do this.
+            playlists.update(playlist = playlist.copy(desc = ""))
+
+            // Check if the media item already exists in the "Recent" playlist.
+            val member = playlists._get(playlistId, mediaItem.requestMetadata.mediaUri.toString())
+            if (member != null) {
+                // If the item exists, update its order to 0 (move it to the top).
+                playlists.update(member = member.copy(order = 0))
+            } else {
+                // If the item doesn't exist, delete the oldest item if the playlist exceeds the limit,
+                // and then insert the new item at the top (order 0).
+                playlists._delete(playlistId, limit)
+                playlists.insert(listOf(mediaItem.toTrack(playlistId, 0)))
+            }
+        }
     }
 
-
+    // Update shuffle mode pref.
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         scope.launch() { preferences[PREF_KEY_SHUFFLE_MODE] = shuffleModeEnabled }
         session.notifyChildrenChanged(Remote.ROOT_QUEUE, 0, null)
     }
 
-
+    // update repeat mode pref.
     override fun onRepeatModeChanged(repeatMode: Int) {
         scope.launch() { preferences[PREF_KEY_REPEAT_MODE] = repeatMode }
     }
 
     // Called when the player's timeline changes, indicating a change in the playlist.
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        // construct list and update.
+        // Only proceed if the timeline change is due to a playlist modification.
         if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
-        //Obtain the media_items to be saved.
-        val items = player.mediaItems
-        // Save the media_items in the playlist on change in time line
-        scope.launch(Dispatchers.IO) { /*playlists.save(items)*/ }
-        // Save the orders in preferences
-        scope.launch() {
-            preferences[PREF_KEY_ORDERS] = player.orders.joinToString("$LIST_ITEM_DELIMITER")
-        }
+
+        // Notify connected controllers that the children of the root queue have changed.
+        // This prompts them to refresh their view of the queue.
         session.notifyChildrenChanged(Remote.ROOT_QUEUE, 0, null)
+        // Launch a coroutine to handle database operations asynchronously.
+        scope.launch {
+            // Obtain the current list of media items from the player.
+            val items = player.mediaItems
+            // TODO: Consider moving this logic to onDestroy. This would allow handling
+            //  queue operations (move, remove, add) without frequent database updates,
+            //  potentially improving performance and reducing database load.
+
+            // Get the ID of the "queue" playlist. If it doesn't exist, create it.
+            val id = playlists[Remote.PLAYLIST_QUEUE]?.id
+                ?: playlists.insert(Playlist(Remote.PLAYLIST_QUEUE, ""))
+
+            // Clear the existing tracks from the "queue" playlist in the database.
+            playlists.clear(id)
+
+            // Convert the MediaItems to Track objects and insert them into the database.
+            val tracks = items.mapIndexed { index, mediaItem -> mediaItem.toTrack(id, index) }
+            playlists.insert(tracks)
+            // Save the current shuffle order to preferences.
+            preferences[PREF_KEY_ORDERS] = player.orders.joinToString(LIST_ITEM_DELIMITER.toString())
+        }
     }
 
     //

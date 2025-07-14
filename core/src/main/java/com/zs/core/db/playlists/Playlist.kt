@@ -130,6 +130,16 @@ class Playlist @Deprecated("This is used by Room internally") internal construct
         @JvmField @ColumnInfo(name = "artwork_uri") val artwork: String? = null,
         @JvmField @ColumnInfo(name = "mime_type") val mimeType: String? = null,
     ) {
+
+        fun copy(
+            order: Int = this.order,
+            title: String = this.title,
+            subtitle: String = this.subtitle,
+            uri: String = this.uri,
+            artwork: String? = this.artwork,
+            mimeType: String? = this.mimeType
+        ) = Track(id, playlistID, order, uri, title, subtitle, artwork, mimeType)
+
         /**
          * Representing a member (media file) within a playlist.
          */
