@@ -2,14 +2,14 @@
 <resources>
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New (v4.0.0-dev)</b>
+       <b>What’s New (v4.0.0-dev)</b>
         <font color='grey'>
-            \n - This version has been developed from scratch and is currently in its initial <font color = 'red'><b>Alpha</b></font> release. As such, it is highly unstable.
-            \n - As an <b>Alpha</b> release, please anticipate that some features may not function as expected.
-            \n - This initial release incorporates various core components of the application.
-            \n - Future versions will introduce additional features and stability improvements.
-            \n - This version is intended for testing purposes only.
-            \n - Introduced "MilkyGlass," an Apple-inspired liquid glass surface effect.
-            \n - <font color = 'yellow'><b>Enjoy and happy testing</b></font>
+            \n - This is an <font color='red'><b>Alpha</b></font> release. Some features may not work as expected.
+            \n - Introduced <b>MilkyGlass</b>, a liquid glass surface effect inspired by Apple.
+            \n - Added functionality to the <b>Library screen</b>.
+            \n - Queue and recent tracks are now persistent.
+            \n - <font color='yellow'>This version is intended for testing purposes only. Please use with caution.</font>
+            \n - <font color='yellow'><b>Enjoy, and happy testing!</b></font>
         </font>
     </string>
 

@@ -60,6 +60,7 @@ import com.prime.media.common.compose.lottieAnimationPainter
 import com.prime.media.common.compose.scale
 import com.prime.media.common.compose.shine
 import com.prime.media.console.RouteConsole
+import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.foreground
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
@@ -193,7 +194,6 @@ private fun FabPlayer(
                     .foreground(Color.Black.copy(0.5f))
             )
 
-            //
             // Playing bars.
             Icon(
                 painter = lottieAnimationPainter(
@@ -209,15 +209,13 @@ private fun FabPlayer(
                         RouteConsole.SHARED_ELEMENT_PLAYING_BARS,
                         zIndexInOverlay = 0.23f
                     ),
-                tint = AppTheme.colors.onAccent
+                tint = Color.SignalWhite
             )
 
             // Play Toggle
             IconButton(
                 onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS),
+                modifier = Modifier.align(Alignment.CenterEnd).sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS),
                 content = {
                     Icon(
                         painter = lottieAnimationPainter(
@@ -227,7 +225,7 @@ private fun FabPlayer(
                             animationSpec = tween(easing = LinearEasing)
                         ),
                         contentDescription = null,
-                        tint = AppTheme.colors.onAccent,
+                        tint = Color.SignalWhite,
                         modifier = Modifier.lottie(1.5f)
                     )
                 },

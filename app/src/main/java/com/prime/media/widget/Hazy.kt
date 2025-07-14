@@ -24,6 +24,7 @@ import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -79,8 +81,8 @@ fun Hazy(
     modifier: Modifier = Modifier
 ) {
     val onColor = AppTheme.colors.onBackground
-    // The position (-1 if N/A) animated from 0; stops at duration (if not N/A)
-    val position = state.chronometer
+    // The position (Long.MIN_VALUE if N/A) animated from 0; stops at duration (if not N/A)
+    val chronometer = state.chronometer
     // content
     BaseListItem(
         centerAlign = true,
@@ -113,25 +115,32 @@ fun Hazy(
         },
         // Duration
         overline = {
-            val fPosition =
-                if (position == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(position / 1000)
+            val elapsed = chronometer.elapsed
+            val fPos =
+                if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(elapsed / 1000)
+            val duration = state.duration
             val fDuration =
-                if (state.duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(
-                    state.duration / 1000
-                )
+                if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(duration / 1000)
             Label(
-                "$fPosition | $fDuration",
+                "$fPos \\ $fDuration (${
+                    stringResource(
+                        R.string.playback_speed_dialog_x_f,
+                        state.speed
+                    )
+                })",
                 style = AppTheme.typography.label3,
-                color = onColor.copy(ContentAlpha.medium),
+                color = onColor.copy(ContentAlpha.disabled),
             )
         },
         // Artwork
+        // TODO - Maybe use Crossfire
         leading = {
             AsyncImage(
                 model = state.artwork,
                 modifier = Modifier
                     .sharedElement(RouteConsole.SHARED_ELEMENT_ARTWORK)
                     .clip(AppTheme.shapes.medium)
+                    .background(AppTheme.colors.background(1.dp))
                     .size(84.dp),
                 contentScale = ContentScale.Crop,
                 contentDescription = null
@@ -142,7 +151,9 @@ fun Hazy(
             FloatingActionButton(
                 onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
                 shape = AppTheme.shapes.large,
-                modifier = Modifier.scale(0.9f),
+                modifier = Modifier
+                    .sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS)
+                    .scale(0.9f),
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                 content = {
                     Icon(
@@ -153,7 +164,6 @@ fun Hazy(
                             animationSpec = tween(easing = LinearEasing)
                         ),
                         modifier = Modifier
-                            .sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS)
                             .lottie(1.5f),
                         contentDescription = null
                     )
@@ -166,6 +176,7 @@ fun Hazy(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
                 content = {
+                    // Placeholder for playingbars
                     Spacer(Modifier.sharedElement(RouteConsole.SHARED_ELEMENT_PLAYING_BARS))
                     // Skip to previous
                     IconButton(
@@ -173,11 +184,18 @@ fun Hazy(
                         icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
                     )
-
                     // Slider
                     Slider(
-                        if (position == Remote.TIME_UNSET || state.duration == Remote.TIME_UNSET) 1f else position.toFloat() / state.duration,
-                        onValueChange = onAction,
+                        chronometer.progress(state.duration),
+                        onValueChange = {
+                            val mills = (it * state.duration).toLong()
+                            chronometer.raw = mills
+                        },
+                        onValueChangeFinished = {
+                            val progress = chronometer.elapsed / state.duration.toFloat()
+                            onAction(progress)
+                        },
+                        enabled = state.duration > 0,
                         modifier = Modifier.weight(1f),
                     )
 
