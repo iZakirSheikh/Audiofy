@@ -25,6 +25,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Downloading
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.NonRestartableComposable
@@ -334,7 +335,8 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             when (index) {
                 0 -> showSnackbar(
                     R.string.what_s_new_latest,
-                    duration = SnackbarDuration.Indefinite
+                    duration = SnackbarDuration.Indefinite,
+                    icon = Icons.Outlined.NewReleases
                 )
             }
         }

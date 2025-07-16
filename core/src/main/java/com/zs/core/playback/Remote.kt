@@ -93,13 +93,12 @@ interface Remote {
     suspend fun skipToPrevious()
 
     /** Skips to [index] in queue and seeks to [mills]; returns `true` if successful. */
-    suspend fun seekTo(index: Int = Remote.INDEX_UNSET, mills: Long = Remote.TIME_UNSET): Boolean
+    suspend fun seekTo(index: Int = INDEX_UNSET, mills: Long = TIME_UNSET): Boolean
 
     suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
 
     /** Returns the index of [MediaFile] represented by the [uri] or [Remote.INDEX_UNSET] */
     suspend fun indexOf(uri: Uri): Int
-
 
     /** Clears the queue if loaded otherwise does nothing. */
     suspend fun clear()

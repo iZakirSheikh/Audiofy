@@ -122,14 +122,14 @@ fun Hazy(
             val fDuration =
                 if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(duration / 1000)
             Label(
-                "$fPos \\ $fDuration (${
+                "$fPos / $fDuration (${
                     stringResource(
                         R.string.playback_speed_dialog_x_f,
                         state.speed
                     )
                 })",
                 style = AppTheme.typography.label3,
-                color = onColor.copy(ContentAlpha.disabled),
+                color = onColor.copy(ContentAlpha.medium),
             )
         },
         // Artwork

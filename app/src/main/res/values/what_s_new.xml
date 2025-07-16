@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v4.0.0-dev)</b>
-       <b>What’s New (v4.0.0-dev)</b>
+    <string name="what_s_new_latest" translatable="false">
+       <b>What’s New (v4.0.0-dev01)</b>
         <font color='grey'>
+            \n - Fixed bug causing glitches in slider scrubbing.
             \n - This is an <font color='red'><b>Alpha</b></font> release. Some features may not work as expected.
             \n - Introduced <b>MilkyGlass</b>, a liquid glass surface effect inspired by Apple.
             \n - Added functionality to the <b>Library screen</b>.
@@ -12,21 +12,4 @@
             \n - <font color='yellow'><b>Enjoy, and happy testing!</b></font>
         </font>
     </string>
-
-    <string name="what_s_new_latest" translatable="false">@string/what_s_new_toast</string>
-
-    <!---->
-    <string-array name="what_s_new">
-        <!--first is always latest-->
-        <item>@string/what_s_new_latest</item>
-        <item><b>v3.3.0</b>
-        <font color='grey'>
-            \n We\'ve enhanced the functionality of the app.
-            \n We\'re utilizing the new, advanced NowPlaying API for real-time updates regarding playback metadata state.
-            \n We\'ve added a new Dynamic Widget that automatically adjusts to size.
-            \n More App Widget styles are coming soon.
-        </font>
-        </item>
-    </string-array>
-
 </resources>

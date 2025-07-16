@@ -24,8 +24,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -55,6 +53,7 @@ import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.ripple
+import com.zs.compose.theme.text.Header
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.Remote
 
@@ -144,7 +143,20 @@ fun Shortcuts(
                 label = textResource(id = R.string.artists),
             )
 
-             Spacer(modifier = Modifier.fillMaxWidth())
+            // Favourites
+            Shortcut(
+                onAction = { navigator.navigate(RouteMembers(Remote.PLAYLIST_FAVOURITE)) },
+                icon = Icons.Outlined.FolderSpecial,
+                label = textResource(id = R.string.favourite),
+            )
+
+            //
+            Header(
+                textResource(R.string.folders),
+                style = AppTheme.typography.label3,
+                color = AppTheme.colors.accent,
+                modifier = Modifier.padding(top = ContentPadding.medium)
+            )
             // Audio Folders
             Shortcut(
                 onAction = { navigator.navigate(RouteFolders(true)) },
@@ -156,14 +168,6 @@ fun Shortcuts(
                 onAction = { navigator.navigate(RouteFolders(false)) },
                 icon = Icons.Outlined.VideoLibrary,
                 label = "Video",
-            )
-
-            Spacer(modifier = Modifier.fillMaxWidth())
-            // Favourites
-            Shortcut(
-                onAction = { navigator.navigate(RouteMembers(Remote.PLAYLIST_FAVOURITE)) },
-                icon = Icons.Outlined.FolderSpecial,
-                label = textResource(id = R.string.favourite),
             )
         }
     )

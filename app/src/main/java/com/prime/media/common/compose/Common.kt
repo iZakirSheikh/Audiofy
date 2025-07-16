@@ -118,7 +118,6 @@ inline fun Modifier.lottie(scale: Float = 1f) = this
  */
 @JvmInline
 value class Chronometer private constructor(private val state: MutableLongState) {
-
     /**
      * Constructs a [Chronometer] with an initial time value.
      *
@@ -126,33 +125,14 @@ value class Chronometer private constructor(private val state: MutableLongState)
      *                to the rules defined for the [raw] property setter (i.e., user-set values
      *                become positive, system-set negative).
      */
-    constructor(initial: Long) : this(mutableLongStateOf(if (initial == Remote.TIME_UNSET) Long.MIN_VALUE else -initial))
+    constructor(initial: Long) :
+            this(mutableLongStateOf(if (initial == Remote.TIME_UNSET) Long.MIN_VALUE else -initial))
 
-    /**
-     * Gets or sets the raw internal time value.
-     *
-     * **Getter**: Returns the stored raw long value.
-     *
-     * **Setter**:
-     * - If `value` is [Long.MIN_VALUE], it's stored as is.
-     * - If `value` is negative (typically a system-reported progress like [NowPlaying.chronometer]),
-     *   it's stored as is (negative).
-     * - If `value` is positive (typically a user-initiated change, e.g., from a slider),
-     *   it's stored as its negative equivalent. This internal representation helps distinguish
-     *   user actions from system updates.
-     */
+    /** Gets or sets the raw internal time value. */
     var raw
         get() = state.longValue
         set(value) {
-            state.longValue = when {
-                // Retain Long.MIN_VALUE as is, as it signifies N/A.
-                value == Long.MIN_VALUE -> value
-                // If the value is already negative (system update), store it as is.
-                value < 0 -> value
-                // If the value is positive (user update), store its negative counterpart.
-                // This ensures user-initiated changes are marked differently internally.
-                else -> -value
-            }
+            state.longValue = value
         }
 
     /**
@@ -233,58 +213,44 @@ val NowPlaying.chronometer: Chronometer
         // This ensures the chronometer state persists across recompositions.
         val chronometer = remember { Chronometer(position) }
 
-        // Launch an effect that updates the chronometer based on changes in the NowPlaying state.
-        // This effect will re-launch whenever the `NowPlaying` object instance changes.
+        // Restart this effect whenever the NowPlaying object changes.
         LaunchedEffect(this) {
-            // Exit the effect early if essential playback information is missing or playback is inactive.
-            // - `position == Remote.TIME_UNSET`: The current playback position is unknown.
-            // - `position == duration`: Playback has reached the end.
-            // - `!playing`: Playback is currently paused or stopped.
-            // In these cases, the chronometer should not be actively ticking.
-            if (position == Remote.TIME_UNSET || position == duration || !playing)
-                return@LaunchedEffect
-            // Calculate the elapsed time since the `NowPlaying` state was last updated (`timeStamp`).
-            // This is important to account for any delay between when the `NowPlaying` object
-            // was created/updated and when this `LaunchedEffect` block is executed.
-            // It also factors in the playback `speed`.
+            Log.d(TAG, "NowPlaying: ${this@chronometer}")
+            // Time since NowPlaying was last updated.
             val elapsedSinceLastUpdate = System.currentTimeMillis() - timeStamp
 
-            // Calculate the current estimated playback position.
-            // This starts with the `position` reported in `NowPlaying` and adds the
-            // calculated `elapsedSinceLastUpdate` adjusted by the playback `speed`.
-            // This gives a more accurate current position than relying solely on `NowPlaying.position`,
-            // especially if updates are infrequent or playback speed is not 1.0.
-            // FIXME: The calculation of 'current' might need refinement if the playback 'speed'
-            // can change dynamically and frequently between `NowPlaying` updates.
-            // This calculation assumes `speed` is constant since `timeStamp`.
+            // Estimate the current position by adjusting for elapsed time and speed.
+            // Assumes speed has remained constant since the timestamp.
             var current = position + (elapsedSinceLastUpdate * speed).roundToLong()
-
             // Initialize the chronometer's raw value.
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
-            chronometer.raw = -current
-            // Launch a new coroutine to handle the continuous ticking of the chronometer.
-            // This coroutine will run as long as `playing` is true.
-            while (playing) {
+            // Use Long.MIN_VALUE if position is unknown; otherwise, store as a negative value.
+            chronometer.raw = if (position == Remote.TIME_UNSET) Long.MIN_VALUE else -current
+            // Exit early if:
+            // 1. The position is unknown,
+            // 2. Playback has completed,
+            // 3. Playback is paused/stopped.
+            if (position == Remote.TIME_UNSET || !playing)
+                return@LaunchedEffect
+            // Continuously update the chronometer while playing,
+            // unless the user has overridden the progress (i.e., raw becomes positive).
+            while (true) {
                 // Log the current state for debugging.
                 Log.d(TAG, "duration: $duration | raw: ${chronometer.raw} | position: $current")
-                // Delay for 1 second before the next update.
-                delay(1000)
-                // Check if the chronometer's raw value is positive.
-                // A positive value indicates that the user has manually interacted with
-                // the chronometer (e.g., by scrubbing a seek bar).
-                // If so, stop this automatic ticking loop to avoid overriding the user's input.
-                // The loop will effectively pause until the next `NowPlaying` state change
-                // re-evaluates the `LaunchedEffect`.
-                if (chronometer.raw > 0) break
-
+                // Stop ticking if:
+                // 1. User manually scrubs (raw > 0), or
+                // 2. Playback reaches the end of media.
+                // TODO: Check if repeat mode is set to 1 and playback has reached the end; if so,
+                //  restart the current track.
+                if (chronometer.raw > 0 || duration != Remote.TIME_UNSET && current >= duration) break
                 // Advance the `current` position by 1 second, adjusted for playback `speed`.
                 current += (1000L * speed).roundToLong()
-
                 // Update the chronometer's raw value with the new system-reported progress.
                 // Again, the value is negative to indicate it's a system update.
                 chronometer.raw = -current
-
+                // Delay for 1 second before the next update.
+                delay(1000)
             }
         }
         return chronometer

@@ -80,7 +80,7 @@ private fun Artist(
                         darkShadowColor = AppTheme.colors.darkShadowColor,
                         shape = shape,
                     )
-                    .background(AppTheme.colors.background(1.dp)),
+                    .background(AppTheme.colors.background),
                 color = AppTheme.colors.background(1.dp),
                 contentColor = AppTheme.colors.onBackground,
                 content = {

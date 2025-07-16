@@ -40,12 +40,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.emit
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.text.Label
+import com.zs.compose.theme.text.Text
 import com.zs.core.db.playlists.Playlist.Track
 
 /**
@@ -88,14 +90,16 @@ private fun Recent(
         )
 
         // Label below the artwork with padding and styling
-        Label(
+        Text(
             text = label,
             modifier = Modifier
                 .padding(top = ContentPadding.medium)
                 .width(80.dp),
-            style = AppTheme.typography.body3,
+            style = AppTheme.typography.label3,
             maxLines = 2, // Allow at most 2 lines for label
+            minLines = 2,
             textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
