@@ -51,7 +51,7 @@ private val MediaBrowser.state: NowPlaying?
             this.contentDuration,
             this.contentPosition,
             false,
-            this.playWhenReady,
+            this.playWhenReady && playbackState != Player.STATE_ENDED,
             current?.mimeType
         )
     }
@@ -67,7 +67,7 @@ private val UPDATE_EVENTS = intArrayOf(
     Player.EVENT_IS_LOADING_CHANGED,
     Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
     Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
-    Player.EVENT_MEDIA_ITEM_TRANSITION
+    Player.EVENT_MEDIA_ITEM_TRANSITION,
 )
 
 

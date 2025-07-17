@@ -155,8 +155,8 @@ value class Chronometer private constructor(private val state: MutableLongState)
         // If duration is not set or invalid, or elapsed time is N/A,
         // it's not possible to calculate meaningful progress.
         return when {
+            elapsed == Long.MIN_VALUE -> 0.0f // No progress if elapsed is N/A or Zero.
             duration == Remote.TIME_UNSET -> 1.0f // Treat as fully progressed if duration is unknown.
-            elapsed == Long.MIN_VALUE || duration <= 0L -> 0.0f // No progress if elapsed is N/A or duration is invalid.
             else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(
                 0.0f,
                 1.0f
@@ -212,46 +212,47 @@ val NowPlaying.chronometer: Chronometer
         // Create and remember a Chronometer instance, initialized with the current position.
         // This ensures the chronometer state persists across recompositions.
         val chronometer = remember { Chronometer(position) }
-
         // Restart this effect whenever the NowPlaying object changes.
         LaunchedEffect(this) {
             Log.d(TAG, "NowPlaying: ${this@chronometer}")
             // Time since NowPlaying was last updated.
             val elapsedSinceLastUpdate = System.currentTimeMillis() - timeStamp
 
-            // Estimate the current position by adjusting for elapsed time and speed.
-            // Assumes speed has remained constant since the timestamp.
-            var current = position + (elapsedSinceLastUpdate * speed).roundToLong()
+            // Estimate the current playback position.
+            // If the reported position is already beyond or at the duration, use it as is.
+            // Otherwise, add the product of elapsed time since last update and playback speed
+            // to the reported position. This assumes a constant speed since the last update.
+            var current = if (position >= duration) position else position + (elapsedSinceLastUpdate * speed).roundToLong()
             // Initialize the chronometer's raw value.
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
             // Use Long.MIN_VALUE if position is unknown; otherwise, store as a negative value.
             chronometer.raw = if (position == Remote.TIME_UNSET) Long.MIN_VALUE else -current
             // Exit early if:
-            // 1. The position is unknown,
-            // 2. Playback has completed,
+            // 1. The position is unknown
             // 3. Playback is paused/stopped.
             if (position == Remote.TIME_UNSET || !playing)
                 return@LaunchedEffect
             // Continuously update the chronometer while playing,
             // unless the user has overridden the progress (i.e., raw becomes positive).
             while (true) {
+                // Delay for 1 second before the next update.
+                delay(1000)
                 // Log the current state for debugging.
                 Log.d(TAG, "duration: $duration | raw: ${chronometer.raw} | position: $current")
                 // Stop ticking if:
-                // 1. User manually scrubs (raw > 0), or
-                // 2. Playback reaches the end of media.
-                // TODO: Check if repeat mode is set to 1 and playback has reached the end; if so,
-                //  restart the current track.
-                if (chronometer.raw > 0 || duration != Remote.TIME_UNSET && current >= duration) break
+                // User manually scrubs (raw > 0), or
+                if (chronometer.raw > 0) break
+                // reset duration if still playing
+                if (duration != Remote.TIME_UNSET && current >= duration)
+                    current = 0
                 // Advance the `current` position by 1 second, adjusted for playback `speed`.
                 current += (1000L * speed).roundToLong()
                 // Update the chronometer's raw value with the new system-reported progress.
                 // Again, the value is negative to indicate it's a system update.
                 chronometer.raw = -current
-                // Delay for 1 second before the next update.
-                delay(1000)
             }
         }
+        // return chronometer
         return chronometer
     }
