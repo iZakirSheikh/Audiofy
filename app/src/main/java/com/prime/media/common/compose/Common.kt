@@ -94,7 +94,6 @@ inline fun Modifier.lottie(scale: Float = 1f) = this
     .size(24.dp)
     .then(Modifier.scale(scale))
 
-
 /**
  * A utility class for managing and representing elapsed time, particularly for media playback.
  *
@@ -155,12 +154,9 @@ value class Chronometer private constructor(private val state: MutableLongState)
         // If duration is not set or invalid, or elapsed time is N/A,
         // it's not possible to calculate meaningful progress.
         return when {
-            elapsed == Long.MIN_VALUE -> 0.0f // No progress if elapsed is N/A or Zero.
             duration == Remote.TIME_UNSET -> 1.0f // Treat as fully progressed if duration is unknown.
-            else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(
-                0.0f,
-                1.0f
-            ) // Standard progress calculation.
+            elapsed == Long.MIN_VALUE -> 0.0f // No progress if elapsed is N/A or duration is invalid.
+            else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(0.0f, 1.0f) // Standard progress calculation.
         }
     }
 
@@ -212,24 +208,24 @@ val NowPlaying.chronometer: Chronometer
         // Create and remember a Chronometer instance, initialized with the current position.
         // This ensures the chronometer state persists across recompositions.
         val chronometer = remember { Chronometer(position) }
+
         // Restart this effect whenever the NowPlaying object changes.
         LaunchedEffect(this) {
             Log.d(TAG, "NowPlaying: ${this@chronometer}")
             // Time since NowPlaying was last updated.
             val elapsedSinceLastUpdate = System.currentTimeMillis() - timeStamp
 
-            // Estimate the current playback position.
-            // If the reported position is already beyond or at the duration, use it as is.
-            // Otherwise, add the product of elapsed time since last update and playback speed
-            // to the reported position. This assumes a constant speed since the last update.
-            var current = if (position >= duration) position else position + (elapsedSinceLastUpdate * speed).roundToLong()
+            // Estimate the current position by adjusting for elapsed time and speed.
+            // Assumes speed has remained constant since the timestamp.
+            var current = position + (elapsedSinceLastUpdate * speed).roundToLong()
             // Initialize the chronometer's raw value.
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
             // Use Long.MIN_VALUE if position is unknown; otherwise, store as a negative value.
             chronometer.raw = if (position == Remote.TIME_UNSET) Long.MIN_VALUE else -current
             // Exit early if:
-            // 1. The position is unknown
+            // 1. The position is unknown,
+            // 2. Playback has completed,
             // 3. Playback is paused/stopped.
             if (position == Remote.TIME_UNSET || !playing)
                 return@LaunchedEffect
@@ -253,6 +249,5 @@ val NowPlaying.chronometer: Chronometer
                 chronometer.raw = -current
             }
         }
-        // return chronometer
         return chronometer
     }

@@ -20,6 +20,7 @@ package com.prime.media.playlists
 
 import android.view.Gravity
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine
 import androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
 import androidx.compose.material.icons.Icons
@@ -33,8 +34,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import com.prime.media.R
@@ -51,6 +54,8 @@ import com.zs.compose.theme.appbar.TopAppBar
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.OutlinedTextField
+import com.zs.compose.theme.text.TextField
+import com.zs.compose.theme.text.TextFieldDefaults
 import com.zs.core.common.PathUtils
 import com.zs.core.db.playlists.Playlist
 import androidx.compose.foundation.text.input.rememberTextFieldState as TextFieldValue
@@ -78,6 +83,7 @@ fun NewPlaylist(
     AlertDialog(
         onDismissRequest = { onConfirm(null) },
         shape = AppTheme.shapes.medium,
+        background = Background(AppTheme.colors.background),
         topBar = {
             TopAppBar(
                 title = { Label(textResource(R.string.scr_new_playlists_title), maxLines = 2) },
@@ -124,6 +130,9 @@ fun NewPlaylist(
                 placeholder = {
                     Label(stringResource(R.string.playlists_text_field_placeholder))
                 },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next
+                ),
                 isError = isError
             )
 
@@ -136,7 +145,10 @@ fun NewPlaylist(
                     .fillMaxWidth()
                     .weight(1f, false),
                 lineLimits = MultiLine(minHeightInLines = 5),
-                placeholder = { Label(stringResource(R.string.playlists_playlist_desc_placeholder)) }
+                placeholder = { Label(stringResource(R.string.playlists_playlist_desc_placeholder)) },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
             )
         },
         bottomBar = {

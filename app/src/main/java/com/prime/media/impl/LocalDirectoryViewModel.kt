@@ -19,7 +19,6 @@
 package com.prime.media.impl
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
@@ -57,7 +56,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 private const val TAG = "LocalDirectoryViewModel"
 
@@ -119,29 +117,38 @@ abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesView
     }
 
     /**
-     * Consumes the currently selected items and returns them as an array.
+     * Consumes the selected items and returns a list of focused items.
      *
-     * This function creates a new array containing the selected items, clears the `selected` list, and returns the array.
-     * @return An array containing the previously selected items.
+     * If no items are selected, all items in the current view are considered focused.
+     * Otherwise, the selected items are consumed (cleared from the selection list) and
+     * the corresponding items from the data are returned as focused.
+     *
+     * @return A list of focused items. Returns an empty list if data is null.
      */
-    fun consume(): LongArray {
-        // Efficiently convert the list to an array.
-        val data = selected.toLongArray()
-        // Clear the selected items list.
-        selected.clear()
-        Log.d(TAG, "consume: ${data.size}")
-        return data
+    fun consume(): List<T> {
+        // Determine the items to focus on for the action.
+        val focused = when {
+            // Otherwise, if no items are selected, consider all items in the current view as focused.
+            selected.isEmpty() -> data?.values?.flatten()
+            else -> {
+                // Efficiently convert the list to an array.
+                val consumed = selected.toLongArray()
+                // Clear the selected items list.
+                selected.clear()
+                consumed.let {selected -> data?.values?.flatten()?.filter { it.key in selected } }
+            }
+        }
+        return  focused ?: emptyList()
     }
 
-    abstract val T.id: Long
-    abstract val T.asMediaFile: MediaFile
+    abstract val T.key: Long
 
     override fun selectAll() {
         val data = data ?: return
         // Iterate through all items in the data and select them if they are not already selected.
         data.forEach {( _, items) ->
             items.forEach { item ->
-                val id = item.id
+                val id = item.key
                 if (!selected.contains(id)) {
                     selected.add(id)
                 }
@@ -158,7 +165,7 @@ abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesView
         // Return NONE if data is not available.
         val data = data?.get(key) ?: return Level.NONE
         // Count selected
-        val count = data.count { it.id in selected }
+        val count = data.count { it.key in selected }
         return when (count) {
             data.size -> Level.FULL // All items in the group are selected.
             in 1..data.size -> Level.PARTIAL // Some items in the group are selected.
@@ -175,7 +182,7 @@ abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesView
         // Get the current selection level of the group.
         val level = evaluateGroupSelectionLevel(key)
         // Get the IDs of all items in the group.
-        val all = data[key]?.map { it.id } ?: emptyList()
+        val all = data[key]?.map { it.key } ?: emptyList()
         // Update the selected items based on the group selection level.
         when (level) {
             Level.NONE -> selected.addAll(all) // Select all items in the group.
@@ -199,27 +206,13 @@ abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesView
         filter = newFilter
     }
 
-    private fun play(index: Int, shuffle: Boolean){
-        viewModelScope.launch {
-            val result = runCatching {
-                // Determine the items to focus on for the action.
-                val focused = when {
-                    // If there are selected items, consume them.
-                    // "consume()" clears the selection and returns the selected item IDs.
-                    selected.isNotEmpty() -> consume().let {selected -> data?.values?.flatten()?.filter { it.id in selected } }
-                    // Otherwise, if no items are selected, consider all items in the current view as focused.
-                    else -> data?.values?.flatten()
-                }
-                if (focused.isNullOrEmpty())
-                    error("Illegal state.")
-                remote.setMediaFiles(focused.map {it.asMediaFile})
-                remote.shuffle(shuffle)
-                remote.play(true)
-                showPlatformToast(message = "Playing\nPlaying tracks enjoy.")
-            }
-        }
+    suspend fun play(items: List<MediaFile>, index: Int = -1, shuffle: Boolean = false){
+        // set new media files
+        remote.setMediaFiles(items)
+        remote.shuffle(shuffle)
+        remote.play(true)
+        if (index != -1)
+            remote.seekTo(index)
+        showPlatformToast(message = "Playing")
     }
-
-    override fun play(index: Int) = play(index, false)
-    override fun shuffle() = play(-1, true)
 }

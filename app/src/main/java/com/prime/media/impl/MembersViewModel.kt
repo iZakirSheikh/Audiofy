@@ -75,9 +75,7 @@ class MembersViewModel(
     handle: SavedStateHandle, val playlists: Playlists, remote: Remote
 ) : FilesViewModel<Track>(remote), MembersViewState {
 
-    override val Track.id: Long get() = this.id
-    override val Track.asMediaFile: MediaFile
-        get() = TODO("Not yet implemented")
+    override val Track.key: Long get() = this.id
     val playlistName = handle[RouteMembers]!!
     override val orders: List<Action> = listOf(ORDER_NONE, ORDER_BY_TITLE, ORDER_BY_DATE_MODIFIED)
     override var info: MetaData  = let {
@@ -144,5 +142,13 @@ class MembersViewModel(
 
     init {
         observable.launchIn(viewModelScope)
+    }
+
+    override fun play(item: Track?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun shuffle() {
+        TODO("Not yet implemented")
     }
 }

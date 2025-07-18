@@ -109,7 +109,7 @@ fun Audios(viewState: AudiosViewState) {
                     .animateItem()
                     .clickable(
                         onClick = {
-                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
+                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play(value)
                         },
                         onLongClick = { viewState.select(value.id) }
                     ),

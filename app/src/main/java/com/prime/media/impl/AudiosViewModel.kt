@@ -81,9 +81,7 @@ class AudiosViewModel(
     private val ACTION_GO_TO_ARTIST = Action.GO_TO_ARTIST
     private val ACTION_GO_TO_ALBUM = Action.GO_TO_ALBUM
 
-    override val Audio.id: Long get() = this.id
-    override val Audio.asMediaFile: MediaFile
-        get() = toMediaFile()
+    override val Audio.key: Long get() = this.id
 
     val _args = handle[RouteAudios]
     val source = _args.first; val extra = _args.second
@@ -215,4 +213,33 @@ class AudiosViewModel(
     }
 
     init { flow.launchIn(viewModelScope) }
+
+    override fun play(item: Audio?) {
+        launch {
+            val result = runCatching {
+                val items = consume()
+                if (items.isEmpty())
+                    error("Error - Playable items must not be empty.")
+                val index = if (item == null) -1 else items.indexOf(item)
+                play(items.map(Audio::toMediaFile), index, false)
+            }
+            if (result.isSuccess)
+                return@launch
+            report(result.exceptionOrNull()?.message ?: "")
+        }
+    }
+
+    override fun shuffle() {
+        launch {
+            val result = runCatching {
+                val items = consume()
+                if (items.isEmpty())
+                    error("Error - Playable items must not be empty.")
+                play(items.map(Audio::toMediaFile), -1, true)
+            }
+            if (result.isSuccess)
+                return@launch
+            report(result.exceptionOrNull()?.message ?: "")
+        }
+    }
 }

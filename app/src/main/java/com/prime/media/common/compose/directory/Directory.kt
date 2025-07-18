@@ -229,11 +229,7 @@ fun <T> Directory(
     }
     //
     Scaffold(
-        fabPosition = when {
-            showFab == SHOW_FAB -> FabPosition.End
-            width > height -> FabPosition.End
-            else -> FabPosition.Center
-        },
+        fabPosition = FabPosition.End,
         //
         topBar = {
             FloatingLargeTopAppBar(
@@ -446,12 +442,7 @@ fun <T> Files(
 
     //
     Scaffold(
-        fabPosition = when {
-            showFab == SHOW_FAB -> FabPosition.End
-            width > height -> FabPosition.End
-            else -> FabPosition.Center
-        },
-
+        fabPosition = FabPosition.End,
         // Collapsable TopAppBar
         topBar = {
             FilesTopAppBar(

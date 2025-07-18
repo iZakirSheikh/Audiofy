@@ -77,7 +77,7 @@ interface FilesViewState<T>: SelectionTracker {
 
     val actions: List<Action>
 
-    fun play(index: Int = -1)
+    fun play(item: T? = null)
 
     fun filter(order: Action = filter.second, ascending: Boolean = filter.first)
 

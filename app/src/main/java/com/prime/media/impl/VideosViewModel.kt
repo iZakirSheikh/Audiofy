@@ -56,9 +56,8 @@ class VideosViewModel(
 ) : StoreViewModel<Video>(provider, remote), VideosViewState {
 
     override val contentUri: Uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-    override val Video.id: Long get() = this.id
-    override val Video.asMediaFile: MediaFile
-        get() = TODO("Not yet implemented")
+    override val Video.key: Long get() = this.id
+
     val parent = handle[RouteVideos]
     override val filterKey: Key.Key2<String, Filter?> = stringPreferenceKey(
         if (parent == null) "video_library_filter" else "video_folder_filter",
@@ -140,4 +139,12 @@ class VideosViewModel(
     }
 
     init { flow.launchIn(viewModelScope) }
+
+    override fun play(item: Video?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun shuffle() {
+        TODO("Not yet implemented")
+    }
 }
