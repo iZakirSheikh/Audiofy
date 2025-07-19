@@ -40,13 +40,15 @@ import com.prime.media.common.SelectionTracker.Level
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.DirectoryViewState
 import com.prime.media.common.compose.directory.FilesViewState
-import com.zs.core.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.zs.compose.theme.snackbar.SnackbarResult
+import com.zs.core.common.debounceAfterFirst
+import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.preferences.Key.Key2
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -98,7 +100,7 @@ abstract class LocalDirectoryViewModel<T>(
         .stateIn(viewModelScope, WhileSubscribed(), null)
 }
 
-abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesViewState<T> {
+abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): KoinViewModel(), FilesViewState<T> {
 
     //common actions
     val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
@@ -115,6 +117,9 @@ abstract class FilesViewModel<T>(val remote: Remote): KoinViewModel(), FilesView
         //      However take the example of the case when size is same but ids are different
         selected.size == data?.values?.sumOf { it.size }
     }
+
+    override val favourites: Flow<Set<String>> =
+        playlists.observeKeysOf(Remote.PLAYLIST_FAVOURITE).map(List<String>::toHashSet)
 
     /**
      * Consumes the selected items and returns a list of focused items.

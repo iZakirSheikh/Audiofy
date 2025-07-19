@@ -187,4 +187,14 @@ abstract class Playlists {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun update(member: Track): Long
+
+    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members m INNER JOIN tbl_playlists p ON m.playlist_id == p.playlist_id WHERE p.name = :name AND m.uri = :key)")
+    abstract suspend fun contains(name: String, key: String): Boolean
+
+    /** Removes item from playlist*/
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID AND uri = :key")
+    abstract suspend fun remove(playlistID: Long, key: String): Int
+
+    @Query("SELECT m.uri FROM tbl_playlist_members m INNER JOIN tbl_playlists p ON m.playlist_id = p.playlist_id WHERE p.name = :playlistName")
+    abstract fun observeKeysOf(playlistName: String): Flow<List<String>>
 }

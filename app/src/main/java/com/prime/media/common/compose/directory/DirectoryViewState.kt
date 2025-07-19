@@ -19,15 +19,12 @@
 package com.prime.media.common.compose.directory
 
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prime.media.common.Action
 import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.SelectionTracker
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -76,6 +73,8 @@ interface FilesViewState<T>: SelectionTracker {
     val query: TextFieldState
 
     val actions: List<Action>
+
+    val favourites: Flow<Set<String>>
 
     fun play(item: T? = null)
 

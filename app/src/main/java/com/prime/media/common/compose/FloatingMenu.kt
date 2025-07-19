@@ -256,7 +256,7 @@ inline fun RowScope.OverflowMenu(
                             val item = items[collapsed + dropdownCount + index]
                             IconButton(
                                 icon = requireNotNull(item.icon) { "Collapsed Icon must not be null" },
-                                onClick = { onItemClicked(item) },
+                                onClick = { onItemClicked(item); onDismissRequest(false) },
                                 contentDescription = stringResource(item.label),
                                 enabled = item.enabled
                             )
@@ -276,7 +276,7 @@ inline fun RowScope.OverflowMenu(
                                 val item = items[collapsed + dropdownCount + index]
                                 IconButton(
                                     icon = requireNotNull(item.icon) { "Collapsed Icon must not be null" },
-                                    onClick = { onItemClicked(item) },
+                                    onClick = { onItemClicked(item); onDismissRequest(false) },
                                     contentDescription = stringResource(item.label),
                                     enabled = item.enabled
                                 )

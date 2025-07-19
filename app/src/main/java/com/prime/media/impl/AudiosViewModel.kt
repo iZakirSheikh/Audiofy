@@ -18,6 +18,7 @@
 
 package com.prime.media.impl
 
+import android.app.Activity
 import android.net.Uri
 import android.provider.MediaStore
 import android.text.format.DateUtils
@@ -47,7 +48,9 @@ import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
 import com.prime.media.common.ellipsize
 import com.zs.core.common.PathUtils
-import com.zs.core.playback.MediaFile
+import com.zs.core.common.toTrack
+import com.zs.core.db.playlists.Playlist
+import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.Remote
 import com.zs.core.playback.toMediaFile
 import com.zs.core.store.MediaProvider
@@ -71,8 +74,9 @@ private fun MediaProvider.getGenreName(id: Long) = runBlocking { getGenre(id) }.
 class AudiosViewModel(
     handle: SavedStateHandle,
     remote: Remote,
+    playlists: Playlists,
     private val provider: MediaProvider
-) : StoreViewModel<Audio>(provider, remote), AudiosViewState {
+) : StoreViewModel<Audio>(provider, remote, playlists), AudiosViewState {
     private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
     private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
 
@@ -84,7 +88,8 @@ class AudiosViewModel(
     override val Audio.key: Long get() = this.id
 
     val _args = handle[RouteAudios]
-    val source = _args.first; val extra = _args.second
+    val source = _args.first;
+    val extra = _args.second
 
     private val Action.toAndroidOrder
         get() = when (this.id) {
@@ -141,8 +146,8 @@ class AudiosViewModel(
             this += ACTION_ADD_TO_QUEUE
             if (!isInSelectionMode && source != SOURCE_ALBUM)
                 this += ACTION_GO_TO_ALBUM
-            if (!isInSelectionMode && source != SOURCE_ALBUM)
-                this += ACTION_GO_TO_ARTIST
+//            if (!isInSelectionMode && source != SOURCE_ALBUM)
+//                this += ACTION_GO_TO_ARTIST
             if (!isInSelectionMode)
                 this += ACTION_EDIT
             this += ACTION_SHARE
@@ -156,11 +161,27 @@ class AudiosViewModel(
 
     override var info: MetaData by mutableStateOf(
         when (source) {
-            SOURCE_ALL -> MetaData(getText(R.string.audio_library_title), icon = Icons.Outlined.LibraryBooks)
+            SOURCE_ALL -> MetaData(
+                getText(R.string.audio_library_title),
+                icon = Icons.Outlined.LibraryBooks
+            )
+
             SOURCE_FOLDER -> MetaData(PathUtils.name(extra!!).ellipsize(12), extra)
-            SOURCE_ARTIST -> MetaData(provider.getArtistName(extra!!.toLong()), getText(R.string.artist))
-            SOURCE_ALBUM -> MetaData(provider.getAlbumName(extra!!.toLong()), getText(R.string.album))
-            SOURCE_GENRE -> MetaData(provider.getGenreName(extra!!.toLong()), getText(R.string.genre))
+            SOURCE_ARTIST -> MetaData(
+                provider.getArtistName(extra!!.toLong()),
+                getText(R.string.artist)
+            )
+
+            SOURCE_ALBUM -> MetaData(
+                provider.getAlbumName(extra!!.toLong()),
+                getText(R.string.album)
+            )
+
+            SOURCE_GENRE -> MetaData(
+                provider.getGenreName(extra!!.toLong()),
+                getText(R.string.genre)
+            )
+
             else -> error("$TAG unknown source: $source")
         }
     )
@@ -170,9 +191,24 @@ class AudiosViewModel(
         val files = with(provider) {
             when (source) {
                 SOURCE_ALL, SOURCE_FOLDER -> fetchAudioFiles(query, order, ascending, extra)
-                SOURCE_ARTIST -> fetchArtistAudios(extra!!.toLong(), order = order, ascending = ascending)
-                SOURCE_ALBUM -> fetchAlbumAudios(extra!!.toLong(), order = order, ascending = ascending)
-                SOURCE_GENRE -> fetchGenreAudios(extra!!.toLong(), order = order, ascending = ascending)
+                SOURCE_ARTIST -> fetchArtistAudios(
+                    extra!!.toLong(),
+                    order = order,
+                    ascending = ascending
+                )
+
+                SOURCE_ALBUM -> fetchAlbumAudios(
+                    extra!!.toLong(),
+                    order = order,
+                    ascending = ascending
+                )
+
+                SOURCE_GENRE -> fetchGenreAudios(
+                    extra!!.toLong(),
+                    order = order,
+                    ascending = ascending
+                )
+
                 else -> TODO("$source not implemented yet!")
             }
         }
@@ -199,6 +235,7 @@ class AudiosViewModel(
                     /* minResolution = */ DateUtils.DAY_IN_MILLIS
                 )
             }
+
             ORDER_BY_LENGTH -> files.groupBy { audio ->
                 when {
                     audio.duration < TimeUnit.MINUTES.toMillis(2) -> getText(R.string.audios_scr_less_then_2_mins)
@@ -212,7 +249,9 @@ class AudiosViewModel(
         }
     }
 
-    init { flow.launchIn(viewModelScope) }
+    init {
+        flow.launchIn(viewModelScope)
+    }
 
     override fun play(item: Audio?) {
         launch {
@@ -240,6 +279,24 @@ class AudiosViewModel(
             if (result.isSuccess)
                 return@launch
             report(result.exceptionOrNull()?.message ?: "")
+        }
+    }
+
+    override fun onPerformAction(value: Action, resolver: Activity, focused: Audio?) {
+       launch {
+           showPlatformToast("Working on it.")
+       }
+    }
+
+    override fun toggleLiked(value: Audio) {
+        launch {
+            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.uri.toString()))
+                playlists.remove(playlistId, value.uri.toString())
+            else
+                playlists.insert(listOf(value.toTrack(playlistId, 0)))
+            showPlatformToast("Favourite list updated.")
         }
     }
 }

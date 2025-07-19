@@ -37,6 +37,7 @@ import com.prime.media.videos.RouteVideos
 import com.prime.media.videos.VideosViewState
 import com.prime.media.videos.get
 import com.zs.core.common.PathUtils
+import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
@@ -52,8 +53,9 @@ private val Video.firstTitleChar
 class VideosViewModel(
     handle: SavedStateHandle,
     remote: Remote,
+    playlists: Playlists,
     private val provider: MediaProvider,
-) : StoreViewModel<Video>(provider, remote), VideosViewState {
+) : StoreViewModel<Video>(provider, remote, playlists), VideosViewState {
 
     override val contentUri: Uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     override val Video.key: Long get() = this.id

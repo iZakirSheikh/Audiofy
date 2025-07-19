@@ -140,6 +140,9 @@ class Playlist @Deprecated("This is used by Room internally") internal construct
             mimeType: String? = this.mimeType
         ) = Track(id, playlistID, order, uri, title, subtitle, artwork, mimeType)
 
+        /** Returns the unique key for this member. */
+        val key inline get() =  uri
+
         /**
          * Representing a member (media file) within a playlist.
          */

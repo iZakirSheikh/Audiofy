@@ -3,6 +3,7 @@
     <string name="what_s_new_latest" translatable="false">
        <b>What’s New (v4.0.0-dev01)</b>
         <font color='grey'>
+            \n - Added toggleFav in audios.
             \n - Fixed bug causing glitches in slider scrubbing.
             \n - This is an <font color='red'><b>Alpha</b></font> release. Some features may not work as expected.
             \n - Introduced <b>MilkyGlass</b>, a liquid glass surface effect inspired by Apple.

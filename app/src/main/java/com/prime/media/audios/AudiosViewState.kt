@@ -18,8 +18,10 @@
 
 package com.prime.media.audios
 
+import android.app.Activity
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
+import com.prime.media.common.Action
 import com.prime.media.common.Route
 import com.prime.media.common.compose.directory.FilesViewState
 import com.zs.core.store.models.Audio
@@ -54,4 +56,9 @@ operator fun SavedStateHandle.get(route: RouteAudios) =
         ?: RouteAudios.SOURCE_ALL) to get<String>(PARAM_ARG).takeIf { it?.contains(PARAM_ARG) == false }
 
 
-interface AudiosViewState: FilesViewState<Audio>
+interface AudiosViewState: FilesViewState<Audio> {
+
+    fun onPerformAction(value: Action, resolver: Activity, focused: Audio?= null)
+
+    fun toggleLiked(value: Audio)
+}

@@ -33,6 +33,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
+import com.zs.core.db.playlists.Playlist
+import com.zs.core.store.models.Audio
 import com.zs.core.telemetry.Analytics
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
@@ -349,3 +351,22 @@ fun <T> Flow<T>.debounceAfterFirst(delayMillis: Long): Flow<T> {
             }
         }
 }
+
+/**
+ * Factory function that creates a `Member` object with the given `MediaItem` object and some additional metadata.
+ *
+ * @param from The `MediaItem` object to create the `Member` from.
+ * @param playlistId The ID of the playlist to which this `Member` belongs.
+ * @param order The order of this `Member` within the playlist.
+ * @return A new `Member` object with the given parameters.
+ */
+fun Audio.toTrack(playlistId: Long, order: Int) =
+    Playlist.Track(
+        playlistID = playlistId,
+        order = order,
+        uri = uri.toString(),
+        title = name,
+        subtitle = artist,
+        artwork = artworkUri.toString(),
+        mimeType = mimeType
+    )

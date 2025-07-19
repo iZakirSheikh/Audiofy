@@ -72,8 +72,8 @@ private val ACTION_REMOVE =
 
 
 class MembersViewModel(
-    handle: SavedStateHandle, val playlists: Playlists, remote: Remote
-) : FilesViewModel<Track>(remote), MembersViewState {
+    handle: SavedStateHandle, playlists: Playlists, remote: Remote
+) : FilesViewModel<Track>(remote, playlists), MembersViewState {
 
     override val Track.key: Long get() = this.id
     val playlistName = handle[RouteMembers]!!

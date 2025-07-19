@@ -63,6 +63,7 @@ import com.zs.compose.foundation.composableIf
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.compose.theme.Icon
+import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import com.zs.compose.theme.Placeholder
@@ -156,6 +157,35 @@ inline fun LottieAnimatedIcon(
             .size(24.dp)
             .scale(scale),
     )
+}
+
+@Composable
+inline fun LottieAnimatedButton(
+    @RawRes id: Int,
+    noinline onClick: () -> Unit,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    atEnd: Boolean = false,
+    scale: Float = 1f,
+    progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    tint: Color = LocalContentColor.current,
+    animationSpec: AnimationSpec<Float>? = null,
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = lottieAnimationPainter(
+                id = id,
+                atEnd = atEnd,
+                progressRange = progressRange,
+                animationSpec = animationSpec
+            ),
+            tint = tint,
+            contentDescription = contentDescription,
+            modifier = modifier
+                .size(24.dp)
+                .scale(scale),
+        )
+    }
 }
 
 /**

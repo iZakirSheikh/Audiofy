@@ -18,6 +18,8 @@
 
 package com.prime.media.audios
 
+import android.app.Activity
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,6 +28,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -34,13 +38,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.prime.media.R
+import com.prime.media.common.Action
+import com.prime.media.common.EDIT
+import com.prime.media.common.GO_TO_ALBUM
+import com.prime.media.common.INFO
 import com.prime.media.common.compose.ContentPadding
+import com.prime.media.common.compose.LocalNavController
+import com.prime.media.common.compose.LocalSystemFacade
+import com.prime.media.common.compose.LottieAnimatedButton
 import com.prime.media.common.compose.LottieAnimatedIcon
 import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.directory.Files
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
-import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Label
@@ -98,28 +108,34 @@ private fun Audio(
 @Composable
 fun Audios(viewState: AudiosViewState) {
     val selected = viewState.selected
+    val favourites by viewState.favourites.collectAsState(emptySet())
+    val facade = LocalSystemFacade.current
+    val navController = LocalNavController.current
     Files(
         viewState,
-        onTapAction = {},
+        onTapAction = { viewState.onPerformAction(it, facade as Activity) },
         key = Audio::id,
-        itemContent = { value ->
+        itemContent = { audio ->
             Audio(
-                value = value,
+                value = audio,
                 modifier = Modifier
                     .animateItem()
                     .clickable(
                         onClick = {
-                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play(value)
+                            if (viewState.isInSelectionMode)
+                                return@clickable viewState.select(audio.id)
+                            viewState.play(audio)
                         },
-                        onLongClick = { viewState.select(value.id) }
+                        onLongClick = { viewState.select(audio.id) }
                     ),
+                // actions
                 actions = {
                     // show checkbox
                     if (viewState.isInSelectionMode)
                         return@Audio LottieAnimatedIcon(
                             R.raw.lt_checkbox,
                             animationSpec = AppTheme.motionScheme.slowSpatialSpec(),
-                            atEnd = value.id in selected, // if fav
+                            atEnd = audio.id in selected, // if fav
                             contentDescription = null,
                             progressRange = 0.05f..0.30f,
                             scale = 1.6f,
@@ -128,26 +144,34 @@ fun Audios(viewState: AudiosViewState) {
                                 .minimumInteractiveComponentSize()
                                 .padding(end = ContentPadding.medium)
                         )
-                    // else show overflow menu.
+
+                    // show actions
                     Row {
-                        // Favourite icon
-                        IconButton(onClick = { /*Action fav*/ }) {
-                            LottieAnimatedIcon(
-                                R.raw.lt_twitter_heart_filled_unfilled,
-                                //duration = 800,
-                                atEnd = false, // if fav
-                                contentDescription = null,
-                                progressRange = 0.13f..0.95f,
-                                scale = 3.5f,
-                                tint = Color.Unspecified
-                            )
-                        }
-                        // Menu.
+                        // Heart
+                        LottieAnimatedButton(
+                            R.raw.lt_twitter_heart_filled_unfilled,
+                            onClick = { viewState.toggleLiked(audio) },
+                            animationSpec = tween(800),
+                            atEnd = audio.uri.toString() in favourites, // if fav
+                            contentDescription = null,
+                            progressRange = 0.13f..1.0f,
+                            scale = 3.5f,
+                            tint = AppTheme.colors.accent,
+                        )
+                        // More
                         OverflowMenu(
                             collapsed = 0,
                             items = viewState.actions,
-                            onItemClicked = {},
-                            expanded = -6
+                            expanded = 5,
+                            onItemClicked = {
+                                when (it) {
+                                    Action.GO_TO_ALBUM ->
+                                        navController.navigate(RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}",))
+                                    Action.EDIT -> {}
+                                    Action.INFO -> {}
+                                    else -> viewState.onPerformAction(it, facade as Activity, audio)
+                                }
+                            }
                         )
                     }
                 }
