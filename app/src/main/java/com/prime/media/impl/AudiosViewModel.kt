@@ -43,7 +43,6 @@ import com.prime.media.common.Action
 import com.prime.media.common.EDIT
 import com.prime.media.common.Filter
 import com.prime.media.common.GO_TO_ALBUM
-import com.prime.media.common.GO_TO_ARTIST
 import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.MetaData
 import com.prime.media.common.ellipsize
@@ -71,19 +70,20 @@ private fun MediaProvider.getArtistName(id: Long) = runBlocking { getArtist(id) 
 private fun MediaProvider.getAlbumName(id: Long) = runBlocking { getAlbum(id) }.title.ellipsize(12)
 private fun MediaProvider.getGenreName(id: Long) = runBlocking { getGenre(id) }.name.ellipsize(12)
 
+private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
+private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
+
+//
+private val ACTION_EDIT = Action.EDIT
+private val ACTION_GO_TO_ALBUM = Action.GO_TO_ALBUM
+
 class AudiosViewModel(
     handle: SavedStateHandle,
     remote: Remote,
     playlists: Playlists,
     private val provider: MediaProvider
 ) : StoreViewModel<Audio>(provider, remote, playlists), AudiosViewState {
-    private val ORDER_BY_ALBUM = Action(R.string.album, id = "filter_by_album")
-    private val ORDER_BY_ARTIST get() = Action(R.string.artist, id = "filter_by_artist")
 
-    //
-    private val ACTION_EDIT = Action.EDIT
-    private val ACTION_GO_TO_ARTIST = Action.GO_TO_ARTIST
-    private val ACTION_GO_TO_ALBUM = Action.GO_TO_ALBUM
 
     override val Audio.key: Long get() = this.id
 
@@ -282,12 +282,6 @@ class AudiosViewModel(
         }
     }
 
-    override fun onPerformAction(value: Action, resolver: Activity, focused: Audio?) {
-       launch {
-           showPlatformToast("Working on it.")
-       }
-    }
-
     override fun toggleLiked(value: Audio) {
         launch {
             val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
@@ -297,6 +291,21 @@ class AudiosViewModel(
             else
                 playlists.insert(listOf(value.toTrack(playlistId, 0)))
             showPlatformToast("Favourite list updated.")
+        }
+    }
+
+    override fun onPerformAction(value: Action, resolver: Activity, focused: Audio?) {
+        when(value){
+            ACTION_PLAY_NEXT if (focused != null) -> playNext(listOf(focused.toMediaFile()))
+            ACTION_PLAY_NEXT -> playNext(consume().map(Audio::toMediaFile))
+            ACTION_ADD_TO_QUEUE if (focused != null) -> addToQueue(listOf(focused.toMediaFile()))
+            ACTION_ADD_TO_QUEUE -> addToQueue(consume().map(Audio::toMediaFile))
+            ACTION_SHARE if (focused != null) -> share(resolver, focused.id)
+            ACTION_SHARE -> share(resolver, *consume().map(Audio::id).toLongArray())
+            ACTION_DELETE if (focused != null) -> remove(resolver, focused.id)
+            ACTION_DELETE -> remove(resolver, *consume().map(Audio::id).toLongArray())
+            ACTION_SELECT_ALL -> selectAll()
+            else -> launch { report("Unrecognized action: ${getText(value.label)}, This action is not supported or has not been implemented yet.") }
         }
     }
 }

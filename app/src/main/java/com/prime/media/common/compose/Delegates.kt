@@ -141,7 +141,7 @@ inline fun LottieAnimatedIcon(
     atEnd: Boolean = false,
     scale: Float = 1f,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    tint: Color = LocalContentColor.current,
+    tint: Color = Color.Unspecified,
     animationSpec: AnimationSpec<Float>? = null,
 ) {
     Icon(
@@ -168,7 +168,7 @@ inline fun LottieAnimatedButton(
     atEnd: Boolean = false,
     scale: Float = 1f,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    tint: Color = LocalContentColor.current,
+    tint: Color = Color.Unspecified,
     animationSpec: AnimationSpec<Float>? = null,
 ) {
     IconButton(onClick = onClick) {

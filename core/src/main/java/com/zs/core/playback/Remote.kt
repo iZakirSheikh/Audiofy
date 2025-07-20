@@ -102,4 +102,28 @@ interface Remote {
 
     /** Clears the queue if loaded otherwise does nothing. */
     suspend fun clear()
+
+    /**
+     * Adds the specified [values] to the queue. If [index] is -1, the items will be added to the
+     * end of the queue; otherwise, they will be inserted at the provided index.
+     * Note: The queue must only contain unique [MediaItem.mediaUri] values. If an item already
+     *       exists in the queue, it will discarded.
+     *
+     * @param values The list of [MediaItem]s to be added to the queue.
+     * @param index The optional index where the items should be inserted. If -1 (default), the
+     *              items will be added to the end of the queue. Note: takes any index value
+     * 				and maps it to `playlistIndex` if `shuffleModeEnabled` otherwise uses the same index.
+     * @return The number of items successfully added to the queue.
+     */
+    suspend fun add(values: List<MediaFile>, index: Int = -1): Int
+
+    /**
+     * Returns the index of the next media item in the current playlist, or [Remote.INDEX_UNSET] if there is no next item.
+     */
+    suspend fun getNextMediaItemIndex(): Int
+
+    /**
+     * Returns the index of the current media item in the playlist, or [Remote.INDEX_UNSET] if the playlist is empty or no item is currently playing.
+     */
+    suspend fun getCurrentMediaItemIndex(): Int
 }

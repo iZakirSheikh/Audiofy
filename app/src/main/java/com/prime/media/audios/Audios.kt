@@ -16,9 +16,12 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.prime.media.audios
 
 import android.app.Activity
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.prime.media.R
 import com.prime.media.common.Action
-import com.prime.media.common.EDIT
 import com.prime.media.common.GO_TO_ALBUM
-import com.prime.media.common.INFO
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.LocalSystemFacade
@@ -53,6 +53,8 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
+import com.zs.compose.theme.sharedBounds
+import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
@@ -139,7 +141,7 @@ fun Audios(viewState: AudiosViewState) {
                             contentDescription = null,
                             progressRange = 0.05f..0.30f,
                             scale = 1.6f,
-                            tint = Color.Unspecified,
+                            tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
                                 .padding(end = ContentPadding.medium)
@@ -159,19 +161,21 @@ fun Audios(viewState: AudiosViewState) {
                             tint = AppTheme.colors.accent,
                         )
                         // More
+                        val onPerformAction = {action: Action ->
+                            when (action) {
+                                Action.GO_TO_ALBUM -> {
+                                    val route =  RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}")
+                                    navController.navigate(route)
+                                }
+                                else -> viewState.onPerformAction(action, facade as Activity, audio)
+                            }
+                        }
+
                         OverflowMenu(
                             collapsed = 0,
                             items = viewState.actions,
                             expanded = 5,
-                            onItemClicked = {
-                                when (it) {
-                                    Action.GO_TO_ALBUM ->
-                                        navController.navigate(RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}",))
-                                    Action.EDIT -> {}
-                                    Action.INFO -> {}
-                                    else -> viewState.onPerformAction(it, facade as Activity, audio)
-                                }
-                            }
+                            onItemClicked = onPerformAction
                         )
                     }
                 }

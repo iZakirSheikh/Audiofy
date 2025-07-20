@@ -416,4 +416,6 @@
         <item quantity="one">1 file</item>
         <item quantity="other">%d files</item>
     </plurals>
+    <string name="msg_files_trash_unknown_error">Oops, something went wrong while trashing the files. Please try again.</string>
+    <string name="msg_files_restore_unknown_error">Oops, something went wrong while restoring the files. Please try again.</string>
 </resources>

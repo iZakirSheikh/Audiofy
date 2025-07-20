@@ -184,7 +184,7 @@ object Settings {
     val USE_LEGACY_ARTWORK_METHOD =
         booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
     val TRASH_CAN_ENABLED =
-        booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = false)
+        booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
     val BLACKLISTED_FILES =
         stringSetPreferenceKey(PREFIX + "_blacklisted_files")
     val GAP_LESS_PLAYBACK =

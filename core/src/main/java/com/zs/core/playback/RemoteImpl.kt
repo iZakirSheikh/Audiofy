@@ -156,7 +156,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     override suspend fun seekTo(pct: Float) {
         val browser = fBrowser.await()
         val duration = browser.duration
-        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET )
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET)
             return
         browser.seekTo((duration * pct).toLong())
     }
@@ -170,6 +170,24 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         return Remote.INDEX_UNSET
     }
 
+    /**
+     * Maps the given [index] to the real index based on the current configuration.
+     *
+     * If shuffle mode is enabled, this function returns the corresponding real index for the
+     * shuffled playlist. If shuffle mode is disabled, it simply returns the same index.
+     *
+     * @param index The index to be mapped to the real index.
+     * @return The real index if shuffle mode is enabled, or the same index if shuffle mode is disabled.
+     * FixMe: currently there is no way to map index with real index.
+     */
+    private suspend fun map(index: Int): Int {
+        val browser = fBrowser.await()
+        if (!browser.shuffleModeEnabled)
+            return index
+        // FixMe: Return the shuffled index.
+        return index
+    }
+
     override suspend fun seekTo(index: Int, mills: Long): Boolean {
         val browser = fBrowser.await()
         if (index == Remote.INDEX_UNSET && mills == Remote.TIME_UNSET) return false
@@ -181,5 +199,43 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         val browser = fBrowser.await()
         browser.playWhenReady = playWhenReady
         browser.play()
+    }
+
+    override suspend fun add(values: List<MediaFile>, index: Int): Int {
+        // if the list is empty return
+        if (values.isEmpty())
+            return 0
+        val browser = fBrowser.await()
+        // add directly if mediaitemCount is 0. the uniqueness will be checked by set.
+        if (browser.mediaItemCount == 0)
+            return setMediaFiles(values)
+        val unique = values.distinctBy { it.mediaUri }.toMutableList()
+        // remove any duplicates from the unique that are already in browser
+        repeat(browser.mediaItemCount) {
+            val item = browser.getMediaItemAt(it)
+            unique.removeAll { it.mediaUri == item.mediaUri }
+        }
+        if (unique.isEmpty())
+            return 0
+        // map index with corresponding playlist index.
+        // FixMe: currently it doesn't work with shuffleModeOn
+        val newIndex = if (index == C.INDEX_UNSET) browser.mediaItemCount else map(index)
+        // add media items.
+        browser.addMediaItems(
+            newIndex.coerceIn(0, browser.mediaItemCount),
+            unique.map(MediaFile::value)
+        )
+        return unique.size
+    }
+
+    override suspend fun getNextMediaItemIndex(): Int {
+        val browser = fBrowser.await()
+        return browser.nextMediaItemIndex
+
+    }
+
+    override suspend fun getCurrentMediaItemIndex(): Int {
+        val browser = fBrowser.await()
+        return browser.currentMediaItemIndex
     }
 }
