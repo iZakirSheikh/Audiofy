@@ -87,9 +87,9 @@ fun Hazy(
     BaseListItem(
         centerAlign = true,
         modifier = modifier
+            .shadow(8.dp, AppTheme.shapes.large)
             .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
             .border(AppTheme.colors.shine, AppTheme.shapes.large)
-            .shadow(8.dp, AppTheme.shapes.large)
             .background(AppTheme.colors.background(surface)),
         contentColor = onColor,
         // Title as heading

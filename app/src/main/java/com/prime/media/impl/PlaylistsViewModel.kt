@@ -152,7 +152,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
         .stateIn(viewModelScope, WhileSubscribed(), null)
 
     override fun create(value: Playlist) {
-        launch {
+        this@PlaylistsViewModel.runCatching {
             // Validate the playlist name using the predefined regex.
             // If the name is invalid, throw an exception with a descriptive message.
             if (!VALID_NAME_REGEX.matches(value.name))
@@ -177,7 +177,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
     }
 
     override fun delete(playlist: Playlist) {
-        launch {
+        runCatching {
             val name = playlist.name
             // Display a confirmation toast to the user before deleting the playlist.
             // The toast includes the playlist name and a "Delete" action button.
@@ -189,7 +189,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
                 accent = Color.RedViolet,
                 duration = SnackbarDuration.Long
             )
-            if (result != SnackbarResult.ActionPerformed) return@launch
+            if (result != SnackbarResult.ActionPerformed) return@runCatching
             // Attempt to delete the playlist from the data source (e.g., database).
             // Check if the deletion was successful (assuming delete() returns 1 for success).
             // If the deletion fails, throw an exception with a descriptive message.
@@ -202,7 +202,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
     }
 
     override fun update(playlist: Playlist) {
-        launch {
+        this@PlaylistsViewModel.runCatching {
             val name = playlist.name
             // Validate the playlist name using the predefined regex.
             // If the name is invalid, throw an exception with a descriptive message.

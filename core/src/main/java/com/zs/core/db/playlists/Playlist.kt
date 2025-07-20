@@ -132,6 +132,7 @@ class Playlist @Deprecated("This is used by Room internally") internal construct
     ) {
 
         fun copy(
+            playlistId: Long = this.playlistID,
             order: Int = this.order,
             title: String = this.title,
             subtitle: String = this.subtitle,
@@ -147,12 +148,14 @@ class Playlist @Deprecated("This is used by Room internally") internal construct
          * Representing a member (media file) within a playlist.
          */
         constructor(
+            playlistID: Long,
             title: String,
             subtitle: String,
             uri: String,
+            order: Int = 0,
             artwork: String? = null,
             mimeType: String? = null
-        ) : this(0L, -1L, -1, uri, title, subtitle, artwork, mimeType)
+        ) : this(0L, playlistID, order, uri, title, subtitle, artwork, mimeType)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

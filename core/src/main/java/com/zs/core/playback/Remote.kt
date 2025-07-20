@@ -51,6 +51,12 @@ interface Remote {
         const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
         const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
 
+        // State
+        const val PLAYER_STATE_IDLE = Player.STATE_IDLE
+        const val PLAYER_STATE_BUFFERING = Player.STATE_BUFFERING
+        const val PLAYER_STATE_READY = Player.STATE_READY
+        const val PLAYER_STATE_ENDED = Player.STATE_ENDED
+
         //
         private const val PREFIX = "com.prime.player"
         internal const val ACTION_AUDIO_SESSION_ID = "$PREFIX.action.AUDIO_SESSION_ID"

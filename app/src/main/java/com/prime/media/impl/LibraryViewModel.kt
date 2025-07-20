@@ -122,7 +122,7 @@ class LibraryViewModel(
         //     and playback starts.
         //   - If the item is not found in the 'recent' list (which is unexpected),
         //     an error message is displayed.
-        launch {
+        runCatching {
             val index = remote.indexOf(Uri.parse(uri))
             val isAlreadyInPlaylist = index != Remote.INDEX_UNSET // Check if the item is in the current playlist.
 
@@ -130,7 +130,7 @@ class LibraryViewModel(
                 // If already in playlist, seek to it and play.
                 remote.seekTo(index)
                 remote.play(true)
-                return@launch
+                return@runCatching
             }
 
             // If not in the playlist, try to find it in the recent list.
@@ -140,7 +140,7 @@ class LibraryViewModel(
             if (item == null) {
                 // This case should ideally not happen if the UI is displaying valid recent items.
                 showSnackbar("Oops! Unknown error", icon = Icons.Outlined.Error, accent = Color.Rose)
-                return@launch
+                return@runCatching
             }
             // If found in recent, create a new playlist with this item and play it.
             remote.setMediaFiles(listOf(item.toMediaFile())) // Replace current playlist.
@@ -151,7 +151,7 @@ class LibraryViewModel(
     override fun onClickRecentAddedFile(id: Long) {
         // This function handles the click event for a newly added file.
         // When a newly added file is clicked, this function ensures that only this specific file is played.
-        launch {
+        runCatching {
             // Retrieve the list of newly added files.
             val newlyAddedItems = newlyAdded.firstOrNull()
             // Find the specific item by its ID.
@@ -159,7 +159,7 @@ class LibraryViewModel(
             if (item == null) {
                 // This case should ideally not happen if the UI is displaying valid newly added items.
                 showSnackbar("Oops! Unknown error", icon = Icons.Outlined.Error, accent = Color.Rose)
-                return@launch
+                return@runCatching
             }
             // Create a new playlist with this item and start playback.
             remote.setMediaFiles(listOf(item.toMediaFile()))

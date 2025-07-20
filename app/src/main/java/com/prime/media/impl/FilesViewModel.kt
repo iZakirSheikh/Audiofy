@@ -166,7 +166,7 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
     }
 
     fun addToQueue(items: List<MediaFile>){
-        launch {
+        runCatching {
             val result = remote.add(items)
             val message = when {
                 result == 0 -> "No items were added — they may already be in the queue or failed to add."
@@ -180,7 +180,7 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
     }
 
     fun playNext(items: List<MediaFile>){
-        launch {
+        runCatching {
             val result = remote.add(items, remote.getNextMediaItemIndex())
             val message = when {
                 result == 0 -> "No items were added — they may already be in the queue or failed to add."

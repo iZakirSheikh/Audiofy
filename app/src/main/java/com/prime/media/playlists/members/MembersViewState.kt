@@ -18,11 +18,14 @@
 
 package com.prime.media.playlists.members
 
+import android.app.Activity
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
+import com.prime.media.common.Action
 import com.prime.media.common.Route
 import com.prime.media.common.compose.directory.FilesViewState
 import com.zs.core.db.playlists.Playlist.Track
+import com.zs.core.store.models.Audio
 
 
 private const val PARAM_PLAYLIST_NAME = "param_name"
@@ -39,4 +42,11 @@ object RouteMembers : Route {
 operator fun SavedStateHandle.get(route: RouteMembers) =
     get<String>(PARAM_PLAYLIST_NAME).takeIf { it?.contains(PARAM_PLAYLIST_NAME) == false }
 
-interface MembersViewState: FilesViewState<Track>
+interface MembersViewState: FilesViewState<Track> {
+
+    val showFavButton: Boolean
+
+    fun onPerformAction(value: Action, focused: Track?= null)
+
+    fun toggleLiked(value: Track)
+}

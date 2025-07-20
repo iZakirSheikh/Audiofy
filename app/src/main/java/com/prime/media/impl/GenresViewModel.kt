@@ -33,12 +33,13 @@ import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio.Genre
 import com.zs.preferences.stringPreferenceKey
 import java.util.Locale
+// Genres ViewModel.
+private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
+private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
 
 class GenresViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Genre>(provider) {
 
-    // Genres ViewModel.
-    private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
-    private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
+
 
     private val Genre.firstTitleChar
         inline get() = name.uppercase(Locale.ROOT)[0].toString()

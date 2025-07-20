@@ -51,8 +51,10 @@ private val MediaBrowser.state: NowPlaying?
             this.contentDuration,
             this.contentPosition,
             false,
-            this.playWhenReady && playbackState != Player.STATE_ENDED,
-            current?.mimeType
+            this.playWhenReady,
+            current.mimeType,
+            this.playbackState,
+            this.repeatMode,
         )
     }
 

@@ -56,17 +56,16 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import java.util.Locale
 
+private val ORDER_BY_DATE_MODIFIED = FilterDefaults.ORDER_BY_DATE_MODIFIED
+private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
+private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
+
 // Folders
 @OptIn(ExperimentalCoroutinesApi::class)
 class FoldersViewModel(
     handle: SavedStateHandle,
     provider: MediaProvider
 ) : KoinViewModel(), FoldersViewState {
-
-
-    private val ORDER_BY_DATE_MODIFIED = FilterDefaults.ORDER_BY_DATE_MODIFIED
-    private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
-    private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
 
     private val Action.toMediaStoreOrder
         get() = when (this) {

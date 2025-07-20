@@ -254,42 +254,34 @@ class AudiosViewModel(
     }
 
     override fun play(item: Audio?) {
-        launch {
-            val result = runCatching {
-                val items = consume()
-                if (items.isEmpty())
-                    error("Error - Playable items must not be empty.")
-                val index = if (item == null) -1 else items.indexOf(item)
-                play(items.map(Audio::toMediaFile), index, false)
-            }
-            if (result.isSuccess)
-                return@launch
-            report(result.exceptionOrNull()?.message ?: "")
+        runCatching {
+            val items = consume()
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            val index = if (item == null) -1 else items.indexOf(item)
+            play(items.map(Audio::toMediaFile), index, false)
         }
     }
 
     override fun shuffle() {
-        launch {
-            val result = runCatching {
-                val items = consume()
-                if (items.isEmpty())
-                    error("Error - Playable items must not be empty.")
-                play(items.map(Audio::toMediaFile), -1, true)
-            }
-            if (result.isSuccess)
-                return@launch
-            report(result.exceptionOrNull()?.message ?: "")
+        runCatching {
+            val items = consume()
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            play(items.map(Audio::toMediaFile), -1, true)
         }
     }
 
     override fun toggleLiked(value: Audio) {
-        launch {
+        runCatching {
             val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
                 ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
             if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.uri.toString()))
                 playlists.remove(playlistId, value.uri.toString())
-            else
-                playlists.insert(listOf(value.toTrack(playlistId, 0)))
+            else {
+                val newTrack = value.toTrack(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlists.insert(listOf(newTrack))
+            }
             showPlatformToast("Favourite list updated.")
         }
     }
@@ -305,7 +297,7 @@ class AudiosViewModel(
             ACTION_DELETE if (focused != null) -> remove(resolver, focused.id)
             ACTION_DELETE -> remove(resolver, *consume().map(Audio::id).toLongArray())
             ACTION_SELECT_ALL -> selectAll()
-            else -> launch { report("Unrecognized action: ${getText(value.label)}, This action is not supported or has not been implemented yet.") }
+            else -> showPlatformToast("Oops! ${getText(value.label)} isn’t supported yet.")
         }
     }
 }

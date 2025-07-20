@@ -40,16 +40,17 @@ import com.prime.media.common.compose.FilterDefaults.ORDER_BY_DATE_MODIFIED
 import com.prime.media.common.compose.FilterDefaults.ORDER_BY_TITLE
 import com.prime.media.common.compose.FilterDefaults.ORDER_NONE
 import com.prime.media.common.compose.directory.MetaData
-import com.zs.core.common.debounceAfterFirst
 import com.prime.media.common.raw
 import com.prime.media.playlists.members.MembersViewState
 import com.prime.media.playlists.members.RouteMembers
 import com.prime.media.playlists.members.get
 import com.zs.compose.foundation.castTo
+import com.zs.core.common.debounceAfterFirst
+import com.zs.core.db.playlists.Playlist
 import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.db.playlists.Playlists
-import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
+import com.zs.core.playback.toMediaFile
 import com.zs.preferences.Key
 import com.zs.preferences.stringPreferenceKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -78,7 +79,10 @@ class MembersViewModel(
     override val Track.key: Long get() = this.id
     val playlistName = handle[RouteMembers]!!
     override val orders: List<Action> = listOf(ORDER_NONE, ORDER_BY_TITLE, ORDER_BY_DATE_MODIFIED)
-    override var info: MetaData  = let {
+
+    override val showFavButton: Boolean get() = playlistName != Remote.PLAYLIST_FAVOURITE
+
+    override var info: MetaData = let {
         val playlist = runBlocking { playlists[playlistName] }
         when (playlistName) {
             Remote.PLAYLIST_FAVOURITE -> MetaData(
@@ -88,7 +92,8 @@ class MembersViewModel(
                 playlist?.count ?: -1,
                 playlist?.dateModified ?: -1L
             )
-            else -> MetaData(playlistName, )
+
+            else -> MetaData(playlistName)
         }
     }
 
@@ -116,39 +121,94 @@ class MembersViewModel(
         }
     }
 
-
     val observable = combine(
         flow = snapshotFlow(query::raw),
         flow2 = snapshotFlow(::filter),
         transform = { query, filter ->
             Triple(query, filter.first, filter.second)
         }).debounceAfterFirst(300).flatMapLatest { (query, ascending, order) ->
-            playlists.observer(playlistName, query).debounceAfterFirst(300L).map { tracks ->
-                    when (order) {
-                        ORDER_NONE -> tracks.groupBy { "" }
-                        ORDER_BY_TITLE -> tracks.sortedBy { it.firstTitleChar }
-                            .let { if (ascending) it else it.reversed() }
-                            .groupBy { it.firstTitleChar }
+        playlists.observer(playlistName, query).debounceAfterFirst(300L).map { tracks ->
+            when (order) {
+                ORDER_NONE -> tracks.groupBy { "" }
+                ORDER_BY_TITLE -> tracks.sortedBy { it.firstTitleChar }
+                    .let { if (ascending) it else it.reversed() }
+                    .groupBy { it.firstTitleChar }
 
-                        else -> error("Oops!! invalid order passed $order")
-                    }
-                }
-        }.onEach {
-            data = castTo(it) as Mapped<Track>
-        }.catch { exception ->
-            Log.d(TAG, "provider: ${exception.stackTraceToString()}")
-            val action = report(exception.message ?: getText(R.string.msg_unknown_error))
+                else -> error("Oops!! invalid order passed $order")
+            }
         }
+    }.onEach {
+        data = castTo(it) as Mapped<Track>
+    }.catch { exception ->
+        Log.d(TAG, "provider: ${exception.stackTraceToString()}")
+        val action = report(exception.message ?: getText(R.string.msg_unknown_error))
+    }
 
     init {
         observable.launchIn(viewModelScope)
     }
 
     override fun play(item: Track?) {
-        TODO("Not yet implemented")
+        runCatching {
+            val items = consume()
+            // Must not happen.
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            val index = if (item == null) -1 else items.indexOf(item)
+            play(items.map(Track::toMediaFile), index, false)
+        }
     }
 
     override fun shuffle() {
-        TODO("Not yet implemented")
+        runCatching {
+            val items = consume()
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            play(items.map(Track::toMediaFile), -1, true)
+        }
+    }
+
+    fun remove(vararg item: Track) {
+        runCatching {
+            val id = playlists[playlistName]?.id ?: return@runCatching
+            val uris = item.map(Track::uri).toTypedArray()
+            val count = playlists.remove(id, *uris)
+
+            val message = when {
+                count == 0 -> "No tracks were removed — they may not be in the playlist."
+                count < item.size -> "Removed $count of ${item.size} tracks from the playlist."
+                else -> "All selected tracks were removed from the playlist."
+            }
+
+            showPlatformToast(message)
+        }
+    }
+
+
+    override fun onPerformAction(value: Action, focused: Track?) {
+        when (value) {
+            ACTION_SELECT_ALL -> selectAll()
+            ACTION_PLAY_NEXT if focused != null -> playNext(listOf(focused.toMediaFile()))
+            ACTION_PLAY_NEXT -> playNext(consume().map(Track::toMediaFile))
+            ACTION_ADD_TO_QUEUE if focused != null -> addToQueue(listOf(focused.toMediaFile()))
+            ACTION_ADD_TO_QUEUE -> addToQueue(consume().map(Track::toMediaFile))
+            ACTION_REMOVE if focused != null -> remove(focused)
+            ACTION_REMOVE -> remove(*consume().toTypedArray())
+            else -> showPlatformToast("Oops! ${getText(value.label)} isn’t supported yet.")
+        }
+    }
+
+    override fun toggleLiked(value: Track) {
+        this@MembersViewModel.runCatching {
+            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.uri))
+                playlists.remove(playlistId, value.uri)
+            else {
+                val newTrack =  value.copy(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlists.insert(listOf(newTrack))
+            }
+            showPlatformToast("Favourite list updated.")
+        }
     }
 }

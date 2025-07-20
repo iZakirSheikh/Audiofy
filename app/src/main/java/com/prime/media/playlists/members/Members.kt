@@ -18,35 +18,37 @@
 
 package com.prime.media.playlists.members
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.prime.media.R
 import com.prime.media.common.compose.ContentPadding
+import com.prime.media.common.compose.LocalNavController
+import com.prime.media.common.compose.LottieAnimatedButton
 import com.prime.media.common.compose.LottieAnimatedIcon
 import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.directory.Files
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
-import com.zs.compose.theme.IconButton
-import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Label
 import com.zs.core.db.playlists.Playlist.Track
+import androidx.compose.foundation.combinedClickable as clickable
 
 private val MEMBER_ICON_SHAPE = RoundedCornerShape(30)
 private val TrackItemPadding = PaddingValues(horizontal = ContentPadding.large, vertical = ContentPadding.medium)
@@ -88,59 +90,72 @@ private fun Track(
     )
 }
 
+
+/**
+ * Represents the state of the members screen.
+ */
 @Composable
 fun Members(viewState: MembersViewState) {
     val selected = viewState.selected
+    val favourites by viewState.favourites.collectAsState(emptySet())
+    val navController = LocalNavController.current
     Files(
         viewState,
-        onTapAction = {},
+        onTapAction = { viewState.onPerformAction(it) },
         key = Track::id,
-        itemContent = { value ->
+        itemContent = { audio ->
             Track(
-                value = value,
+                value = audio,
                 modifier = Modifier
                     .animateItem()
-                    .combinedClickable(
+                    .clickable(
                         onClick = {
-                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
+                            if (viewState.isInSelectionMode)
+                                return@clickable viewState.select(audio.id)
+                            viewState.play(audio)
                         },
-                        onLongClick = { viewState.select(value.id) }
+                        onLongClick = { viewState.select(audio.id) }
                     ),
+                // actions
                 actions = {
                     // show checkbox
                     if (viewState.isInSelectionMode)
                         return@Track LottieAnimatedIcon(
                             R.raw.lt_checkbox,
                             animationSpec = AppTheme.motionScheme.slowSpatialSpec(),
-                            atEnd = value.id in selected, // if fav
+                            atEnd = audio.id in selected, // if fav
                             contentDescription = null,
                             progressRange = 0.05f..0.30f,
                             scale = 1.6f,
-                            tint = Color.Unspecified,
+                            tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
                                 .padding(end = ContentPadding.medium)
                         )
-                    // else show overflow menu.
+
+                    // show actions
                     Row {
-                        // Favourite icon
-                        IconButton(onClick = { /*Action fav*/ }) {
-                            LottieAnimatedIcon(
-                                R.raw.lt_twitter_heart_filled_unfilled,
-                                //duration = 800,
-                                atEnd = false, // if fav
-                                contentDescription = null,
-                                progressRange = 0.13f..0.95f,
-                                scale = 3.5f,
-                                tint = Color.Unspecified
-                            )
-                        }
-                        // Menu.
+                        // Heart
+                        if (viewState.showFavButton)
+                            LottieAnimatedButton(
+                            R.raw.lt_twitter_heart_filled_unfilled,
+                            onClick = { viewState.toggleLiked(audio) },
+                            animationSpec = tween(800),
+                            atEnd = audio.uri.toString() in favourites, // if fav
+                            contentDescription = null,
+                            progressRange = 0.13f..1.0f,
+                            scale = 3.5f,
+                            tint = AppTheme.colors.accent,
+                        )
+                        // More
+
                         OverflowMenu(
                             collapsed = 0,
                             items = viewState.actions,
-                            onItemClicked = {},
-                            expanded = 3
+                            expanded = 5,
+                            onItemClicked = {
+                                viewState.onPerformAction(it, audio)
+                            }
                         )
                     }
                 }

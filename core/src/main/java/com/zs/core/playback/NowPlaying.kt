@@ -19,6 +19,7 @@
 package com.zs.core.playback
 
 import android.net.Uri
+import androidx.media3.common.Player
 
 /**
  * Represents the current state of the [Playback]
@@ -31,11 +32,17 @@ class NowPlaying(
     val duration: Long,
     val position: Long,
     val favourite: Boolean,
-    val playing: Boolean,
+    val playWhenReady: Boolean,
     val mimeType: String?,
+    val state: Int,
+    val repeatMode: Int,
+    val error: String? = null,
 ) {
     // This time when this was generated.
     val timeStamp = System.currentTimeMillis()
+
+    val playing = playWhenReady && state != Player.STATE_ENDED
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -46,11 +53,15 @@ class NowPlaying(
         if (duration != other.duration) return false
         if (position != other.position) return false
         if (favourite != other.favourite) return false
-        if (playing != other.playing) return false
+        if (playWhenReady != other.playWhenReady) return false
         if (title != other.title) return false
         if (subtitle != other.subtitle) return false
         if (artwork != other.artwork) return false
         if (mimeType != other.mimeType) return false
+        if (timeStamp != other.timeStamp) return false
+        if (state != other.state) return false
+        if (repeatMode != other.repeatMode) return false
+        if (error != other.error) return false
 
         return true
     }
@@ -60,15 +71,19 @@ class NowPlaying(
         result = 31 * result + duration.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + favourite.hashCode()
-        result = 31 * result + playing.hashCode()
+        result = 31 * result + playWhenReady.hashCode()
         result = 31 * result + title.hashCode()
         result = 31 * result + subtitle.hashCode()
         result = 31 * result + (artwork?.hashCode() ?: 0)
         result = 31 * result + (mimeType?.hashCode() ?: 0)
+        result = 31 * result + timeStamp.hashCode()
+        result = 31 * result + state
+        result = 31 * result + repeatMode
+        result = 31 * result + (error?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playing=$playing, mimeType=$mimeType)"
+        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playWhenReady=$playWhenReady, mimeType=$mimeType, timeStamp=$timeStamp, state=$state, repeatMode=$repeatMode, error=$error)"
     }
 }

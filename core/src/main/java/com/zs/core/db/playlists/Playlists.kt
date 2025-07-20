@@ -192,9 +192,15 @@ abstract class Playlists {
     abstract suspend fun contains(name: String, key: String): Boolean
 
     /** Removes item from playlist*/
-    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID AND uri = :key")
-    abstract suspend fun remove(playlistID: Long, key: String): Int
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID AND uri IN (:keys)")
+    abstract suspend fun remove(playlistID: Long, vararg keys: String): Int
 
     @Query("SELECT m.uri FROM tbl_playlist_members m INNER JOIN tbl_playlists p ON m.playlist_id = p.playlist_id WHERE p.name = :playlistName")
     abstract fun observeKeysOf(playlistName: String): Flow<List<String>>
+
+    /**
+     * @return the last play order of the playlist represented by [name] or -1 if empty.
+     */
+    @Query(" SELECT COALESCE(MAX(m.play_order), -1) FROM tbl_playlist_members m INNER JOIN tbl_playlists p ON m.playlist_id = p.playlist_id WHERE p.name = :name")
+    abstract suspend fun lastPlayOrder(name: String): Int
 }

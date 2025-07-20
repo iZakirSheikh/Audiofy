@@ -127,7 +127,7 @@ abstract class StoreViewModel<T>(
 
     /** Deletes or Trashes file(s) represented by id(s).*/
     fun remove(resolver: Activity, vararg id: Long) {
-        launch {
+        runCatching {
             val isTrashEnabled = preferences[Settings.TRASH_CAN_ENABLED]
             if (isTrashEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                 trash(resolver = resolver, *id)
@@ -151,7 +151,7 @@ abstract class StoreViewModel<T>(
     }
 
     fun share(resolver: Activity, vararg ids: Long){
-        launch {
+        runCatching {
             val result = runCatching {
                 resolver.startActivity(ShareFilesIntent(*ids))
             }

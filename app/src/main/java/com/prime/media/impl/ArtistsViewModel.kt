@@ -35,14 +35,16 @@ import com.zs.core.store.models.Audio.Artist
 import com.zs.preferences.stringPreferenceKey
 import java.util.Locale
 
+private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
+private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
+
 // Artists
 class ArtistsViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Artist>(provider) {
     override val uri: Uri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI
 
     private val Artist.firstTitleChar
         inline get() = name.uppercase(Locale.ROOT)[0].toString()
-    private val ORDER_BY_TITLE = FilterDefaults.ORDER_BY_TITLE
-    private val ORDER_BY_NONE = FilterDefaults.ORDER_NONE
+
 
     override fun filter(ascending: Boolean, order: Action) {
         super.filter(ascending, order)
