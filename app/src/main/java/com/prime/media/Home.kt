@@ -64,6 +64,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.DialogNavigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
@@ -176,7 +177,7 @@ private val NavController.primary: State<String?>
                     RouteAudios.domain -> true
                     RouteVideos.domain -> true
                     RoutePlaylists.domain -> true
-                    else -> false
+                    else -> dest is DialogNavigator.Destination
                 }
 
                 // Return domain only if it's a top-level screen and has no args
@@ -604,7 +605,7 @@ fun Home(
                 LocalDensity provides activity.density,
                 LocalWindowSize provides when {
                     !requiresNavBar -> clazz
-                    portrait -> clazz.consume(56.dp)
+                    portrait -> clazz.consume(height = 56.dp)
                     else -> clazz.consume(SIDE_BAR_WIDTH)
                 },
                 content = content

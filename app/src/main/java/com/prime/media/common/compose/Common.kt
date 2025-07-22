@@ -19,12 +19,14 @@
 package com.prime.media.common.compose
 
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableLongState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -39,6 +41,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.zs.compose.theme.AppTheme
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import kotlinx.coroutines.delay
@@ -120,12 +123,10 @@ value class Chronometer private constructor(private val state: MutableLongState)
     /**
      * Constructs a [Chronometer] with an initial time value.
      *
-     * @param initial The initial time value in milliseconds. This value will be stored according
-     *                to the rules defined for the [raw] property setter (i.e., user-set values
-     *                become positive, system-set negative).
+     * @param initial The initial time value in milliseconds.
      */
     constructor(initial: Long) :
-            this(mutableLongStateOf(if (initial == Remote.TIME_UNSET) Long.MIN_VALUE else -initial))
+            this(mutableLongStateOf(-initial))
 
     /** Gets or sets the raw internal time value. */
     var raw
@@ -150,15 +151,21 @@ value class Chronometer private constructor(private val state: MutableLongState)
      *         - Returns `0.0f` if [elapsed] is [Long.MIN_VALUE] (N/A) or `duration` is zero or negative.
      *         - Otherwise, calculates `elapsed / duration`.
      */
+    @Composable
     fun progress(duration: Long): Float {
         // If duration is not set or invalid, or elapsed time is N/A,
         // it's not possible to calculate meaningful progress.
-        return when {
+        val progress =  when {
             elapsed == 0L -> 0f // if nothing has elapsed; just set it to
             duration == Remote.TIME_UNSET -> 1.0f // Treat as fully progressed if duration is unknown.
-            elapsed == Long.MIN_VALUE -> 0.0f // No progress if elapsed is N/A or duration is invalid.
             else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(0.0f, 1.0f) // Standard progress calculation.
         }
+        // if user scroller; don't animate.
+        if (raw > 0)
+            return progress
+        val ms = AppTheme.motionScheme
+        val newProgress by animateFloatAsState(progress, ms.fastSpatialSpec())
+        return newProgress
     }
 
     /**
@@ -222,8 +229,8 @@ val NowPlaying.chronometer: Chronometer
             // Initialize the chronometer's raw value.
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
-            // Use Long.MIN_VALUE if position is unknown; otherwise, store as a negative value.
-            chronometer.raw = if (state == Remote.PLAYER_STATE_IDLE) 0 else if (position == Remote.TIME_UNSET) Long.MIN_VALUE else -current
+            // Use 0 if position is unknown; otherwise, store as a negative value.
+            chronometer.raw = if (position == Remote.TIME_UNSET || state < Remote.PLAYER_STATE_READY) 0 else -current
             // Exit early if:
             // 1. The position is unknown,
             // 2. Playback has completed,

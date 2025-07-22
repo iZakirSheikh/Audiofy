@@ -54,6 +54,7 @@ import com.prime.media.common.compose.marque
 import com.prime.media.common.compose.shine
 import com.prime.media.console.RouteConsole
 import com.zs.compose.foundation.background
+import com.zs.compose.foundation.shadow
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
@@ -64,6 +65,7 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.Slider
+import com.zs.compose.theme.SliderDefaults
 import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
@@ -87,8 +89,8 @@ fun Hazy(
     BaseListItem(
         centerAlign = true,
         modifier = modifier
-            .shadow(8.dp, AppTheme.shapes.large)
             .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
+            .shadow(8.dp, AppTheme.shapes.large)
             .border(AppTheme.colors.shine, AppTheme.shapes.large)
             .background(AppTheme.colors.background(surface)),
         contentColor = onColor,
@@ -197,6 +199,10 @@ fun Hazy(
                         },
                         enabled = state.duration > 0,
                         modifier = Modifier.weight(1f),
+                        colors = SliderDefaults.colors(
+                            disabledThumbColor = AppTheme.colors.accent,
+                            disabledActiveTrackColor = AppTheme.colors.accent
+                        )
                     )
 
                     // SeekNext

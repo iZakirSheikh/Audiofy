@@ -189,6 +189,7 @@ fun FilesTopAppBar(
                         .size(ARTWORK_WIDTH, 125.dp)
                         .then(alphaModifier)
                         .shadow(8.dp, AppTheme.shapes.medium)
+                        .background(AppTheme.colors.background(1.dp))
                         .road(Alignment.TopStart, Alignment.TopStart)
                 )
 
