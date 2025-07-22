@@ -136,6 +136,11 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         browser.pause()
     }
 
+    override suspend fun setRepeatMode(mode: Int) {
+        val browser = fBrowser.await()
+        browser.repeatMode = mode
+    }
+
     override suspend fun togglePlay() {
         val browser = fBrowser.await()
         if (browser.isPlaying)

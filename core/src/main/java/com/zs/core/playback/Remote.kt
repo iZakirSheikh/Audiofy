@@ -91,6 +91,12 @@ interface Remote {
     suspend fun play(playWhenReady: Boolean = true)
     suspend fun pause()
 
+    /**
+     * Sets the repeat [mode] of the player.
+     * @see Player.setRepeatMode
+     */
+    suspend fun setRepeatMode(mode: Int)
+
     suspend fun togglePlay()
 
     suspend fun shuffle(shuffle: Boolean)
