@@ -120,6 +120,7 @@ import com.zs.compose.theme.text.Text
 import com.zs.compose.theme.text.TextField
 import com.zs.compose.theme.text.TextFieldDefaults
 import com.zs.compose.theme.text.TonalHeader
+import dev.chrisbanes.haze.HazeState
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState as GridState
 import com.prime.media.common.compose.ContentPadding as CP
@@ -413,13 +414,13 @@ fun <T> Files(
     viewState: FilesViewState<T>,
     onTapAction: (value: Action) -> Unit,
     key: ((item: T) -> Any)? = null,
+    surface: HazeState = rememberAcrylicSurface(),
     itemContent: @Composable LazyItemScope.(item: T) -> Unit
 ) {
     val state = rememberLazyListState()
     var isSearchVisible by remember { mutableStateOf(false) }
     val (width, height) = LocalWindowSize.current
     // Properties
-    val surface = rememberAcrylicSurface()
     val inAppNavInsets = WindowInsets.content
     val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = AppTheme.colors

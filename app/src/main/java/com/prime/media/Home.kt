@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
@@ -65,6 +66,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.dialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.audios.Audios
 import com.prime.media.audios.RouteAudios
@@ -101,6 +103,7 @@ import com.prime.media.impl.GenresViewModel
 import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.MembersViewModel
 import com.prime.media.impl.PlaylistsViewModel
+import com.prime.media.impl.PropertiesViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
 import com.prime.media.library.Library
@@ -109,6 +112,8 @@ import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylists
 import com.prime.media.playlists.members.Members
 import com.prime.media.playlists.members.RouteMembers
+import com.prime.media.properties.Properties
+import com.prime.media.properties.RouteProperties
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.prime.media.videos.RouteVideos
@@ -364,6 +369,11 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RouteMembers) {
         val viewState = koinViewModel<MembersViewModel>()
         Members(viewState)
+    }
+    // Properties
+    dialog(RouteProperties.route, dialogProperties = DialogProperties(usePlatformDefaultWidth = false)){
+        val viewState = koinViewModel<PropertiesViewModel>()
+        Properties(viewState)
     }
 }
 

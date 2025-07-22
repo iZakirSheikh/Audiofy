@@ -60,7 +60,7 @@ abstract class KoinViewModel : ScopeViewModel() {
     private val toastHostState: SnackbarHostState by inject()
     val preferences: Preferences by inject()
     val analytics: Analytics by inject()
-    private val context: Application by inject()
+    val context: Application by inject()
 
     fun ImageVector(@DrawableRes id: Int): ImageVector =
         ImageVector.vectorResource(context.theme, res = resources, id)

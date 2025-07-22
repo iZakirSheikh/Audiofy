@@ -42,6 +42,7 @@ import coil3.compose.AsyncImage
 import com.prime.media.R
 import com.prime.media.common.Action
 import com.prime.media.common.GO_TO_ALBUM
+import com.prime.media.common.INFO
 import com.prime.media.common.compose.ContentPadding
 import com.prime.media.common.compose.LocalNavController
 import com.prime.media.common.compose.LocalSystemFacade
@@ -49,15 +50,15 @@ import com.prime.media.common.compose.LottieAnimatedButton
 import com.prime.media.common.compose.LottieAnimatedIcon
 import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.directory.Files
+import com.prime.media.properties.RouteProperties
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
-import com.zs.compose.theme.sharedBounds
-import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio
+import dev.chrisbanes.haze.rememberHazeState
 import androidx.compose.foundation.combinedClickable as clickable
 
 private val ArtworkGraphicsModifier = Modifier.graphicsLayer() {
@@ -113,8 +114,12 @@ fun Audios(viewState: AudiosViewState) {
     val favourites by viewState.favourites.collectAsState(emptySet())
     val facade = LocalSystemFacade.current
     val navController = LocalNavController.current
+    val surface = rememberHazeState()
+
+
     Files(
         viewState,
+        surface = surface,
         onTapAction = { viewState.onPerformAction(it, facade as Activity) },
         key = Audio::id,
         itemContent = { audio ->
@@ -167,6 +172,7 @@ fun Audios(viewState: AudiosViewState) {
                                     val route =  RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}")
                                     navController.navigate(route)
                                 }
+                                Action.INFO -> navController.navigate(RouteProperties(audio.path))
                                 else -> viewState.onPerformAction(action, facade as Activity, audio)
                             }
                         }
