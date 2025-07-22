@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="what_s_new_latest" translatable="false">
-       <b>What’s New (v4.0.0-dev01)</b>
+       <b>What’s New (v4.0.0-dev05)</b>
         <font color='grey'>
             \n - Added support for properties dialog.
             \n - Fixed UI issue with slider, it now animates correctly.
