@@ -34,7 +34,6 @@ import com.prime.media.common.Filter
 import com.prime.media.common.Mapped
 import com.prime.media.common.PLAY_NEXT
 import com.prime.media.common.SelectionTracker.Level
-import com.prime.media.common.compose.FilterDefaults
 import com.prime.media.common.compose.directory.FilesViewState
 import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.MediaFile
@@ -166,10 +165,14 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
 
     fun addToQueue(items: List<MediaFile>){
         runCatching {
+            // Currently, if items are already present in the queue, we simply skip adding them again
+            // and display a message indicating this.
+            // A potential enhancement could be to remove these existing items from their current
+            // positions in the queue and then re-add them to the end. This would effectively move them.
             val result = remote.add(items)
             val message = when {
-                result == 0 -> "No items were added — they may already be in the queue or failed to add."
-                result < items.size -> "Added $result of ${items.size} items — some were skipped or already in the queue."
+                result == 0 -> "No items were added — they are already in the queue."
+                result < items.size -> "Added $result of ${items.size} items — some were skipped as they’re already in the queue."
                 else -> "Queue updated."
             }
 
@@ -182,8 +185,8 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
         runCatching {
             val result = remote.add(items, remote.getNextMediaItemIndex())
             val message = when {
-                result == 0 -> "No items were added — they may already be in the queue or failed to add."
-                result < items.size -> "Added $result of ${items.size} items — some were skipped or already in the queue."
+                result == 0 -> "No items were added — they are already in the queue."
+                result < items.size -> "Added $result of ${items.size} items — some were skipped as they’re already in the queue."
                 else -> "Queue updated."
             }
 

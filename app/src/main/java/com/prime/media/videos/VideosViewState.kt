@@ -18,10 +18,13 @@
 
 package com.prime.media.videos
 
+import android.app.Activity
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
+import com.prime.media.common.Action
 import com.prime.media.common.Route
 import com.prime.media.common.compose.directory.FilesViewState
+import com.zs.core.store.models.Audio
 import com.zs.core.store.models.Video
 
 private const val PARAM_ARG = "param_parent"
@@ -36,4 +39,8 @@ object RouteVideos: Route {
 operator fun SavedStateHandle.get(route: RouteVideos) =
     get<String>(PARAM_ARG).takeIf { it?.contains(PARAM_ARG) == false }
 
-interface VideosViewState: FilesViewState<Video>
+interface VideosViewState: FilesViewState<Video> {
+    fun onPerformAction(value: Action, resolver: Activity, focused: Video?= null)
+
+    fun toggleLiked(value: Video)
+}

@@ -18,6 +18,7 @@
 
 package com.prime.media.impl
 
+import android.app.Activity
 import android.net.Uri
 import android.provider.MediaStore
 import android.text.format.DateUtils
@@ -37,8 +38,10 @@ import com.prime.media.videos.RouteVideos
 import com.prime.media.videos.VideosViewState
 import com.prime.media.videos.get
 import com.zs.core.common.PathUtils
+import com.zs.core.common.toMediaFile
+import com.zs.core.common.toTrack
+import com.zs.core.db.playlists.Playlist
 import com.zs.core.db.playlists.Playlists
-import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Video
@@ -143,10 +146,50 @@ class VideosViewModel(
     init { flow.launchIn(viewModelScope) }
 
     override fun play(item: Video?) {
-        TODO("Not yet implemented")
+        runCatching {
+            val items = consume()
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            val index = if (item == null) -1 else items.indexOf(item)
+            play(items.map(Video::toMediaFile), index, false)
+        }
     }
 
     override fun shuffle() {
-        TODO("Not yet implemented")
+        runCatching {
+            val items = consume()
+            if (items.isEmpty())
+                error("Error - Playable items must not be empty.")
+            play(items.map(Video::toMediaFile), -1, true)
+        }
+    }
+
+    override fun onPerformAction(value: Action, resolver: Activity, focused: Video?) {
+        when(value){
+            ACTION_PLAY_NEXT if (focused != null) -> playNext(listOf(focused.toMediaFile()))
+            ACTION_PLAY_NEXT -> playNext(consume().map(Video::toMediaFile))
+            ACTION_ADD_TO_QUEUE if (focused != null) -> addToQueue(listOf(focused.toMediaFile()))
+            ACTION_ADD_TO_QUEUE -> addToQueue(consume().map(Video::toMediaFile))
+            ACTION_SHARE if (focused != null) -> share(resolver, focused.id)
+            ACTION_SHARE -> share(resolver, *consume().map(Video::id).toLongArray())
+            ACTION_DELETE if (focused != null) -> remove(resolver, focused.id)
+            ACTION_DELETE -> remove(resolver, *consume().map(Video::id).toLongArray())
+            ACTION_SELECT_ALL -> selectAll()
+            else -> showPlatformToast("Currently, ${getText(value.label)} isn’t supported, but we’re on it!")
+        }
+    }
+
+    override fun toggleLiked(value: Video) {
+        runCatching {
+            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.contentUri.toString()))
+                playlists.remove(playlistId, value.contentUri.toString())
+            else {
+                val newTrack = value.toTrack(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlists.insert(listOf(newTrack))
+            }
+            showPlatformToast("Favourite list updated.")
+        }
     }
 }

@@ -34,7 +34,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.Uninterruptibles
 import com.zs.core.db.playlists.Playlist
+import com.zs.core.playback.MediaFile
 import com.zs.core.store.models.Audio
+import com.zs.core.store.models.Video
 import com.zs.core.telemetry.Analytics
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
@@ -370,3 +372,17 @@ fun Audio.toTrack(playlistId: Long, order: Int) =
         artwork = artworkUri.toString(),
         mimeType = mimeType
     )
+
+/**
+ * @see com.zs.core.playback.toMediaFile(com.zs.core.store.models.Audio)
+ */
+fun Video.toMediaFile() =
+    MediaFile(contentUri, name, "", contentUri, mimeType)
+
+/**
+ * @see Audio.toTrack
+ */
+fun Video.toTrack(playlistId: Long, order: Int): Playlist.Track {
+    val uri = contentUri.toString()
+    return Playlist.Track(playlistID = playlistId, order = order, uri = uri, title = name, subtitle = "", artwork = uri, mimeType = mimeType)
+}

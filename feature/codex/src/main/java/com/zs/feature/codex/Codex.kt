@@ -24,4 +24,4 @@ import io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory
 
 // com.zs.feature.codex.CodexKt.Codex
 @SuppressLint("UnsafeOptInUsageError")
-fun Codex(context: Context) = NextRenderersFactory(context)
+fun Codex(context: Context): NextRenderersFactory = NextRenderersFactory(context)

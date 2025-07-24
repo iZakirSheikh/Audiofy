@@ -194,7 +194,7 @@ class MembersViewModel(
             ACTION_ADD_TO_QUEUE -> addToQueue(consume().map(Track::toMediaFile))
             ACTION_REMOVE if focused != null -> remove(focused)
             ACTION_REMOVE -> remove(*consume().toTypedArray())
-            else -> showPlatformToast("Oops! ${getText(value.label)} isn’t supported yet.")
+            else -> showPlatformToast("Currently, ${getText(value.label)} isn’t supported, but we’re on it!")
         }
     }
 

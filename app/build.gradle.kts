@@ -35,8 +35,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 36
-        versionCode = 1006
-        versionName = "4.0.0-dev05"
+        versionCode = 1007
+        versionName = "4.0.0-dev06"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // Load secrets into BuildConfig

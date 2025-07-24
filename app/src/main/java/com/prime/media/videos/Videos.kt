@@ -19,8 +19,10 @@
 package com.prime.media.videos
 
 
+import android.app.Activity
 import android.text.format.DateUtils
 import android.text.format.Formatter
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -29,6 +31,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,21 +48,27 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.prime.media.R
+import com.prime.media.common.Action
+import com.prime.media.common.INFO
 import com.prime.media.common.compose.ContentPadding
+import com.prime.media.common.compose.LocalNavController
+import com.prime.media.common.compose.LocalSystemFacade
+import com.prime.media.common.compose.LottieAnimatedButton
 import com.prime.media.common.compose.LottieAnimatedIcon
 import com.prime.media.common.compose.OverflowMenu
 import com.prime.media.common.compose.directory.Files
+import com.prime.media.properties.RouteProperties
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.ContentAlpha
-import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.common.PathUtils
 import com.zs.core.store.models.Video
+import dev.chrisbanes.haze.rememberHazeState
 import androidx.compose.foundation.combinedClickable as clickable
 import com.prime.media.common.compose.ContentPadding as CP
 
@@ -157,56 +167,70 @@ private fun Video(
 @Composable
 fun Videos(viewState: VideosViewState) {
     val selected = viewState.selected
+    val favourites by viewState.favourites.collectAsState(emptySet())
+    val facade = LocalSystemFacade.current
+    val navController = LocalNavController.current
+    val surface = rememberHazeState()
+
     Files(
         viewState,
-        onTapAction = {},
+        surface = surface,
+        onTapAction = { viewState.onPerformAction(it, facade as Activity) },
         key = Video::id,
-        itemContent = { value ->
+        itemContent = { video ->
             Video(
-                value = value,
+                value = video,
                 modifier = Modifier
                     .animateItem()
                     .clickable(
                         onClick = {
-                            if (viewState.isInSelectionMode) viewState.select(value.id) else viewState.play()
+                            if (viewState.isInSelectionMode) viewState.select(video.id) else viewState.play(video)
                         },
-                        onLongClick = { viewState.select(value.id) }
+                        onLongClick = { viewState.select(video.id) }
                     ),
+                // actions
                 actions = {
                     // show checkbox
                     if (viewState.isInSelectionMode)
                         return@Video LottieAnimatedIcon(
                             R.raw.lt_checkbox,
                             animationSpec = AppTheme.motionScheme.slowSpatialSpec(),
-                            atEnd = value.id in selected, // if fav
+                            atEnd = video.id in selected, // if fav
                             contentDescription = null,
                             progressRange = 0.05f..0.30f,
                             scale = 1.6f,
-                            tint = Color.Unspecified,
+                            tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
                                 .padding(end = ContentPadding.medium)
                         )
-                    // else show overflow menu.
+
+                    // show actions
                     Row {
-                        // Favourite icon
-                        IconButton(onClick = { /*Action fav*/ }) {
-                            LottieAnimatedIcon(
-                                R.raw.lt_twitter_heart_filled_unfilled,
-                                //duration = 800,
-                                atEnd = false, // if fav
-                                contentDescription = null,
-                                progressRange = 0.13f..0.95f,
-                                scale = 3.5f,
-                                tint = Color.Unspecified
-                            )
+                        // Heart
+                        LottieAnimatedButton(
+                            R.raw.lt_twitter_heart_filled_unfilled,
+                            onClick = { viewState.toggleLiked(video) },
+                            animationSpec = tween(800),
+                            atEnd = video.contentUri.toString() in favourites, // if fav
+                            contentDescription = null,
+                            progressRange = 0.13f..1.0f,
+                            scale = 3.5f,
+                            tint = AppTheme.colors.accent,
+                        )
+                        // More
+                        val onPerformAction = {action: Action ->
+                            when (action) {
+                                Action.INFO -> navController.navigate(RouteProperties(video.path))
+                                else -> viewState.onPerformAction(action, facade as Activity, video)
+                            }
                         }
-                        // Menu.
+
                         OverflowMenu(
                             collapsed = 0,
                             items = viewState.actions,
-                            onItemClicked = {},
-                            expanded = 5
+                            expanded = 5,
+                            onItemClicked = onPerformAction
                         )
                     }
                 }

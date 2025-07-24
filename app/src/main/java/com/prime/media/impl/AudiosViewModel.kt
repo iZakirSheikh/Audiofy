@@ -297,7 +297,7 @@ class AudiosViewModel(
             ACTION_DELETE if (focused != null) -> remove(resolver, focused.id)
             ACTION_DELETE -> remove(resolver, *consume().map(Audio::id).toLongArray())
             ACTION_SELECT_ALL -> selectAll()
-            else -> showPlatformToast("Oops! ${getText(value.label)} isn’t supported yet.")
+            else -> showPlatformToast("Currently, ${getText(value.label)} isn’t supported, but we’re on it!")
         }
     }
 }
