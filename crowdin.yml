@@ -1,0 +1,11 @@
+preserve_hierarchy: true
+# project_id: 741779
+files:
+  - source: "**/values/strings.xml"
+    translation: "/values-%android_code%/%original_file_name%" #CORRECT
+    update_strings: true
+    cleanup_mode: true
+    import_eq_suggestions: true
+    auto_approve_imported: true
+    translate_hidden: true
+    # This will be converted to 'app/src/main/res/values-%two_letter_code%/%original_file_name%' export pattern for each file

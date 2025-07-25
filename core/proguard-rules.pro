@@ -1,0 +1,37 @@
+# Add project specific ProGuard rules here.
+# You can control the set of applied configuration files using the
+# proguardFiles setting in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
+
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+
+# Uncomment this to preserve the line number information for
+# debugging stack traces.
+#-keepattributes SourceFile,LineNumberTable
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile
+
+# Media3 ShuffleOrder; Dont rename
+-keepnames class androidx.media3.exoplayer.ExoPlayerImpl {
+    private androidx.media3.exoplayer.source.ShuffleOrder shuffleOrder;
+}
+
+-keepnames class androidx.media3.exoplayer.source.ShuffleOrder$DefaultShuffleOrder {
+    private int[] shuffled;
+}
+
+## Don't remove classes from feature modules
+-keepclassmembers class com.zs.feature.codex.** {
+    public static * Codex(android.content.Context);
+}
+-keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
+-keep class com.zs.feature.telemetry.AnalyticsImpl { *; }

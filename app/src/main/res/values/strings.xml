@@ -1,0 +1,249 @@
+<resources>
+    <!--
+   Naming convention for string resources:
+    - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
+    - The string resources should be named as follows:
+      1. If the string is simple, like Delete, its name should be R.string.delete.
+      2. If the string contains complex text, the name should be in this format: scr_screen_name_purpose_variables
+         (optional; if no variables, omit this). For example, timeline_scr_items_d
+      3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional).
+         The message can be styled as bold or experimental, like alpha superscript. The message
+         can have any length.
+      4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s
+         (optional). E.g., msg_preference_permission_s
+      5. The snackbar message should have this structure: Title\n bold + experimental + message.
+         The string resources should follow the above rules strictly
+    -->
+
+    <string name="app_name" translatable="false">Audiofy</string>
+    <!--
+       App icon name. Dynamically set to reflect the build type (e.g., debug, release).
+       This helps visually differentiate between app variants on a device.
+   -->
+    <string name="launcher_label" translatable="false">@string/app_name</string>
+    <string name="title_codex">Codex</string>
+    <string name="title_telemetry">Telemetry</string>
+    <string name="properties">Properties</string>
+    <string name="go_to_album">Go to Album</string>
+    <string name="go_to_artist">Go to Artist</string>
+    <string name="edit">Edit</string>
+    <string name="play_next">Play next</string>
+    <string name="none">None</string>
+    <string name="title">Title</string>
+    <string name="artist">Artist</string>
+    <string name="date_added">Date Added</string>
+    <string name="length">Length</string>
+    <string name="loading">Loading</string>
+    <string name="empty">Empty</string>
+    <string name="scr_albums_year_d">Year: %1$s</string>
+    <string name="file_path">File path</string>
+    <string name="size">Size</string>
+    <string name="format">Format</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="sampling_rate">Sampling rate</string>
+    <string name="bits_per_sample">Bits per sample</string>
+    <string name="duration">Duration</string>
+    <string name="year">Year</string>
+    <string name="disk_number">Disk Number</string>
+    <string name="track_number">Track number</string>
+    <string name="album">Album</string>
+    <string name="genre">Genre</string>
+    <string name="composer">Composer</string>
+    <string name="author">Author</string>
+    <string name="writer">Writer</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="pixels_d">%1$dp</string>
+    <!--Represents the count of files e.g., 123 files or 1 file-->
+    <plurals name="files_d">
+        <item quantity="one">1 file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <string name="scr_new_playlists_title">Playlist\n<font color='grey' size='11'><sup><b>Craft</b> your own playlist or <b>edit</b> an existing one.</sup></font></string>
+    <string name="scr_new_playlist_enter_name">Enter playlist name.</string>
+    <string name="scr_new_playlist_text_field_placeholder">Tap here to start typing…</string>
+    <string name="scr_new_playlist_desc_placeholder">Type playlist description…</string>
+    <string name="create">Create</string>
+    <string name="update">Update</string>
+    <string name="albums">Albums</string>
+    <string name="genres">Genres</string>
+    <string name="artists">Artists</string>
+    <string name="liked">Liked</string>
+    <string name="folders">Folders</string>
+    <string name="msg_library_rate_us"><b>Rate Our App and Help Us Improve</b>
+        <!--Message Body-->
+        <font color='grey'>\nIf you\'re enjoying our app, please consider leaving us a 5-star
+            rating on the Play Store. Your positive feedback helps us grow and improve our
+            app for everyone.
+        </font>
+    </string>
+    <string name="msg_library_join_us"><b>Enjoying the app? Join our community</b>
+        <!--Message Body-->
+        <font color='grey'>\nConnect with us on <b>GitHub, Reddit, and Telegram</b> for the latest
+            news, tips, and discussions!
+        </font>
+    </string>
+    <string name="msg_promotion_gallery_app"><b>New App Alert!</b>
+        <font color='grey'>\nDownload our new <b>Gallery</b> app and experience a new way to view and manage your photos.</font>
+    </string>
+    <string name="msg_library_help_translate"><b>Join the translation effort!</b>
+        <font color='grey'>\nIf you enjoy the app, try it in your language. <b>Help us with translations</b> and <i>fix</i> any missing ones.
+            Find translation info on our <b>GitHub</b> page or join our <b>Telegram</b> community for assistance.
+            \nThanks!
+        </font>
+    </string>
+    <string name="rate_us">Rate us</string>
+    <string name="telegram">Telegram</string>
+    <string name="dive_in">Dive in</string>
+    <string name="translate">Translate</string>
+    <string name="sponsor">Sponsor</string>
+    <string name="unlock">Unlock</string>
+    <!--Title to the audio library screen-->
+    <string name="scr_library_title">
+        Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
+    </string>
+    <string name="library_shortcuts">Shortcuts\n<font color='grey' size="11"><sup>The faster way to get things done</sup></font> </string>
+    <string name="library_history">History\n<font color='grey' size="11"><sup>Where Memories are Made.</sup></font> </string>
+    <string name="library_recently_added">Fresh Arrivals\n<font color='grey' size="11"><sup>New Tracks to Discover.</sup></font></string>
+    <string name="unknown">Unknown</string>
+    <!--Represents a string that takes float and produces 1.25x-->
+    <string name="postfix_x_f">%1$.2fx</string>
+    <string name="msg_no_new_update_available">The app is already updated to the latest version.</string>
+    <string name="msg_new_update_downloaded"><b>Alert\n</b> An update has just been downloaded.</string>
+    <string name="install">Install</string>
+    <string name="msg_update_check_error"><b>Error</b>\nOops an unknown error occurred while checking for update.</string>
+    <string name="pref_app_theme_s"><b>App Theme (%1$s)</b>
+        <font color="grey" size="14">
+            \nCustomize the app\'s look with Night, Day, or System theme options.
+        </font>
+    </string>
+    <string name="pref_translucent_system_bars"><b>System Bars</b>
+        <font color="grey" size="14">
+            \nEnable transparent system bars for an edge-to-edge experience <b><i>\n(Android 6.0+)</i></b>
+        </font>
+    </string>
+    <string name="pref_immersive_view"><b>Immersive View</b>
+        <font color="grey" size="14">
+            \nActivate to hide the status and navigation bars for a seamless, full-screen experience.
+        </font>
+    </string>
+    <string name="pref_minimum_track_length"><b>Minimum track length</b>
+         <font color="grey" size="14">
+            \nTracks shorter than this duration (in seconds) will not be added to the library.
+        </font>
+    </string>
+    <string name="pref_use_inbuilt_audio_effects"><b>Audio Effects</b>
+        <font color="grey" size="14">\nEnable built-in audio effects (e.g., Equalizer).
+            \n<i>Keep this disabled to use third-party effects.</i>
+        </font>
+    </string>
+    <string name="pref_fetch_artwork_from_media_store"><b>Artwork</b>
+          <font color="grey" size="14">
+            \nEnable cached artwork loading from Android MediaStore. May display incorrect artwork
+              but uses fewer resources and is faster.
+            \nRestart the app to apply changes.
+        </font>
+    </string>
+    <string name="pref_enable_trash_can"><b>Recycle Bin <small>(Android 11+)</small></b>
+          <font color="grey" size="14">\nEnable to move deleted files to
+              the Recycle Bin instead of permanently deleting them.
+          </font>
+    </string>
+
+    <string name="pref_about_us_desc">Thank you for using <b>Audiofy</b> . I am an <b>individual
+        developer</b> who loves to create useful and beautiful apps. I need your
+        <b><i>support</i></b> to keep developing this app and make it better. You can support me by
+        <b>buying</b> the app or rating it <b>5 stars</b> on the store. Your <b>feedback</b> is also
+        very valuable to me. Please share your thoughts and suggestions with me. I appreciate your help
+        and encouragement.
+    </string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1$s by <b><i>Zakir Sheikh</i></b>"</string>
+    <string name="pref_font_scale"><b>Font Scale</b>
+         <font color="grey" size="14">
+            \nAdjust the font size to make text easier to read. Choose a scale that suits your
+             preference for better readability.
+        </font>
+    </string>
+    <string name="pref_grid_item_size_multiplier"><b>Grid Size Multiplier</b>
+          <font color="grey" size="14">
+        \nAdjust the space each item takes up in the grid layout.
+          </font>
+    </string>
+    <string name="pref_colorization_strategy"><b>Auto Colorize <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
+         <font color="grey" size="14">
+        \nDynamically generate a theme based on the colors of the currently playing media artwork.
+          </font>
+    </string>
+    <string name="pref_privacy_policy"><b>Privacy Policy</b>
+           <font color="grey" size="14">
+        \nClick here to view the privacy policy.
+          </font>
+    </string>
+    <!-- Appends any number formatted to int; denotes no. of seconds. 123s -->
+    <string name="postfix_s_d">%1$ds</string>
+    <string-array name="pref_night_mode_entries">
+        <item>Dark</item>
+        <item>Light</item>
+        <item>Sync with System</item>
+    </string-array>
+    <string name="pref_accent_nav"><b>Color NavBar</b>
+        <font color="grey">\nUse the accent color in the navigation bar.</font>
+    </string>
+    <string name="system">System</string>
+    <!--returns formatted Version info string like Version: 1.3.2-->
+    <string name="version_info_s">Version: %1$s</string>
+    <string name="join_the_beta">Join the Beta</string>
+    <string name="version">Version</string>
+    <string name="update_audiofy">Update Audiofy</string>
+    <string name="share_app_label">Spread the Word</string>
+    <string name="settings">Settings</string>
+    <string name="about_us">About us</string>
+    <string name="general">General</string>
+    <string name="appearance">Appearance</string>
+    <string name="error">Error</string>
+    <string name="report">Report</string>
+    <string name="msg_unknown_error"><b>Error\n</b>Oops! Something went wrong unexpectedly.</string>
+    <string name="abbr_not_available">N/A</string>
+    <string name="select_all">Select all</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="add_to_queue">Add to Queue</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="msg_deletion_confirm"><b>Delete</b>
+        <font color='grey'>\nAre you sure you want to delete this? You won\'t be able to get it back</font>
+    </string>
+    <string name="msg_files_delete_unknown_error">Oops, something went wrong while deleting the file(s). Please try again.</string>
+    <string name="msg_error_sharing_files">Oops, something went wrong while sharing the files. Please try again.</string>
+    <string name="msg_files_trash_unknown_error">Oops, something went wrong while trashing the files. Please try again.</string>
+    <string name="msg_files_restore_unknown_error">Oops, something went wrong while restoring the files. Please try again.</string>
+    <string name="duration_under_2_min">Short (≤ 2 min)</string>
+    <string name="duration_under_5_min">Small (≤ 5 min)</string>
+    <string name="duration_under_10_min">Normal (≤ 10 min)</string>
+    <string name="duration_over_10_min">Long (10+ min)</string>
+    <string name="scr_audios_title">
+          Audio <b>Library</b>\n  <font size="10"> <sup><sup>Organize. Discover. Enjoy.</sup></sup> </font>
+    </string>
+    <string name="scr_video_folders_title"><b>Video</b> Folders<font size="10"> <sup><sup>\nTune into Your Collection.</sup></sup> </font></string>
+    <string name="scr_audio_folders_title"><b>Audio</b> Folders<font size="10"> <sup><sup>\nLights, Camera, Organized.</sup></sup> </font></string>
+    <string name="remove">Remove</string>
+    <string name="scr_members_liked_playlist_title">Liked<font size="10"> <sup><sup>\nOnly the Essentials.</sup></sup> </font></string>
+    <string name="playlists">Playlists</string>
+    <string name="scr_videos_title">
+          Video <b>Library</b>\n  <font size="10"> <sup><sup>Keep It Local. Keep It Yours.</sup></sup> </font>
+    </string>
+    <string name="allow">Allow</string>
+    <string name="scr_permission_title">Storage Permission</string>
+    <string name="scr_permission_desc">For the best experience with <b><i>Audiofy</i></b>, we need to access your device\'s files. This allows us to:
+        \n       • Seamlessly play your media
+        \n       • Optimize playback quality
+        \n       • Personalize app features
+        \nYour data <b>security</b> and <b>privacy</b> are our top priorities. Thank you for your support!
+    </string>
+    <string name="home">Home</string>
+    <string name="audios">Audios</string>
+    <string name="videos">Videos</string>
+    <string name="search_placeholder">Type here to search!!</string>
+    <string name="search">Search</string>
+    <string name="play">Play</string>
+    <string name="shuffle">Shuffle</string>
+
+</resources>

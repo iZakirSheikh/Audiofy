@@ -1,0 +1,143 @@
+/*
+ * Copyright 2025 Zakir Sheikh
+ *
+ * Created by Zakir Sheikh on 16-06-2025.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.zs.core.playback
+
+import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.content.Context
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
+import androidx.annotation.OptIn
+import androidx.core.net.toUri
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import androidx.media3.session.SessionResult
+import com.zs.core.db.playlists.Playlist
+import com.zs.core.store.models.Audio
+
+/**
+ * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
+ *
+ * @param context The application context.
+ * @return A new instance of [DefaultRenderersFactory], or `null` if an error occurs.
+ */
+@SuppressLint("UnsafeOptInUsageError")
+internal fun DynamicRendererFactory(context: Context): DefaultRenderersFactory? {
+    return runCatching() {
+        val codexClass =
+            Class.forName("com.zs.feature.codex.CodexKt") // Assuming the functionis in a Kotlin file named Codex.kt
+        val codexMethod = codexClass.getDeclaredMethod("Codex", Context::class.java)
+        codexMethod.invoke(
+            null,
+            context
+        ) as? DefaultRenderersFactory // Static method, so first argument is null
+    }.getOrNull()
+}
+
+
+/**
+ * Checks if the given URI is from a third-party source.
+ *
+ * This property evaluates whether the URI scheme is "content://" and the authority
+ * is not equal to [MediaStore.AUTHORITY]. If these conditions are met, it indicates
+ * that the URI is from a third-party source.
+ *
+ * @context uri The URI to be checked.
+ * @return `true` if the URI is from a third-party source, `false` otherwise.
+ */
+internal val Uri.isThirdPartyUri
+    get() = scheme == ContentResolver.SCHEME_CONTENT && authority != MediaStore.AUTHORITY
+
+/**
+ * Returns all the [MediaItem]s of [Player] in their natural order.
+ *
+ * @return A list of [MediaItem]s in the player's natural order.
+ */
+inline val Player.mediaItems get() = List(this.mediaItemCount, ::getMediaItemAt)
+
+/**
+ * returns the positions array from the [DefaultShuffleOrder]
+ *
+ * FixMe: Extracts array from player using reflection.
+ */
+internal val Player.orders: IntArray
+    @OptIn(UnstableApi::class)
+    get() {
+        require(this is ExoPlayer)
+        val f1 = this.javaClass.getDeclaredField("shuffleOrder")
+        f1.isAccessible = true
+        val order2 = f1.get(this)
+        require(order2 is DefaultShuffleOrder)
+        val f2 = order2.javaClass.getDeclaredField("shuffled")
+        f2.isAccessible = true
+        return f2.get(order2) as IntArray
+    }
+
+/**
+ * The queue property represents the list of media items in the player's queue.
+ * If shuffle mode is not enabled, the queue will contain the media items in their natural order.
+ * If shuffle mode is enabled, the queue will contain the media items in the order specified by the 'orders' list.
+ *
+ * @return The list of media items in the player's queue.
+ */
+val Player.queue get() = if (!shuffleModeEnabled) mediaItems else orders.map(::getMediaItemAt)
+
+/**
+ * A short-hand for creating a [SessionResult] with the given code and arguments.
+ *
+ * @param code The result code.
+ * @param args A lambda function to apply additional arguments to the [Bundle].
+ * @see [SessionResult]
+ */
+internal inline fun SessionResult(code: Int, args: Bundle.() -> Unit) =
+    SessionResult(code, Bundle().apply(args))
+
+/**
+ * Converts a [Playlist.Track] to a [MediaFile].
+ *
+ * This function takes a [Playlist.Track] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, title, subtitle, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Playlist.Track].
+ *
+ * @return A [MediaFile] representation of the [Playlist.Track].
+ */
+fun Playlist.Track.toMediaFile() = MediaFile(
+    Uri.parse(uri),
+    title = title,
+    subtitle = subtitle,
+    artwork?.toUri(),
+    mimeType
+)
+
+/**
+ * Converts an [Audio] object to a [MediaFile].
+ *
+ * This function takes an [Audio] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, name, artist, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Audio] object.
+ *
+ * @return A [MediaFile] representation of the [Audio] object.
+ */
+fun Audio.toMediaFile() =
+    MediaFile(uri, name, artist, artworkUri, mimeType)

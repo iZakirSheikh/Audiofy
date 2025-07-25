@@ -1,0 +1,123 @@
+name: Automated Release Workflow
+on:
+  push:
+    branches: # Change this to master once everything is setup.
+      - 'beta'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Configure Environment Variables
+        run: |
+          echo "DATE_TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "IAP_NO_ADS=$(echo ${{ secrets.IAP_NO_ADS }})" >> $GITHUB_ENV
+          echo "IAP_TAG_EDITOR_PRO=$(echo ${{ secrets.IAP_TAG_EDITOR_PRO }})" >> $GITHUB_ENV
+          echo "PLACEMENT_BANNER_1=$(echo ${{ secrets.PLACEMENT_BANNER_1 }})" >> $GITHUB_ENV
+          echo "PLACEMENT_BANNER_2=$(echo ${{ secrets.PLACEMENT_BANNER_2 }})" >> $GITHUB_ENV
+          echo "PLACEMENT_INTERSTITIAL=$(echo ${{ secrets.PLACEMENT_INTERSTITIAL }})" >> $GITHUB_ENV
+          echo "PLAY_CONSOLE_APP_RSA_KEY=$(echo ${{ secrets.PLAY_CONSOLE_APP_RSA_KEY }})" >> $GITHUB_ENV
+          echo "UNITY_APP_ID=$(echo ${{ secrets.UNITY_APP_ID }})" >> $GITHUB_ENV
+          echo "ADS_APP_ID=$(echo ${{ secrets.ADS_APP_ID }})" >> $GITHUB_ENV
+          echo "IAP_BUY_ME_COFFEE=$(echo ${{ secrets.IAP_BUY_ME_COFFEE }})" >> $GITHUB_ENV
+          echo "IAP_CODEX=$(echo ${{ secrets.IAP_CODEX }})" >> $GITHUB_ENV
+          echo "GIT_TAG=$(grep -E "versionName\s*=?\s*['\"]" "app/build.gradle.kts" | awk -F"['\"]" '{print $2}')" >> $GITHUB_ENV
+
+      - name: Verify Environment Variables
+        run: |
+          echo $UNITY_APP_ID | sed 's/./&‌/g'
+          echo $ADS_APP_ID | sed 's/./&‌/g'
+          echo $PLACEMENT_BANNER_1 | sed 's/./&‌/g'
+          echo $PLACEMENT_BANNER_2 | sed 's/./&‌/g'
+          echo $PLACEMENT_INTERSTITIAL | sed 's/./&‌/g'
+          echo $PLAY_CONSOLE_APP_RSA_KEY | sed 's/./&‌/g'
+          echo $IAP_NO_ADS | sed 's/./&‌/g'
+          echo $IAP_BUY_ME_COFFEE | sed 's/./&‌/g'
+          echo $IAP_CODEX | sed 's/./&‌/g'
+          echo $IAP_TAG_EDITOR_PRO | sed 's/./&‌/g'
+          echo $GIT_TAG | sed 's/./&‌/g'
+
+      - name: Set Up Java and Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: "17"
+          cache: gradle
+
+      - name: Build App
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease bundleRelease \
+            --parallel \
+            --configure-on-demand \
+            --no-daemon \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError"
+
+      - name: Determine Build Tools Version
+        shell: bash
+        run: |
+          BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
+          echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
+          echo Last build tool version is: $BUILD_TOOL_VERSION
+
+      - name: Signing APK
+        uses: r0adkll/sign-android-release@v1
+        id: signed_apk
+        with:
+          releaseDirectory: app/build/outputs/apk/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+
+      - name: Sign AAB
+        uses: r0adkll/sign-android-release@v1
+        id: signed_aab
+        with:
+          releaseDirectory: app/build/outputs/bundle/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+
+      # Uploading Signed AAB to internal track of PlayConsole
+      - name: Deploy to Play Store (Internal)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.prime.player
+          releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
+          track: internal
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.GIT_TAG }}
+          generate_release_notes: true
+          changesNotSentForReview: false
+          prerelease: true
+          files: |
+            ${{steps.signed_aab.outputs.signedReleaseFile}}
+            ${{steps.signed_apk.outputs.signedReleaseFile}}
+
+
+
+
