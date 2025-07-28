@@ -85,7 +85,7 @@ object FilterDefaults {
                 if (value.isEmpty()) return null
                 val (first, second) = value.split(delimiter, limit = 2)
                 val order = action(second)
-                return (first == "0") to order
+                return (first == "1") to order
             }
 
             override fun save(value: Filter?): String {

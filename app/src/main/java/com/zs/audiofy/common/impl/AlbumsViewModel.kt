@@ -66,7 +66,7 @@ class AlbumsViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Album>(
     private val Album.firstTitleChar
         inline get() = title.uppercase(Locale.ROOT)[0].toString()
 
-    override val title: CharSequence = getText(R.string.albums)
+    override val title: CharSequence = getText(R.string.scr_albums_title)
     override val orders: List<Action> = listOf(ORDER_BY_NONE, ORDER_BY_TITLE, ORDER_BY_ARTIST)
 
     private val Action.toMediaStoreOrder

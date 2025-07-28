@@ -71,7 +71,7 @@ class GenresViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Genre>(
             else -> MediaStore.Audio.Genres.DEFAULT_SORT_ORDER
         }
 
-    override val title: CharSequence = getText(R.string.genres)
+    override val title: CharSequence = getText(R.string.scr_genres_title)
     override val orders: List<Action> = listOf(ORDER_BY_NONE, ORDER_BY_TITLE)
 
     override suspend fun fetch(filter: Filter, query: String?): Mapped<Genre> {

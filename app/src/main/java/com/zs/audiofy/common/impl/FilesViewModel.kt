@@ -160,7 +160,7 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
         remote.setRepeatMode(Remote.REPEAT_MODE_ALL)
         if (index != -1)
             remote.seekTo(index)
-        showPlatformToast(message = "Playing")
+        showPlatformToast(message = R.string.playing)
     }
 
     fun addToQueue(items: List<MediaFile>){

@@ -66,7 +66,7 @@ class ArtistsViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Artist
         preferences[filterKey] ?: (true to ORDER_BY_TITLE)
     )
 
-    override val title: CharSequence = getText(R.string.artists)
+    override val title: CharSequence = getText(R.string.scr_artists_title)
     override val orders: List<Action> = listOf(ORDER_BY_NONE, ORDER_BY_TITLE)
 
     private val Action.toMediaStoreOrder
