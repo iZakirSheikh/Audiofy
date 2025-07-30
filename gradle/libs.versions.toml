@@ -44,6 +44,8 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", vers
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.3" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
+androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
+
 
 # Toolkit
 toolkit-foundation = { module = "com.github.prime-zs.toolkit:foundation", version.ref = "toolkit" }

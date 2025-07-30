@@ -102,6 +102,7 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.toolkit.theme)
     implementation(libs.toolkit.foundation)
+    implementation(libs.androidx.constraint.layout.compose)
     // Play
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review.ktx)

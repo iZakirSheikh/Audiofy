@@ -19,15 +19,21 @@
 package com.zs.audiofy.console
 
 import com.zs.audiofy.common.Route
+import com.zs.core.playback.NowPlaying
+import kotlinx.coroutines.flow.Flow
 
 object RouteConsole: Route {
 
-    const val SHARED_ELEMENT_PLAYING_BARS = "shared_element_playing_bars"
-    const val SHARED_ELEMENT_CONTROLS = "shared_element_controls"
-    const val SHARED_ELEMENT_BACKGROUND = "shared_element_background"
-    const val SHARED_ELEMENT_ARTWORK = "shared_element_artwork"
-    const val SHARED_ELEMENT_TITLE = "shared_element_title"
-    const val SHARED_ELEMENT_SUBTITLE = "shared_element_subtitle"
+    const val SHARED_ELEMENT_PLAYING_BARS = "playing_bars"
+    const val SHARED_ELEMENT_CONTROLS = "controls"
+    const val SHARED_ELEMENT_BACKGROUND = "background"
+    const val SHARED_ELEMENT_ARTWORK = "artwork"
+    const val SHARED_ELEMENT_TITLE = "title"
+    const val SHARED_ELEMENT_SUBTITLE = "subtitle"
 }
 
-interface ConsoleViewState
+interface ConsoleViewState {
+
+    val state: Flow<NowPlaying?>
+
+}

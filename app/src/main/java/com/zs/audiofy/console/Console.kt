@@ -16,11 +16,41 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.zs.audiofy.console
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.zs.compose.theme.LocalWindowSize
+import com.zs.compose.theme.Surface
+import com.zs.compose.theme.sharedBounds
+
+@Composable
+private fun Controls(modifier: Modifier = Modifier) {
+
+}
 
 @Composable
 fun Console(viewState: ConsoleViewState) {
-
+    val clazz = LocalWindowSize.current
+    val x by viewState.state.collectAsState(null)
+    val state = x ?: return
+    Surface (modifier = Modifier.fillMaxSize().sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND), color = Color.Blue) {
+//        AsyncImage(
+//            model = state.artwork,
+//            contentDescription = null,
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .blur(95.dp)
+//                .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
+//                .visualEffect(ImageBrush.NoiseBrush, overlay = true),
+//            contentScale = ContentScale.Crop
+//        )
+    }
 }

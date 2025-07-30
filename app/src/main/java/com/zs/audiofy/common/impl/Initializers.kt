@@ -142,4 +142,5 @@ private val KoinAppModules = module {
     viewModelOf(::VideosViewModel)
     viewModelOf(::MembersViewModel)
     viewModelOf(::PropertiesViewModel)
+    viewModelOf(::ConsoleViewModel)
 }

@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.zs.audiofy.widget
+package com.zs.audiofy.console.widget
 
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -54,7 +54,6 @@ import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.background
-import com.zs.compose.foundation.shadow
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem

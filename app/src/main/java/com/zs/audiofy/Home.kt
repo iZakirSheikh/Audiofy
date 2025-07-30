@@ -95,6 +95,7 @@ import com.zs.audiofy.common.domain
 import com.zs.audiofy.common.impl.AlbumsViewModel
 import com.zs.audiofy.common.impl.ArtistsViewModel
 import com.zs.audiofy.common.impl.AudiosViewModel
+import com.zs.audiofy.common.impl.ConsoleViewModel
 import com.zs.audiofy.common.impl.FoldersViewModel
 import com.zs.audiofy.common.impl.GenresViewModel
 import com.zs.audiofy.common.impl.LibraryViewModel
@@ -104,7 +105,9 @@ import com.zs.audiofy.common.impl.PropertiesViewModel
 import com.zs.audiofy.common.impl.SettingsViewModel
 import com.zs.audiofy.common.impl.VideosViewModel
 import com.zs.audiofy.common.shapes.EndConcaveShape
+import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.console.widget.MiniPlayer
 import com.zs.audiofy.folders.Folders
 import com.zs.audiofy.folders.RouteFolders
 import com.zs.audiofy.library.Library
@@ -119,7 +122,6 @@ import com.zs.audiofy.settings.RouteSettings
 import com.zs.audiofy.settings.Settings
 import com.zs.audiofy.videos.RouteVideos
 import com.zs.audiofy.videos.Videos
-import com.zs.audiofy.widget.MiniPlayer
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.foundation.thenIf
@@ -372,9 +374,17 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Members(viewState)
     }
     // Properties
-    dialog(RouteProperties.route, dialogProperties = DialogProperties(usePlatformDefaultWidth = false)){
+    dialog(
+        RouteProperties.route,
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         val viewState = koinViewModel<PropertiesViewModel>()
         Properties(viewState)
+    }
+    // Console
+    composable(RouteConsole) {
+        val viewState = koinViewModel<ConsoleViewModel>()
+        Console(viewState)
     }
 }
 

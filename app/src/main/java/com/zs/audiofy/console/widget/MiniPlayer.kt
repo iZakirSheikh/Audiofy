@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.zs.audiofy.widget
+package com.zs.audiofy.console.widget
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -59,6 +59,7 @@ import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.scale
 import com.zs.audiofy.common.compose.shine
+import com.zs.audiofy.common.domain
 import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.foreground
@@ -104,12 +105,15 @@ object MiniPlayer {
     operator fun invoke(surface: HazeState, modifier: Modifier = Modifier) {
         val facade = LocalSystemFacade.current
         val remote = (facade as? MainActivity)?.relay ?: return Spacer(modifier)
-        val current by remote.state.collectAsState(null)
-        val state = current ?: return Spacer(modifier)
-        // State to track whether the widget is expanded or not.
-        var expanded by remember { mutableStateOf(false) }
         // Get the navigation controller.
         val navController = LocalNavController.current
+        if (navController.currentDestination?.domain == RouteConsole.domain) return Spacer(modifier)
+        val current by remote.state.collectAsState(null)
+        val state = current ?: return Spacer(modifier)
+
+        // State to track whether the widget is expanded or not.
+        var expanded by remember { mutableStateOf(false) }
+
         // Handler to collapse the widget when back is pressed.
         val onDismissRequest = { expanded = false }
         BackHandler(expanded) { onDismissRequest() }
@@ -121,7 +125,7 @@ object MiniPlayer {
                     ACTION_PLAY_TOGGLE -> remote.togglePlay()
                     ACTION_SKIP_TO_NEXT -> remote.skipToNext()
                     ACTION_SKIP_TO_PREVIOUS -> remote.skipToPrevious()
-                    ACTION_OPEN_CONSOLE -> facade.showToast("Console not implemented!")
+                    ACTION_OPEN_CONSOLE -> navController.navigate(RouteConsole())
                     else -> remote.seekTo(value)
                 }
             }
