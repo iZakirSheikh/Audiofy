@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.console
 
+import android.net.Uri
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.NowPlaying
 import kotlinx.coroutines.flow.Flow
@@ -35,5 +36,15 @@ object RouteConsole: Route {
 interface ConsoleViewState {
 
     val state: Flow<NowPlaying?>
+
+    val isLiked: Boolean
+
+    fun skipToNext()
+    fun skipToPrev()
+    fun togglePlay()
+    fun seekTo(pct: Float)
+    fun shuffle(enable: Boolean)
+    fun cycleRepeatMode()
+    fun addToLiked(uri: Uri)
 
 }

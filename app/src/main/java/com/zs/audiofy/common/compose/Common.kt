@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -94,7 +95,7 @@ fun Modifier.marque(iterations: Int) =
  * to the standard Material Design icon size (24.dp) and allowing for easy scaling.
  */
 inline fun Modifier.lottie(scale: Float = 1f) = this
-    .size(24.dp)
+    .requiredSize(24.dp)
     .then(Modifier.scale(scale))
 
 /**

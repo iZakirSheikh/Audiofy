@@ -27,15 +27,16 @@ import androidx.media3.common.Player
 class NowPlaying(
     val title: String?,
     val subtitle: String?,
-    val artwork: Uri?,
-    val speed: Float,
-    val duration: Long,
-    val position: Long,
-    val favourite: Boolean,
-    val playWhenReady: Boolean,
-    val mimeType: String?,
-    val state: Int,
-    val repeatMode: Int,
+    val artwork: Uri? = null,
+    val speed: Float = 1.0f,
+    val shuffle: Boolean = false,
+    val duration: Long = Remote.TIME_UNSET,
+    val position: Long = Remote.TIME_UNSET,
+    val favourite: Boolean = false,
+    val playWhenReady: Boolean = false,
+    val mimeType: String? = null,
+    val state: Int = Player.STATE_IDLE,
+    val repeatMode: Int = Player.REPEAT_MODE_ALL,
     val error: String? = null,
 ) {
     // This time when this was generated.
@@ -50,6 +51,7 @@ class NowPlaying(
         other as NowPlaying
 
         if (speed != other.speed) return false
+        if (shuffle != other.shuffle) return false
         if (duration != other.duration) return false
         if (position != other.position) return false
         if (favourite != other.favourite) return false
@@ -73,6 +75,7 @@ class NowPlaying(
         result = 31 * result + favourite.hashCode()
         result = 31 * result + playWhenReady.hashCode()
         result = 31 * result + title.hashCode()
+        result = 31 * result + shuffle.hashCode()
         result = 31 * result + subtitle.hashCode()
         result = 31 * result + (artwork?.hashCode() ?: 0)
         result = 31 * result + (mimeType?.hashCode() ?: 0)
@@ -84,6 +87,6 @@ class NowPlaying(
     }
 
     override fun toString(): String {
-        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playWhenReady=$playWhenReady, mimeType=$mimeType, timeStamp=$timeStamp, state=$state, repeatMode=$repeatMode, error=$error)"
+        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playWhenReady=$playWhenReady, mimeType=$mimeType, timeStamp=$timeStamp, state=$state, repeatMode=$repeatMode, error=$error shuffle=$shuffle)"
     }
 }

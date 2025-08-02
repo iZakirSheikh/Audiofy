@@ -48,6 +48,7 @@ private val MediaBrowser.state: NowPlaying?
             current.subtitle?.toString(),
             current.artworkUri,
             this.playbackParameters.speed,
+            this.shuffleModeEnabled,
             this.contentDuration,
             this.contentPosition,
             false,
@@ -244,5 +245,17 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     override suspend fun getCurrentMediaItemIndex(): Int {
         val browser = fBrowser.await()
         return browser.currentMediaItemIndex
+    }
+
+    override suspend fun cycleRepeatMode(): Int {
+        val browser = fBrowser.await()
+        val current = browser.repeatMode
+        val new = when(current){
+            Remote.REPEAT_MODE_OFF -> Remote.REPEAT_MODE_ONE
+            Remote.REPEAT_MODE_ONE -> Remote.REPEAT_MODE_ALL
+            else -> Remote.REPEAT_MODE_OFF
+        }
+        browser.repeatMode = new
+        return new
     }
 }

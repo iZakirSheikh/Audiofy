@@ -20,37 +20,80 @@
 
 package com.zs.audiofy.console
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.DpRect
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.Surface
+import com.zs.compose.theme.adaptive.TwoPane
 import com.zs.compose.theme.sharedBounds
+import com.zs.compose.theme.sharedElement
+import com.zs.core.playback.NowPlaying
 
-@Composable
-private fun Controls(modifier: Modifier = Modifier) {
+// Represents some of the actions emitted by the widget.
+// These are in float, allowing us to utilize positive values (0 to 1)
+// to represent progress, while negative values are used for standard actions.
+private const val EVENT_SHOW_NONE = -1f
+private const val EVENT_SHOW_PROPERTIES = -2f
+private const val EVENT_SHOW_SPEED_DIALOG = -3f
+private const val EVENT_SHOW_SLEEP_DIALOG = -4f
 
-}
+private const val TAG = "Console"
+
+// ACTIONS
+
+
+/**
+ * Extension property for [WindowInsets] that provides a [DpRect] representation of the insets,
+ * ensuring layout compatibility across different screen densities and layout directions.
+ *
+ * @return A [DpRect] containing the left, top, right, and bottom insets in density-independent pixels (dp).
+ */
+private val WindowInsets.asDpRect: DpRect
+    @Composable
+    @ReadOnlyComposable
+    get() {
+        val ld =
+            LocalLayoutDirection.current  // Get current layout direction for correct inset handling
+        val density = LocalDensity.current    // Get current screen density for conversion to dp
+        with(density) {
+            // Convert raw insets to dp values, considering layout direction
+            return DpRect(
+                left = getLeft(density, ld).toDp(),
+                right = getRight(this, ld).toDp(),
+                top = getTop(this).toDp(),
+                bottom = getBottom(this).toDp()
+            )
+        }
+    }
 
 @Composable
 fun Console(viewState: ConsoleViewState) {
     val clazz = LocalWindowSize.current
-    val x by viewState.state.collectAsState(null)
-    val state = x ?: return
-    Surface (modifier = Modifier.fillMaxSize().sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND), color = Color.Blue) {
-//        AsyncImage(
-//            model = state.artwork,
-//            contentDescription = null,
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .blur(95.dp)
-//                .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
-//                .visualEffect(ImageBrush.NoiseBrush, overlay = true),
-//            contentScale = ContentScale.Crop
-//        )
-    }
+    val secondary by remember { mutableFloatStateOf(EVENT_SHOW_NONE) }
+    val insets = WindowInsets.systemBars.asDpRect
+    val constrants = remember { Constraints(clazz, insets, false, false) }
+    Log.d(TAG, "Console: console")
+    Player(
+        viewState,
+        constrants,
+        { false },
+        Modifier
+            .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
+            .fillMaxSize()
+    )
 }

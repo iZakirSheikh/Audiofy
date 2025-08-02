@@ -138,4 +138,12 @@ interface Remote {
      * Returns the index of the current media item in the playlist, or [Remote.INDEX_UNSET] if the playlist is empty or no item is currently playing.
      */
     suspend fun getCurrentMediaItemIndex(): Int
+
+    /**
+     * Cycles through the available repeat modes: [Remote.REPEAT_MODE_OFF], [Remote.REPEAT_MODE_ONE],
+     * and [Remote.REPEAT_MODE_ALL].
+     *
+     * @return The new repeat mode after cycling.
+     */
+    suspend fun cycleRepeatMode(): Int
 }

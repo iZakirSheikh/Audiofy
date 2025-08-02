@@ -1,8 +1,8 @@
 [versions]
-agp = "8.11.1"
+agp = "8.12.0"
 kotlin = "2.2.0"
-compose = "1.9.0-beta03"
-media3 = "1.7.1"
+compose = "1.9.0-rc01"
+media3 = "1.8.0"
 toolkit = "3.7.0-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
@@ -29,7 +29,7 @@ androidx-activity = { module = "androidx.activity:activity", version = "1.10.1" 
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.2" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.9" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
@@ -45,6 +45,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.3" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
+androidx-animation-compose = {module= "androidx.compose.animation:animation-graphics", version.ref = "compose"}
 
 
 # Toolkit
@@ -83,12 +84,13 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 mp3agic = { module = "com.mpatric:mp3agic", version = "0.9.1" }
-nextlib = { module = "io.github.anilbeesetti:nextlib-media3ext", version = "1.7.1-0.9.0" }
+nextlib = { module = "io.github.anilbeesetti:nextlib-media3ext", version = "1.8.0-0.9.0" }
+
 
 [bundles]
 icons = ["androidx-material-icons-core", "androidx-material-icons-extended"]
 coil = ["coil-compose"]
-compose_ui = ["androidx-ui-graphics", "androidx-ui", "toolkit-theme", "toolkit-foundation", ]
+compose_ui = ["androidx-ui-graphics", "androidx-ui", "toolkit-theme", "toolkit-foundation", "androidx-animation-compose"]
 compose_ui_tooling = ["androidx-ui-tooling", "androidx-ui-tooling-preview"]
 room = ["room-runtime", "room-ktx"]
 media3 = ["androidx-media3-exoplayer", "androidx-media3-session"]

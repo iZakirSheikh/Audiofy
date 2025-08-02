@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.common.compose
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
@@ -27,6 +28,9 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -48,6 +52,14 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ChainStyle
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintSetScope
+import androidx.constraintlayout.compose.HorizontalChainReference
+import androidx.constraintlayout.compose.HorizontalChainScope
+import androidx.constraintlayout.compose.VerticalChainReference
+import androidx.constraintlayout.compose.VerticalChainScope
+import androidx.constraintlayout.compose.Visibility
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -171,7 +183,7 @@ inline fun LottieAnimatedButton(
     tint: Color = Color.Unspecified,
     animationSpec: AnimationSpec<Float>? = null,
 ) {
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, modifier = modifier) {
         Icon(
             painter = lottieAnimationPainter(
                 id = id,
@@ -181,9 +193,7 @@ inline fun LottieAnimatedButton(
             ),
             tint = tint,
             contentDescription = contentDescription,
-            modifier = modifier
-                .size(24.dp)
-                .scale(scale),
+            modifier = Modifier.lottie(scale),
         )
     }
 }
@@ -423,4 +433,64 @@ val Colors.lightShadowColor
 val Colors.darkShadowColor
     inline get() = if (isLight) Color(0xFFAEAEC0).copy(0.7f) else Color.Black.copy(
         0.6f
+    )
+
+/** A shorthand method to create a horizontal chain.*/
+fun ConstraintSetScope.horizontal(
+    vararg elements: ConstrainedLayoutReference,
+    chainStyle: ChainStyle = ChainStyle.Packed,
+    alignBy: ConstrainedLayoutReference? = null,
+    constrainBlock: HorizontalChainScope.() -> Unit
+) {
+    val chain = createHorizontalChain(*elements, chainStyle = chainStyle)
+    constrain(chain, constrainBlock)
+    // align all with first
+    val first = alignBy ?: elements.first()
+    for (element in elements){
+        if (element == first) continue
+        constrain(element){
+            top.linkTo(first.top)
+            bottom.linkTo(first.bottom)
+        }
+    }
+}
+
+/** @see horizontal */
+fun ConstraintSetScope.vertical(
+    vararg elements: ConstrainedLayoutReference,
+    chainStyle: ChainStyle = ChainStyle.Packed,
+    constrainBlock: VerticalChainScope.() -> Unit
+) {
+    val chain = createVerticalChain(*elements, chainStyle = chainStyle)
+    constrain(chain, constrainBlock)
+    // align all with first
+    val first = elements.first()
+    for (element in elements){
+        if (element == first) continue
+        constrain(element){
+            start.linkTo(first.start)
+            end.linkTo(first.end)
+        }
+    }
+}
+
+
+fun ConstraintSetScope.hide(
+    vararg elements: ConstrainedLayoutReference,
+) {
+    for (element in elements)
+        constrain(element) {
+            visibility = Visibility.Gone
+            // TODO - Position these so as to get a nice animation when shown again.
+        }
+}
+
+/**
+ * @see androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+ */
+@Composable
+@Deprecated("Find better solutions.")
+inline fun rememberAnimatedVectorPainter(@DrawableRes id: Int, atEnd: Boolean) =
+    androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
+        animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
