@@ -26,6 +26,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import com.zs.core.db.playlists.Playlists
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 
 /**
@@ -77,7 +78,7 @@ interface Remote {
         operator fun invoke(context: Context): Remote = RemoteImpl(context)
     }
 
-    val state: Flow<NowPlaying?>
+    val state: StateFlow<NowPlaying?>
     val queue: Flow<List<MediaFile>>
 
     suspend fun setMediaFiles(values: List<MediaFile>): Int

@@ -197,7 +197,7 @@ fun Player(
                 )
 
                 // Artwork
-                val current by viewState.state.collectAsState(null)
+                val current by viewState.state.collectAsState()
                 val state = current ?: NonePlaying
                 Artwork(
                     model = state.artwork,

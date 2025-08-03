@@ -21,16 +21,25 @@ package com.zs.core.playback
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
-import com.zs.core.playback.mediaUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
+
+private const val TAG = "RemoteImpl"
 
 // TODO: currently a quickfix requirement. find better alternative.
 private fun Context.browser(listener: MediaBrowser.Listener) =
@@ -39,25 +48,6 @@ private fun Context.browser(listener: MediaBrowser.Listener) =
         .setListener(listener)
         .buildAsync()
 
-private val MediaBrowser.state: NowPlaying?
-    get() {
-        val current = currentMediaItem
-        if (current == null) return null
-        return NowPlaying(
-            current.title?.toString(),
-            current.subtitle?.toString(),
-            current.artworkUri,
-            this.playbackParameters.speed,
-            this.shuffleModeEnabled,
-            this.contentDuration,
-            this.contentPosition,
-            false,
-            this.playWhenReady,
-            current.mimeType,
-            this.playbackState,
-            this.repeatMode,
-        )
-    }
 
 /**
  * Player events that trigger state change.
@@ -89,25 +79,49 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         }
 
 
-    override val state: Flow<NowPlaying?> = callbackFlow {
+    override val state: StateFlow<NowPlaying?> = callbackFlow {
         // init browser
         val browser = fBrowser.await()
         val observer = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
                 if (!events.containsAny(*UPDATE_EVENTS))
                     return
-                trySend(browser.state)
+                trySend(browser)
             }
         }
-
         // register
-        send(browser.state)
+        send(browser)
         browser.addListener(observer)
         // un-register on cancel
         awaitClose {
+            Log.d(TAG, "state: un-registering")
             browser.removeListener(observer)
         }
-    }.debounceAfterFirst(100)
+    }
+        .debounceAfterFirst(100)
+        .map { provider ->
+            withContext(Dispatchers.Main) {
+                val current = provider.currentMediaItem
+                if (current == null) return@withContext null
+                //return null
+                NowPlaying(
+                    current.title?.toString(),
+                    current.subtitle?.toString(),
+                    current.artworkUri,
+                    provider.playbackParameters.speed,
+                    provider.shuffleModeEnabled,
+                    provider.contentDuration,
+                    provider.contentPosition,
+                    false,
+                    provider.playWhenReady,
+                    current.mimeType,
+                    provider.playbackState,
+                    provider.repeatMode,
+                )
+            }
+        }
+        // StateIn - This simplifies the callback flow, requiring only a single subscription and preserving state for up to 5 seconds.
+        .stateIn(GlobalScope, SharingStarted.WhileSubscribed(5_000), null)
 
 
     override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
@@ -250,7 +264,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     override suspend fun cycleRepeatMode(): Int {
         val browser = fBrowser.await()
         val current = browser.repeatMode
-        val new = when(current){
+        val new = when (current) {
             Remote.REPEAT_MODE_OFF -> Remote.REPEAT_MODE_ONE
             Remote.REPEAT_MODE_ONE -> Remote.REPEAT_MODE_ALL
             else -> Remote.REPEAT_MODE_OFF

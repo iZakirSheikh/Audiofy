@@ -22,6 +22,7 @@ import android.net.Uri
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.NowPlaying
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 object RouteConsole: Route {
 
@@ -35,7 +36,7 @@ object RouteConsole: Route {
 
 interface ConsoleViewState {
 
-    val state: Flow<NowPlaying?>
+    val state: StateFlow<NowPlaying?>
 
     val isLiked: Boolean
 

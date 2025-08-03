@@ -23,7 +23,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableLongState
@@ -216,7 +215,7 @@ val NowPlaying.chronometer: Chronometer
     get() {
         // Create and remember a Chronometer instance, initialized with the current position.
         // This ensures the chronometer state persists across recompositions.
-        val chronometer = remember { Chronometer(0L) }
+        val chronometer = remember { Chronometer(if (position == Remote.TIME_UNSET) 0 else position) }
 
         // Restart this effect whenever the NowPlaying object changes.
         LaunchedEffect(this) {

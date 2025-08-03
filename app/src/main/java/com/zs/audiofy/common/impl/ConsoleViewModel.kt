@@ -6,10 +6,11 @@ import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 
 class ConsoleViewModel(val remote: Remote, playlists: Playlists): KoinViewModel(), ConsoleViewState {
-    override val state: Flow<NowPlaying?> = remote.state
+    override val state: StateFlow<NowPlaying?> = remote.state
 
     override val isLiked: Boolean get() = false
 

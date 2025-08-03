@@ -108,7 +108,7 @@ object MiniPlayer {
         // Get the navigation controller.
         val navController = LocalNavController.current
         if (navController.currentDestination?.domain == RouteConsole.domain) return Spacer(modifier)
-        val current by remote.state.collectAsState(null)
+        val current by remote.state.collectAsState()
         val state = current ?: return Spacer(modifier)
 
         // State to track whether the widget is expanded or not.
