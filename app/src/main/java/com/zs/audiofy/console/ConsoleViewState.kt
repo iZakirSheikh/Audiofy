@@ -37,7 +37,6 @@ object RouteConsole: Route {
 interface ConsoleViewState {
 
     val state: StateFlow<NowPlaying?>
-
     val isLiked: Boolean
 
     fun skipToNext()

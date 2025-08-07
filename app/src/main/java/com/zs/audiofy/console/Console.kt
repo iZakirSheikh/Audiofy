@@ -30,6 +30,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,56 +45,54 @@ import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.core.playback.NowPlaying
 
-// Represents some of the actions emitted by the widget.
-// These are in float, allowing us to utilize positive values (0 to 1)
-// to represent progress, while negative values are used for standard actions.
-private const val EVENT_SHOW_NONE = -1f
-private const val EVENT_SHOW_PROPERTIES = -2f
-private const val EVENT_SHOW_SPEED_DIALOG = -3f
-private const val EVENT_SHOW_SLEEP_DIALOG = -4f
 
-private const val TAG = "Console"
+object Console {
+    private const val TAG = "Console"
 
-// ACTIONS
+    // Layout IDs
+    const val ID_BTN_COLLAPSE = "_btn__collapse"
+    const val ID_ARTWORK = "_artwork"
+    const val ID_TITLE = "_title"
+    const val ID_SUBTITLE = "_subtitle"
+    const val ID_POSITION = "_position"
+    const val ID_SHUFFLE = "_shuffle"
+    const val ID_BTN_REPEAT_MODE = "_btn_repeat_mode"
+    const val ID_BTN_SKIP_PREVIOUS = "_btn_skip_previous"
+    const val ID_BTN_PLAY_PAUSE = "_play_pause"
+    const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
+    const val ID_SEEK_BAR = "_seek_bar"
+    const val ID_VIDEO_SURFACE = "_video_surface"
+    const val ID_MESSAGE = "_message"
+    const val ID_BACKGROUND = "_background"
+    const val ID_SCRIM = "_scrim"
+    const val ID_BTN_RESIZE_MODE = "_resize_mode"
+    const val ID_BTN_ROTATION_LOCK = "_rotation_lock"
+    const val ID_BTN_QUEUE = "_queue"
+    const val ID_BTN_SLEEP_TIMER = "_sleep_timer"
+    const val ID_BTN_SPEED = "_speed"
+    const val ID_BTN_LIKED = "_liked"
+    const val ID_BTN_MORE = "_more"
 
+    // Actions
+    const val ACTION_COLLAPSE = 0
+    const val ACTION_TOGGLE_ROTATION_LOCK = 1
+    const val ACTION_BACK_PRESS = 2
 
-/**
- * Extension property for [WindowInsets] that provides a [DpRect] representation of the insets,
- * ensuring layout compatibility across different screen densities and layout directions.
- *
- * @return A [DpRect] containing the left, top, right, and bottom insets in density-independent pixels (dp).
- */
-private val WindowInsets.asDpRect: DpRect
+    // Ui Actions
+    const val ACTION_SHOW_QUEUE = 3
+    const val ACTION_SHOW_SLEEP_CONTROLLER = 4
+    const val ACTION_SHOW_MEDIA_PROPERTIES = 5
+    const val ACTION_SHOW_SPEED_CONTROLLER = 6
+    private const val ACTION_SHOW_NONE = 7
+
+    // Ui Style
+    const val PLAY_BTN_STYLE_SIMPLE = 0
+
     @Composable
-    @ReadOnlyComposable
-    get() {
-        val ld =
-            LocalLayoutDirection.current  // Get current layout direction for correct inset handling
-        val density = LocalDensity.current    // Get current screen density for conversion to dp
-        with(density) {
-            // Convert raw insets to dp values, considering layout direction
-            return DpRect(
-                left = getLeft(density, ld).toDp(),
-                right = getRight(this, ld).toDp(),
-                top = getTop(this).toDp(),
-                bottom = getBottom(this).toDp()
-            )
-        }
+    operator fun invoke(viewState: ConsoleViewState) {
+        val clazz = LocalWindowSize.current
+        val detailsOf by remember { mutableIntStateOf(ACTION_SHOW_NONE) }
+        val insets = WindowInsets.systemBars
+        PlayerView(viewState, insets, { false })
     }
-
-@Composable
-fun Console(viewState: ConsoleViewState) {
-    val clazz = LocalWindowSize.current
-    val secondary by remember { mutableFloatStateOf(EVENT_SHOW_NONE) }
-    val insets = WindowInsets.systemBars.asDpRect
-    val constrants = remember { Constraints(clazz, insets, false, false) }
-    Log.d(TAG, "Console: console")
-    Player(
-        viewState,
-        constrants,
-        { false },
-        Modifier
-            .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
-            .fillMaxSize()
-    )
 }
