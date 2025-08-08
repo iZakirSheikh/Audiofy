@@ -78,14 +78,14 @@ private fun ApplicationDefaultConfig.init() {
 }
 
 android {
-    compileSdk = 35
+    compileSdk = 36
     namespace = "com.prime.media"
     defaultConfig {
         applicationId = "com.prime.player"
         minSdk = 21
-        targetSdk = 35
-        versionCode = 208
-        versionName = "3.8.6"
+        targetSdk = 36
+        versionCode = 209
+        versionName = "3.8.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.

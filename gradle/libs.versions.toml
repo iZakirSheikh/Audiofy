@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0"
+agp = "8.12.0"
 kotlin = "2.2.0"
 compose = "1.8.3"
 media3 = "1.6.1"
@@ -14,8 +14,8 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-google-service = { id = "com.google.gms.google-services", version = "4.4.2" }
-crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.4" }
+google-service = { id = "com.google.gms.google-services", version = "4.4.3" }
+crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 
@@ -40,7 +40,7 @@ androidx-constraint-layout-compose = { module = "androidx.constraintlayout:const
 material_view = { module = "com.google.android.material:material", version = "1.12.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.1" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version = "1.10.1" }
 androidx-annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version = "1.9.1" }

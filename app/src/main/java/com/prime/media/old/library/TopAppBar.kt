@@ -210,6 +210,13 @@ private inline fun Actions() {
     // Support
     val ctx = LocalContext.current
     val navController = LocalNavController.current
+    // Settings
+    IconButton(
+        imageVector = Icons.Outlined.Settings,
+        onClick = { navController.navigate(RouteSettings()) },
+        modifier = Modifier,
+        tint = contentColor
+    )
     // Just return if the app is free version app.
     val provider = LocalSystemFacade.current
     if (provider.isAdFreeVersion)
@@ -240,11 +247,5 @@ private inline fun Actions() {
             .pulsate(color, animationSpec = DefaultRepeatableSpec)),
     )
 
-    // Settings
-    IconButton(
-        imageVector = Icons.Outlined.Settings,
-        onClick = { navController.navigate(RouteSettings()) },
-        modifier = Modifier,
-        tint = contentColor
-    )
+
 }

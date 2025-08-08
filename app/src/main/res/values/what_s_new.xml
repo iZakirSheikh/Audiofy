@@ -3,6 +3,7 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.0)</b>
         <font color='grey'>
+            \n - Resolved an issue where the settings icon was not visible in the paid version of the app.
             \n - Made subtle yet meaningful UI improvements.
             \n - Introduced a user-friendly swipe gesture to seamlessly adjust volume &amp; brightness, offering an intuitive and efficient control experience.
             \n - Positioned the controller lock feature at a more accessible and convenient location
