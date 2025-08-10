@@ -23,6 +23,7 @@ package com.zs.audiofy.console
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.shape.CircleShape
@@ -55,10 +56,12 @@ import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter
+import com.zs.audiofy.common.compose.shine
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
+import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
@@ -71,20 +74,27 @@ private const val TAG = "PlayerView"
 private val NonePlaying = NowPlaying(null, null)
 
 /**
- * Represents the PlayerView in the console.
- * @param onNewAction A callback function invoked when a standard action from the [Console] is triggered. It returns `true` if the action is handled, `false` otherwise.
+ * Displays the [PlayerView] within the console interface.
+ *
+ * @param background The visual style of the console’s background.
+ *                   For example, use [Console.STYLE_BG_SIMPLE] for a minimal appearance.
+ * @param onNewAction Callback invoked when the user performs a standard action in the [Console].
+ *                    Return `true` to indicate that the action has been handled,
+ *                    or `false` to allow further processing.
  */
 @Composable
 fun PlayerView(
     viewState: ConsoleViewState,
+    background: Int,
     insets: WindowInsets,
     onNewAction: (code: Int) -> Boolean,
     modifier: Modifier = Modifier
 ) {
+    // collect the state.
     val _state by viewState.state.collectAsState()
     val state = _state ?: NonePlaying
+    // calculate the new constraints
     val clazz = LocalWindowSize.current
-    // calculate constraints
     val ldr = LocalLayoutDirection.current
     val density = LocalDensity.current
     val constraints = remember(clazz, insets) {
@@ -99,11 +109,11 @@ fun PlayerView(
         }
         calculateConstraintSet(clazz, dpInsets, false, false)
     }
-    //
+    // Build The layout
     ConstraintLayout(
         constraintSet = constraints.value,
         modifier = modifier,
-        animateChangesSpec = AppTheme.motionScheme.slowSpatialSpec(),
+        animateChangesSpec = AppTheme.motionScheme.defaultEffectsSpec(),
         content = {
             // Background
             Spacer(
@@ -111,24 +121,24 @@ fun PlayerView(
                     .background(AppTheme.colors.background(1.dp))
                     .layoutId(Console.ID_BACKGROUND)
             )
+            val contentColor = LocalContentColor.current
 
-            val contentColor = AppTheme.colors.onBackground
             // Collapse
             IconButton(
                 icon = Icons.Outlined.ExpandMore,
                 onClick = { },
                 modifier = Modifier
+                    .border(AppTheme.colors.shine, CircleShape)
                     .background(AppTheme.colors.background(3.dp), shape = CircleShape)
                     .layoutId(Console.ID_BTN_COLLAPSE),
                 tint = AppTheme.colors.accent,
                 contentDescription = null,
             )
+
             // Artwork
             Artwork(
                 model = state.artwork,
-                modifier = Modifier
-                    .layoutId(Console.ID_ARTWORK)
-                    .sharedElement(Console.ID_ARTWORK),
+                modifier = Modifier.layoutId(Console.ID_ARTWORK),
                 border = 3.dp,
                 shape = AppTheme.shapes.xLarge,
                 shadow = 4.dp
@@ -140,7 +150,6 @@ fun PlayerView(
                 fontSize = constraints.titleTextSize,// Maybe Animate
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_TITLE)
                     .marque(Int.MAX_VALUE)
                     .layoutId(Console.ID_TITLE),
                 color = contentColor
@@ -151,7 +160,7 @@ fun PlayerView(
                 text = state.subtitle ?: stringResource(id = R.string.unknown),
                 style = AppTheme.typography.label3,
                 modifier = Modifier
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_SUBTITLE)
+                    .sharedElement(Console.ID_SUBTITLE)
                     .layoutId(Console.ID_SUBTITLE),
                 color = contentColor.copy(ContentAlpha.medium)
             )
@@ -205,7 +214,6 @@ fun PlayerView(
                 contentDescription = null,
                 enabled = true,
                 modifier = Modifier.layoutId(Console.ID_BTN_SKIP_TO_NEXT)
-                /* tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)*/
             )
 
             // Skip to Prev
@@ -215,10 +223,9 @@ fun PlayerView(
                 contentDescription = null,
                 enabled = true,
                 modifier = Modifier.layoutId(Console.ID_BTN_SKIP_PREVIOUS)
-                /* tint = onColor.copy(if (enabled) ContentAlpha.high else ContentAlpha.medium)*/
             )
 
-            // Repreat Mode
+            // Repeat Mode
             IconButton(
                 onClick = viewState::cycleRepeatMode,
                 content = {
@@ -243,7 +250,7 @@ fun PlayerView(
                 icon = Icons.Outlined.Fullscreen,
                 contentDescription = null,
                 onClick = {},
-                enabled = true,
+                enabled = state.isVideo,
                 modifier = Modifier.layoutId(Console.ID_BTN_RESIZE_MODE)
             )
 
@@ -251,17 +258,15 @@ fun PlayerView(
             IconButton(
                 icon = Icons.Outlined.ScreenRotation,
                 contentDescription = null,
-                onClick = {},
-                enabled = true,
+                onClick = { onNewAction(Console.ACTION_TOGGLE_ROTATION_LOCK) },
                 modifier = Modifier.layoutId(Console.ID_BTN_ROTATION_LOCK)
             )
 
-            // options
+            // Queue
             IconButton(
                 icon = Icons.Outlined.Queue,
                 contentDescription = null,
-                onClick = {},
-                enabled = true,
+                onClick = { onNewAction(Console.ACTION_SHOW_QUEUE) },
                 modifier = Modifier.layoutId(Console.ID_BTN_QUEUE)
             )
 
@@ -269,7 +274,6 @@ fun PlayerView(
                 icon = Icons.Outlined.FavoriteBorder,
                 contentDescription = null,
                 onClick = {},
-                enabled = true,
                 modifier = Modifier.layoutId(Console.ID_BTN_LIKED)
             )
 
@@ -277,15 +281,13 @@ fun PlayerView(
                 icon = Icons.Outlined.Speed,
                 contentDescription = null,
                 onClick = {},
-                enabled = true,
-                modifier = Modifier.layoutId(Console.ID_BTN_SPEED)
+                modifier = Modifier.layoutId(Console.ID_BTN_PLAYBACK_SPEED)
             )
 
             IconButton(
                 icon = Icons.Outlined.Timer,
                 contentDescription = null,
                 onClick = {},
-                enabled = true,
                 modifier = Modifier.layoutId(Console.ID_BTN_SLEEP_TIMER)
             )
 
@@ -293,7 +295,6 @@ fun PlayerView(
                 icon = Icons.Outlined.MoreHoriz,
                 contentDescription = null,
                 onClick = {},
-                enabled = true,
                 modifier = Modifier.layoutId(Console.ID_BTN_MORE)
             )
         }

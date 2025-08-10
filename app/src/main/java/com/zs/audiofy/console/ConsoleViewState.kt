@@ -21,18 +21,9 @@ package com.zs.audiofy.console
 import android.net.Uri
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.NowPlaying
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-object RouteConsole: Route {
-
-    const val SHARED_ELEMENT_PLAYING_BARS = "playing_bars"
-    const val SHARED_ELEMENT_CONTROLS = "controls"
-    const val SHARED_ELEMENT_BACKGROUND = "background"
-    const val SHARED_ELEMENT_ARTWORK = "artwork"
-    const val SHARED_ELEMENT_TITLE = "title"
-    const val SHARED_ELEMENT_SUBTITLE = "subtitle"
-}
+object RouteConsole: Route
 
 interface ConsoleViewState {
 
@@ -46,5 +37,4 @@ interface ConsoleViewState {
     fun shuffle(enable: Boolean)
     fun cycleRepeatMode()
     fun addToLiked(uri: Uri)
-
 }

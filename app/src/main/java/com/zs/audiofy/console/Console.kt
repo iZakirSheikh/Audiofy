@@ -16,41 +16,33 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.zs.audiofy.console
 
-import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.DpRect
+import com.zs.audiofy.common.compose.LocalSystemFacade
+import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
-import com.zs.compose.theme.Surface
-import com.zs.compose.theme.adaptive.TwoPane
 import com.zs.compose.theme.sharedBounds
-import com.zs.compose.theme.sharedElement
-import com.zs.core.playback.NowPlaying
 
-
+/**
+ * Represents container for Console screen; that hosts default constants, ids etc. and maybe in future its [Route]
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
 object Console {
     private const val TAG = "Console"
 
     // Layout IDs
-    const val ID_BTN_COLLAPSE = "_btn__collapse"
+    const val ID_EQ_BARS = "_eq_bars"
+    const val ID_BTN_COLLAPSE = "_btn_collapse"
     const val ID_ARTWORK = "_artwork"
     const val ID_TITLE = "_title"
     const val ID_SUBTITLE = "_subtitle"
@@ -62,17 +54,18 @@ object Console {
     const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
     const val ID_SEEK_BAR = "_seek_bar"
     const val ID_VIDEO_SURFACE = "_video_surface"
-    const val ID_MESSAGE = "_message"
+    const val ID_TOAST = "_toast"
     const val ID_BACKGROUND = "_background"
     const val ID_SCRIM = "_scrim"
     const val ID_BTN_RESIZE_MODE = "_resize_mode"
     const val ID_BTN_ROTATION_LOCK = "_rotation_lock"
     const val ID_BTN_QUEUE = "_queue"
     const val ID_BTN_SLEEP_TIMER = "_sleep_timer"
-    const val ID_BTN_SPEED = "_speed"
+    const val ID_BTN_PLAYBACK_SPEED = "_playback_speed"
+    const val ID_BTN_EQUALIZER = "_equalizer"
+    const val ID_BTN_MEDIA_INFO = "_media_info"
     const val ID_BTN_LIKED = "_liked"
     const val ID_BTN_MORE = "_more"
-
     // Actions
     const val ACTION_COLLAPSE = 0
     const val ACTION_TOGGLE_ROTATION_LOCK = 1
@@ -81,18 +74,32 @@ object Console {
     // Ui Actions
     const val ACTION_SHOW_QUEUE = 3
     const val ACTION_SHOW_SLEEP_CONTROLLER = 4
-    const val ACTION_SHOW_MEDIA_PROPERTIES = 5
-    const val ACTION_SHOW_SPEED_CONTROLLER = 6
-    private const val ACTION_SHOW_NONE = 7
+    const val ACTION_SHOW_MEDIA_INFO = 5
+    private const val ACTION_SHOW_NONE = 6
 
-    // Ui Style
-    const val PLAY_BTN_STYLE_SIMPLE = 0
+    // Background style
+    const val STYLE_BG_SIMPLE = 0
+    const val STYLE_BG_AMBIENT = 1
+    // play button style
+    const val STYLE_PLAY_BUTTON_SIMPLE = 0
+    const val STYLE_PLAY_OUTLINED = 1
+    const val STYLE_PLAY_BUTTON_TINTED = 2
+    const val STYLE_PLAY_BUTTON_SOLID = 4
 
     @Composable
     operator fun invoke(viewState: ConsoleViewState) {
         val clazz = LocalWindowSize.current
+        val facade = LocalSystemFacade.current
         val detailsOf by remember { mutableIntStateOf(ACTION_SHOW_NONE) }
         val insets = WindowInsets.systemBars
-        PlayerView(viewState, insets, { false })
+        CompositionLocalProvider(LocalContentColor provides AppTheme.colors.onBackground) {
+            PlayerView(
+                viewState = viewState,
+                background = STYLE_BG_SIMPLE,
+                insets = insets,
+                onNewAction = { facade.showToast("Feature not implemented yet!!"); false },
+                modifier = Modifier.sharedBounds(ID_BACKGROUND)
+            )
+        }
     }
 }

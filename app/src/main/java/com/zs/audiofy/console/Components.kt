@@ -23,7 +23,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -54,6 +54,7 @@ import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.ButtonDefaults
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.LocalContentColor
@@ -115,7 +116,7 @@ fun PlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
-    style: Int = Console.PLAY_BTN_STYLE_SIMPLE,
+    style: Int = Console.STYLE_PLAY_BUTTON_SIMPLE,
 ) {
     Surface(
         onClick = onClick,
@@ -124,7 +125,7 @@ fun PlayButton(
         color = Color.Transparent,
         border = BorderStroke(
             1.dp,
-            AppTheme.colors.onBackground.copy(if (!AppTheme.colors.isLight) ContentAlpha.indication else 1f)
+            AppTheme.colors.onBackground.copy(if (!AppTheme.colors.isLight) ContentAlpha.indication else ContentAlpha.medium)
         ),
         contentColor = LocalContentColor.current,
         content = {
@@ -159,7 +160,7 @@ fun TimeBar(
     //  with width Dimension.fillToConstraints, it behaves unexpectedly. This workaround addresses the issue.
     //  Remove this workaround once the underlying issue is resolved.
     var width by remember { mutableIntStateOf(0) }
-    Row(modifier.onSizeChanged() {
+    Box(modifier.onSizeChanged() {
         width = it.width
     }) {
         Slider(

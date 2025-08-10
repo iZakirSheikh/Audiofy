@@ -441,7 +441,7 @@ fun ConstraintSetScope.horizontal(
     chainStyle: ChainStyle = ChainStyle.Packed,
     alignBy: ConstrainedLayoutReference? = null,
     constrainBlock: HorizontalChainScope.() -> Unit
-) {
+): ConstrainedLayoutReference {
     val chain = createHorizontalChain(*elements, chainStyle = chainStyle)
     constrain(chain, constrainBlock)
     // align all with first
@@ -453,6 +453,7 @@ fun ConstraintSetScope.horizontal(
             bottom.linkTo(first.bottom)
         }
     }
+    return first
 }
 
 /** @see horizontal */
@@ -460,7 +461,7 @@ fun ConstraintSetScope.vertical(
     vararg elements: ConstrainedLayoutReference,
     chainStyle: ChainStyle = ChainStyle.Packed,
     constrainBlock: VerticalChainScope.() -> Unit
-) {
+): ConstrainedLayoutReference {
     val chain = createVerticalChain(*elements, chainStyle = chainStyle)
     constrain(chain, constrainBlock)
     // align all with first
@@ -472,6 +473,7 @@ fun ConstraintSetScope.vertical(
             end.linkTo(first.end)
         }
     }
+    return first
 }
 
 

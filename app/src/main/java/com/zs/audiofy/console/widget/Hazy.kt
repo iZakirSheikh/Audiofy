@@ -52,6 +52,7 @@ import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
+import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.textResource
@@ -88,7 +89,7 @@ fun Hazy(
     BaseListItem(
         centerAlign = true,
         modifier = modifier
-            .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
+            .sharedBounds(Console.ID_BACKGROUND)
             .shadow(8.dp, AppTheme.shapes.large)
             .border(AppTheme.colors.shine, AppTheme.shapes.large)
             .background(AppTheme.colors.background(surface)),
@@ -98,9 +99,7 @@ fun Hazy(
             Label(
                 state.title ?: textResource(R.string.unknown),
                 style = AppTheme.typography.title1,
-                modifier = Modifier
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_TITLE)
-                    .marque(Int.MAX_VALUE),
+                modifier = Modifier.marque(Int.MAX_VALUE),
                 color = onColor,
                 fontWeight = FontWeight.Bold
             )
@@ -111,7 +110,7 @@ fun Hazy(
                 state.subtitle ?: textResource(R.string.unknown),
                 style = AppTheme.typography.label3,
                 color = LocalContentColor.current.copy(ContentAlpha.medium),
-                modifier = Modifier.sharedElement(RouteConsole.SHARED_ELEMENT_SUBTITLE),
+                modifier = Modifier.sharedElement(Console.ID_SUBTITLE),
             )
         },
         // Duration
@@ -136,7 +135,7 @@ fun Hazy(
             AsyncImage(
                 model = state.artwork,
                 modifier = Modifier
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_ARTWORK)
+                    .sharedElement(Console.ID_ARTWORK)
                     .clip(AppTheme.shapes.medium)
                     .background(AppTheme.colors.background(1.dp))
                     .size(84.dp),
@@ -150,7 +149,7 @@ fun Hazy(
                 onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
                 shape = AppTheme.shapes.large,
                 modifier = Modifier
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS)
+                    .sharedElement(Console.ID_BTN_PLAY_PAUSE)
                     .scale(0.9f),
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                 content = {
@@ -175,7 +174,7 @@ fun Hazy(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     // Placeholder for playingbars
-                    Spacer(Modifier.sharedElement(RouteConsole.SHARED_ELEMENT_PLAYING_BARS))
+                    Spacer(Modifier.sharedElement("playback_indicator"))
                     // Skip to previous
                     IconButton(
                         onClick = { onAction(MiniPlayer.ACTION_SKIP_TO_PREVIOUS) },

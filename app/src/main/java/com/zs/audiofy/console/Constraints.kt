@@ -24,10 +24,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
-import com.zs.audiofy.common.compose.hide
 import com.zs.audiofy.common.compose.horizontal
 import com.zs.compose.theme.WindowSize
 import com.zs.audiofy.common.compose.ContentPadding as CP
@@ -35,14 +35,37 @@ import com.zs.audiofy.common.compose.ContentPadding as CP
 private val TITLE_TEXT_SIZE_LARGE = 44.sp
 private val TITLE_TEXT_SIZE_NORMAL = 16.sp
 
-/**
- * Represents the constraints of the PLayerView
- */
+/** Represents the constraints of the PLayerView */
 @Stable
 interface Constraints {
-    val value: ConstraintSet
-    val titleTextSize: TextUnit
+   @Stable val value: ConstraintSet
+   @Stable val titleTextSize: TextUnit
 }
+
+///
+private val REF_CLOSE_BTN = ConstrainedLayoutReference(Console.ID_BTN_COLLAPSE)
+private val REF_ARTWORK = ConstrainedLayoutReference(Console.ID_ARTWORK)
+private val REF_TITLE = ConstrainedLayoutReference(Console.ID_TITLE)
+private val REF_SUBTITLE = ConstrainedLayoutReference(Console.ID_SUBTITLE)
+private val REF_POSITION = ConstrainedLayoutReference(Console.ID_POSITION)
+private val REF_SHUFFLE = ConstrainedLayoutReference(Console.ID_SHUFFLE)
+private val REF_REPEAT_MODE = ConstrainedLayoutReference(Console.ID_BTN_REPEAT_MODE)
+private val REF_SKIP_PREVIOUS = ConstrainedLayoutReference(Console.ID_BTN_SKIP_PREVIOUS)
+private val REF_PLAY_PAUSE = ConstrainedLayoutReference(Console.ID_BTN_PLAY_PAUSE)
+private val REF_SKIP_TO_NEXT = ConstrainedLayoutReference(Console.ID_BTN_SKIP_TO_NEXT)
+private val REF_SEEK_BAR = ConstrainedLayoutReference(Console.ID_SEEK_BAR)
+private val REF_VIDEO_SURFACE = ConstrainedLayoutReference(Console.ID_VIDEO_SURFACE)
+private val REF_TOAST = ConstrainedLayoutReference(Console.ID_TOAST)
+private val REF_BACKGROUND = ConstrainedLayoutReference(Console.ID_BACKGROUND)
+private val REF_SCRIM = ConstrainedLayoutReference(Console.ID_SCRIM)
+private val REF_RESIZE_MODE = ConstrainedLayoutReference(Console.ID_BTN_RESIZE_MODE)
+private val REF_ROTATION_LOCK = ConstrainedLayoutReference(Console.ID_BTN_ROTATION_LOCK)
+private val REF_QUEUE = ConstrainedLayoutReference(Console.ID_BTN_QUEUE)
+private val REF_SLEEP_TIMER = ConstrainedLayoutReference(Console.ID_BTN_SLEEP_TIMER)
+private val REF_SPEED = ConstrainedLayoutReference(Console.ID_BTN_PLAYBACK_SPEED)
+private val REF_LIKED = ConstrainedLayoutReference(Console.ID_BTN_LIKED)
+private val REF_MORE = ConstrainedLayoutReference(Console.ID_BTN_MORE)
+
 
 /**
  * Computes the appropriate [Constraints] configuration for the media console layout
@@ -62,38 +85,93 @@ fun calculateConstraintSet(
     isVideo: Boolean,
     forceOnlyVideoSurface: Boolean,
 ): Constraints {
-    return MobilePortrait(insets)
+    val (width, height) = windowSize
+    return  if (width > height) MobileLandscape(insets) else MobilePortrait(insets)
 }
 
-///
-private val REF_CLOSE_BTN = ConstrainedLayoutReference(Console.ID_BTN_COLLAPSE)
-private val REF_ARTWORK = ConstrainedLayoutReference(Console.ID_ARTWORK)
-private val REF_TITLE = ConstrainedLayoutReference(Console.ID_TITLE)
-private val REF_SUBTITLE = ConstrainedLayoutReference(Console.ID_SUBTITLE)
-private val REF_POSITION = ConstrainedLayoutReference(Console.ID_POSITION)
-private val REF_SHUFFLE = ConstrainedLayoutReference(Console.ID_SHUFFLE)
-private val REF_REPEAT_MODE = ConstrainedLayoutReference(Console.ID_BTN_REPEAT_MODE)
-private val REF_SKIP_PREVIOUS = ConstrainedLayoutReference(Console.ID_BTN_SKIP_PREVIOUS)
-private val REF_PLAY_PAUSE = ConstrainedLayoutReference(Console.ID_BTN_PLAY_PAUSE)
-private val REF_SKIP_TO_NEXT = ConstrainedLayoutReference(Console.ID_BTN_SKIP_TO_NEXT)
-private val REF_SEEK_BAR = ConstrainedLayoutReference(Console.ID_SEEK_BAR)
-private val REF_VIDEO_SURFACE = ConstrainedLayoutReference(Console.ID_VIDEO_SURFACE)
-private val REF_MESSAGE = ConstrainedLayoutReference(Console.ID_MESSAGE)
-private val REF_BACKGROUND = ConstrainedLayoutReference(Console.ID_BACKGROUND)
-private val REF_SCRIM = ConstrainedLayoutReference(Console.ID_SCRIM)
-private val REF_RESIZE_MODE = ConstrainedLayoutReference(Console.ID_BTN_RESIZE_MODE)
-private val REF_ROTATION_LOCK = ConstrainedLayoutReference(Console.ID_BTN_ROTATION_LOCK)
-private val REF_QUEUE = ConstrainedLayoutReference(Console.ID_BTN_QUEUE)
-private val REF_SLEEP_TIMER = ConstrainedLayoutReference(Console.ID_BTN_SLEEP_TIMER)
-private val REF_SPEED = ConstrainedLayoutReference(Console.ID_BTN_SPEED)
-private val REF_LIKED = ConstrainedLayoutReference(Console.ID_BTN_LIKED)
-private val REF_MORE = ConstrainedLayoutReference(Console.ID_BTN_MORE)
-
-
-private val ONLY_VIDEO_SURFACE = object : Constraints {
-    override val titleTextSize: TextUnit get() = TITLE_TEXT_SIZE_NORMAL
+private fun MobileLandscape(insets: DpRect) = object : Constraints {
+    override val titleTextSize: TextUnit = TITLE_TEXT_SIZE_LARGE
     override val value: ConstraintSet = ConstraintSet {
-        hide()
+        // Background
+        constrain(REF_BACKGROUND) {
+            linkTo(parent.start, parent.top, parent.end, parent.bottom)
+            width = Dimension.fillToConstraints
+            height = Dimension.fillToConstraints
+        }
+        // Artwork
+        val (left, up, right, down) = insets
+        val split = this.createGuidelineFromStart(0.48f)
+        constrain(REF_ARTWORK){
+            linkTo(parent.start, split, left + CP.large, endMargin = CP.large)
+            linkTo(parent.top, parent.bottom, up+ CP.medium, down + CP.large)
+            width = Dimension.fillToConstraints
+            height = Dimension.ratio("1:1")
+        }
+
+        // Collapse
+        constrain(REF_CLOSE_BTN){
+            end.linkTo(parent.end, right + CP.large)
+            top.linkTo(REF_ARTWORK.top)
+        }
+
+        val options =  horizontal(
+            REF_QUEUE, REF_SPEED, REF_SLEEP_TIMER, REF_LIKED, REF_MORE,
+            chainStyle = ChainStyle.Packed(1f),
+            constrainBlock = {
+                end.linkTo(REF_CLOSE_BTN.start, CP.normal)
+                start.linkTo(split)
+            }
+        )
+        constrain(options){
+            linkTo(REF_CLOSE_BTN.top, REF_CLOSE_BTN.bottom)
+        }
+
+        // Subtitle
+        constrain(REF_SUBTITLE) {
+            linkTo(split, REF_TITLE.end,  endMargin = CP.xLarge)
+            top.linkTo(REF_CLOSE_BTN.bottom, CP.large)
+            width = Dimension.fillToConstraints
+            horizontalBias = 0f
+        }
+
+        // Title
+        constrain(REF_TITLE){
+            linkTo(split, REF_CLOSE_BTN.end)
+            top.linkTo(REF_SUBTITLE.bottom)
+            width = Dimension.fillToConstraints
+        }
+
+        // Controls
+        val controls = horizontal(
+            REF_SHUFFLE, REF_SKIP_PREVIOUS, REF_PLAY_PAUSE, REF_SKIP_TO_NEXT, REF_REPEAT_MODE,
+            alignBy = REF_PLAY_PAUSE,
+            constrainBlock = {
+                start.linkTo(split)
+                end.linkTo(REF_CLOSE_BTN.end)
+            }
+        )
+        constrain(controls){
+            top.linkTo(REF_TITLE.bottom,  CP.normal)
+        }
+
+        // SeekBar
+        val timeBar = horizontal(
+            REF_RESIZE_MODE, REF_SEEK_BAR, REF_ROTATION_LOCK,
+            alignBy = REF_SEEK_BAR,
+            constrainBlock = {
+                start.linkTo(split)
+                end.linkTo(REF_CLOSE_BTN.end)
+            }
+        )
+        constrain(timeBar){
+            linkTo(controls.bottom, parent.bottom,CP.normal, down)
+            width = Dimension.fillToConstraints
+            verticalBias = 0f
+        }
+        constrain(REF_POSITION){
+            start.linkTo(timeBar.start)
+            bottom.linkTo(timeBar.top, -CP.medium)
+        }
     }
 }
 
@@ -103,84 +181,83 @@ private val ONLY_VIDEO_SURFACE = object : Constraints {
 private fun MobilePortrait(insets: DpRect) = object : Constraints {
     override val titleTextSize: TextUnit = TITLE_TEXT_SIZE_LARGE
     override val value: ConstraintSet = ConstraintSet {
-
-
         // Background
         constrain(REF_BACKGROUND) {
-            linkTo(parent.start, parent.end)
-            linkTo(parent.top, parent.bottom)
+            linkTo(parent.start, parent.top, parent.end, parent.bottom)
             width = Dimension.fillToConstraints
             height = Dimension.fillToConstraints
         }
-
         val (left, up, right, down) = insets
-        // CloseBtn
+
+        // Collapse
         constrain(REF_CLOSE_BTN) {
-            top.linkTo(parent.top, margin = up + CP.normal)
-            end.linkTo(parent.end, margin = right + CP.normal)
+            top.linkTo(parent.top, margin = up + CP.large)
+            end.linkTo(parent.end, margin = right + CP.large)
         }
+
         // Artwork
         constrain(REF_ARTWORK) {
-            linkTo(parent.start, parent.end, CP.normal + left, CP.normal + right)
-            linkTo(REF_CLOSE_BTN.bottom, REF_SUBTITLE.top, CP.normal)
-            width = Dimension.percent(0.8f)
+            linkTo(parent.start, parent.end, CP.xLarge + left, CP.xLarge + right)
+            linkTo(REF_CLOSE_BTN.bottom, REF_SUBTITLE.top, CP.normal, CP.normal)
+            width = Dimension.fillToConstraints
             height = Dimension.ratio("1:1")
         }
 
-        // Now start building from bottom
         // Options
-        constrain(REF_QUEUE) {
-            bottom.linkTo(parent.bottom, down + CP.normal)
-        }
-        horizontal(
+        val options = horizontal(
             REF_QUEUE, REF_SPEED, REF_SLEEP_TIMER, REF_LIKED, REF_MORE,
             constrainBlock = {
-                start.linkTo(parent.start, left + CP.xLarge)
-                end.linkTo(parent.end, right + CP.xLarge)
+                start.linkTo(parent.start, left + CP.large)
+                end.linkTo(parent.end, right + CP.large)
             }
         )
-        // Controls
-        constrain(REF_PLAY_PAUSE) {
-            bottom.linkTo(REF_QUEUE.top, CP.normal)
+        constrain(options) {
+            bottom.linkTo(parent.bottom, down + CP.normal)
         }
-        horizontal(
+
+        // Controls
+        val controls =  horizontal(
             REF_SHUFFLE, REF_SKIP_PREVIOUS, REF_PLAY_PAUSE, REF_SKIP_TO_NEXT, REF_REPEAT_MODE,
             alignBy = REF_PLAY_PAUSE,
             constrainBlock = {
-                start.linkTo(parent.start, left + CP.normal)
-                end.linkTo(parent.end, right + CP.normal)
+                start.linkTo(parent.start, left + CP.large)
+                end.linkTo(parent.end, right + CP.large)
             }
         )
-
-        // TimeBar
-        constrain(REF_SEEK_BAR) {
-            bottom.linkTo(REF_PLAY_PAUSE.top, CP.normal)
-            width = Dimension.fillToConstraints
-            //  height = Dimension.wrapContent
+        constrain(controls) {
+            bottom.linkTo(options.top, CP.normal)
         }
-        horizontal(
+
+        val timeBar = horizontal(
             REF_RESIZE_MODE, REF_SEEK_BAR, REF_ROTATION_LOCK,
             alignBy = REF_SEEK_BAR,
             constrainBlock = {
-                start.linkTo(parent.start, left + CP.xLarge)
-                end.linkTo(parent.end, right + CP.xLarge)
+                start.linkTo(parent.start, left + CP.large)
+                end.linkTo(parent.end, right + CP.large)
             }
         )
+        constrain(timeBar) {
+            bottom.linkTo(controls.top, CP.normal)
+            width = Dimension.fillToConstraints
+        }
+
+        // Position
         constrain(REF_POSITION) {
             start.linkTo(REF_SEEK_BAR.start)
             bottom.linkTo(REF_SEEK_BAR.top, -CP.medium)
         }
-        //
+        // Title
         constrain(REF_TITLE) {
-            start.linkTo(parent.start, left + CP.xLarge)
-            end.linkTo(parent.end, right + CP.xLarge)
+            linkTo(parent.start, parent.end, left + CP.xLarge, right + CP.xLarge)
             bottom.linkTo(REF_POSITION.top, CP.normal)
             width = Dimension.fillToConstraints
         }
+        // Subtitle
         constrain(REF_SUBTITLE) {
-            start.linkTo(REF_TITLE.start)
+            linkTo(REF_TITLE.start, REF_TITLE.end,  endMargin = CP.large)
             bottom.linkTo(REF_TITLE.top)
-            width = Dimension.percent(0.65f)
+            width = Dimension.fillToConstraints
+            horizontalBias = 0f
         }
     }
 }

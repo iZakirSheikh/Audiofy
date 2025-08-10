@@ -19,7 +19,7 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 google-service = { id = "com.google.gms.google-services", version = "4.4.3" }
-crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.5" }
+crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 

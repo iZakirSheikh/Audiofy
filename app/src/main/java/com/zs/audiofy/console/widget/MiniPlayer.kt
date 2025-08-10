@@ -60,6 +60,7 @@ import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.scale
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.common.domain
+import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.foreground
@@ -76,6 +77,74 @@ import androidx.compose.foundation.combinedClickable as clickable
 
 private const val TAG = "MiniPlayer"
 
+//  The size of the small pill shaped fab.
+//  TODO - May add other values.
+private val FAB_PLAYER_SIZE = DpSize(112.dp, 56.dp)
+
+/** Represents the [MiniPlayer] in the console.*/
+@Composable
+private fun FabPlayer(
+    state: NowPlaying,
+    onAction: (code: Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .sharedBounds(Console.ID_BACKGROUND)
+            .border(AppTheme.colors.shine, AppTheme.shapes.large)
+            .shadow(8.dp, AppTheme.shapes.large)
+            .background(AppTheme.colors.background(1.dp))
+            .requiredSize(FAB_PLAYER_SIZE),
+        content = {
+            // Artwork
+            AsyncImage(
+                state.artwork,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .sharedElement(Console.ID_ARTWORK)
+                    .matchParentSize()
+                    .clip(AppTheme.shapes.large)
+                    .foreground(Color.Black.copy(0.5f), shape = AppTheme.shapes.large)
+            )
+
+            // Playing bars.
+            Icon(
+                painter = lottieAnimationPainter(R.raw.playback_indicator, isPlaying = state.playing),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = ContentPadding.medium)
+                    .sharedElement("playback_indicator")
+                    .lottie()
+                    .align(Alignment.CenterStart),
+                tint = Color.SignalWhite
+            )
+
+            // Play Toggle
+            IconButton(
+                onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
+                modifier = Modifier
+                    .sharedElement(Console.ID_BTN_PLAY_PAUSE)
+                    .align(Alignment.CenterEnd),
+                content = {
+                    Icon(
+                        painter = lottieAnimationPainter(
+                            id = R.raw.lt_play_pause,
+                            atEnd = state.playing,
+                            progressRange = 0.0f..0.29f,
+                            animationSpec = tween(easing = LinearEasing)
+                        ),
+                        contentDescription = null,
+                        tint = Color.SignalWhite,
+                        modifier = Modifier.lottie(1.5f)
+                    )
+                },
+            )
+        }
+    )
+}
+
+/** Represents the [MiniPlayer] in the console.*/
 object MiniPlayer {
     /** Represents the max-width of the inApp Player widget.*/
     val WIDGET_MAX_WIDTH = 400.dp
@@ -84,13 +153,10 @@ object MiniPlayer {
     val START_PADDING = 50.dp
     val END_PADDING = ContentPadding.large
 
-    //  The size of the small pill shaped fab.
-    //  TODO - May add other values.
-    val FAB_SIZE = DpSize(112.dp, 56.dp)
-
     // Represents the id of the the fabPlayer
     const val FAB_PLAYER_ID = "fab_player"
-
+    const val HAZE_PLAYER_ID = "haze_player"
+    const val EMPTY_PLAYER_ID = "empty_player"
     // Represents some of the actions emitted by the widget.
     // These are in float, allowing us to utilize positive values (0 to 1)
     // to represent progress, while negative values are used for standard actions.
@@ -107,19 +173,16 @@ object MiniPlayer {
         val remote = (facade as? MainActivity)?.relay ?: return Spacer(modifier)
         // Get the navigation controller.
         val navController = LocalNavController.current
-        if (navController.currentDestination?.domain == RouteConsole.domain) return Spacer(modifier)
-        val current by remote.state.collectAsState()
-        val state = current ?: return Spacer(modifier)
-
+        val state by remote.state.collectAsState()
+        val isConsole = navController.currentDestination?.domain == RouteConsole.domain
         // State to track whether the widget is expanded or not.
         var expanded by remember { mutableStateOf(false) }
-
         // Handler to collapse the widget when back is pressed.
         val onDismissRequest = { expanded = false }
-        BackHandler(expanded) { onDismissRequest() }
-        //
+        BackHandler(expanded && !isConsole) { onDismissRequest() }
+        // Action handler
         val scope = rememberCoroutineScope()
-        val onNewAction: (Float) -> Unit = { value: Float ->
+        val onPlayerAction: (Float) -> Unit = { value: Float ->
             scope.launch {
                 when (value) {
                     ACTION_PLAY_TOGGLE -> remote.togglePlay()
@@ -146,94 +209,28 @@ object MiniPlayer {
                     else expanded = false
                 }
             )
-        // Actual content of the widget.
-        // This content expands to mini-player on click
-        // or expands to full-screen layout when user long presses
         AnimatedContent(
-            targetState = expanded,
-            label = "${TAG}_animated_content",
-            modifier = modifier
-                .padding(start = START_PADDING, end = END_PADDING)
-                .widthIn(max = WIDGET_MAX_WIDTH),
+            // choose target appropriately.
+           targetState =  when {
+                isConsole || state == null -> EMPTY_PLAYER_ID
+                expanded -> HAZE_PLAYER_ID
+                else -> FAB_PLAYER_ID
+            },
+            modifier = Modifier.padding(start = START_PADDING, end = END_PADDING).widthIn(max = WIDGET_MAX_WIDTH) then modifier,
             content = { value ->
                 // Provide the current scope for navigation animations.
                 CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                     // Get the user's preference for the Glance widget.
                     // val widget by preference(Settings.GLANCE)
                     when (value) {
+                        EMPTY_PLAYER_ID -> Spacer(Modifier.requiredSize(FAB_PLAYER_SIZE))
                         // Show mini player if not expanded.
-                        true -> Hazy(state, surface, onNewAction, clickable)
+                        HAZE_PLAYER_ID -> Hazy(state!!, surface, onPlayerAction, clickable)
                         // Show full screen Glance layout if expanded.
-                        else -> FabPlayer(state, onNewAction, modifier = clickable)
+                        else -> FabPlayer(state!!, onPlayerAction, modifier = clickable)
                     }
                 }
             }
         )
     }
-}
-
-@Composable
-private fun FabPlayer(
-    state: NowPlaying,
-    onAction: (Float) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .sharedBounds(RouteConsole.SHARED_ELEMENT_BACKGROUND)
-            .border(AppTheme.colors.shine, AppTheme.shapes.large)
-            .shadow(8.dp, AppTheme.shapes.large)
-            .background(AppTheme.colors.background(1.dp))
-            .requiredSize(MiniPlayer.FAB_SIZE),
-        content = {
-            // Artwork
-            AsyncImage(
-                state.artwork,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .matchParentSize()
-                    .sharedElement(RouteConsole.SHARED_ELEMENT_ARTWORK)
-                    .clip(AppTheme.shapes.large)
-                    .foreground(Color.Black.copy(0.5f))
-            )
-
-            // Playing bars.
-            Icon(
-                painter = lottieAnimationPainter(
-                    R.raw.playback_indicator,
-                    isPlaying = state.playing
-                ),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(start = ContentPadding.medium)
-                    .lottie()
-                    .align(Alignment.CenterStart)
-                    .sharedElement(
-                        RouteConsole.SHARED_ELEMENT_PLAYING_BARS,
-                        zIndexInOverlay = 0.23f
-                    ),
-                tint = Color.SignalWhite
-            )
-
-            // Play Toggle
-            IconButton(
-                onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
-                modifier = Modifier.align(Alignment.CenterEnd).sharedElement(RouteConsole.SHARED_ELEMENT_CONTROLS),
-                content = {
-                    Icon(
-                        painter = lottieAnimationPainter(
-                            id = R.raw.lt_play_pause,
-                            atEnd = state.playing,
-                            progressRange = 0.0f..0.29f,
-                            animationSpec = tween(easing = LinearEasing)
-                        ),
-                        contentDescription = null,
-                        tint = Color.SignalWhite,
-                        modifier = Modifier.lottie(1.5f)
-                    )
-                },
-            )
-        }
-    )
 }

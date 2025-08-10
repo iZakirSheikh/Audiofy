@@ -33,7 +33,8 @@ android {
             "-Xwhen-guards",
             "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-Xopt-in=com.zs.compose.theme.ExperimentalThemeApi",
-            "-Xnon-local-break-continue"
+            "-Xnon-local-break-continue",
+            "-Xcontext-sensitive-resolution"
         )
     }
     // Config. the compose compiler
