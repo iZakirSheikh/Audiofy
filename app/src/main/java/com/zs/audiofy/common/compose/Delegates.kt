@@ -19,6 +19,7 @@
 package com.zs.audiofy.common.compose
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.FloatRange
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintLayoutBaseScope
 import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.constraintlayout.compose.HorizontalChainReference
 import androidx.constraintlayout.compose.HorizontalChainScope
@@ -474,6 +476,27 @@ fun ConstraintSetScope.vertical(
         }
     }
     return first
+}
+
+fun HorizontalChainScope.linkTo(
+    start: ConstraintLayoutBaseScope.VerticalAnchor,
+    end: ConstraintLayoutBaseScope.VerticalAnchor,
+    startMargin: Dp = 0.dp,
+    endMargin: Dp = 0.dp,
+    startGoneMargin: Dp = 0.dp,
+    endGoneMargin: Dp = 0.dp,
+){
+    this.start.linkTo(
+        anchor = start,
+        margin = startMargin,
+        goneMargin = startGoneMargin,
+    )
+    this.end.linkTo(
+        anchor = end,
+        margin = endMargin,
+        goneMargin = endGoneMargin,
+    )
+
 }
 
 
