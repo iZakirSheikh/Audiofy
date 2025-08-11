@@ -24,6 +24,7 @@ import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.shape.CircleShape
@@ -43,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -55,7 +57,6 @@ import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.marque
-import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter
 import com.zs.audiofy.common.compose.shine
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
@@ -63,15 +64,20 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
+import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
+import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter as AnimVectorPainter
 
 private const val TAG = "PlayerView"
 
 /** Represents [NowPlaying] default state in [Console] */
 private val NonePlaying = NowPlaying(null, null)
+
+/** A short-hand   */
+private fun Modifier.key(value: String) = layoutId(value).sharedElement(value)
 
 /**
  * Displays the [PlayerView] within the console interface.
@@ -113,24 +119,23 @@ fun PlayerView(
     ConstraintLayout(
         constraintSet = constraints.value,
         modifier = modifier,
-        animateChangesSpec = AppTheme.motionScheme.defaultEffectsSpec(),
+        animateChangesSpec = AppTheme.motionScheme.defaultSpatialSpec(),
         content = {
             // Background
             Spacer(
                 modifier = Modifier
-                    .background(AppTheme.colors.background(1.dp))
                     .layoutId(Console.ID_BACKGROUND)
+                    .background(AppTheme.colors.background(1.dp))
             )
-            val contentColor = LocalContentColor.current
 
             // Collapse
             IconButton(
                 icon = Icons.Outlined.ExpandMore,
                 onClick = { },
                 modifier = Modifier
+                    .key(Console.ID_BTN_COLLAPSE)
                     .border(AppTheme.colors.shine, CircleShape)
-                    .background(AppTheme.colors.background(3.dp), shape = CircleShape)
-                    .layoutId(Console.ID_BTN_COLLAPSE),
+                    .background(AppTheme.colors.background(3.dp), shape = CircleShape),
                 tint = AppTheme.colors.accent,
                 contentDescription = null,
             )
@@ -138,30 +143,32 @@ fun PlayerView(
             // Artwork
             Artwork(
                 model = state.artwork,
-                modifier = Modifier.layoutId(Console.ID_ARTWORK),
+                modifier = Modifier.key(Console.ID_ARTWORK),
                 border = 3.dp,
                 shape = AppTheme.shapes.xLarge,
                 shadow = 4.dp
             )
 
             // Title
-            Label(
-                text = state.title ?: stringResource(id = R.string.unknown),
-                fontSize = constraints.titleTextSize,// Maybe Animate
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .marque(Int.MAX_VALUE)
-                    .layoutId(Console.ID_TITLE),
-                color = contentColor
+            val contentColor = LocalContentColor.current
+            Box(
+                modifier = Modifier.key(Console.ID_TITLE).clipToBounds(),
+                content = {
+                    Label(
+                        text = state.title ?: stringResource(id = R.string.unknown),
+                        fontSize = constraints.titleTextSize,// Maybe Animate
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.marque(Int.MAX_VALUE),
+                        color = contentColor
+                    )
+                }
             )
 
             // Subtitle
             Label(
                 text = state.subtitle ?: stringResource(id = R.string.unknown),
                 style = AppTheme.typography.label3,
-                modifier = Modifier
-                    .sharedElement(Console.ID_SUBTITLE)
-                    .layoutId(Console.ID_SUBTITLE),
+                modifier = Modifier.key(Console.ID_SUBTITLE),
                 color = contentColor.copy(ContentAlpha.medium)
             )
 
@@ -177,12 +184,12 @@ fun PlayerView(
                 "$fPos / $fDuration (${stringResource(R.string.postfix_x_f, state.speed)})",
                 style = AppTheme.typography.label3,
                 color = contentColor.copy(ContentAlpha.medium),
-                modifier = Modifier.layoutId(Console.ID_POSITION),
+                modifier = Modifier.key(Console.ID_POSITION),
             )
 
             // Slider
             TimeBar(
-                progress =  chronometer.progress(state.duration),
+                progress = chronometer.progress(state.duration),
                 onValueChange = {
                     val mills = (it * state.duration).toLong()
                     chronometer.raw = mills
@@ -191,7 +198,7 @@ fun PlayerView(
                     val progress = chronometer.elapsed / state.duration.toFloat()
                     viewState.seekTo(progress)
                 },
-                modifier = Modifier.layoutId(Console.ID_SEEK_BAR),
+                modifier = Modifier.key(Console.ID_SEEK_BAR),
                 enabled = state.duration > 0,
             )
 
@@ -204,7 +211,7 @@ fun PlayerView(
                 scale = 1.5f,
                 contentDescription = null,
                 tint = if (state.shuffle) AppTheme.colors.accent else contentColor.copy(ContentAlpha.disabled),
-                modifier = Modifier.layoutId(Console.ID_SHUFFLE)
+                modifier = Modifier.key(Console.ID_SHUFFLE)
             )
 
             // Skip to next
@@ -213,7 +220,7 @@ fun PlayerView(
                 icon = Icons.Outlined.KeyboardDoubleArrowRight,
                 contentDescription = null,
                 enabled = true,
-                modifier = Modifier.layoutId(Console.ID_BTN_SKIP_TO_NEXT)
+                modifier = Modifier.key(Console.ID_BTN_SKIP_TO_NEXT)
             )
 
             // Skip to Prev
@@ -222,7 +229,7 @@ fun PlayerView(
                 icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                 contentDescription = null,
                 enabled = true,
-                modifier = Modifier.layoutId(Console.ID_BTN_SKIP_PREVIOUS)
+                modifier = Modifier.key(Console.ID_BTN_SKIP_PREVIOUS)
             )
 
             // Repeat Mode
@@ -231,18 +238,21 @@ fun PlayerView(
                 content = {
                     val mode = state.repeatMode
                     Icon(
-                        painter = rememberAnimatedVectorPainter(R.drawable.avd_repeat_more_one_all, mode == Remote.REPEAT_MODE_ALL),
+                        painter = AnimVectorPainter(
+                            R.drawable.avd_repeat_more_one_all,
+                            mode == Remote.REPEAT_MODE_ALL
+                        ),
                         contentDescription = null,
                         tint = contentColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
                     )
                 },
-                modifier = Modifier.layoutId(Console.ID_BTN_REPEAT_MODE)
+                modifier = Modifier.key(Console.ID_BTN_REPEAT_MODE)
             )
 
             PlayButton(
                 onClick = viewState::togglePlay,
                 isPlaying = state.playing,
-                modifier = Modifier.layoutId(Console.ID_BTN_PLAY_PAUSE)
+                modifier = Modifier.key(Console.ID_BTN_PLAY_PAUSE)
             )
 
             // Resize Mode

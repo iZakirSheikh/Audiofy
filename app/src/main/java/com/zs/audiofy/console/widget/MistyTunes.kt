@@ -26,6 +26,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
@@ -53,7 +55,6 @@ import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.console.Console
-import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -73,10 +74,13 @@ import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import dev.chrisbanes.haze.HazeState
 
-private const val TAG = "Hazy"
+private const val TAG = "MistyTunes"
 
+/**
+ * Represents an inApp Widget that features background blur.
+ */
 @Composable
-fun Hazy(
+fun MistyTunes(
     state: NowPlaying,
     surface: HazeState,
     onAction: (Float) -> Unit,
@@ -96,12 +100,20 @@ fun Hazy(
         contentColor = onColor,
         // Title as heading
         heading = {
-            Label(
-                state.title ?: textResource(R.string.unknown),
-                style = AppTheme.typography.title1,
-                modifier = Modifier.marque(Int.MAX_VALUE),
-                color = onColor,
-                fontWeight = FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .sharedElement(Console.ID_TITLE)
+                    .clipToBounds(),
+                content = {
+                    Label(
+                        state.title ?: textResource(R.string.unknown),
+                        style = AppTheme.typography.title1,
+                        modifier = Modifier
+                            .marque(Int.MAX_VALUE),
+                        color = onColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             )
         },
         // Subtitle as subheading
@@ -127,6 +139,7 @@ fun Hazy(
                 })",
                 style = AppTheme.typography.label3,
                 color = onColor.copy(ContentAlpha.medium),
+                modifier = Modifier.sharedElement(Console.ID_POSITION)
             )
         },
         // Artwork
@@ -146,7 +159,7 @@ fun Hazy(
         // Play Toggle
         trailing = {
             FloatingActionButton(
-                onClick = { onAction(MiniPlayer.ACTION_PLAY_TOGGLE) },
+                onClick = { onAction(Widget.ACTION_PLAY_TOGGLE) },
                 shape = AppTheme.shapes.large,
                 modifier = Modifier
                     .sharedElement(Console.ID_BTN_PLAY_PAUSE)
@@ -174,12 +187,13 @@ fun Hazy(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     // Placeholder for playingbars
-                    Spacer(Modifier.sharedElement("playback_indicator"))
+                    Spacer(Modifier.sharedElement(Console.ID_EQ_BARS))
                     // Skip to previous
                     IconButton(
-                        onClick = { onAction(MiniPlayer.ACTION_SKIP_TO_PREVIOUS) },
+                        onClick = { onAction(Widget.ACTION_SKIP_TO_PREVIOUS) },
                         icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
+                        modifier = Modifier.sharedElement(Console.ID_BTN_SKIP_PREVIOUS)
                     )
                     // Slider
                     Slider(
@@ -193,25 +207,28 @@ fun Hazy(
                             onAction(progress)
                         },
                         enabled = state.duration > 0,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .sharedElement(Console.ID_SEEK_BAR)
+                            .weight(1f),
                         colors = SliderDefaults.colors(
                             disabledThumbColor = AppTheme.colors.accent,
                             disabledActiveTrackColor = AppTheme.colors.accent
                         )
                     )
-
                     // SeekNext
                     IconButton(
-                        onClick = { onAction(MiniPlayer.ACTION_SKIP_TO_NEXT) },
+                        onClick = { onAction(Widget.ACTION_SKIP_TO_NEXT) },
                         icon = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
+                        modifier = Modifier.sharedElement(Console.ID_BTN_SKIP_TO_NEXT)
                     )
 
                     // Expand to fill
                     IconButton(
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,
                         contentDescription = null,
-                        onClick = { onAction(MiniPlayer.ACTION_OPEN_CONSOLE) },
+                        onClick = { onAction(Widget.ACTION_OPEN_CONSOLE) },
+                        modifier = Modifier.sharedElement(Console.ID_BTN_COLLAPSE)
                     )
                 }
             )

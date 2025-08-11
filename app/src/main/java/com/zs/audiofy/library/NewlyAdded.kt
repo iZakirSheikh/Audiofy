@@ -26,6 +26,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -201,6 +202,11 @@ fun NewlyAdded(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
         content = {
+            // Ensure first item is visible by adding a spacer at the front
+            item(contentType = "library_list_spacer") {
+                Spacer(modifier = Modifier)
+            }
+
             val data = emit(false, audios) ?: return@LazyRow
             items(data, key = Audio::id) { item ->
                 // Create newly added item with parallax-adjusted image alignment

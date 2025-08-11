@@ -107,7 +107,7 @@ import com.zs.audiofy.common.impl.VideosViewModel
 import com.zs.audiofy.common.shapes.EndConcaveShape
 import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
-import com.zs.audiofy.console.widget.MiniPlayer
+import com.zs.audiofy.console.widget.Widget
 import com.zs.audiofy.folders.Folders
 import com.zs.audiofy.folders.RouteFolders
 import com.zs.audiofy.library.Library
@@ -546,7 +546,7 @@ fun Home(
             containerColor = AppTheme.colors.background,
             progress = activity.inAppUpdateProgress,
             floatingActionButton = {
-                MiniPlayer(
+                Widget(
                     surface = surface,
                     modifier = Modifier.thenIf(!requiresNavBar && portrait) {
                         windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
