@@ -29,7 +29,6 @@ import com.zs.compose.foundation.foreground
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
-import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.core.playback.NowPlaying
 
@@ -70,7 +69,7 @@ fun FabPlayer(
                 contentDescription = null,
                 modifier = Modifier
                     .padding(start = ContentPadding.medium)
-                    .sharedElement(Console.ID_EQ_BARS)
+                    .sharedElement(Console.ID_PLAYING_INDICATOR)
                     .lottie()
                     .align(Alignment.CenterStart),
                 tint = Color.SignalWhite

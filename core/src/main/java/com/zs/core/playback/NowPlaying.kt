@@ -41,7 +41,7 @@ class NowPlaying(
 ) {
     // This time when this was generated.
     val timeStamp = System.currentTimeMillis()
-    val isVideo = mimeType?.startsWith("video") == false
+    val isVideo = mimeType?.startsWith("video") == true
 
     val playing = playWhenReady && state != Player.STATE_ENDED
 

@@ -187,7 +187,7 @@ fun MistyTunes(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     // Placeholder for playingbars
-                    Spacer(Modifier.sharedElement(Console.ID_EQ_BARS))
+                    Spacer(Modifier.sharedElement(Console.ID_PLAYING_INDICATOR))
                     // Skip to previous
                     IconButton(
                         onClick = { onAction(Widget.ACTION_SKIP_TO_PREVIOUS) },
@@ -222,7 +222,6 @@ fun MistyTunes(
                         contentDescription = null,
                         modifier = Modifier.sharedElement(Console.ID_BTN_SKIP_TO_NEXT)
                     )
-
                     // Expand to fill
                     IconButton(
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,

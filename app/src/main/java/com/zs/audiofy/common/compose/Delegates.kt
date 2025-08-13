@@ -19,7 +19,6 @@
 package com.zs.audiofy.common.compose
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.FloatRange
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
@@ -29,7 +28,6 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Image
@@ -54,12 +52,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
+import androidx.constraintlayout.compose.ConstrainScope
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintLayoutBaseScope
 import androidx.constraintlayout.compose.ConstraintSetScope
-import androidx.constraintlayout.compose.HorizontalChainReference
 import androidx.constraintlayout.compose.HorizontalChainScope
-import androidx.constraintlayout.compose.VerticalChainReference
 import androidx.constraintlayout.compose.VerticalChainScope
 import androidx.constraintlayout.compose.Visibility
 import androidx.navigation.NavBackStackEntry
@@ -78,7 +75,6 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
-import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import com.zs.compose.theme.Placeholder
 import com.zs.compose.theme.text.Label
@@ -111,7 +107,7 @@ private const val TAG = "Delegates"
 fun lottieAnimationPainter(
     @RawRes id: Int,
     atEnd: Boolean,
-    dynamicProperties: LottieDynamicProperties?= null,
+    dynamicProperties: LottieDynamicProperties? = null,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     animationSpec: AnimationSpec<Float>? = null,
 ): Painter {
@@ -163,7 +159,7 @@ inline fun LottieAnimatedIcon(
             id = id,
             atEnd = atEnd,
             progressRange = progressRange,
-           animationSpec = animationSpec
+            animationSpec = animationSpec
         ),
         tint = tint,
         contentDescription = contentDescription,
@@ -215,7 +211,7 @@ fun lottieAnimationPainter(
     @RawRes id: Int,
     speed: Float = 1f,
     isPlaying: Boolean = true,
-    dynamicProperties: LottieDynamicProperties?= null,
+    dynamicProperties: LottieDynamicProperties? = null,
     repeatMode: RepeatMode = RepeatMode.Restart,
     iterations: Int = Int.MAX_VALUE,
 ): Painter {
@@ -448,9 +444,9 @@ fun ConstraintSetScope.horizontal(
     constrain(chain, constrainBlock)
     // align all with first
     val first = alignBy ?: elements.first()
-    for (element in elements){
+    for (element in elements) {
         if (element == first) continue
-        constrain(element){
+        constrain(element) {
             top.linkTo(first.top)
             bottom.linkTo(first.bottom)
         }
@@ -468,9 +464,9 @@ fun ConstraintSetScope.vertical(
     constrain(chain, constrainBlock)
     // align all with first
     val first = elements.first()
-    for (element in elements){
+    for (element in elements) {
         if (element == first) continue
-        constrain(element){
+        constrain(element) {
             start.linkTo(first.start)
             end.linkTo(first.end)
         }
@@ -485,7 +481,7 @@ fun HorizontalChainScope.linkTo(
     endMargin: Dp = 0.dp,
     startGoneMargin: Dp = 0.dp,
     endGoneMargin: Dp = 0.dp,
-){
+) {
     this.start.linkTo(
         anchor = start,
         margin = startMargin,
@@ -500,15 +496,33 @@ fun HorizontalChainScope.linkTo(
 }
 
 
+
 fun ConstraintSetScope.hide(
     vararg elements: ConstrainedLayoutReference,
+    visibility: Visibility = Visibility.Invisible
 ) {
     for (element in elements)
         constrain(element) {
-            visibility = Visibility.Gone
-            // TODO - Position these so as to get a nice animation when shown again.
+            this.visibility = visibility
         }
 }
+
+/**
+ * Sets the width and height of this [ConstrainScope] to the same [androidx.constraintlayout.compose.Dimension] value.
+ *
+ * This property allows you to easily set both width and height to a common dimension,
+ * simplifying the layout constraints.
+ *
+ * **Note:** Getting the value of this property is not supported and will result in an error.
+ *
+ * @see androidx.constraintlayout.compose.Dimension
+ */
+var ConstrainScope.dimensions: androidx.constraintlayout.compose.Dimension
+    set(value) {
+        width = value
+        height = value
+    }
+    get() = error("Operation not supported.")
 
 /**
  * @see androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="what_s_new_latest" translatable="false">
-       <b>What’s New <font color='yellow'>(v4.0.0-dev10)</font></b>
+       <b>What’s New <font color='yellow'>(v4.0.0-dev11)</font></b>
         <font color='grey'>
             \n - Added support compact layout in support Console, new rich animations.
             \n - Major app <b>redesign</b> with improved performance and structure.

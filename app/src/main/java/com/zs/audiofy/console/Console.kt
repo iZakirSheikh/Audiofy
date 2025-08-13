@@ -22,14 +22,11 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.zs.audiofy.common.compose.LocalSystemFacade
-import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.sharedBounds
 
@@ -40,8 +37,8 @@ import com.zs.compose.theme.sharedBounds
 object Console {
     private const val TAG = "Console"
 
-    // Layout IDs
-    const val ID_EQ_BARS = "_eq_bars"
+    // Component IDs
+    const val ID_PLAYING_INDICATOR = "_playing_indicator"
     const val ID_BTN_COLLAPSE = "_btn_collapse"
     const val ID_ARTWORK = "_artwork"
     const val ID_TITLE = "_title"
@@ -66,6 +63,7 @@ object Console {
     const val ID_BTN_MEDIA_INFO = "_media_info"
     const val ID_BTN_LIKED = "_liked"
     const val ID_BTN_MORE = "_more"
+
     // Actions
     const val ACTION_COLLAPSE = 0
     const val ACTION_TOGGLE_ROTATION_LOCK = 1
@@ -92,14 +90,11 @@ object Console {
         val facade = LocalSystemFacade.current
         val detailsOf by remember { mutableIntStateOf(ACTION_SHOW_NONE) }
         val insets = WindowInsets.systemBars
-        CompositionLocalProvider(LocalContentColor provides AppTheme.colors.onBackground) {
-            PlayerView(
-                viewState = viewState,
-                background = STYLE_BG_SIMPLE,
-                insets = insets,
-                onNewAction = { facade.showToast("Feature not implemented yet!!"); false },
-                modifier = Modifier.sharedBounds(ID_BACKGROUND)
-            )
-        }
+        PlayerView(
+            viewState = viewState,
+            insets = insets,
+            onNewAction = { facade.showToast("Feature not implemented yet!!"); false },
+            modifier = Modifier.sharedBounds(ID_BACKGROUND)
+        )
     }
 }
