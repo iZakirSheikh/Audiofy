@@ -1,9 +1,9 @@
 [versions]
 agp = "8.12.0"
-kotlin = "2.2.0"
-compose = "1.9.0-rc01"
+kotlin = "2.2.10"
+compose = "1.9.0"
 media3 = "1.8.0"
-toolkit = "3.7.0-dev"
+toolkit = "3.7.2-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
 junit = "4.13.2"
@@ -31,7 +31,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.1
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
-chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.9" }
+chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.10" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
@@ -42,7 +42,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compo
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.8.3" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.0" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
 androidx-animation-compose = {module= "androidx.compose.animation:animation-graphics", version.ref = "compose"}

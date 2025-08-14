@@ -55,7 +55,7 @@ android {
 
     defaultConfig {
         applicationId = "com.prime.player"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 1013
         versionName = "4.0.0-dev11"

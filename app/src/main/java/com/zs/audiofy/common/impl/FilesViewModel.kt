@@ -157,7 +157,7 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
         remote.play(true)
         // when new playlist is loaded ensure; repeat mode is set to all because idiots don't seem
         // to notice.
-        remote.setRepeatMode(Remote.REPEAT_MODE_ALL)
+        remote.setRepeatMode(Remote.REPEAT_MODE_OFF)
         if (index != -1)
             remote.seekTo(index)
         showPlatformToast(message = R.string.playing)
