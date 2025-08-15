@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 /*
  * Copyright 2025 Zakir Sheikh
  *
@@ -16,13 +18,12 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.zs.audiofy.console
 
-import android.graphics.BlendMode
 import android.text.format.DateUtils
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -34,7 +35,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Fullscreen
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.MoreHoriz
@@ -60,10 +60,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.ContentPadding
+import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.lottie
@@ -71,6 +71,7 @@ import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
 import com.zs.compose.foundation.ImageBrush
+import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
@@ -79,6 +80,7 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
+import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
@@ -109,15 +111,29 @@ fun PlayerView(
     onNewAction: (code: Int) -> Boolean,
     modifier: Modifier = Modifier
 ) {
-    val bgStyle = Console.STYLE_BG_SIMPLE
     // collect the state.
-    val _state by viewState.state.collectAsState()
-    val state = _state ?: NonePlaying
+    val s by viewState.state.collectAsState()
+    val state = s ?: NonePlaying
+    // Calculate background and onColor
+    val isVideo = state.isVideo
+    val background = if (isVideo) Console.STYLE_BG_BLACK else Console.STYLE_BG_SIMPLE
+    val onColor = when (background) {
+        Console.STYLE_BG_SIMPLE, Console.STYLE_BG_AMBIENT -> AppTheme.colors.onBackground
+        Console.STYLE_BG_BLACK -> Color.SignalWhite
+        else -> AppTheme.colors.onBackground
+    }
+    val navController = LocalNavController.current
+    val onNavigateBack:() -> Unit  =  {
+        val handled = onNewAction(Console.ACTION_BACK_PRESS)
+        if (!handled)
+            navController.navigateUp()
+    }
+    BackHandler(onBack = onNavigateBack)
+
     // calculate the new constraints
     val clazz = LocalWindowSize.current
     val ldr = LocalLayoutDirection.current
     val density = LocalDensity.current
-    val isVideo = state.isVideo
     val only by remember { mutableStateOf(emptyArray<String>()) }
     val constraints = remember(clazz, insets, isVideo, only) {
         val dpInsets = with(density) {
@@ -131,15 +147,15 @@ fun PlayerView(
         }
         calculateConstraintSet(clazz, dpInsets, isVideo, only)
     }
-
-    CompositionLocalProvider(LocalContentColor provides AppTheme.colors.onBackground) {
+    // Propagate onColor - Maybe add animation.
+    CompositionLocalProvider(LocalContentColor provides onColor) {
         // Build The layout
         ConstraintLayout(
             constraintSet = constraints.value,
             modifier = modifier,
-            animateChangesSpec = AppTheme.motionScheme.defaultSpatialSpec(),
+            animateChangesSpec = tween(),
             content = {
-                // Background
+                // Background - Maybe add Crossfade effect.
                 Spacer(
                     modifier = Modifier
                         .layoutId(Console.ID_BACKGROUND)
@@ -147,10 +163,23 @@ fun PlayerView(
                         .visualEffect(ImageBrush.NoiseBrush)
                 )
 
+                // Video Placeholder.
+                if (isVideo) {
+                    Spacer(
+                        modifier = Modifier
+                            .key(Console.ID_VIDEO_SURFACE)
+                            .background(Color.Black)
+                    )
+                    // Scrim
+                    Spacer(
+                        modifier = Modifier.layoutId(Console.ID_SCRIM).background(Color.Black.copy(0.3f))
+                    )
+                }
+
                 // Collapse
                 IconButton(
                     icon = Icons.Outlined.ExpandMore,
-                    onClick = { },
+                    onClick = onNavigateBack,
                     modifier = Modifier
                         .key(Console.ID_BTN_COLLAPSE)
                         .border(AppTheme.colors.shine, CircleShape)
@@ -163,18 +192,13 @@ fun PlayerView(
                 Icon(
                     painter = lottieAnimationPainter(R.raw.playback_indicator, isPlaying = state.playing),
                     contentDescription = null,
-                    modifier = Modifier
-                        .padding(horizontal = ContentPadding.small)
-                        .lottie()
-                        .key(Console.ID_PLAYING_INDICATOR),
+                    modifier = Modifier.padding(horizontal = ContentPadding.small).lottie().key(Console.ID_PLAYING_INDICATOR),
                     tint = AppTheme.colors.accent
                 )
 
                 // Title
                 Box(
-                    modifier = Modifier
-                        .key(Console.ID_TITLE)
-                        .clipToBounds(),
+                    modifier = Modifier.key(Console.ID_TITLE).clipToBounds(),
                     content = {
                         Label(
                             text = state.title ?: stringResource(id = R.string.unknown),
@@ -186,19 +210,18 @@ fun PlayerView(
                 )
 
                 // Subtitle
-                val contentColor = LocalContentColor.current
                 Label(
                     text = state.subtitle ?: "",
                     style = AppTheme.typography.label3,
                     modifier = Modifier.key(Console.ID_SUBTITLE),
-                    color = contentColor.copy(ContentAlpha.medium)
+                    color = onColor.copy(ContentAlpha.medium)
                 )
 
                 // Extra-info
                 val chronometer = state.chronometer
                 Label(
                     style = AppTheme.typography.label3,
-                    color = contentColor.copy(ContentAlpha.medium),
+                    color = onColor.copy(ContentAlpha.medium),
                     modifier = Modifier.key(Console.ID_POSITION),
                     text = buildString {
                         val elapsed = chronometer.elapsed
@@ -234,7 +257,7 @@ fun PlayerView(
                     progressRange = 0f..0.8f,
                     scale = 1.5f,
                     contentDescription = null,
-                    tint = if (state.shuffle) AppTheme.colors.accent else contentColor.copy(ContentAlpha.disabled),
+                    tint = if (state.shuffle) AppTheme.colors.accent else onColor.copy(ContentAlpha.disabled),
                     modifier = Modifier.key(Console.ID_SHUFFLE)
                 )
 
@@ -264,7 +287,7 @@ fun PlayerView(
                         Icon(
                             painter = AnimVectorPainter(R.drawable.avd_repeat_more_one_all, mode == Remote.REPEAT_MODE_ALL),
                             contentDescription = null,
-                            tint = contentColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
+                            tint = onColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
                         )
                     },
                     modifier = Modifier.key(Console.ID_BTN_REPEAT_MODE)
@@ -274,6 +297,7 @@ fun PlayerView(
                 PlayButton(
                     onClick = viewState::togglePlay,
                     isPlaying = state.playing,
+                    style = if (isVideo) Console.STYLE_PLAY_BUTTON_SIMPLE else Console.STYLE_PLAY_OUTLINED,
                     modifier = Modifier.key(Console.ID_BTN_PLAY_PAUSE)
                 )
 
@@ -345,9 +369,9 @@ fun PlayerView(
                     Artwork(
                         model = state.artwork,
                         modifier = Modifier.key(Console.ID_ARTWORK),
-                        border = 3.dp,
+                        border = 4.dp,
                         shape = AppTheme.shapes.xLarge,
-                        shadow = 4.dp
+                        shadow = 12.dp
                     )
                     return@ConstraintLayout
                 }
@@ -357,25 +381,7 @@ fun PlayerView(
                     icon = Icons.Outlined.Fullscreen,
                     contentDescription = null,
                     onClick = {},
-                    tint = contentColor,
                     modifier = Modifier.layoutId(Console.ID_BTN_RESIZE_MODE)
-                )
-
-                // Video
-                // Placeholder.
-                Spacer(
-                    modifier = Modifier
-                        .key(Console.ID_VIDEO_SURFACE)
-                        .zIndex(0.1f)
-                        .background(Color.Black)
-                )
-
-                // Scrim
-                Spacer(
-                    modifier = Modifier
-                        .zIndex(0.11f)
-                        .layoutId(Console.ID_SCRIM)
-                        .background(Color.Black.copy(0.3f))
                 )
             }
         )

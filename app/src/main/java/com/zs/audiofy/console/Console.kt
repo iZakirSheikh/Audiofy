@@ -78,6 +78,7 @@ object Console {
     // Background style
     const val STYLE_BG_SIMPLE = 0
     const val STYLE_BG_AMBIENT = 1
+    const val STYLE_BG_BLACK = 2
     // play button style
     const val STYLE_PLAY_BUTTON_SIMPLE = 0
     const val STYLE_PLAY_OUTLINED = 1

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -57,6 +58,7 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ButtonDefaults
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
+import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.SliderDefaults
@@ -107,16 +109,11 @@ inline fun Artwork(
     }
 }
 
-/**
- * Composes a simple button representation for Player Console view.
- * @param style Button style from [Console]  e.g., [Console.PLAY_BTN_STYLE_SIMPLE]
- */
 @Composable
-fun PlayButton(
+private fun OutlinedPlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
-    style: Int = Console.STYLE_PLAY_BUTTON_SIMPLE,
 ) {
     Surface(
         onClick = onClick,
@@ -141,6 +138,45 @@ fun PlayButton(
             )
         }
     )
+}
+
+@Composable
+private fun SimplePlayButton(
+    onClick: () -> Unit,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(onClick = onClick, modifier = modifier) {
+        Icon(
+            painter = lottieAnimationPainter(
+                id = R.raw.lt_play_pause,
+                atEnd = isPlaying,
+                progressRange = 0.0f..0.29f,
+                animationSpec = tween(easing = LinearEasing)
+            ),
+            modifier = Modifier.lottie(1.5f),
+            contentDescription = null
+        )
+    }
+}
+
+/**
+ * Composes a simple button representation for Player Console view.
+ * @param style Button style from [Console]  e.g., [Console.PLAY_BTN_STYLE_SIMPLE]
+ */
+@Composable
+@NonRestartableComposable
+fun PlayButton(
+    onClick: () -> Unit,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier,
+    style: Int = Console.STYLE_PLAY_BUTTON_SIMPLE,
+) {
+   when(style){
+       Console.STYLE_PLAY_OUTLINED -> OutlinedPlayButton(onClick, isPlaying, modifier)
+       Console.STYLE_PLAY_BUTTON_SIMPLE -> SimplePlayButton(onClick, isPlaying, modifier)
+       else -> error("Invalid style $style")
+   }
 }
 
 /**
