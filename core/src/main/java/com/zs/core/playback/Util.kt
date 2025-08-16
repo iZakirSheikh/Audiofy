@@ -153,15 +153,15 @@ fun Audio.toMediaFile() =
  * methods to attach or clear [SurfaceView] / [TextureView] as video surfaces.
  */
 @JvmInline
-value class VideoProvider(private val player: Any? = null) {
+value class VideoProvider(val value: Any? = null) {
 
     /** `true` if no player is attached. */
     val isEmpty: Boolean
-        get() = player == null
+        get() = value == null
 
     /** `true` if the player supports [Player.COMMAND_SET_VIDEO_SURFACE]. */
     val canSetVideoSurface: Boolean
-        get() = (player as? Player)?.isCommandAvailable(Player.COMMAND_SET_VIDEO_SURFACE) == true
+        get() = (value as? Player)?.isCommandAvailable(Player.COMMAND_SET_VIDEO_SURFACE) == true
 
     /**
      * Attaches the given [view] as a video surface.
@@ -170,8 +170,8 @@ value class VideoProvider(private val player: Any? = null) {
      */
     fun setVideoSurfaceView(view: View) {
         when (view) {
-            is SurfaceView -> (player as? Player)?.setVideoSurfaceView(view)
-            is TextureView -> (player as? Player)?.setVideoTextureView(view)
+            is SurfaceView -> (value as? Player)?.setVideoSurfaceView(view)
+            is TextureView -> (value as? Player)?.setVideoTextureView(view)
             else -> throw IllegalArgumentException("Invalid view type $view")
         }
     }
@@ -183,8 +183,8 @@ value class VideoProvider(private val player: Any? = null) {
      */
     fun clearVideoSurfaceView(view: View) {
         when (view) {
-            is SurfaceView -> (player as? Player)?.clearVideoSurfaceView(view)
-            is TextureView -> (player as? Player)?.clearVideoTextureView(view)
+            is SurfaceView -> (value as? Player)?.clearVideoSurfaceView(view)
+            is TextureView -> (value as? Player)?.clearVideoTextureView(view)
             else -> throw IllegalArgumentException("Invalid view type $view")
         }
     }

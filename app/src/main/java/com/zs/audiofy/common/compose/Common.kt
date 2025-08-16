@@ -313,7 +313,7 @@ fun VideoSurface(
 
                 // Remember the current provider in the SurfaceView's tag,
                 // so we can detect changes in future recompositions.
-                surface.tag = provider
+                surface.tag = provider.value
             }
         },
 

@@ -11,7 +11,57 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # full git history
 
+      # Generate release notes from commit messages, restricted by 3
+      - name: Generate Release Notes
+        id: notes
+        run: |
+          git fetch --tags --unshallow || true
+
+          MAX_COMMITS=3
+
+          if git describe --tags --abbrev=0 --first-parent >/dev/null 2>&1; then
+            last_tag=$(git describe --tags --abbrev=0 --first-parent)
+            echo "Last tag on this branch: $last_tag"
+          else
+            echo "⚠️ No tags found on this branch, using HEAD~$MAX_COMMITS."
+            last_tag=""
+          fi
+
+          if [ -z "$last_tag" ]; then
+            if git rev-parse HEAD~$MAX_COMMITS >/dev/null 2>&1; then
+              notes=$(git log HEAD~$MAX_COMMITS..HEAD --no-merges --first-parent \
+                --pretty=format:"* %s (%h)%n%b%n")
+            else
+              notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
+                --pretty=format:"* %s (%h)%n%b%n")
+            fi
+          else
+            echo "Last tag on this branch: $last_tag"
+
+            commit_count=$(git rev-list ${last_tag}..HEAD --no-merges --first-parent --count)
+            echo "Commits since last tag: $commit_count"
+
+            if [ "$commit_count" -le "$MAX_COMMITS" ]; then
+              notes=$(git log ${last_tag}..HEAD --no-merges --first-parent \
+                --pretty=format:"* %s (%h)%n%b%n")
+            else
+              notes=$(git log ${last_tag}..HEAD --no-merges --first-parent -n $MAX_COMMITS \
+                --pretty=format:"* %s (%h)%n%b%n")
+            fi
+          fi
+
+          if [ -z "$notes" ]; then
+            notes="No new commits since last release."
+          fi
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$notes" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # Cache Gradle
       - name: Cache Gradle Dependencies
         uses: actions/cache@v3
         with:
@@ -111,8 +161,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.GIT_TAG }}
-          generate_release_notes: true
-          changesNotSentForReview: false
+          generate_release_notes: false
+          body: ${{ steps.notes.outputs.notes }}
           prerelease: true
           files: |
             ${{steps.signed_aab.outputs.signedReleaseFile}}
