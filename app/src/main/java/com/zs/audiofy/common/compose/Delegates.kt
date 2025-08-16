@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.common.compose
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.compose.animation.AnimatedContent
@@ -42,12 +43,15 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -71,6 +75,7 @@ import com.airbnb.lottie.compose.rememberLottiePainter
 import com.zs.audiofy.common.Route
 import com.zs.audiofy.common.SystemFacade
 import com.zs.compose.foundation.composableIf
+import com.zs.compose.foundation.foreground
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.compose.theme.Icon
@@ -80,6 +85,7 @@ import com.zs.compose.theme.Placeholder
 import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.billing.Purchase
+import com.zs.core.playback.VideoSize
 import com.zs.preferences.Key
 import kotlin.math.roundToInt
 
@@ -533,3 +539,50 @@ inline fun rememberAnimatedVectorPainter(@DrawableRes id: Int, atEnd: Boolean) =
     androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter(
         animatedImageVector = AnimatedImageVector.animatedVectorResource(id = id), atEnd = atEnd
     )
+
+/**
+ * Resizes and lays out content using the given [ContentScale],
+ * ensuring the [original] [VideoSize] is properly inscribed into
+ * the destination constraints.
+ *
+ * - Skips resizing if [original] is unspecified.
+ * - Computes a scale factor using [contentScale].
+ * - Applies scaled width/height as layout constraints.
+ */
+@Composable
+fun Modifier.resize(
+    contentScale: ContentScale,
+    original: VideoSize,
+): Modifier = if (!original.isSpecified) foreground(Color.Black) else layout { measurable, constraints ->
+    // Compute the "source size" in pixels based on video ratio.
+    val scrSizePx = original.let {
+        val par = it.ratio
+        return@let when {
+            par < 1.0 -> Size(it.height.toFloat(), it.width.toFloat() * par) // Taller/narrower
+            par > 1.0 -> Size(it.width.toFloat(), it.height / par)           // Wider
+            else -> Size(it.width.toFloat(), it.height.toFloat())            // Normal aspect
+        }
+    }
+
+    // Destination size: area available to draw into.
+    val dstSizePx = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
+
+    // Compute how the source needs to scale to fit into the destination.
+    val scaleFactor = contentScale.computeScaleFactor(scrSizePx, dstSizePx)
+    Log.d(TAG, "resizeWithContentScale: $scrSizePx, $dstSizePx, $scaleFactor")
+
+    // Measure the child with scaled constraints.
+    val placeable = measurable.measure(
+        constraints.copy(
+            minWidth = 0, // allow shrinking if needed
+            minHeight = 0,
+            maxWidth = (scrSizePx.width * scaleFactor.scaleX).roundToInt(),
+            maxHeight = (scrSizePx.height * scaleFactor.scaleY).roundToInt(),
+        )
+    )
+
+    // Layout the child at (0,0).
+    layout(placeable.width, placeable.height) {
+        placeable.place(0, 0)
+    }
+}

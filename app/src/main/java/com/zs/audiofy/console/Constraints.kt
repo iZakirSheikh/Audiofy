@@ -569,7 +569,7 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>,) = object : Con
         // Video Surface
         constrain(REF_VIDEO_SURFACE) {
             linkTo(parent.start, parent.top, parent.end, parent.bottom)
-            dimensions = Dimension.fillToConstraints
+           // dimensions = Dimension.fillToConstraints
         }
 
 
@@ -653,7 +653,7 @@ private fun LargeVideo(insets: DpRect,   only: Array<String>,) = object : Constr
         // Video Surface
         constrain(REF_VIDEO_SURFACE) {
             linkTo(parent.start, parent.top, parent.end, parent.bottom)
-            dimensions = Dimension.fillToConstraints
+            dimensions = Dimension.wrapContent
         }
 
         // Collapse

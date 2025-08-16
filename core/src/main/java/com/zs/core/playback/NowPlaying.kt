@@ -38,6 +38,7 @@ class NowPlaying(
     val state: Int = Player.STATE_IDLE,
     val repeatMode: Int = Player.REPEAT_MODE_ALL,
     val error: String? = null,
+    val videoSize: VideoSize = VideoSize(),
 ) {
     // This time when this was generated.
     val timeStamp = System.currentTimeMillis()
@@ -65,6 +66,7 @@ class NowPlaying(
         if (state != other.state) return false
         if (repeatMode != other.repeatMode) return false
         if (error != other.error) return false
+        if (videoSize != other.videoSize) return false
 
         return true
     }
@@ -84,10 +86,28 @@ class NowPlaying(
         result = 31 * result + state
         result = 31 * result + repeatMode
         result = 31 * result + (error?.hashCode() ?: 0)
+        result = 31 * result + videoSize.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "NowPlaying(title='$title', subtitle='$subtitle', artwork=$artwork, speed=$speed, duration=$duration, position=$position, favourite=$favourite, playWhenReady=$playWhenReady, mimeType=$mimeType, timeStamp=$timeStamp, state=$state, repeatMode=$repeatMode, error=$error shuffle=$shuffle)"
+        return "NowPlaying(" +
+                "title=$title, " +
+                "subtitle=$subtitle," +
+                " artwork=$artwork," +
+                " speed=$speed," +
+                " shuffle=$shuffle," +
+                " duration=$duration," +
+                " position=$position," +
+                " favourite=$favourite," +
+                " playWhenReady=$playWhenReady," +
+                " mimeType=$mimeType," +
+                " state=$state," +
+                " repeatMode=$repeatMode," +
+                " error=$error," +
+                " videoSize=$videoSize," +
+                " timeStamp=$timeStamp," +
+                " isVideo=$isVideo," +
+                " playing=$playing)"
     }
 }

@@ -80,6 +80,7 @@ interface Remote {
 
     val state: StateFlow<NowPlaying?>
     val queue: Flow<List<MediaFile>>
+    suspend fun getViewProvider(): VideoProvider
 
     suspend fun setMediaFiles(values: List<MediaFile>): Int
 

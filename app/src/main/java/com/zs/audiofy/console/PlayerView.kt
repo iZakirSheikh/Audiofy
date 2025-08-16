@@ -22,6 +22,7 @@ package com.zs.audiofy.console
 
 import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -29,6 +30,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -65,10 +68,12 @@ import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LottieAnimatedButton
+import com.zs.audiofy.common.compose.VideoSurface
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
+import com.zs.audiofy.common.compose.resize
 import com.zs.audiofy.common.compose.shine
 import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.SignalWhite
@@ -80,7 +85,6 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
-import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
@@ -156,20 +160,38 @@ fun PlayerView(
             animateChangesSpec = tween(),
             content = {
                 // Background - Maybe add Crossfade effect.
-                Spacer(
-                    modifier = Modifier
-                        .layoutId(Console.ID_BACKGROUND)
-                        .background(AppTheme.colors.background(1.dp))
-                        .visualEffect(ImageBrush.NoiseBrush)
+                Crossfade(
+                    background,
+                    modifier = Modifier.layoutId(Console.ID_BACKGROUND),
+                    content = { value ->
+                        when (value) {
+                            Console.STYLE_BG_SIMPLE -> Spacer(
+                                Modifier
+                                    .background(AppTheme.colors.background)
+                                    .fillMaxSize()
+                            )
+
+                            Console.STYLE_BG_BLACK -> Spacer(
+                                Modifier
+                                    .background(Color.Black)
+                                    .fillMaxSize()
+                            )
+                        }
+                    }
                 )
+
 
                 // Video Placeholder.
                 if (isVideo) {
-                    Spacer(
+                    val provider = viewState.provider
+                    VideoSurface(
+                        provider = provider,
+                        keepScreenOn = state.playWhenReady,
                         modifier = Modifier
                             .key(Console.ID_VIDEO_SURFACE)
-                            .background(Color.Black)
+                            .resize(ContentScale.Fit, state.videoSize)
                     )
+
                     // Scrim
                     Spacer(
                         modifier = Modifier.layoutId(Console.ID_SCRIM).background(Color.Black.copy(0.3f))

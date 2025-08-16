@@ -61,6 +61,7 @@ private val UPDATE_EVENTS = intArrayOf(
     Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
     Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
     Player.EVENT_MEDIA_ITEM_TRANSITION,
+    Player.EVENT_VIDEO_SIZE_CHANGED,
 )
 
 
@@ -117,6 +118,8 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
                     current.mimeType,
                     provider.playbackState,
                     provider.repeatMode,
+                    null,
+                    VideoSize(provider.videoSize)
                 )
             }
         }
@@ -125,6 +128,8 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
 
 
     override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
+
+    override suspend fun getViewProvider(): VideoProvider = VideoProvider(fBrowser.await())
 
     override suspend fun setMediaFiles(values: List<MediaFile>): Int {
         val browser = fBrowser.await()

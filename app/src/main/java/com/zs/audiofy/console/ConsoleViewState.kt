@@ -21,6 +21,7 @@ package com.zs.audiofy.console
 import android.net.Uri
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.NowPlaying
+import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.StateFlow
 
 object RouteConsole: Route
@@ -29,6 +30,7 @@ interface ConsoleViewState {
 
     val state: StateFlow<NowPlaying?>
     val isLiked: Boolean
+    val provider: VideoProvider
 
     fun skipToNext()
     fun skipToPrev()

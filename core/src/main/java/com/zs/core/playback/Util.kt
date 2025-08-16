@@ -24,10 +24,14 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -141,3 +145,73 @@ fun Playlist.Track.toMediaFile() = MediaFile(
  */
 fun Audio.toMediaFile() =
     MediaFile(uri, name, artist, artworkUri, mimeType)
+
+/**
+ * Lightweight wrapper around a [Player] to manage video surfaces.
+ *
+ * Provides safe checks ([isEmpty], [canSetVideoSurface]) and helper
+ * methods to attach or clear [SurfaceView] / [TextureView] as video surfaces.
+ */
+@JvmInline
+value class VideoProvider(private val player: Any? = null) {
+
+    /** `true` if no player is attached. */
+    val isEmpty: Boolean
+        get() = player == null
+
+    /** `true` if the player supports [Player.COMMAND_SET_VIDEO_SURFACE]. */
+    val canSetVideoSurface: Boolean
+        get() = (player as? Player)?.isCommandAvailable(Player.COMMAND_SET_VIDEO_SURFACE) == true
+
+    /**
+     * Attaches the given [view] as a video surface.
+     *
+     * @throws IllegalArgumentException if the view is not [SurfaceView] or [TextureView].
+     */
+    fun setVideoSurfaceView(view: View) {
+        when (view) {
+            is SurfaceView -> (player as? Player)?.setVideoSurfaceView(view)
+            is TextureView -> (player as? Player)?.setVideoTextureView(view)
+            else -> throw IllegalArgumentException("Invalid view type $view")
+        }
+    }
+
+    /**
+     * Clears the given [view] from being used as a video surface.
+     *
+     * @throws IllegalArgumentException if the view is not [SurfaceView] or [TextureView].
+     */
+    fun clearVideoSurfaceView(view: View) {
+        when (view) {
+            is SurfaceView -> (player as? Player)?.clearVideoSurfaceView(view)
+            is TextureView -> (player as? Player)?.clearVideoTextureView(view)
+            else -> throw IllegalArgumentException("Invalid view type $view")
+        }
+    }
+}
+
+/**
+ * Wrapper around [VideoSize] providing convenience accessors.
+ *
+ * Helps check if the size is specified and exposes width, height,
+ * and pixel aspect ratio directly.
+ */
+@JvmInline
+value class VideoSize(private val value: VideoSize = VideoSize.UNKNOWN) {
+
+    /** `true` if the size is not [VideoSize.UNKNOWN]. */
+    val isSpecified: Boolean
+        get() = value != VideoSize.UNKNOWN
+
+    /** Video width in pixels. */
+    val width: Int
+        get() = value.width
+
+    /** Video height in pixels. */
+    val height: Int
+        get() = value.height
+
+    /** Pixel width-to-height ratio. */
+    val ratio: Float
+        get() = value.pixelWidthHeightRatio
+}

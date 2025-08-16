@@ -19,6 +19,7 @@
 package com.zs.audiofy.common.compose
 
 import android.util.Log
+import android.view.SurfaceView
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -41,9 +42,11 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.zs.compose.theme.AppTheme
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
+import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
@@ -155,10 +158,13 @@ value class Chronometer private constructor(private val state: MutableLongState)
     fun progress(duration: Long): Float {
         // If duration is not set or invalid, or elapsed time is N/A,
         // it's not possible to calculate meaningful progress.
-        val progress =  when {
+        val progress = when {
             elapsed == 0L -> 0f // if nothing has elapsed; just set it to
             duration == Remote.TIME_UNSET -> 1.0f // Treat as fully progressed if duration is unknown.
-            else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(0.0f, 1.0f) // Standard progress calculation.
+            else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(
+                0.0f,
+                1.0f
+            ) // Standard progress calculation.
         }
         // if user scroller; don't animate.
         if (raw > 0)
@@ -215,7 +221,8 @@ val NowPlaying.chronometer: Chronometer
     get() {
         // Create and remember a Chronometer instance, initialized with the current position.
         // This ensures the chronometer state persists across recompositions.
-        val chronometer = remember { Chronometer(if (position == Remote.TIME_UNSET) 0 else position) }
+        val chronometer =
+            remember { Chronometer(if (position == Remote.TIME_UNSET) 0 else position) }
 
         // Restart this effect whenever the NowPlaying object changes.
         LaunchedEffect(this) {
@@ -230,7 +237,8 @@ val NowPlaying.chronometer: Chronometer
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
             // Use 0 if position is unknown; otherwise, store as a negative value.
-            chronometer.raw = if (position == Remote.TIME_UNSET || state < Remote.PLAYER_STATE_READY) 0 else -current
+            chronometer.raw =
+                if (position == Remote.TIME_UNSET || state < Remote.PLAYER_STATE_READY) 0 else -current
             // Exit early if:
             // 1. The position is unknown,
             // 2. Playback has completed,
@@ -259,3 +267,65 @@ val NowPlaying.chronometer: Chronometer
         }
         return chronometer
     }
+
+/**
+ * A Composable that hosts a [SurfaceView] and attaches it to the given [VideoProvider].
+ *
+ * This Composable ensures that the [SurfaceView] is correctly bound to the player's video output,
+ * while also managing reattachment if a different [VideoProvider] is passed on recomposition.
+ *
+ * ### Key behaviors:
+ * - Creates and manages a [SurfaceView] inside Compose using [AndroidView].
+ * - Keeps the screen awake during playback if [keepScreenOn] is `true`.
+ * - Handles safe switching: detaches the [SurfaceView] from an old [VideoProvider] before attaching it to a new one.
+ * - Automatically clears the video surface when the [SurfaceView] is released (e.g., disposed).
+ *
+ * @param provider The [VideoProvider] representing the player instance that will receive the video surface.
+ * @param modifier [Modifier] for layout adjustments (e.g., size, padding).
+ * @param keepScreenOn Whether to keep the device screen awake while this surface is active.
+ */
+@Composable
+fun VideoSurface(
+    provider: VideoProvider,
+    modifier: Modifier = Modifier,
+    keepScreenOn: Boolean = false
+) {
+    AndroidView(
+        modifier = modifier,
+
+        // Factory: creates a new SurfaceView when this Composable first enters the composition.
+        factory = ::SurfaceView,
+
+        // Update: called on every recomposition to keep the SurfaceView in sync.
+        update = { surface ->
+            Log.d(TAG, "VideoSurface: updating")
+            // Prevents the screen from turning off during video playback.
+            surface.keepScreenOn = keepScreenOn
+
+            // Wrap the tag in a VideoProvider to check which provider is currently attached.
+            val attached = VideoProvider(surface.tag)
+
+            // If this SurfaceView is either unbound (isEmpty) OR bound to a different provider,
+            // detach it from the old provider and reattach it to the new one.
+            if (attached.isEmpty || (attached != provider && attached.canSetVideoSurface)) {
+                attached.clearVideoSurfaceView(surface)
+                provider.setVideoSurfaceView(surface)
+
+                // Remember the current provider in the SurfaceView's tag,
+                // so we can detect changes in future recompositions.
+                surface.tag = provider
+            }
+        },
+
+        // onRelease: called when the SurfaceView is being disposed (removed from the UI).
+        // Ensures that the player is properly detached from this surface.
+        onRelease = { surface ->
+            val attached = VideoProvider(surface.tag)
+            surface.keepScreenOn = false
+            if (attached.canSetVideoSurface) {
+                attached.clearVideoSurfaceView(surface)
+            }
+            Log.d(TAG, "VideoSurface: Releasing")
+        }
+    )
+}

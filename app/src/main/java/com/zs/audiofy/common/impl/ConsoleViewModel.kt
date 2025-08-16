@@ -1,18 +1,30 @@
 package com.zs.audiofy.common.impl
 
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
-import kotlinx.coroutines.flow.Flow
+import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 
 class ConsoleViewModel(val remote: Remote, playlists: Playlists): KoinViewModel(), ConsoleViewState {
     override val state: StateFlow<NowPlaying?> = remote.state
 
     override val isLiked: Boolean get() = false
+    override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
+
+    init {
+        viewModelScope.launch {
+            provider = remote.getViewProvider()
+        }
+    }
 
     override fun skipToNext() {
         runCatching {
