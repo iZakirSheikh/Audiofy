@@ -236,9 +236,9 @@ val NowPlaying.chronometer: Chronometer
             // Initialize the chronometer's raw value.
             // It's set to the negative of the `current` calculated position.
             // Negative values in `Chronometer` signify system-reported progress.
-            // Use 0 if position is unknown; otherwise, store as a negative value.
+            // Use 0 if position is unknown or state is idle; otherwise, store as a negative value.
             chronometer.raw =
-                if (position == Remote.TIME_UNSET || state < Remote.PLAYER_STATE_READY) 0 else -current
+                if (position == Remote.TIME_UNSET || state == Remote.PLAYER_STATE_IDLE) 0 else -current
             // Exit early if:
             // 1. The position is unknown,
             // 2. Playback has completed,

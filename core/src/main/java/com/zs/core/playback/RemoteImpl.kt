@@ -101,7 +101,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
             browser.removeListener(observer)
         }
     }
-        .debounceAfterFirst(100)
+        .debounceAfterFirst(200)
         .map { provider ->
             withContext(Dispatchers.Main) {
                 val current = provider.currentMediaItem
