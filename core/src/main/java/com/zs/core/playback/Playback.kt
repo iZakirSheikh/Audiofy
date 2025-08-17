@@ -357,7 +357,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             val tracks = items.mapIndexed { index, mediaItem -> mediaItem.toTrack(id, index) }
             playlists.insert(tracks)
             // Save the current shuffle order to preferences.
-            preferences[PREF_KEY_ORDERS] = player.orders.joinToString(LIST_ITEM_DELIMITER.toString())
+            preferences[PREF_KEY_ORDERS] =
+                player.orders.joinToString(LIST_ITEM_DELIMITER.toString())
         }
     }
 
@@ -417,9 +418,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         val available = ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
 
         // add commands to session.
-        available.add(SessionCommand(Remote.ACTION_AUDIO_SESSION_ID, Bundle.EMPTY))
-        available.add(SessionCommand(Remote.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY))
-        available.add(SessionCommand(Remote.ACTION_EQUALIZER_CONFIG, Bundle.EMPTY))
+        for (command in Remote.commands) {
+            available.add(command)
+        }
 
         // return the result.
         return ConnectionResult.AcceptedResultBuilder(session)
@@ -466,10 +467,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     override fun onCustomCommand(
         session: MediaSession, controller: ControllerInfo, command: SessionCommand, args: Bundle
     ): ListenableFuture<SessionResult> {
-        val action = command.customAction
-        return when (action) {
+        return when (command) {
             // Handle the command to retrieve the audio session ID from the player.
-            Remote.ACTION_AUDIO_SESSION_ID -> {
+            Remote.AUDIO_SESSION_ID -> {
                 // Retrieve the audio session ID from the ExoPlayer.
                 val audioSessionId = (player as ExoPlayer).audioSessionId
 
@@ -481,11 +481,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 // Return the result with the audio session ID.
                 Futures.immediateFuture(result)
             }
-
             // Handle sleep timer commands
-            Remote.ACTION_SCHEDULE_SLEEP_TIME -> {
+            Remote.SCHEDULE_SLEEP_TIME -> {
                 // Retrieve the scheduled time in milliseconds from the command's custom extras
-                val newTimeMills = command.customExtras.getLong(Remote.EXTRA_SCHEDULED_TIME_MILLS)
+                val newTimeMills = args.getLong(Remote.EXTRA_SCHEDULED_TIME_MILLS)
                 // If the new time is 0, it means the client wants to retrieve the sleep timer.
                 // If the new time is not zero, set the new sleep timer.
                 // FixMe: Consider setting the timer only when it's not equal to the default value
@@ -501,16 +500,16 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                         )
                     })
             }
-
-            Remote.ACTION_EQUALIZER_CONFIG -> {
+            // config
+            Remote.EQUALIZER_CONFIG -> {
                 // obtain the extras that are accompanied with this action.
-                val extras = command.customExtras
+                val extras = args
 
                 // if extras are empty means user wants to retrieve the equalizer saved config.
                 if (!extras.isEmpty) {
                     val isEqualizerEnabled =
-                        command.customExtras.getBoolean(Remote.EXTRA_EQUALIZER_ENABLED)
-                    val properties = command.customExtras.getString(
+                        args.getBoolean(Remote.EXTRA_EQUALIZER_ENABLED)
+                    val properties = args.getString(
                         Remote.EXTRA_EQUALIZER_PROPERTIES, null
                     )
                     // save in pref
@@ -533,7 +532,13 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                             runBlocking() { preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""] })
                     })
             }
-
+            //
+            Remote.SCRUBBING_MODE -> {
+                val enabled = args.getBoolean(Remote.EXTRA_SCRUBBING_MODE_ENABLED)
+                (player as ExoPlayer).isScrubbingModeEnabled = enabled
+                Log.d(TAG, "onCustomCommand: $enabled")
+                Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+            }
             // Handle unrecognized or unsupported commands.
             else -> Futures.immediateFuture(SessionResult(SessionError.ERROR_UNKNOWN))
         }

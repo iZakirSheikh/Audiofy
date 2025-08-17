@@ -36,7 +36,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import com.zs.core.common.await
 import com.zs.core.db.playlists.Playlist
 import com.zs.core.store.models.Audio
 
@@ -215,3 +218,33 @@ value class VideoSize(private val value: VideoSize = VideoSize.UNKNOWN) {
     val ratio: Float
         get() = value.pixelWidthHeightRatio
 }
+
+/**
+ * Sends a custom command to the [MediaBrowser] with the given arguments.
+ *
+ * @param command The command string.
+ * @param args A lambda function to apply arguments to the [Bundle].
+ * @return The [SessionResult] of the command.
+ */
+internal suspend inline operator fun MediaBrowser.set(command: SessionCommand, args: Bundle) {
+    sendCustomCommand(command, args).await()
+}
+
+/**
+ * Sends a custom command to the MediaBrowser and awaits the result.
+ *
+ * This operator function provides a concise way to send a [SessionCommand]
+ * to a [MediaBrowser] and suspend execution until the [SessionResult] is available.
+ * It uses an empty [Bundle] for the command arguments.
+ *
+ * @param command The [SessionCommand] to send.
+ * @return The [SessionResult] from the MediaBrowser.
+ * @see MediaBrowser.sendCustomCommand
+ * @see com.zs.core.common.await
+ */
+internal suspend inline operator fun MediaBrowser.get(command: SessionCommand) =
+    sendCustomCommand(command, Bundle.EMPTY).await()
+
+
+
+

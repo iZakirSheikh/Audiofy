@@ -5,6 +5,11 @@ on:
       - 'beta'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      max_commits:
+        description: "Release notes up to:"
+        required: false
+        default: "1"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,49 +23,23 @@ jobs:
       - name: Generate Release Notes
         id: notes
         run: |
-          git fetch --tags --unshallow || true
-
-          MAX_COMMITS=3
-
-          if git describe --tags --abbrev=0 --first-parent >/dev/null 2>&1; then
-            last_tag=$(git describe --tags --abbrev=0 --first-parent)
-            echo "Last tag on this branch: $last_tag"
-          else
-            echo "⚠️ No tags found on this branch, using HEAD~$MAX_COMMITS."
-            last_tag=""
-          fi
-
-          if [ -z "$last_tag" ]; then
-            if git rev-parse HEAD~$MAX_COMMITS >/dev/null 2>&1; then
-              notes=$(git log HEAD~$MAX_COMMITS..HEAD --no-merges --first-parent \
-                --pretty=format:"* %s (%h)%n%b%n")
-            else
-              notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
-                --pretty=format:"* %s (%h)%n%b%n")
-            fi
-          else
-            echo "Last tag on this branch: $last_tag"
-
-            commit_count=$(git rev-list ${last_tag}..HEAD --no-merges --first-parent --count)
-            echo "Commits since last tag: $commit_count"
-
-            if [ "$commit_count" -le "$MAX_COMMITS" ]; then
-              notes=$(git log ${last_tag}..HEAD --no-merges --first-parent \
-                --pretty=format:"* %s (%h)%n%b%n")
-            else
-              notes=$(git log ${last_tag}..HEAD --no-merges --first-parent -n $MAX_COMMITS \
-                --pretty=format:"* %s (%h)%n%b%n")
-            fi
-          fi
-
+          # Make sure we have enough commits fetched
+          git fetch --prune --unshallow 2>/dev/null || git fetch --prune
+          # Use MAX_COMMITS from workflow input, default to 1
+          MAX_COMMITS="${{ github.event.inputs.max_commits || 1 }}"
+          echo "Using MAX_COMMITS=$MAX_COMMITS"
+          
+          # Take the last MAX_COMMITS from the current branch only, no merges
+          notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
+            --pretty=format:"* %s (%h)%n%b%n")
+          # If there are no commits, provide a fallback message
           if [ -z "$notes" ]; then
-            notes="No new commits since last release."
+            notes="No new commits found."
           fi
-
+          # Output to GitHub Actions
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$notes" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
       # Cache Gradle
       - name: Cache Gradle Dependencies
         uses: actions/cache@v3

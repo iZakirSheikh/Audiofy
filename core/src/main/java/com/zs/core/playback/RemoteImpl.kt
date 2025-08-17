@@ -22,6 +22,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
@@ -31,6 +32,7 @@ import com.zs.core.common.debounceAfterFirst
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -185,7 +187,13 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         val duration = browser.duration
         if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET)
             return
+        browser[Remote.SCRUBBING_MODE] = bundleOf(
+            Remote.EXTRA_SCRUBBING_MODE_ENABLED to true
+        )
         browser.seekTo((duration * pct).toLong())
+        browser[Remote.SCRUBBING_MODE] = bundleOf(
+            Remote.EXTRA_SCRUBBING_MODE_ENABLED to false
+        )
     }
 
     override suspend fun indexOf(uri: Uri): Int {

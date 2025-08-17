@@ -21,9 +21,11 @@ package com.zs.core.playback
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import androidx.annotation.FloatRange
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.media3.session.SessionCommand
 import com.zs.core.db.playlists.Playlists
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -58,15 +60,24 @@ interface Remote {
         const val PLAYER_STATE_READY = Player.STATE_READY
         const val PLAYER_STATE_ENDED = Player.STATE_ENDED
 
-        //
+        // Commands
         private const val PREFIX = "com.prime.player"
-        internal const val ACTION_AUDIO_SESSION_ID = "$PREFIX.action.AUDIO_SESSION_ID"
-        internal const val EXTRA_AUDIO_SESSION_ID = "$PREFIX.extra.AUDIO_SESSION_ID"
-        internal const val ACTION_SCHEDULE_SLEEP_TIME = "$PREFIX.action.SCHEDULE_SLEEP_TIME"
-        internal const val EXTRA_SCHEDULED_TIME_MILLS = "$PREFIX.extra.AUDIO_SESSION_ID"
-        internal const val ACTION_EQUALIZER_CONFIG = "$PREFIX.extra.EQUALIZER"
-        internal const val EXTRA_EQUALIZER_ENABLED = "$PREFIX.extra.EXTRA_EQUALIZER_ENABLED"
-        internal const val EXTRA_EQUALIZER_PROPERTIES = "$PREFIX.extra.EXTRA_EQUALIZER_PROPERTIES"
+        internal val AUDIO_SESSION_ID = SessionCommand("_audio_session_id", Bundle.EMPTY)
+        internal const val EXTRA_AUDIO_SESSION_ID = "_audio_session_id"
+        internal val SCHEDULE_SLEEP_TIME = SessionCommand("_schedule_sleep_time", Bundle.EMPTY)
+        internal const val EXTRA_SCHEDULED_TIME_MILLS = "_audio_session_id"
+        internal val EQUALIZER_CONFIG = SessionCommand("_equalizer_config", Bundle.EMPTY)
+        internal const val EXTRA_EQUALIZER_PROPERTIES = "_extra_equalizer_properties"
+        internal const val EXTRA_EQUALIZER_ENABLED = "_extra_equalizer_enabled"
+        internal val SCRUBBING_MODE = SessionCommand("_scrubbing_mode", Bundle.EMPTY)
+        internal const val EXTRA_SCRUBBING_MODE_ENABLED = "_extra_scrubbing_mode_enabled"
+
+        internal val commands get() = arrayOf(
+            AUDIO_SESSION_ID,
+            SCHEDULE_SLEEP_TIME,
+            EQUALIZER_CONFIG,
+            SCRUBBING_MODE
+        )
 
         // The roots for accessing global playlists
         internal const val ROOT_QUEUE = "com.prime.player.queue"
