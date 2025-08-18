@@ -43,7 +43,7 @@ object Console {
     const val ID_ARTWORK = "_artwork"
     const val ID_TITLE = "_title"
     const val ID_SUBTITLE = "_subtitle"
-    const val ID_POSITION = "_position"
+    const val ID_EXTRA_INFO = "_extra_info"
     const val ID_SHUFFLE = "_shuffle"
     const val ID_BTN_REPEAT_MODE = "_btn_repeat_mode"
     const val ID_BTN_SKIP_PREVIOUS = "_btn_skip_previous"

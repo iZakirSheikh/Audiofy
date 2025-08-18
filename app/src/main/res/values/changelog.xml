@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--v4.0.0-dev12-->
+    <string name="changelog_400_dev12" translatable="false">
+        <b>What’s New <font color='yellow'>(v4.0.0-dev12)</font></b>
+        <font color='grey'>
+            \n - Added Video Surface support.
+            \n - Added support compact layout in support Console, new rich animations.
+            \n - Major app <b>redesign</b> with improved performance and structure.
+            \n - Updated app architecture and cleaned up legacy components.
+            \n - Enhanced stability with improved <b>telemetry</b> integration.
+            \n - Refined resource handling and UI text for a more consistent experience.
+            \n - Implemented various <b>actions</b> for the <b>Videos Screen</b> to improve user interactivity and functionality.
+            \n - Updated <b>Codex</b> to support a 16KB page size, ensuring compatibility with newer Android versions while enhancing overall performance and stability.
+            \n - Added support for <b>Properties</b> dialog.
+            \n - Fixed UI issue with <b>Slider</b>, it now animates correctly.
+            \n\n - <font color='yellow'><b>Enjoy, and happy testing!</b></font>
+        </font>
+    </string>
+    <!--v4.0.0-dev13-->
+    <string name="changelog_400_dev13" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev13)</font></b>
+        <font color='grey'>
+           \n- Fixed an issue where <b>scrubbing</b> could cause an <font color='red'>ANR</font> crash.
+           \n- Fixed an issue where the <b>slider</b> would jump unexpectedly during seek.
+           \n- Added support for displaying a comprehensive <b>changelog</b>, allowing users to track updates and new features.
+        </font>
+    </string>
+    <!--v4.0.0-dev14-->
+    <!---->
+    <string name="changelog_400_dev14" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev14)</font></b>
+        <font color='grey'>
+           \n-
+        </font>
+    </string>
+    <!--Points to the changelog of current version.-->
+    <string name="release_notes" translatable="false">@string/changelog_400_dev14</string>
+    <!--Changelog-->
+    <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev14</item>
+        <item>@string/changelog_400_dev13</item>
+        <item>@string/changelog_400_dev12</item>
+    </string-array>
+</resources>

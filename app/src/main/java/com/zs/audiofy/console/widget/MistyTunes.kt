@@ -139,7 +139,7 @@ fun MistyTunes(
                 })",
                 style = AppTheme.typography.label3,
                 color = onColor.copy(ContentAlpha.medium),
-                modifier = Modifier.sharedElement(Console.ID_POSITION)
+                modifier = Modifier.sharedElement(Console.ID_EXTRA_INFO)
             )
         },
         // Artwork

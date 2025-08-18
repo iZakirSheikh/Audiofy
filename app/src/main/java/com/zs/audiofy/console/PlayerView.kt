@@ -75,10 +75,8 @@ import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.resize
 import com.zs.audiofy.common.compose.shine
-import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.background
-import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
@@ -244,7 +242,7 @@ fun PlayerView(
                 Label(
                     style = AppTheme.typography.label3,
                     color = onColor.copy(ContentAlpha.medium),
-                    modifier = Modifier.key(Console.ID_POSITION),
+                    modifier = Modifier.key(Console.ID_EXTRA_INFO),
                     text = buildString {
                         val elapsed = chronometer.elapsed
                         val fPos =

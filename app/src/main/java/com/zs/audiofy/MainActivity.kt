@@ -334,7 +334,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             if (delay > 0) delay(delay) // delay at least some
             when (index) {
                 0 -> showSnackbar(
-                    R.string.what_s_new_latest,
+                    R.string.release_notes,
                     duration = SnackbarDuration.Indefinite,
                     icon = Icons.Outlined.NewReleases
                 )
