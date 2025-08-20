@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -55,7 +54,6 @@ import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.ButtonDefaults
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
@@ -64,25 +62,24 @@ import com.zs.compose.theme.Slider
 import com.zs.compose.theme.SliderDefaults
 import com.zs.compose.theme.Surface
 
-/** @return A [DpRect] containing the left, top, right, and bottom insets in density-independent pixels (dp). */
-val WindowInsets.asDpRect: DpRect
+val WindowInsets.toDpRect: DpRect
     @Composable
-    @ReadOnlyComposable
-    get() {
-        val ld =
-            LocalLayoutDirection.current  // Get current layout direction for correct inset handling
-        val density = LocalDensity.current    // Get current screen density for conversion to dp
-        with(density) {
-            // Convert raw insets to dp values, considering layout direction
-            return DpRect(
-                left = getLeft(density, ld).toDp(),
-                right = getRight(this, ld).toDp(),
-                top = getTop(this).toDp(),
-                bottom = getBottom(this).toDp()
-            )
+    inline get() {
+        val ldr = LocalLayoutDirection.current
+        val density = LocalDensity.current
+        val insets = this
+        return remember(insets, ldr.ordinal, density.density) {
+            with(density) {
+                // Convert raw insets to dp values, considering layout direction
+                DpRect(
+                    left = insets.getLeft(density, ldr).toDp(),
+                    right = insets.getRight(this, ldr).toDp(),
+                    top = insets.getTop(this).toDp(),
+                    bottom = insets.getBottom(this).toDp()
+                )
+            }
         }
     }
-
 
 /**
  * Composes a artwork representation for PLayer Console view
@@ -109,14 +106,53 @@ inline fun Artwork(
     }
 }
 
+/**
+ * Represents the Slider for Console's PlayerView.
+ */
+@Composable
+fun TimeBar(
+    progress: Float,
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    accent: Color = AppTheme.colors.accent
+) {
+    // FIXME: This is a temporary workaround.
+    //  Problem:
+    //  The Slider composable uses BoxWithConstraints internally. When used within a ConstraintLayout
+    //  with width Dimension.fillToConstraints, it behaves unexpectedly. This workaround addresses the issue.
+    //  Remove this workaround once the underlying issue is resolved.
+    var width by remember { mutableIntStateOf(0) }
+    Box(modifier.onSizeChanged() {
+        width = it.width
+    }) {
+        Slider(
+            progress,
+            onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
+            modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
+            enabled = enabled,
+            colors = SliderDefaults.colors(
+                thumbColor = accent,
+                activeTrackColor = accent,
+                disabledThumbColor = accent,
+                disabledActiveTrackColor = accent
+            )
+        )
+    }
+}
+
 @Composable
 private fun OutlinedPlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Surface(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.size(60.dp),
         shape = AppTheme.shapes.large,
         color = Color.Transparent,
@@ -145,8 +181,9 @@ private fun SimplePlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
-    IconButton(onClick = onClick, modifier = modifier) {
+    IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Icon(
             painter = lottieAnimationPainter(
                 id = R.raw.lt_play_pause,
@@ -170,45 +207,12 @@ fun PlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
-    style: Int = Console.STYLE_PLAY_BUTTON_SIMPLE,
-) {
-   when(style){
-       Console.STYLE_PLAY_OUTLINED -> OutlinedPlayButton(onClick, isPlaying, modifier)
-       Console.STYLE_PLAY_BUTTON_SIMPLE -> SimplePlayButton(onClick, isPlaying, modifier)
-       else -> error("Invalid style $style")
-   }
-}
-
-/**
- * Represents the Slider for Console's PlayerView.
- */
-@Composable
-fun TimeBar(
-    progress: Float,
-    onValueChange: (Float) -> Unit,
-    onValueChangeFinished: () -> Unit,
-    modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    simple: Boolean = false,
 ) {
-    // FIXME: This is a temporary workaround.
-    //  Problem:
-    //  The Slider composable uses BoxWithConstraints internally. When used within a ConstraintLayout
-    //  with width Dimension.fillToConstraints, it behaves unexpectedly. This workaround addresses the issue.
-    //  Remove this workaround once the underlying issue is resolved.
-    var width by remember { mutableIntStateOf(0) }
-    Box(modifier.onSizeChanged() {
-        width = it.width
-    }) {
-        Slider(
-            progress,
-            onValueChange = onValueChange,
-            onValueChangeFinished = onValueChangeFinished,
-            modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
-            enabled = enabled,
-            colors = SliderDefaults.colors(
-                disabledThumbColor = AppTheme.colors.accent,
-                disabledActiveTrackColor = AppTheme.colors.accent
-            )
-        )
+    when {
+        !simple -> OutlinedPlayButton(onClick, isPlaying, modifier,enabled)
+        else -> SimplePlayButton(onClick, isPlaying, modifier, enabled)
     }
 }
+

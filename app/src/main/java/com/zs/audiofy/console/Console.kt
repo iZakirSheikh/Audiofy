@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.zs.audiofy.console
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -30,72 +32,16 @@ import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.sharedBounds
 
-/**
- * Represents container for Console screen; that hosts default constants, ids etc. and maybe in future its [Route]
- */
-@OptIn(ExperimentalSharedTransitionApi::class)
-object Console {
-    private const val TAG = "Console"
-
-    // Component IDs
-    const val ID_PLAYING_INDICATOR = "_playing_indicator"
-    const val ID_BTN_COLLAPSE = "_btn_collapse"
-    const val ID_ARTWORK = "_artwork"
-    const val ID_TITLE = "_title"
-    const val ID_SUBTITLE = "_subtitle"
-    const val ID_EXTRA_INFO = "_extra_info"
-    const val ID_SHUFFLE = "_shuffle"
-    const val ID_BTN_REPEAT_MODE = "_btn_repeat_mode"
-    const val ID_BTN_SKIP_PREVIOUS = "_btn_skip_previous"
-    const val ID_BTN_PLAY_PAUSE = "_play_pause"
-    const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
-    const val ID_SEEK_BAR = "_seek_bar"
-    const val ID_VIDEO_SURFACE = "_video_surface"
-    const val ID_TOAST = "_toast"
-    const val ID_BACKGROUND = "_background"
-    const val ID_SCRIM = "_scrim"
-    const val ID_BTN_RESIZE_MODE = "_resize_mode"
-    const val ID_BTN_ROTATION_LOCK = "_rotation_lock"
-    const val ID_BTN_QUEUE = "_queue"
-    const val ID_BTN_SLEEP_TIMER = "_sleep_timer"
-    const val ID_BTN_PLAYBACK_SPEED = "_playback_speed"
-    const val ID_BTN_EQUALIZER = "_equalizer"
-    const val ID_BTN_MEDIA_INFO = "_media_info"
-    const val ID_BTN_LIKED = "_liked"
-    const val ID_BTN_MORE = "_more"
-
-    // Actions
-    const val ACTION_COLLAPSE = 0
-    const val ACTION_TOGGLE_ROTATION_LOCK = 1
-    const val ACTION_BACK_PRESS = 2
-
-    // Ui Actions
-    const val ACTION_SHOW_QUEUE = 3
-    const val ACTION_SHOW_SLEEP_CONTROLLER = 4
-    const val ACTION_SHOW_MEDIA_INFO = 5
-    private const val ACTION_SHOW_NONE = 6
-
-    // Background style
-    const val STYLE_BG_SIMPLE = 0
-    const val STYLE_BG_AMBIENT = 1
-    const val STYLE_BG_BLACK = 2
-    // play button style
-    const val STYLE_PLAY_BUTTON_SIMPLE = 0
-    const val STYLE_PLAY_OUTLINED = 1
-    const val STYLE_PLAY_BUTTON_TINTED = 2
-    const val STYLE_PLAY_BUTTON_SOLID = 4
-
-    @Composable
-    operator fun invoke(viewState: ConsoleViewState) {
-        val clazz = LocalWindowSize.current
-        val facade = LocalSystemFacade.current
-        val detailsOf by remember { mutableIntStateOf(ACTION_SHOW_NONE) }
-        val insets = WindowInsets.systemBars
-        PlayerView(
-            viewState = viewState,
-            insets = insets,
-            onNewAction = { facade.showToast("Feature not implemented yet!!"); false },
-            modifier = Modifier.sharedBounds(ID_BACKGROUND)
-        )
-    }
+@Composable
+fun Console(viewState: ConsoleViewState) {
+    val clazz = LocalWindowSize.current
+    val facade = LocalSystemFacade.current
+    val detailsOf by remember { mutableIntStateOf(/*ACTION_SHOW_NONE*/ 0) }
+    val insets = WindowInsets.systemBars
+    PlayerView(
+        viewState = viewState,
+        insets = insets,
+        onNewAction = { facade.showToast("Feature not implemented yet!!"); false },
+        modifier = Modifier.sharedBounds(RouteConsole.ID_BACKGROUND)
+    )
 }

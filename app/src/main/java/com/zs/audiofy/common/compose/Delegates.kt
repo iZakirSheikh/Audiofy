@@ -186,8 +186,9 @@ inline fun LottieAnimatedButton(
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     tint: Color = Color.Unspecified,
     animationSpec: AnimationSpec<Float>? = null,
+    enabled: Boolean = true,
 ) {
-    IconButton(onClick = onClick, modifier = modifier) {
+    IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Icon(
             painter = lottieAnimationPainter(
                 id = id,
@@ -439,6 +440,33 @@ val Colors.darkShadowColor
         0.6f
     )
 
+
+private val _StartAligned = ChainStyle.Packed(0f)
+private val _EndAligned = ChainStyle.Packed(1f)
+
+/**
+ * A [ChainStyle] where all elements are tightly grouped and positioned
+ * towards the **start edge** of the chain.
+ *
+ * Example usage:
+ * ```
+ * createHorizontalChain(item1, item2, chainStyle = ChainStyle.StartAligned)
+ * ```
+ */
+val ChainStyle.Companion.StartAligned get() = _StartAligned
+
+/**
+ * A [ChainStyle] where all elements are tightly grouped and positioned
+ * towards the **end edge** of the chain.
+ *
+ * Example usage:
+ * ```
+ * createHorizontalChain(item1, item2, chainStyle = ChainStyle.EndAligned)
+ * ```
+ */
+val ChainStyle.Companion.EndAligned get() = _EndAligned
+
+
 /** A shorthand method to create a horizontal chain.*/
 fun ConstraintSetScope.horizontal(
     vararg elements: ConstrainedLayoutReference,
@@ -467,6 +495,7 @@ fun ConstraintSetScope.vertical(
     constrainBlock: VerticalChainScope.() -> Unit
 ): ConstrainedLayoutReference {
     val chain = createVerticalChain(*elements, chainStyle = chainStyle)
+
     constrain(chain, constrainBlock)
     // align all with first
     val first = elements.first()

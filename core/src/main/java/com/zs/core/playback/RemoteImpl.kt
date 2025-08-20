@@ -50,7 +50,6 @@ private fun Context.browser(listener: MediaBrowser.Listener) =
         .setListener(listener)
         .buildAsync()
 
-
 /**
  * Player events that trigger state change.
  */
@@ -65,7 +64,6 @@ private val UPDATE_EVENTS = intArrayOf(
     Player.EVENT_MEDIA_ITEM_TRANSITION,
     Player.EVENT_VIDEO_SIZE_CHANGED,
 )
-
 
 internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.Listener {
     // TODO: A quickfix, find better alternative of doing this.
@@ -190,7 +188,10 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         browser[Remote.SCRUBBING_MODE] = bundleOf(
             Remote.EXTRA_SCRUBBING_MODE_ENABLED to true
         )
-        browser.seekTo((duration * pct).toLong())
+        delay(10)
+       withContext(Dispatchers.Main){
+           browser.seekTo((duration * pct).toLong())
+       }
         browser[Remote.SCRUBBING_MODE] = bundleOf(
             Remote.EXTRA_SCRUBBING_MODE_ENABLED to false
         )

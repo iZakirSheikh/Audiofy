@@ -19,12 +19,120 @@
 package com.zs.audiofy.console
 
 import android.net.Uri
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.ConstraintSetScope
+import androidx.constraintlayout.compose.Visibility
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.StateFlow
 
-object RouteConsole: Route
+object RouteConsole: Route {
+    // Component IDs
+    const val ID_PLAYING_INDICATOR = "_playing_indicator"
+    const val ID_BTN_COLLAPSE = "_btn_collapse"
+    const val ID_ARTWORK = "_artwork"
+    const val ID_TITLE = "_title"
+    const val ID_SUBTITLE = "_subtitle"
+    const val ID_EXTRA_INFO = "_extra_info"
+    const val ID_SHUFFLE = "_shuffle"
+    const val ID_BTN_REPEAT_MODE = "_btn_repeat_mode"
+    const val ID_BTN_SKIP_PREVIOUS = "_btn_skip_previous"
+    const val ID_BTN_PLAY_PAUSE = "_play_pause"
+    const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
+    const val ID_SEEK_BAR = "_seek_bar"
+    const val ID_VIDEO_SURFACE = "_video_surface"
+    const val ID_TOAST = "_toast"
+    const val ID_BACKGROUND = "_background"
+    const val ID_SCRIM = "_scrim"
+    const val ID_BTN_RESIZE_MODE = "_resize_mode"
+    const val ID_BTN_ROTATION_LOCK = "_rotation_lock"
+    const val ID_BTN_QUEUE = "_queue"
+    const val ID_BTN_SLEEP_TIMER = "_sleep_timer"
+    const val ID_BTN_PLAYBACK_SPEED = "_playback_speed"
+    const val ID_BTN_EQUALIZER = "_equalizer"
+    const val ID_BTN_MEDIA_INFO = "_media_info"
+    const val ID_BTN_LIKED = "_liked"
+    const val ID_BTN_MORE = "_more"
+    const val ID_BTN_LOCK = "_lock"
+    const val ID_CAPTIONS = "_captions"
+    const val ID_BANNER_AD = "_banner_ad"
+
+    // Visibility states for Player controls overlay
+   val CONTROLS_VISIBLE_ALL: Array<String>? = null // (null = default behavior → show everything)
+   val CONTROLS_VISIBLE_NONE = emptyArray<String>() // (empty array = hide all)
+   val CONTROLS_VISIBLE_SEEK = arrayOf(RouteConsole.ID_SEEK_BAR, RouteConsole.ID_EXTRA_INFO) //(only seek bar + extra info)
+   val CONTROLS_VISIBLE_LOCK = arrayOf(RouteConsole.ID_BTN_LOCK) // (only lock/unlock button visible)
+}
+
+abstract class Constraints(val titleTextSize: Int) {
+
+    abstract val constraints: ConstraintSet
+
+    protected val COLLAPSE = ConstrainedLayoutReference(RouteConsole.ID_BTN_COLLAPSE)
+    protected val ARTWORK = ConstrainedLayoutReference(RouteConsole.ID_ARTWORK)
+    protected val TITLE = ConstrainedLayoutReference(RouteConsole.ID_TITLE)
+    protected val SUBTITLE = ConstrainedLayoutReference(RouteConsole.ID_SUBTITLE)
+    protected val EXTRA_INFO = ConstrainedLayoutReference(RouteConsole.ID_EXTRA_INFO)
+    protected val SHUFFLE = ConstrainedLayoutReference(RouteConsole.ID_SHUFFLE)
+    protected val REPEAT_MODE = ConstrainedLayoutReference(RouteConsole.ID_BTN_REPEAT_MODE)
+    protected val SKIP_PREVIOUS = ConstrainedLayoutReference(RouteConsole.ID_BTN_SKIP_PREVIOUS)
+    protected val PLAY_PAUSE = ConstrainedLayoutReference(RouteConsole.ID_BTN_PLAY_PAUSE)
+    protected val SKIP_TO_NEXT = ConstrainedLayoutReference(RouteConsole.ID_BTN_SKIP_TO_NEXT)
+    protected val SEEK_BAR = ConstrainedLayoutReference(RouteConsole.ID_SEEK_BAR)
+    protected val VIDEO_SURFACE = ConstrainedLayoutReference(RouteConsole.ID_VIDEO_SURFACE)
+    protected val TOAST = ConstrainedLayoutReference(RouteConsole.ID_TOAST)
+    protected val BACKGROUND = ConstrainedLayoutReference(RouteConsole.ID_BACKGROUND)
+    protected val SCRIM = ConstrainedLayoutReference(RouteConsole.ID_SCRIM)
+    protected val RESIZE_MODE = ConstrainedLayoutReference(RouteConsole.ID_BTN_RESIZE_MODE)
+    protected val ROTATION_LOCK = ConstrainedLayoutReference(RouteConsole.ID_BTN_ROTATION_LOCK)
+    protected val QUEUE = ConstrainedLayoutReference(RouteConsole.ID_BTN_QUEUE)
+    protected val SLEEP_TIMER = ConstrainedLayoutReference(RouteConsole.ID_BTN_SLEEP_TIMER)
+    protected val SPEED = ConstrainedLayoutReference(RouteConsole.ID_BTN_PLAYBACK_SPEED)
+    protected val LIKED = ConstrainedLayoutReference(RouteConsole.ID_BTN_LIKED)
+    protected val MORE = ConstrainedLayoutReference(RouteConsole.ID_BTN_MORE)
+    protected val EQUALIZER = ConstrainedLayoutReference(RouteConsole.ID_BTN_EQUALIZER)
+    protected val INFO = ConstrainedLayoutReference(RouteConsole.ID_BTN_MEDIA_INFO)
+    protected val INDICATOR = ConstrainedLayoutReference(RouteConsole.ID_PLAYING_INDICATOR)
+
+
+    private fun ConstraintSetScope.hide(ref: ConstrainedLayoutReference) {
+        constrain(ref){
+            visibility = Visibility.Invisible
+        }
+    }
+
+    /**
+     * Makes every component invisible [except] these.
+     */
+    fun ConstraintSetScope.hideController(except: Array<String>){
+        val hideAll = except.isEmpty()
+
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_COLLAPSE)) hide(COLLAPSE)
+        if (hideAll || !except.contains(RouteConsole.ID_SUBTITLE)) hide(SUBTITLE)
+        if (hideAll || !except.contains(RouteConsole.ID_TITLE)) hide(TITLE)
+        if (hideAll || !except.contains(RouteConsole.ID_EXTRA_INFO)) hide(EXTRA_INFO)
+        if (hideAll || !except.contains(RouteConsole.ID_SHUFFLE)) hide(SHUFFLE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_REPEAT_MODE)) hide(REPEAT_MODE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_SKIP_PREVIOUS)) hide(SKIP_PREVIOUS)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_PLAY_PAUSE)) hide(PLAY_PAUSE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_SKIP_TO_NEXT)) hide(SKIP_TO_NEXT)
+        if (hideAll || !except.contains(RouteConsole.ID_SEEK_BAR)) hide(SEEK_BAR)
+        if (hideAll || !except.contains(RouteConsole.ID_TOAST)) hide(TOAST)
+        if (hideAll || !except.contains(RouteConsole.ID_SCRIM)) hide(SCRIM)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_RESIZE_MODE)) hide(RESIZE_MODE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_ROTATION_LOCK)) hide(ROTATION_LOCK)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_QUEUE)) hide(QUEUE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_SLEEP_TIMER)) hide(SLEEP_TIMER)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_PLAYBACK_SPEED)) hide(SPEED)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_LIKED)) hide(LIKED)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_MORE)) hide(MORE)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_EQUALIZER)) hide(EQUALIZER)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_MEDIA_INFO)) hide(INFO)
+        if (hideAll || !except.contains(RouteConsole.ID_PLAYING_INDICATOR)) hide(INDICATOR)
+    }
+}
 
 interface ConsoleViewState {
 

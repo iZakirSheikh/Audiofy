@@ -54,7 +54,7 @@ import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
-import com.zs.audiofy.console.Console
+import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -93,7 +93,7 @@ fun MistyTunes(
     BaseListItem(
         centerAlign = true,
         modifier = modifier
-            .sharedBounds(Console.ID_BACKGROUND)
+            .sharedBounds(RouteConsole.ID_BACKGROUND)
             .shadow(8.dp, AppTheme.shapes.large)
             .border(AppTheme.colors.shine, AppTheme.shapes.large)
             .background(AppTheme.colors.background(surface)),
@@ -102,7 +102,7 @@ fun MistyTunes(
         heading = {
             Box(
                 modifier = Modifier
-                    .sharedElement(Console.ID_TITLE)
+                    .sharedElement(RouteConsole.ID_TITLE)
                     .clipToBounds(),
                 content = {
                     Label(
@@ -122,7 +122,7 @@ fun MistyTunes(
                 state.subtitle ?: textResource(R.string.unknown),
                 style = AppTheme.typography.label3,
                 color = LocalContentColor.current.copy(ContentAlpha.medium),
-                modifier = Modifier.sharedElement(Console.ID_SUBTITLE),
+                modifier = Modifier.sharedElement(RouteConsole.ID_SUBTITLE),
             )
         },
         // Duration
@@ -139,7 +139,7 @@ fun MistyTunes(
                 })",
                 style = AppTheme.typography.label3,
                 color = onColor.copy(ContentAlpha.medium),
-                modifier = Modifier.sharedElement(Console.ID_EXTRA_INFO)
+                modifier = Modifier.sharedElement(RouteConsole.ID_EXTRA_INFO)
             )
         },
         // Artwork
@@ -148,7 +148,7 @@ fun MistyTunes(
             AsyncImage(
                 model = state.artwork,
                 modifier = Modifier
-                    .sharedElement(Console.ID_ARTWORK)
+                    .sharedElement(RouteConsole.ID_ARTWORK)
                     .clip(AppTheme.shapes.medium)
                     .background(AppTheme.colors.background(1.dp))
                     .size(84.dp),
@@ -162,7 +162,7 @@ fun MistyTunes(
                 onClick = { onAction(Widget.ACTION_PLAY_TOGGLE) },
                 shape = AppTheme.shapes.large,
                 modifier = Modifier
-                    .sharedElement(Console.ID_BTN_PLAY_PAUSE)
+                    .sharedElement(RouteConsole.ID_BTN_PLAY_PAUSE)
                     .scale(0.9f),
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                 content = {
@@ -187,13 +187,13 @@ fun MistyTunes(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     // Placeholder for playingbars
-                    Spacer(Modifier.sharedElement(Console.ID_PLAYING_INDICATOR))
+                    Spacer(Modifier.sharedElement(RouteConsole.ID_PLAYING_INDICATOR))
                     // Skip to previous
                     IconButton(
                         onClick = { onAction(Widget.ACTION_SKIP_TO_PREVIOUS) },
                         icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
-                        modifier = Modifier.sharedElement(Console.ID_BTN_SKIP_PREVIOUS)
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_PREVIOUS)
                     )
                     // Slider
                     Slider(
@@ -208,7 +208,7 @@ fun MistyTunes(
                         },
                         enabled = state.duration > 0,
                         modifier = Modifier
-                            .sharedElement(Console.ID_SEEK_BAR)
+                            .sharedElement(RouteConsole.ID_SEEK_BAR)
                             .weight(1f),
                         colors = SliderDefaults.colors(
                             disabledThumbColor = AppTheme.colors.accent,
@@ -220,14 +220,14 @@ fun MistyTunes(
                         onClick = { onAction(Widget.ACTION_SKIP_TO_NEXT) },
                         icon = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
-                        modifier = Modifier.sharedElement(Console.ID_BTN_SKIP_TO_NEXT)
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_TO_NEXT)
                     )
                     // Expand to fill
                     IconButton(
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,
                         contentDescription = null,
                         onClick = { onAction(Widget.ACTION_OPEN_CONSOLE) },
-                        modifier = Modifier.sharedElement(Console.ID_BTN_COLLAPSE)
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_COLLAPSE)
                     )
                 }
             )

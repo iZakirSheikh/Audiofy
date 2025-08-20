@@ -23,7 +23,7 @@ import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.shine
-import com.zs.audiofy.console.Console
+import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.foreground
 import com.zs.compose.theme.AppTheme
@@ -43,7 +43,7 @@ fun FabPlayer(
     val shape = AppTheme.shapes.large
     Box(
         modifier = modifier
-            .sharedElement(Console.ID_BACKGROUND)
+            .sharedElement(RouteConsole.ID_BACKGROUND)
             .border(AppTheme.colors.shine, shape)
             .shadow(8.dp, shape)
             .background(AppTheme.colors.background(1.dp)) then Widget.FabRequiredSize,
@@ -54,7 +54,7 @@ fun FabPlayer(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .sharedElement(Console.ID_ARTWORK)
+                    .sharedElement(RouteConsole.ID_ARTWORK)
                     .matchParentSize()
                     .clip(shape)
                     .foreground(Color.Black.copy(0.5f))
@@ -69,7 +69,7 @@ fun FabPlayer(
                 contentDescription = null,
                 modifier = Modifier
                     .padding(start = ContentPadding.medium)
-                    .sharedElement(Console.ID_PLAYING_INDICATOR)
+                    .sharedElement(RouteConsole.ID_PLAYING_INDICATOR)
                     .lottie()
                     .align(Alignment.CenterStart),
                 tint = Color.SignalWhite
@@ -79,7 +79,7 @@ fun FabPlayer(
             IconButton(
                 onClick = { onAction(Widget.ACTION_PLAY_TOGGLE) },
                 modifier = Modifier
-                    .sharedElement(Console.ID_BTN_PLAY_PAUSE)
+                    .sharedElement(RouteConsole.ID_BTN_PLAY_PAUSE)
                     .align(Alignment.CenterEnd),
                 content = {
                     Icon(
