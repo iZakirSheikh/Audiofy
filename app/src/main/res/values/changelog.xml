@@ -31,7 +31,10 @@
     <string name="changelog_400_dev14" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev14)</font></b>
         <font color='grey'>
-           \n-
+           \n- Implemented an <b>auto-hide controller</b> for a more immersive video playback experience.
+           \n- Introduced a <b>toggle for rotation lock</b>, giving users more control over screen orientation.
+           \n- Addressed several <b>minor bugs</b> across various modules to enhance stability and performance.
+           \n- Improved overall application responsiveness and fixed miscellaneous UI glitches.
         </font>
     </string>
     <!--Points to the changelog of current version.-->

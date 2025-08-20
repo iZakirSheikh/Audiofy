@@ -20,16 +20,18 @@
 
 package com.zs.audiofy.console
 
+import android.app.Activity
 import android.text.format.DateUtils
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,7 +61,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
@@ -72,6 +73,8 @@ import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionLayoutScope
 import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.ContentPadding
+import com.zs.audiofy.common.compose.LocalNavController
+import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.VideoSurface
 import com.zs.audiofy.common.compose.chronometer
@@ -122,11 +125,20 @@ fun PlayerView(
     val _state by viewState.state.collectAsState()
     val state = _state ?: NonePlaying
     val isVideo = state.isVideo
+    //
+    val navController = LocalNavController.current
+    val facade = LocalSystemFacade.current
+    val onNavigatingBack: () -> Unit = {
+        navController.navigateUp()
+    }
+    BackHandler(onBack = onNavigatingBack)
+
     // Content
     val onColor = if (isVideo) Color.SignalWhite else AppTheme.colors.onBackground
     var titleTextSize by remember { mutableIntStateOf(0) }
     var visibility by remember { mutableStateOf(C.CONTROLS_VISIBLE_ALL) }
     val enabled = visibility !== C.CONTROLS_VISIBLE_NONE
+    //
     val content: @Composable MotionLayoutScope.() -> Unit = content@{
         // Background
         Crossfade(
@@ -152,24 +164,25 @@ fun PlayerView(
         // Video
         if (isVideo){
             val provider = viewState.provider
-            val scale by mutableStateOf(ContentScale.Fit)
+            var scale by remember { mutableStateOf(ContentScale.Fit) }
             VideoSurface(
                 provider = provider,
                 keepScreenOn = state.playWhenReady,
                 modifier = Modifier
                     .key(C.ID_VIDEO_SURFACE)
                     .resize(scale, state.videoSize)
+                    .animateContentSize()
             )
 
             // Scrim
             Spacer(
-                modifier = Modifier.layoutId(C.ID_SCRIM).background(Color.Black.copy(0.3f))
+                modifier = Modifier.layoutId(C.ID_SCRIM).background(Color.Black.copy(0.4f))
             )
             // Resize Mode
             IconButton(
                 icon = if (scale == ContentScale.Fit) Icons.Outlined.Fullscreen else Icons.Outlined.FitScreen,
                 contentDescription = null,
-                onClick = { if (scale == ContentScale.Fit) ContentScale.Crop else ContentScale.Fit},
+                onClick = { scale = if (scale == ContentScale.Fit) ContentScale.Crop else ContentScale.Fit},
                 modifier = Modifier.layoutId(C.ID_BTN_RESIZE_MODE),
                 enabled = enabled
             )
@@ -179,7 +192,7 @@ fun PlayerView(
         val accent = if (isVideo) onColor else AppTheme.colors.accent
         IconButton(
             icon = Icons.Outlined.ExpandMore,
-            onClick = {},
+            onClick = onNavigatingBack,
             modifier = Modifier
                 .key(C.ID_BTN_COLLAPSE)
                 .border(AppTheme.colors.shine, CircleShape)
@@ -198,16 +211,11 @@ fun PlayerView(
         )
 
         // Title
-        Box(
-            modifier = Modifier.key(C.ID_TITLE).clipToBounds(),
-            content = {
-                Label(
-                    text = state.title ?: stringResource(id = R.string.unknown),
-                    fontSize = titleTextSize.sp,// Maybe Animate
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.marque(Int.MAX_VALUE)
-                )
-            }
+        Label(
+            text = state.title ?: stringResource(id = R.string.unknown),
+            fontSize = titleTextSize.sp,// Maybe Animate
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.key(C.ID_TITLE).marque(Int.MAX_VALUE)
         )
 
         // Subtitle
@@ -314,7 +322,7 @@ fun PlayerView(
         IconButton(
             icon = Icons.Outlined.ScreenLockRotation,
             contentDescription = null,
-            onClick = { /*onNewAction(C.ACTION_TOGGLE_ROTATION_LOCK)*/ },
+            onClick = (facade as Activity)::toggleRotationLock,
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_ROTATION_LOCK)
         )
@@ -411,7 +419,7 @@ fun PlayerView(
 
                 if (isVideo && (visibility !== C.CONTROLS_VISIBLE_NONE)) {
                     launch {
-                        delay(30_00)
+                        delay(10_000)
                         visibility = C.CONTROLS_VISIBLE_NONE
                     }
                 }

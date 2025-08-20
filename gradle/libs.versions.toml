@@ -27,7 +27,7 @@ ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.3" }
 androidx-activity = { module = "androidx.activity:activity", version = "1.10.1" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.17.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }

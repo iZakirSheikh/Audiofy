@@ -578,7 +578,6 @@ inline fun rememberAnimatedVectorPainter(@DrawableRes id: Int, atEnd: Boolean) =
  * - Computes a scale factor using [contentScale].
  * - Applies scaled width/height as layout constraints.
  */
-@Composable
 fun Modifier.resize(
     contentScale: ContentScale,
     original: VideoSize,

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.Visibility
 import androidx.constraintlayout.compose.atMost
 import com.zs.audiofy.common.compose.dimensions
 import com.zs.audiofy.common.compose.hide
@@ -485,6 +486,11 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>?,) = object : Co
             dimensions = Dimension.fillToConstraints
         }
 
+        // artwork
+        constrain(ARTWORK){
+            linkTo(parent.start, parent.top, parent.end, parent.bottom)
+            visibility = Visibility.Gone
+        }
         // Video Surface
         constrain(VIDEO_SURFACE) {
             linkTo(parent.start, parent.top, parent.end, parent.bottom)
@@ -576,6 +582,12 @@ private fun LargeVideo(insets: DpRect,   only: Array<String>?,) = object : Const
         constrain(SCRIM){
             linkTo(parent.start, parent.top, parent.end, parent.bottom)
             dimensions = Dimension.fillToConstraints
+        }
+
+        // artwork
+        constrain(ARTWORK){
+            linkTo(parent.start, parent.top, parent.end, parent.bottom)
+            visibility = Visibility.Gone
         }
 
         // Video Surface
