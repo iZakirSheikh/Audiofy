@@ -32,6 +32,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,8 @@ import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material.icons.outlined.ScreenLockRotation
@@ -61,6 +64,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
@@ -186,6 +190,15 @@ fun PlayerView(
                 modifier = Modifier.layoutId(C.ID_BTN_RESIZE_MODE),
                 enabled = enabled
             )
+            // Lock
+            val isLocked = visibility === C.CONTROLS_VISIBLE_LOCK
+            IconButton(
+                icon = if (isLocked) Icons.Outlined.LockOpen else Icons.Outlined.Lock,
+                contentDescription = null,
+                onClick = { visibility = if (isLocked) C.CONTROLS_VISIBLE_ALL else C.CONTROLS_VISIBLE_LOCK },
+                modifier = Modifier.layoutId(C.ID_BTN_LOCK),
+                enabled = enabled
+            )
         }
 
         // Collapse
@@ -211,11 +224,16 @@ fun PlayerView(
         )
 
         // Title
-        Label(
-            text = state.title ?: stringResource(id = R.string.unknown),
-            fontSize = titleTextSize.sp,// Maybe Animate
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.key(C.ID_TITLE).marque(Int.MAX_VALUE)
+        Box(
+            modifier = Modifier.key(C.ID_TITLE).clipToBounds(),
+            content = {
+                Label(
+                    text = state.title ?: stringResource(id = R.string.unknown),
+                    fontSize = titleTextSize.sp,// Maybe Animate
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.marque(Int.MAX_VALUE)
+                )
+            }
         )
 
         // Subtitle
@@ -416,14 +434,12 @@ fun PlayerView(
             var direction by remember { mutableIntStateOf(1) }
             LaunchedEffect(clazz, dpInsets, isVideo, visibility) {
                 val newConstraints = calculateConstraintSet(clazz, dpInsets, isVideo, visibility)
-
                 if (isVideo && (visibility !== C.CONTROLS_VISIBLE_NONE)) {
                     launch {
                         delay(10_000)
                         visibility = C.CONTROLS_VISIBLE_NONE
                     }
                 }
-
                 val currentConstraints = if (direction == 1) start else end
                 if (newConstraints.constraints != currentConstraints) {
                     titleTextSize = newConstraints.titleTextSize

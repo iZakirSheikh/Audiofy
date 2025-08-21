@@ -554,7 +554,7 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>?,) = object : Co
         }
         // more
         val more = horizontal(
-            SHUFFLE, REPEAT_MODE, RESIZE_MODE,
+            SHUFFLE, REPEAT_MODE, RESIZE_MODE, LOCK,
             chainStyle = ChainStyle.Packed(1f),
             constrainBlock =  {
                 linkTo(timeBar.start, COLLAPSE.end)
@@ -608,7 +608,7 @@ private fun LargeVideo(insets: DpRect,   only: Array<String>?,) = object : Const
             }
         )
         constrain(options) {
-            top.linkTo(parent.top, CP.normal + up)
+            top.linkTo(parent.top, CP.medium + up)
             width = Dimension.preferredWrapContent
             horizontalChainWeight = 1f
         }
@@ -624,7 +624,7 @@ private fun LargeVideo(insets: DpRect,   only: Array<String>?,) = object : Const
 
         // TimeBar
         val timeBar = horizontal(
-            SKIP_PREVIOUS, PLAY_PAUSE, SKIP_TO_NEXT, SEEK_BAR, ROTATION_LOCK, RESIZE_MODE,
+            SKIP_PREVIOUS, PLAY_PAUSE, SKIP_TO_NEXT, SEEK_BAR, ROTATION_LOCK, RESIZE_MODE, LOCK,
             alignBy = SEEK_BAR,
             constrainBlock = {
                 linkTo(parent.start, parent.end, left + CP.normal, right + CP.normal)

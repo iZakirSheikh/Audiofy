@@ -95,6 +95,7 @@ abstract class Constraints(val titleTextSize: Int) {
     protected val EQUALIZER = ConstrainedLayoutReference(RouteConsole.ID_BTN_EQUALIZER)
     protected val INFO = ConstrainedLayoutReference(RouteConsole.ID_BTN_MEDIA_INFO)
     protected val INDICATOR = ConstrainedLayoutReference(RouteConsole.ID_PLAYING_INDICATOR)
+    protected val LOCK = ConstrainedLayoutReference(RouteConsole.ID_BTN_LOCK)
 
 
     private fun ConstraintSetScope.hide(ref: ConstrainedLayoutReference) {
@@ -131,6 +132,7 @@ abstract class Constraints(val titleTextSize: Int) {
         if (hideAll || !except.contains(RouteConsole.ID_BTN_EQUALIZER)) hide(EQUALIZER)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_MEDIA_INFO)) hide(INFO)
         if (hideAll || !except.contains(RouteConsole.ID_PLAYING_INDICATOR)) hide(INDICATOR)
+        if (hideAll || !except.contains(RouteConsole.ID_BTN_LOCK)) hide(LOCK)
     }
 }
 

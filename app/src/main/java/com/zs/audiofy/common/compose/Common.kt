@@ -77,7 +77,7 @@ private fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
 @Deprecated("Think more about this")
 fun Modifier.marque(iterations: Int) =
     Modifier
-        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen; clip = true }
+        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen}
         .drawWithContent {
             drawContent()
             drawFadedEdge(leftEdge = true)

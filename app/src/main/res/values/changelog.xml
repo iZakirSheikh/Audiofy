@@ -27,7 +27,6 @@
         </font>
     </string>
     <!--v4.0.0-dev14-->
-    <!---->
     <string name="changelog_400_dev14" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev14)</font></b>
         <font color='grey'>
@@ -37,10 +36,20 @@
            \n- Improved overall application responsiveness and fixed miscellaneous UI glitches.
         </font>
     </string>
+    <!--v4.0.0-dev15-->
+    <string name="changelog_400_dev15" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev15)</font></b>
+        <font color='grey'>
+           \n-
+        </font>
+    </string>
+
+
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev14</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev15</string>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev15</item>
         <item>@string/changelog_400_dev14</item>
         <item>@string/changelog_400_dev13</item>
         <item>@string/changelog_400_dev12</item>
