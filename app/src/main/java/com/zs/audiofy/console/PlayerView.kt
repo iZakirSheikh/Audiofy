@@ -25,8 +25,6 @@ import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,10 +54,9 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.twotone.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,10 +69,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ExperimentalMotionApi
-import androidx.constraintlayout.compose.MotionLayout
-import androidx.constraintlayout.compose.MotionLayoutScope
 import com.zs.audiofy.R
+import com.zs.audiofy.common.WindowStyle
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
@@ -99,8 +96,6 @@ import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter as AnimVectorPainter
 import com.zs.audiofy.console.RouteConsole as C
 
@@ -129,333 +124,390 @@ fun PlayerView(
     val _state by viewState.state.collectAsState()
     val state = _state ?: NonePlaying
     val isVideo = state.isVideo
-    //
+    // BackHandler
     val navController = LocalNavController.current
     val facade = LocalSystemFacade.current
     val onNavigatingBack: () -> Unit = {
         navController.navigateUp()
     }
     BackHandler(onBack = onNavigatingBack)
-
     // Content
     val onColor = if (isVideo) Color.SignalWhite else AppTheme.colors.onBackground
-    var titleTextSize by remember { mutableIntStateOf(0) }
-    var visibility by remember { mutableStateOf(C.CONTROLS_VISIBLE_ALL) }
-    val enabled = visibility !== C.CONTROLS_VISIBLE_NONE
-    //
-    val content: @Composable MotionLayoutScope.() -> Unit = content@{
-        // Background
-        Crossfade(
-            isVideo,
-            Modifier.layoutId(C.ID_BACKGROUND).thenIf(isVideo){
-                clickable(indication = null, interactionSource = remember(::MutableInteractionSource) ){
-                    visibility = if (visibility === C.CONTROLS_VISIBLE_ALL) C.CONTROLS_VISIBLE_NONE else C.CONTROLS_VISIBLE_ALL
-                }
-            },
-            content = { value ->
-                when (value) {
-                    false -> Spacer(
-                        Modifier.background(AppTheme.colors.background).fillMaxSize()
-                    )
-                    else -> Spacer(
-                        Modifier.background(Color.Black).fillMaxSize()
-                    )
-                }
+    val visibility = viewState.visibility
+    val enabled = visibility == C.VISIBILITY_VISIBLE
+    CompositionLocalProvider(LocalContentColor provides onColor) {
+        // Update constraints
+        val clazz = LocalWindowSize.current
+        val dpInsets = insets.toDpRect
+        val constraints = remember(clazz, dpInsets, isVideo, visibility) {
+            // Determine if controls are locked (cannot be shown/hidden by user)
+            val isLocked = visibility == C.VISIBILITY_INVISIBLE_LOCKED
 
+            // Update controller visibility based on media state and lock status
+            when {
+                !isVideo -> viewState.emit(C.VISIBILITY_VISIBLE)
+                isVideo && !state.playing && !isLocked -> viewState.emit(C.VISIBILITY_VISIBLE)
+                visibility == C.VISIBILITY_VISIBLE_LOCK -> viewState.emit(C.VISIBILITY_INVISIBLE_LOCKED, true)
+                !isLocked -> viewState.emit(C.VISIBILITY_INVISIBLE, true)
             }
-        )
 
-        // Video
-        if (isVideo){
-            val provider = viewState.provider
-            var scale by remember { mutableStateOf(ContentScale.Fit) }
-            VideoSurface(
-                provider = provider,
-                keepScreenOn = state.playWhenReady,
-                modifier = Modifier
-                    .key(C.ID_VIDEO_SURFACE)
-                    .resize(scale, state.videoSize)
-                    .animateContentSize()
-            )
-
-            // Scrim
-            Spacer(
-                modifier = Modifier.layoutId(C.ID_SCRIM).background(Color.Black.copy(0.4f))
-            )
-            // Resize Mode
-            IconButton(
-                icon = if (scale == ContentScale.Fit) Icons.Outlined.Fullscreen else Icons.Outlined.FitScreen,
-                contentDescription = null,
-                onClick = { scale = if (scale == ContentScale.Fit) ContentScale.Crop else ContentScale.Fit},
-                modifier = Modifier.layoutId(C.ID_BTN_RESIZE_MODE),
-                enabled = enabled
-            )
-            // Lock
-            val isLocked = visibility === C.CONTROLS_VISIBLE_LOCK
-            IconButton(
-                icon = if (isLocked) Icons.Outlined.LockOpen else Icons.Outlined.Lock,
-                contentDescription = null,
-                onClick = { visibility = if (isLocked) C.CONTROLS_VISIBLE_ALL else C.CONTROLS_VISIBLE_LOCK },
-                modifier = Modifier.layoutId(C.ID_BTN_LOCK),
-                enabled = enabled
-            )
+            // Update system bar style (auto vs hidden) depending on controller visibility
+            facade.style = facade.style + when (visibility) {
+                C.VISIBILITY_VISIBLE -> WindowStyle.FLAG_SYSTEM_BARS_VISIBILITY_AUTO
+                else -> WindowStyle.FLAG_SYSTEM_BARS_HIDDEN
+            }
+            // Determine which controls to hide
+            val excluded = when (visibility) {
+                C.VISIBILITY_VISIBLE -> if (!isVideo) null else null // No exclusions when visible
+                C.VISIBILITY_INVISIBLE, C.VISIBILITY_INVISIBLE_LOCKED -> emptyArray() // Hide everything
+                C.VISIBILITY_VISIBLE_LOCK -> arrayOf(C.ID_BTN_LOCK) // Show only lock button
+                C.VISIBILITY_VISIBLE_SEEK -> arrayOf(C.ID_SEEK_BAR, C.ID_EXTRA_INFO) // Show seek + info
+                else -> error("Invalid visibility $visibility provided.") // Defensive check
+            }
+            // Compute the new ConstraintSet for layout adjustments
+            calculateConstraintSet(clazz, dpInsets, isVideo, excluded)
         }
-
-        // Collapse
-        val accent = if (isVideo) onColor else AppTheme.colors.accent
-        IconButton(
-            icon = Icons.Outlined.ExpandMore,
-            onClick = onNavigatingBack,
-            modifier = Modifier
-                .key(C.ID_BTN_COLLAPSE)
-                .border(AppTheme.colors.shine, CircleShape)
-                .thenIf(!isVideo){background(AppTheme.colors.background(3.dp), shape = CircleShape)},
-            tint = accent,
-            enabled = enabled,
-            contentDescription = null,
-        )
-
-        // Playing bars.
-        Icon(
-            painter = lottieAnimationPainter(R.raw.playback_indicator, isPlaying = state.playing),
-            contentDescription = null,
-            modifier = Modifier.padding(horizontal = ContentPadding.small).lottie().key(C.ID_PLAYING_INDICATOR),
-            tint = accent
-        )
-
-        // Title
-        Box(
-            modifier = Modifier.key(C.ID_TITLE).clipToBounds(),
+        ConstraintLayout(
+            constraints.constraints,
+            modifier = modifier,
+            animateChangesSpec = tween(),
             content = {
-                Label(
-                    text = state.title ?: stringResource(id = R.string.unknown),
-                    fontSize = titleTextSize.sp,// Maybe Animate
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.marque(Int.MAX_VALUE)
-                )
-            }
-        )
+                // Background
+                Crossfade(
+                    targetState = isVideo,
+                    modifier = Modifier
+                        .layoutId(C.ID_BACKGROUND)
+                        .thenIf(isVideo && state.playing) {
+                            clickable(
+                                indication = null,
+                                interactionSource = remember(::MutableInteractionSource),
+                                onClick = {
+                                    viewState.emit(
+                                        newVisibility = when (visibility) {
+                                            C.VISIBILITY_VISIBLE -> C.VISIBILITY_INVISIBLE
+                                            C.VISIBILITY_INVISIBLE -> C.VISIBILITY_VISIBLE
+                                            C.VISIBILITY_INVISIBLE_LOCKED -> C.VISIBILITY_VISIBLE_LOCK
+                                            else -> C.VISIBILITY_INVISIBLE_LOCKED
+                                        }
+                                    )
+                                }
+                            )
+                        },
+                    content = { value ->
+                        when (value) {
+                            false -> Spacer(
+                                Modifier
+                                    .background(AppTheme.colors.background)
+                                    .fillMaxSize()
+                            )
 
-        // Subtitle
-        Label(
-            text = state.subtitle ?: "",
-            style = AppTheme.typography.label3,
-            modifier = Modifier.key(C.ID_SUBTITLE),
-            color = onColor.copy(ContentAlpha.medium)
-        )
+                            else -> Spacer(
+                                Modifier
+                                    .background(Color.Black)
+                                    .fillMaxSize()
+                            )
+                        }
 
-        // Extra-info
-        val chronometer = state.chronometer
-        Label(
-            style = AppTheme.typography.label3,
-            color = onColor.copy(ContentAlpha.medium),
-            modifier = Modifier.key(C.ID_EXTRA_INFO),
-            text = buildString {
-                val elapsed = chronometer.elapsed
-                val fPos =
-                    if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(elapsed / 1000)
-                val duration = state.duration
-                val fDuration =
-                    if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(duration / 1000)
-                append("$fPos / $fDuration (${stringResource(R.string.postfix_x_f, state.speed)})")
-            }
-        )
-
-        // Slider
-        TimeBar(
-            progress = chronometer.progress(state.duration),
-            onValueChange = {
-                if (isVideo && visibility !== C.CONTROLS_VISIBLE_SEEK)
-                    visibility = C.CONTROLS_VISIBLE_SEEK
-                val mills = (it * state.duration).toLong()
-                chronometer.raw = mills
-            },
-            onValueChangeFinished = {
-                if (isVideo && visibility !== C.CONTROLS_VISIBLE_NONE)
-                    visibility = C.CONTROLS_VISIBLE_NONE
-                val progress = chronometer.elapsed / state.duration.toFloat()
-                viewState.seekTo(progress)
-            },
-            modifier = Modifier.key(C.ID_SEEK_BAR),
-            enabled = state.duration > 0 && enabled,
-            accent = accent
-        )
-
-        // Shuffle
-        LottieAnimatedButton(
-            id = R.raw.lt_shuffle_on_off,
-            onClick = { viewState.shuffle(!state.shuffle) },
-            atEnd = state.shuffle,
-            progressRange = 0f..0.8f,
-            scale = 1.5f,
-            contentDescription = null,
-            tint = if (state.shuffle) accent else onColor.copy(ContentAlpha.disabled),
-            modifier = Modifier.key(C.ID_SHUFFLE),
-            enabled = enabled
-        )
-
-        // Skip to next
-        IconButton(
-            onClick = viewState::skipToNext,
-            icon = Icons.Outlined.KeyboardDoubleArrowRight,
-            contentDescription = null,
-            enabled = enabled, // add- logic
-            modifier = Modifier.key(C.ID_BTN_SKIP_TO_NEXT)
-        )
-
-        // Skip to Prev
-        IconButton(
-            onClick = viewState::skipToPrev,
-            icon = Icons.Outlined.KeyboardDoubleArrowLeft,
-            contentDescription = null,
-            enabled = enabled,
-            modifier = Modifier.key(C.ID_BTN_SKIP_PREVIOUS)
-        )
-
-        // Repeat Mode
-        IconButton(
-            onClick = viewState::cycleRepeatMode,
-            content = {
-                val mode = state.repeatMode
-                Icon(
-                    painter = AnimVectorPainter(R.drawable.avd_repeat_more_one_all, mode == Remote.REPEAT_MODE_ALL),
-                    contentDescription = null,
-                    tint = onColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
-                )
-            },
-            modifier = Modifier.key(C.ID_BTN_REPEAT_MODE),
-            enabled = enabled
-        )
-
-        // Play Button
-        PlayButton(
-            onClick = viewState::togglePlay,
-            isPlaying = state.playing,
-            simple = isVideo,
-            enabled = enabled,
-            modifier = Modifier.key(C.ID_BTN_PLAY_PAUSE)
-        )
-
-        // Rotation
-        IconButton(
-            icon = Icons.Outlined.ScreenLockRotation,
-            contentDescription = null,
-            onClick = (facade as Activity)::toggleRotationLock,
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_ROTATION_LOCK)
-        )
-
-        // Queue
-        IconButton(
-            icon = Icons.Outlined.Queue,
-            contentDescription = null,
-            onClick = {  },
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_QUEUE)
-        )
-
-        // Favourite
-        IconButton(
-            icon = Icons.Outlined.FavoriteBorder,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_LIKED)
-        )
-
-        // Speed
-        IconButton(
-            icon = Icons.Outlined.Speed,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_PLAYBACK_SPEED)
-        )
-
-        // Timer
-        IconButton(
-            icon = Icons.Outlined.Timer,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_SLEEP_TIMER)
-        )
-
-        // Equalizer
-        IconButton(
-            icon = Icons.Outlined.Tune,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER)
-        )
-
-        // Info
-        IconButton(
-            icon = Icons.TwoTone.Info,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_MEDIA_INFO)
-        )
-
-        // More
-        IconButton(
-            icon = Icons.Outlined.MoreHoriz,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_MORE)
-        )
-
-        if (!state.isVideo)
-            Artwork(
-                model = state.artwork,
-                modifier = Modifier.key(C.ID_ARTWORK),
-                border = 4.dp,
-                shape = AppTheme.shapes.xLarge,
-                shadow = 12.dp
-            )
-    }
-    // layout
-    CompositionLocalProvider(
-        LocalContentColor provides onColor,
-        content = {
-            // Update constraints
-            val clazz = LocalWindowSize.current
-            val dpInsets = insets.toDpRect
-            var start by remember {
-                val start = calculateConstraintSet(clazz, dpInsets, isVideo, visibility)
-                titleTextSize = start.titleTextSize
-                mutableStateOf(start.constraints)
-            }
-            var end by remember { mutableStateOf(start) }
-            val progress = remember { Animatable(0.0f) }
-            var direction by remember { mutableIntStateOf(1) }
-            LaunchedEffect(clazz, dpInsets, isVideo, visibility) {
-                val newConstraints = calculateConstraintSet(clazz, dpInsets, isVideo, visibility)
-                if (isVideo && (visibility !== C.CONTROLS_VISIBLE_NONE)) {
-                    launch {
-                        delay(10_000)
-                        visibility = C.CONTROLS_VISIBLE_NONE
                     }
+                )
+
+                // Video
+                if (isVideo) {
+                    val provider = viewState.provider
+                    var scale by remember { mutableStateOf(ContentScale.Fit) }
+                    VideoSurface(
+                        provider = provider,
+                        keepScreenOn = state.playWhenReady,
+                        modifier = Modifier
+                            .key(C.ID_VIDEO_SURFACE)
+                            .resize(scale, state.videoSize)
+                    )
+                    // Scrim
+                    Spacer(
+                        modifier = Modifier
+                            .layoutId(C.ID_SCRIM)
+                            .background(Color.Black.copy(0.4f))
+                    )
+                    // Resize Mode
+                    IconButton(
+                        icon = if (scale == ContentScale.Fit) Icons.Outlined.Fullscreen else Icons.Outlined.FitScreen,
+                        contentDescription = null,
+                        onClick = {
+                            scale =
+                                if (scale == ContentScale.Fit) ContentScale.Crop else ContentScale.Fit
+                        },
+                        modifier = Modifier.layoutId(C.ID_BTN_RESIZE_MODE),
+                        enabled = enabled
+                    )
+                    // Lock
+                    val isLocked = visibility == C.VISIBILITY_INVISIBLE_LOCKED
+                    IconButton(
+                        icon = if (isLocked) Icons.Outlined.LockOpen else Icons.Outlined.Lock,
+                        contentDescription = null,
+                        onClick = { viewState.emit(if (visibility == C.VISIBILITY_VISIBLE_LOCK) C.VISIBILITY_VISIBLE else C.VISIBILITY_VISIBLE_LOCK) },
+                        modifier = Modifier.layoutId(C.ID_BTN_LOCK),
+                        enabled = visibility >= C.VISIBILITY_VISIBLE_LOCK
+                    )
                 }
-                val currentConstraints = if (direction == 1) start else end
-                if (newConstraints.constraints != currentConstraints) {
-                    titleTextSize = newConstraints.titleTextSize
-                    if (direction == 1) end = newConstraints.constraints else start =
-                        newConstraints.constraints
-                    progress.animateTo(direction.toFloat(), tween())
-                    direction = if (direction == 1) 0 else 1
-                }
+
+                // Collapse
+                val accent = if (isVideo) onColor else AppTheme.colors.accent
+                IconButton(
+                    icon = Icons.Outlined.ExpandMore,
+                    onClick = onNavigatingBack,
+                    tint = accent,
+                    enabled = enabled,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .key(C.ID_BTN_COLLAPSE)
+                        .thenIf(!isVideo) {
+                            border(AppTheme.colors.shine, CircleShape)
+                                .background(AppTheme.colors.background(3.dp), shape = CircleShape)
+                        },
+                )
+
+                // Playing bars.
+                Icon(
+                    painter = lottieAnimationPainter(
+                        R.raw.playback_indicator,
+                        isPlaying = state.playing
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(horizontal = ContentPadding.small)
+                        .lottie()
+                        .key(C.ID_PLAYING_INDICATOR),
+                    tint = accent
+                )
+
+                // Title
+                Box(
+                    modifier = Modifier
+                        .key(C.ID_TITLE)
+                        .clipToBounds(),
+                    content = {
+                        Label(
+                            text = state.title ?: stringResource(id = R.string.unknown),
+                            fontSize = constraints.titleTextSize.sp,// Maybe Animate
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.marque(Int.MAX_VALUE)
+                        )
+                    }
+                )
+
+                // Subtitle
+                Label(
+                    text = state.subtitle ?: "",
+                    style = AppTheme.typography.label3,
+                    modifier = Modifier.key(C.ID_SUBTITLE),
+                    color = onColor.copy(ContentAlpha.medium)
+                )
+
+                // Extra-info
+                val chronometer = state.chronometer
+                Label(
+                    style = AppTheme.typography.label3,
+                    color = onColor.copy(ContentAlpha.medium),
+                    modifier = Modifier.key(C.ID_EXTRA_INFO),
+                    text = buildString {
+                        val elapsed = chronometer.elapsed
+                        val fPos =
+                            if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(
+                                elapsed / 1000
+                            )
+                        val duration = state.duration
+                        val fDuration =
+                            if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(
+                                duration / 1000
+                            )
+                        append(
+                            "$fPos / $fDuration (${
+                                stringResource(
+                                    R.string.postfix_x_f,
+                                    state.speed
+                                )
+                            })"
+                        )
+                    }
+                )
+
+                // Slider
+                TimeBar(
+                    progress = chronometer.progress(state.duration),
+                    onValueChange = {
+                        if (isVideo)
+                            viewState.emit(C.VISIBILITY_VISIBLE_SEEK)
+                        val mills = (it * state.duration).toLong()
+                        chronometer.raw = mills
+                    },
+                    onValueChangeFinished = {
+                        if (isVideo)
+                            viewState.emit(C.VISIBILITY_INVISIBLE)
+                        val progress = chronometer.elapsed / state.duration.toFloat()
+                        viewState.seekTo(progress)
+                    },
+                    modifier = Modifier.key(C.ID_SEEK_BAR),
+                    enabled = state.duration > 0 && visibility >= C.VISIBILITY_VISIBLE_SEEK,
+                    accent = accent
+                )
+
+                // Shuffle
+                LottieAnimatedButton(
+                    id = R.raw.lt_shuffle_on_off,
+                    onClick = { viewState.shuffle(!state.shuffle) },
+                    atEnd = state.shuffle,
+                    progressRange = 0f..0.8f,
+                    scale = 1.5f,
+                    contentDescription = null,
+                    tint = if (state.shuffle) accent else onColor.copy(ContentAlpha.disabled),
+                    modifier = Modifier.key(C.ID_SHUFFLE),
+                    enabled = enabled
+                )
+
+                // Skip to next
+                IconButton(
+                    onClick = viewState::skipToNext,
+                    icon = Icons.Outlined.KeyboardDoubleArrowRight,
+                    contentDescription = null,
+                    enabled = enabled, // add- logic
+                    modifier = Modifier.key(C.ID_BTN_SKIP_TO_NEXT)
+                )
+
+                // Skip to Prev
+                IconButton(
+                    onClick = viewState::skipToPrev,
+                    icon = Icons.Outlined.KeyboardDoubleArrowLeft,
+                    contentDescription = null,
+                    enabled = enabled,
+                    modifier = Modifier.key(C.ID_BTN_SKIP_PREVIOUS)
+                )
+                // Repeat Mode
+                IconButton(
+                    onClick = viewState::cycleRepeatMode,
+                    content = {
+                        val mode = state.repeatMode
+                        Icon(
+                            painter = AnimVectorPainter(
+                                R.drawable.avd_repeat_more_one_all,
+                                mode == Remote.REPEAT_MODE_ALL
+                            ),
+                            contentDescription = null,
+                            tint = onColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
+                        )
+                    },
+                    modifier = Modifier.key(C.ID_BTN_REPEAT_MODE),
+                    enabled = enabled
+                )
+
+                // Play Button
+                PlayButton(
+                    onClick = viewState::togglePlay,
+                    isPlaying = state.playing,
+                    simple = isVideo,
+                    enabled = enabled,
+                    modifier = Modifier.key(C.ID_BTN_PLAY_PAUSE)
+                )
+
+                // Rotation
+                IconButton(
+                    icon = Icons.Outlined.ScreenLockRotation,
+                    contentDescription = null,
+                    onClick = (facade as Activity)::toggleRotationLock,
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_ROTATION_LOCK)
+                )
+
+                // Queue
+                IconButton(
+                    icon = Icons.Outlined.Queue,
+                    contentDescription = null,
+                    onClick = { },
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_QUEUE)
+                )
+
+                // Favourite
+                IconButton(
+                    icon = Icons.Outlined.FavoriteBorder,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_LIKED)
+                )
+
+                // Speed
+                IconButton(
+                    icon = Icons.Outlined.Speed,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_PLAYBACK_SPEED)
+                )
+
+                // Timer
+                IconButton(
+                    icon = Icons.Outlined.Timer,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_SLEEP_TIMER)
+                )
+
+                // Equalizer
+                IconButton(
+                    icon = Icons.Outlined.Tune,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER)
+                )
+
+                // Info
+                IconButton(
+                    icon = Icons.TwoTone.Info,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_MEDIA_INFO)
+                )
+
+                // More
+                IconButton(
+                    icon = Icons.Outlined.MoreHoriz,
+                    contentDescription = null,
+                    onClick = {},
+                    enabled = enabled,
+                    modifier = Modifier.layoutId(C.ID_BTN_MORE)
+                )
+
+                if (!state.isVideo)
+                    Artwork(
+                        model = state.artwork,
+                        modifier = Modifier.key(C.ID_ARTWORK),
+                        border = 4.dp,
+                        shape = AppTheme.shapes.xLarge,
+                        shadow = 12.dp
+                    )
             }
-            MotionLayout(
-                start = start,
-                end = end,
-                progress = progress.value,
-                content = content,
-                modifier = modifier
-            )
+        )
+    }
+
+    // Restore
+    // This DisposableEffect manages the system UI appearance (light/dark bars)
+    // based on whether the content is video or audio.
+    DisposableEffect(isVideo) {
+        // When isVideo changes, update the system bar appearance.
+        // If it's a video, force dark system bars.
+        // Otherwise, use the automatic system bar appearance.
+        facade.style = when {
+            isVideo -> facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_DARK
+            else -> facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO
         }
-    )
+        onDispose {
+            // When the composable is disposed (e.g., navigating away),
+            // revert the system bar appearance and visibility to their default automatic states.
+            facade.style =
+                facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO + WindowStyle.FLAG_SYSTEM_BARS_VISIBILITY_AUTO
+        }
+    }
 }

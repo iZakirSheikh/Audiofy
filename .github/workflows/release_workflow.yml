@@ -28,10 +28,16 @@ jobs:
           # Use MAX_COMMITS from workflow input, default to 1
           MAX_COMMITS="${{ github.event.inputs.max_commits || 1 }}"
           echo "Using MAX_COMMITS=$MAX_COMMITS"
+          # Build the notes header first
+          notes="## What's new\n"
           
           # Take the last MAX_COMMITS from the current branch only, no merges
-          notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
-            --pretty=format:"* %s (%h)%n%b%n")
+          commit_notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
+            --pretty=format:"### %s (%h)%n%b%n")
+          
+          # Combine
+          notes="$notes$commit_notes"
+          
           # If there are no commits, provide a fallback message
           if [ -z "$notes" ]; then
             notes="No new commits found."

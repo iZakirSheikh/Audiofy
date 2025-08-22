@@ -18,14 +18,15 @@
 
 package com.zs.audiofy.console
 
-import android.net.Uri
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.constraintlayout.compose.Visibility
 import com.zs.audiofy.common.Route
+import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.VideoProvider
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 object RouteConsole: Route {
@@ -43,7 +44,7 @@ object RouteConsole: Route {
     const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
     const val ID_SEEK_BAR = "_seek_bar"
     const val ID_VIDEO_SURFACE = "_video_surface"
-    const val ID_TOAST = "_toast"
+    const val ID_MESSAGE = "_message"
     const val ID_BACKGROUND = "_background"
     const val ID_SCRIM = "_scrim"
     const val ID_BTN_RESIZE_MODE = "_resize_mode"
@@ -59,11 +60,14 @@ object RouteConsole: Route {
     const val ID_CAPTIONS = "_captions"
     const val ID_BANNER_AD = "_banner_ad"
 
-    // Visibility states for Player controls overlay
-   val CONTROLS_VISIBLE_ALL: Array<String>? = null // (null = default behavior → show everything)
-   val CONTROLS_VISIBLE_NONE = emptyArray<String>() // (empty array = hide all)
-   val CONTROLS_VISIBLE_SEEK = arrayOf(RouteConsole.ID_SEEK_BAR, RouteConsole.ID_EXTRA_INFO) //(only seek bar + extra info)
-   val CONTROLS_VISIBLE_LOCK = arrayOf(RouteConsole.ID_BTN_LOCK) // (only lock/unlock button visible)
+    const val VISIBILITY_AUTO_HIDE_DELAY = 5_000L
+    const val MESSAGE_AUTO_HIDE_DELAY = 5_000L
+
+    const val VISIBILITY_INVISIBLE = 0
+    const val VISIBILITY_INVISIBLE_LOCKED = 1
+    const val VISIBILITY_VISIBLE_LOCK = 2
+    const val VISIBILITY_VISIBLE_SEEK= 3
+    const val VISIBILITY_VISIBLE = 4
 }
 
 abstract class Constraints(val titleTextSize: Int) {
@@ -82,7 +86,7 @@ abstract class Constraints(val titleTextSize: Int) {
     protected val SKIP_TO_NEXT = ConstrainedLayoutReference(RouteConsole.ID_BTN_SKIP_TO_NEXT)
     protected val SEEK_BAR = ConstrainedLayoutReference(RouteConsole.ID_SEEK_BAR)
     protected val VIDEO_SURFACE = ConstrainedLayoutReference(RouteConsole.ID_VIDEO_SURFACE)
-    protected val TOAST = ConstrainedLayoutReference(RouteConsole.ID_TOAST)
+    protected val TOAST = ConstrainedLayoutReference(RouteConsole.ID_MESSAGE)
     protected val BACKGROUND = ConstrainedLayoutReference(RouteConsole.ID_BACKGROUND)
     protected val SCRIM = ConstrainedLayoutReference(RouteConsole.ID_SCRIM)
     protected val RESIZE_MODE = ConstrainedLayoutReference(RouteConsole.ID_BTN_RESIZE_MODE)
@@ -120,7 +124,7 @@ abstract class Constraints(val titleTextSize: Int) {
         if (hideAll || !except.contains(RouteConsole.ID_BTN_PLAY_PAUSE)) hide(PLAY_PAUSE)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_SKIP_TO_NEXT)) hide(SKIP_TO_NEXT)
         if (hideAll || !except.contains(RouteConsole.ID_SEEK_BAR)) hide(SEEK_BAR)
-        if (hideAll || !except.contains(RouteConsole.ID_TOAST)) hide(TOAST)
+        if (hideAll || !except.contains(RouteConsole.ID_MESSAGE)) hide(TOAST)
         if (hideAll || !except.contains(RouteConsole.ID_SCRIM)) hide(SCRIM)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_RESIZE_MODE)) hide(RESIZE_MODE)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_ROTATION_LOCK)) hide(ROTATION_LOCK)
@@ -139,8 +143,45 @@ abstract class Constraints(val titleTextSize: Int) {
 interface ConsoleViewState {
 
     val state: StateFlow<NowPlaying?>
-    val isLiked: Boolean
     val provider: VideoProvider
+
+    /**
+     * Represents the visibility state of the UI controls on the console screen.
+     * It can take one of the following values:
+     * - [RouteConsole.VISIBILITY_INVISIBLE]: All controls are hidden.
+     * - [RouteConsole.VISIBILITY_VISIBLE]: All controls are visible.
+     * - [RouteConsole.VISIBILITY_VISIBLE_LOCKED]: Controls are visible and locked, preventing auto-hide.
+     * - [RouteConsole.VISIBILITY_VISIBLE_SEEK]: Controls are visible, typically during a seek operation.
+     */
+    val visibility: Int
+
+    /**
+     * A message to be shown to the user for a limited time.
+     * A null value means no message is set.
+     * A non-null value is reset to null after [DEFAULT_MESSAGE_TIME_OUT] ms.
+     *
+     * @property message The message to display or null to hide it.
+     * @see DEFAULT_MESSAGE_TIME_OUT
+     */
+    var message: CharSequence?
+
+    /**
+     * The playing queue.
+     */
+    val queue: Flow<List<MediaFile>>
+
+    /**
+     * Emits a new visibility state for the player controls.
+     *
+     * @param visible An array of strings representing the IDs of the UI elements to be shown.
+     *                - `null`: Show all default controls.
+     *                - Empty array: Hide all controls.
+     *                - Array with IDs: Show only the specified controls.
+     * @param timeout The duration in milliseconds after which the controls visibility should revert
+     *                to the default state. A value of -1 means the visibility change is permanent
+     *                until the next call to `emit`.
+     */
+    fun emit(newVisibility: Int, delayed: Boolean = false)
 
     fun skipToNext()
     fun skipToPrev()
@@ -148,5 +189,5 @@ interface ConsoleViewState {
     fun seekTo(pct: Float)
     fun shuffle(enable: Boolean)
     fun cycleRepeatMode()
-    fun addToLiked(uri: Uri)
+    fun addToLiked()
 }

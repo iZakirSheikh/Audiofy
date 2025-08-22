@@ -1,24 +1,44 @@
 package com.zs.audiofy.common.impl
 
-import android.net.Uri
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.console.ConsoleViewState
-import com.zs.core.db.playlists.Playlists
+import com.zs.audiofy.console.RouteConsole
+import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import com.zs.core.playback.VideoProvider
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-
-class ConsoleViewModel(val remote: Remote, playlists: Playlists): KoinViewModel(), ConsoleViewState {
+class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override val state: StateFlow<NowPlaying?> = remote.state
-
-    override val isLiked: Boolean get() = false
     override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
+
+    override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBILITY_VISIBLE)
+    override var message: CharSequence? by mutableStateOf(null)
+
+    override val queue: Flow<List<MediaFile>>
+        get() = TODO("Not yet implemented")
+
+    var autohideJob: Job? = null
+    override fun emit(newVisibility: Int, delayed: Boolean) {
+        autohideJob?.cancel()
+        if (!delayed) {
+            this@ConsoleViewModel.visibility = newVisibility
+            return
+        }
+        autohideJob = viewModelScope.launch {
+            delay(RouteConsole.VISIBILITY_AUTO_HIDE_DELAY)
+            this@ConsoleViewModel.visibility = newVisibility
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -47,7 +67,6 @@ class ConsoleViewModel(val remote: Remote, playlists: Playlists): KoinViewModel(
     override fun seekTo(pct: Float) {
         runCatching {
             remote.seekTo(pct)
-
         }
     }
 
@@ -61,18 +80,16 @@ class ConsoleViewModel(val remote: Remote, playlists: Playlists): KoinViewModel(
     override fun cycleRepeatMode() {
         runCatching {
             val new = remote.cycleRepeatMode()
-            val msg = when(new){
+            val msg = when (new) {
                 Remote.REPEAT_MODE_OFF -> "Repeat mode off"
                 Remote.REPEAT_MODE_ONE -> "Repeat mode one"
-                else  -> "Repeat mode all"
+                else -> "Repeat mode all"
             }
             showPlatformToast(msg)
         }
     }
 
-    override fun addToLiked(uri: Uri) {
-        runCatching {
-
-        }
+    override fun addToLiked() {
+        TODO("Not yet implemented")
     }
 }

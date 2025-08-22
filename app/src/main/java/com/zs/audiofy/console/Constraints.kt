@@ -514,7 +514,7 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>?,) = object : Co
         // Title
         TITLE.withChainParams(startMargin = CP.medium, endMargin = CP.medium)
         val title = horizontal(
-            INDICATOR, TITLE, INFO,
+            INDICATOR, TITLE, INFO,LOCK,
             alignBy = TITLE,
             constrainBlock = {
                 linkTo(parent.start, COLLAPSE.end, CP.normal + left)
@@ -554,7 +554,7 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>?,) = object : Co
         }
         // more
         val more = horizontal(
-            SHUFFLE, REPEAT_MODE, RESIZE_MODE, LOCK,
+            SHUFFLE, REPEAT_MODE, RESIZE_MODE,
             chainStyle = ChainStyle.Packed(1f),
             constrainBlock =  {
                 linkTo(timeBar.start, COLLAPSE.end)
