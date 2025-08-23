@@ -27,6 +27,7 @@ import android.provider.MediaStore
 import android.view.SurfaceView
 import android.view.TextureView
 import android.view.View
+import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
@@ -36,11 +37,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.zs.core.common.await
 import com.zs.core.db.playlists.Playlist
+import com.zs.core.db.playlists.Playlists
 import com.zs.core.store.models.Audio
 
 /**
@@ -245,6 +248,61 @@ internal suspend inline operator fun MediaBrowser.set(command: SessionCommand, a
 internal suspend inline operator fun MediaBrowser.get(command: SessionCommand) =
     sendCustomCommand(command, Bundle.EMPTY).await()
 
+/**
+ * Creates a [CommandButton] with the specified icon, label, and session command.
+ *
+ * This function simplifies the creation of a [CommandButton] by providing a
+ * concise way to set its essential properties.
+ *
+ * @param icon The drawable resource ID for the button's icon.
+ * @param label The display name (label) for the button.
+ * @param command The [SessionCommand] associated with this button.
+ * @return A new [CommandButton] instance.
+ * @see CommandButton.Builder
+ */
+internal fun CommandButton(@DrawableRes icon: Int, label: String, command: SessionCommand) =
+    CommandButton.Builder()
+        .setIconResId(icon)
+        .setDisplayName(label)
+        .setSessionCommand(command)
+        .build()
 
-
-
+/**
+ * Toggles the "liked" status of a [MediaItem] in the user's "Favourites" playlist.
+ *
+ * This function checks if the given [MediaItem] is already present in the "Favourites" playlist.
+ * - If it is, the item is removed from the playlist.
+ * - If it is not, the item is added to the playlist.
+ *
+ * The "Favourites" playlist is identified by [Remote.PLAYLIST_FAVOURITE]. If this playlist
+ * does not exist, it will be created.
+ *
+ * @param item The [MediaItem] whose liked status is to be toggled.
+ * @return `true` if the operation (add or remove) was successful, `false` otherwise.
+ *         Specifically:
+ *         - Returns `true` if the item was successfully removed (was liked, now unliked).
+ *         - Returns `true` if the item was successfully added (was unliked, now liked).
+ *         - Returns `false` if the removal failed.
+ *         - Returns `false` if the insertion failed.
+ */
+internal suspend fun Playlists.toggleLike(item: MediaItem): Boolean {
+    // Get a reference to the Playlists instance.
+    val playlists = this
+    // Retrieve the ID of the "Favourites" playlist.
+    // If the playlist doesn't exist, create it and get its ID.
+    val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
+        ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+    // Check if the item is already in the "Favourites" playlist.
+    val isLiked = playlists.contains(Remote.PLAYLIST_FAVOURITE, item.mediaUri.toString())
+    // Perform the toggle operation based on whether the item is currently liked.
+    return if (isLiked)
+        // If liked, attempt to remove it. The result is true if removal was successful (non-zero rows affected).
+        playlists.remove(playlistId, item.mediaUri.toString()) != 0
+    else {
+        // If not liked, create a new Track object for the item and attempt to insert it.
+        // The play order is set to be the next available position in the playlist.
+        val newTrack = item.toTrack(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+        // The result is true if insertion was successful (the returned list of inserted tracks is not empty).
+        (playlists.insert(listOf(newTrack)).isNotEmpty())
+    }
+}

@@ -121,7 +121,8 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
                     provider.playbackState,
                     provider.repeatMode,
                     null,
-                    VideoSize(provider.videoSize)
+                    VideoSize(provider.videoSize),
+                    data = current.mediaUri,
                 )
             }
         }

@@ -51,10 +51,13 @@ import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.zs.core.R
+import com.zs.core.common.future
 import com.zs.core.common.get
 import com.zs.core.common.getValue
 import com.zs.core.common.runCatching
 import com.zs.core.common.set
+import com.zs.core.common.showPlatformToast
 import com.zs.core.db.playlists.Playlist
 import com.zs.core.db.playlists.Playlists
 import kotlinx.coroutines.CoroutineScope
@@ -85,6 +88,10 @@ private const val PREF_KEY_ORDERS = "_orders"
 //
 private const val SAVE_POSITION_DELAY_MILLS = 5_000L
 private const val LIST_ITEM_DELIMITER = ';'
+
+// Buttons
+private val LikeButton = CommandButton(R.drawable.ic_star, "Like", Remote.TOGGLE_LIKE)
+private val UnlikeButton = CommandButton(R.drawable.ic_star_border, "Unlike", Remote.TOGGLE_LIKE)
 
 class Playback : MediaLibraryService(), Callback, Player.Listener {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -422,9 +429,22 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             available.add(command)
         }
 
-        // return the result.
-        return ConnectionResult.AcceptedResultBuilder(session)
-            .setAvailableSessionCommands(available.build()).build()
+
+        // return immediately with default button (e.g. LikeButton)
+        val result = ConnectionResult.AcceptedResultBuilder(session)
+            .setAvailableSessionCommands(available.build())
+            .build()
+
+        // update button async once we know the liked state
+        scope.launch {
+            val key = player.currentMediaItem?.mediaUri?.toString() ?: ""
+            val liked = playlists.contains(Remote.PLAYLIST_FAVOURITE, key)
+            session.setMediaButtonPreferences(
+                listOf(if (liked) LikeButton else UnlikeButton)
+            )
+        }
+
+        return result
     }
 
     //
@@ -532,12 +552,21 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                             runBlocking() { preferences[PREF_KEY_EQUALIZER_PROPERTIES, ""] })
                     })
             }
-            //
+            // Handle scrubbing mode commands
             Remote.SCRUBBING_MODE -> {
                 val enabled = args.getBoolean(Remote.EXTRA_SCRUBBING_MODE_ENABLED)
                 (player as ExoPlayer).isScrubbingModeEnabled = enabled
                 Log.d(TAG, "onCustomCommand: $enabled")
                 Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+            }
+            // Like/Unlike
+            Remote.TOGGLE_LIKE -> scope.future {
+                val item = player.currentMediaItem
+                    ?: return@future SessionResult(SessionError.ERROR_INVALID_STATE)
+                val isLiked = playlists.toggleLike(item)
+                session.setMediaButtonPreferences(listOf(if (isLiked) LikeButton else UnlikeButton))
+                showPlatformToast(if (isLiked) "Liked ❤️✨" else "Unliked 💔")
+                SessionResult(SessionResult.RESULT_SUCCESS)
             }
             // Handle unrecognized or unsupported commands.
             else -> Futures.immediateFuture(SessionResult(SessionError.ERROR_UNKNOWN))

@@ -39,6 +39,7 @@ class NowPlaying(
     val repeatMode: Int = Player.REPEAT_MODE_ALL,
     val error: String? = null,
     val videoSize: VideoSize = VideoSize(),
+    val data: Uri? = null
 ) {
     // This time when this was generated.
     val timeStamp = System.currentTimeMillis()
@@ -67,6 +68,7 @@ class NowPlaying(
         if (repeatMode != other.repeatMode) return false
         if (error != other.error) return false
         if (videoSize != other.videoSize) return false
+        if (data != other.data) return false
 
         return true
     }
@@ -87,6 +89,7 @@ class NowPlaying(
         result = 31 * result + repeatMode
         result = 31 * result + (error?.hashCode() ?: 0)
         result = 31 * result + videoSize.hashCode()
+        result = 31 * result + data.hashCode()
         return result
     }
 
@@ -108,6 +111,7 @@ class NowPlaying(
                 " videoSize=$videoSize," +
                 " timeStamp=$timeStamp," +
                 " isVideo=$isVideo," +
-                " playing=$playing)"
+                " playing=$playing" +
+                " data=$data)"
     }
 }

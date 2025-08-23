@@ -40,7 +40,7 @@
     <string name="changelog_400_dev15" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev15)</font></b>
         <font color='grey'>
-           \n-
+           \n- Added <b><i>Like/Unlike</i></b> button in <b>Media Notification</b>
         </font>
     </string>
 

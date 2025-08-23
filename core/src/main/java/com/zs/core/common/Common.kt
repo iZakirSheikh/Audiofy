@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.google.common.util.concurrent.SettableFuture
 import com.google.common.util.concurrent.Uninterruptibles
 import com.zs.core.db.playlists.Playlist
 import com.zs.core.playback.MediaFile
@@ -39,9 +40,13 @@ import com.zs.core.store.models.Audio
 import com.zs.core.store.models.Video
 import com.zs.core.telemetry.Analytics
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -291,6 +296,95 @@ private class ToContinuation<T>(
     }
 }
 
+
+/**
+ * Converts a Kotlin Coroutines [Deferred] to a Guava [ListenableFuture].
+ *
+ * This extension function allows bridging between Kotlin coroutines and libraries that expect
+ * `ListenableFuture` (e.g., some Java-based asynchronous APIs).
+ *
+ * The resulting `ListenableFuture` will complete when the `Deferred` completes.
+ * - If the `Deferred` completes successfully, the `ListenableFuture` will be set with the result.
+ * - If the `Deferred` completes with an exception, the `ListenableFuture` will be set with that exception.
+ *
+ * Cancellation is propagated bidirectionally:
+ * - If the `Deferred` is cancelled, the `ListenableFuture` will be cancelled.
+ * - If the `ListenableFuture` is cancelled, the `Deferred` will be cancelled.
+ *
+ * @return A [ListenableFuture] that represents the outcome of this [Deferred].
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+internal fun <T> Deferred<T>.asFuture(): ListenableFuture<T> {
+    val future = SettableFuture.create<T>()
+
+    invokeOnCompletion { throwable ->
+        if (throwable == null) {
+            // Deferred completed successfully
+            try {
+                future.set(getCompleted())
+            } catch (e: Throwable) {
+                // Should not happen if throwable is null, but handle defensively
+                future.setException(e)
+            }
+        } else {
+            // Deferred completed with an exception
+            future.setException(throwable)
+        }
+    }
+
+    // Propagate cancellation from the Future back to the Deferred.
+    future.addListener(
+        { if (future.isCancelled) cancel() },
+        Runnable::run // direct executor
+    )
+    return future
+}
+
+/**
+ * @see asFuture
+ */
+internal fun <T> CoroutineScope.future(block: suspend CoroutineScope.() -> T): ListenableFuture<T> =
+    async(block = block).asFuture()
+
+/**
+ * Converts a Kotlin Coroutines [Job] to a Guava [ListenableFuture] of [Unit].
+ *
+ * This extension function is useful when you need to represent the completion of a [Job]
+ * (which doesn't produce a value) as a `ListenableFuture`. This is common when interacting
+ * with Java-based APIs that expect a future to signal completion.
+ *
+ * The resulting `ListenableFuture<Unit>` will complete when the [Job] completes.
+ * - If the [Job] completes successfully (without cancellation or failure), the `ListenableFuture`
+ *   will be set with `Unit`.
+ * - If the [Job] completes with an exception (e.g., it's cancelled or fails), the
+ *   `ListenableFuture` will be set with that exception.
+ *
+ * Cancellation is propagated bidirectionally:
+ * - If the [Job] is cancelled, the `ListenableFuture` will be completed with a [kotlinx.coroutines.CancellationException].
+ * - If the `ListenableFuture` is cancelled, the [Job] will be cancelled.
+ *
+ * @return A [ListenableFuture] that completes with [Unit] when this [Job] completes, or with an
+ *         exception if the [Job] fails or is cancelled.
+ */
+internal fun Job.asFuture(): ListenableFuture<Unit> {
+    val future = SettableFuture.create<Unit>()
+
+    invokeOnCompletion { throwable ->
+        if (throwable == null) {
+            // Job completed successfully
+            future.set(Unit)
+        } else {
+            // Job completed with an exception (including cancellation)
+            future.setException(throwable)
+        }
+    }
+    // Propagate cancellation from the Future back to the Job.
+    future.addListener(
+        { if (future.isCancelled) cancel() }, // If the future is cancelled, cancel the Job
+        Runnable::run // Use a direct executor for immediate action
+    )
+    return future
+}
 
 /**
  * Controls whether both the system status bars and navigation bars have a light appearance.

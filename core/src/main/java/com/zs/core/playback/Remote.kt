@@ -71,12 +71,14 @@ interface Remote {
         internal const val EXTRA_EQUALIZER_ENABLED = "_extra_equalizer_enabled"
         internal val SCRUBBING_MODE = SessionCommand("_scrubbing_mode", Bundle.EMPTY)
         internal const val EXTRA_SCRUBBING_MODE_ENABLED = "_extra_scrubbing_mode_enabled"
+        internal val TOGGLE_LIKE = SessionCommand("_toggle_like", Bundle.EMPTY)
 
         internal val commands get() = arrayOf(
             AUDIO_SESSION_ID,
             SCHEDULE_SLEEP_TIME,
             EQUALIZER_CONFIG,
-            SCRUBBING_MODE
+            SCRUBBING_MODE,
+            TOGGLE_LIKE
         )
 
         // The roots for accessing global playlists
