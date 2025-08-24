@@ -427,10 +427,15 @@ fun PlayerView(
                 )
 
                 // Favourite
-                IconButton(
-                    icon = Icons.Outlined.FavoriteBorder,
+                LottieAnimatedButton(
+                    R.raw.lt_twitter_heart_filled_unfilled,
+                    onClick = viewState::toggleLike,
+                    animationSpec = tween(800),
+                    atEnd = state.favourite, // if fav
                     contentDescription = null,
-                    onClick = {},
+                    progressRange = 0.13f..1.0f,
+                    scale = 3.5f,
+                    tint = AppTheme.colors.accent,
                     enabled = enabled,
                     modifier = Modifier.layoutId(C.ID_BTN_LIKED)
                 )

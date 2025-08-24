@@ -89,7 +89,7 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
         }
     }
 
-    override fun addToLiked() {
-        TODO("Not yet implemented")
+    override fun toggleLike() {
+        viewModelScope.launch { remote.toggleLike() }
     }
 }

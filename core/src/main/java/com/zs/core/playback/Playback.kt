@@ -565,6 +565,11 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     ?: return@future SessionResult(SessionError.ERROR_INVALID_STATE)
                 val isLiked = playlists.toggleLike(item)
                 session.setMediaButtonPreferences(listOf(if (isLiked) LikeButton else UnlikeButton))
+                // poke player listeners
+                val shuffle = player.shuffleModeEnabled
+                player.shuffleModeEnabled = !shuffle
+                delay(5)
+                player.shuffleModeEnabled = shuffle
                 showPlatformToast(if (isLiked) "Liked ❤️✨" else "Unliked 💔")
                 SessionResult(SessionResult.RESULT_SUCCESS)
             }

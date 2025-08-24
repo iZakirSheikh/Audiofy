@@ -296,8 +296,8 @@ internal suspend fun Playlists.toggleLike(item: MediaItem): Boolean {
     val isLiked = playlists.contains(Remote.PLAYLIST_FAVOURITE, item.mediaUri.toString())
     // Perform the toggle operation based on whether the item is currently liked.
     return if (isLiked)
-        // If liked, attempt to remove it. The result is true if removal was successful (non-zero rows affected).
-        playlists.remove(playlistId, item.mediaUri.toString()) != 0
+        // removal successful? new state is "not liked"
+        playlists.remove(playlistId, item.mediaUri.toString()) != 1
     else {
         // If not liked, create a new Track object for the item and attempt to insert it.
         // The play order is set to be the next available position in the playlist.

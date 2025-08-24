@@ -41,6 +41,7 @@
          <b>What’s New <font color='yellow'>(v4.0.0-dev15)</font></b>
         <font color='grey'>
            \n- Added <b><i>Like/Unlike</i></b> button in <b>Media Notification</b>
+           \n- Added a <b>Lock controller</b> for the player controller when playing videos, preventing accidental interactions.
         </font>
     </string>
 

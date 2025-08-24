@@ -21,6 +21,7 @@ package com.zs.core.playback
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.media3.common.C
@@ -29,6 +30,7 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
+import com.zs.core.db.playlists.Playlists
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -64,7 +66,7 @@ private val UPDATE_EVENTS = intArrayOf(
     Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
     Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
     Player.EVENT_MEDIA_ITEM_TRANSITION,
-    Player.EVENT_VIDEO_SIZE_CHANGED,
+    Player.EVENT_VIDEO_SIZE_CHANGED
 )
 
 internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.Listener {
@@ -80,7 +82,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
             field = if (field.isCancelled) context.browser(this) else field
             return field
         }
-
+    private val playlits = Playlists(context)
 
     override val state: StateFlow<NowPlaying?> = callbackFlow {
         // init browser
@@ -89,6 +91,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
             override fun onEvents(player: Player, events: Player.Events) {
                 if (!events.containsAny(*UPDATE_EVENTS))
                     return
+                Log.d(TAG, "onEvents: $events")
                 trySend(browser)
             }
         }
@@ -115,7 +118,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
                     provider.shuffleModeEnabled,
                     provider.contentDuration,
                     provider.contentPosition,
-                    false,
+                    playlits.contains(Remote.PLAYLIST_FAVOURITE, current.mediaUri.toString()),
                     provider.playWhenReady,
                     current.mimeType,
                     provider.playbackState,
@@ -288,5 +291,10 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         }
         browser.repeatMode = new
         return new
+    }
+
+    override suspend fun toggleLike(index: Int) {
+        val browser = fBrowser.await()
+        browser[Remote.TOGGLE_LIKE] = bundleOf()
     }
 }

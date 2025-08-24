@@ -161,4 +161,9 @@ interface Remote {
      * @return The new repeat mode after cycling.
      */
     suspend fun cycleRepeatMode(): Int
+
+    /**
+     * Toggles the Like status of the current media item at index.
+     */
+    suspend fun toggleLike(index: Int = -1)
 }

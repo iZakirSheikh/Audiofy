@@ -189,5 +189,5 @@ interface ConsoleViewState {
     fun seekTo(pct: Float)
     fun shuffle(enable: Boolean)
     fun cycleRepeatMode()
-    fun addToLiked()
+    fun toggleLike()
 }
