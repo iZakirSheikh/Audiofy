@@ -23,6 +23,12 @@ import androidx.media3.common.Player
 
 /**
  * Represents the current state of the [Playback]
+ *
+ * @property neighbours An integer indicating the availability of neighboring media items:
+ *  - `0`: No neighboring items are available.
+ *  - `1`: Only the next item is available.
+ *  - `-1`: Only the previous item is available.
+ *  - `2`: Both next and previous items are available.
  */
 class NowPlaying(
     val title: String?,
@@ -39,8 +45,11 @@ class NowPlaying(
     val repeatMode: Int = Player.REPEAT_MODE_ALL,
     val error: String? = null,
     val videoSize: VideoSize = VideoSize(),
-    val data: Uri? = null
+    val data: Uri? = null,
+    private val neighbours: Int = 0,
 ) {
+    val  isNextAvailable get() = neighbours == 1 || neighbours == 2
+    val  isPrevAvailable get() = neighbours == -1 || neighbours == 2
     // This time when this was generated.
     val timeStamp = System.currentTimeMillis()
     val isVideo = mimeType?.startsWith("video") == true
@@ -69,6 +78,7 @@ class NowPlaying(
         if (error != other.error) return false
         if (videoSize != other.videoSize) return false
         if (data != other.data) return false
+        if (neighbours != other.neighbours) return false
 
         return true
     }
@@ -90,6 +100,8 @@ class NowPlaying(
         result = 31 * result + (error?.hashCode() ?: 0)
         result = 31 * result + videoSize.hashCode()
         result = 31 * result + data.hashCode()
+        result = 31 * result + neighbours.hashCode()
+
         return result
     }
 
@@ -112,6 +124,7 @@ class NowPlaying(
                 " timeStamp=$timeStamp," +
                 " isVideo=$isVideo," +
                 " playing=$playing" +
-                " data=$data)"
+                " data=$data" +
+                " neighbours=$neighbours)"
     }
 }

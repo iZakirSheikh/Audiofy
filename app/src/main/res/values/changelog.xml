@@ -42,6 +42,7 @@
         <font color='grey'>
            \n- Added <b><i>Like/Unlike</i></b> button in <b>Media Notification</b>
            \n- Added a <b>Lock controller</b> for the player controller when playing videos, preventing accidental interactions.
+           \n- Fixed issue with <b>Next/Prev button</b> not updating after detecting their availability.
         </font>
     </string>
 

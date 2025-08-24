@@ -369,7 +369,7 @@ fun PlayerView(
                     onClick = viewState::skipToNext,
                     icon = Icons.Outlined.KeyboardDoubleArrowRight,
                     contentDescription = null,
-                    enabled = enabled, // add- logic
+                    enabled = enabled && state.isNextAvailable, // add- logic
                     modifier = Modifier.key(C.ID_BTN_SKIP_TO_NEXT)
                 )
 
@@ -378,9 +378,10 @@ fun PlayerView(
                     onClick = viewState::skipToPrev,
                     icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                     contentDescription = null,
-                    enabled = enabled,
+                    enabled = enabled && state.isPrevAvailable,
                     modifier = Modifier.key(C.ID_BTN_SKIP_PREVIOUS)
                 )
+
                 // Repeat Mode
                 IconButton(
                     onClick = viewState::cycleRepeatMode,
@@ -435,7 +436,7 @@ fun PlayerView(
                     contentDescription = null,
                     progressRange = 0.13f..1.0f,
                     scale = 3.5f,
-                    tint = AppTheme.colors.accent,
+                    tint = accent,
                     enabled = enabled,
                     modifier = Modifier.layoutId(C.ID_BTN_LIKED)
                 )

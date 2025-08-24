@@ -19,6 +19,7 @@
 package com.zs.core.playback
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
@@ -41,6 +42,7 @@ import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import androidx.media3.session.SessionToken
 import com.zs.core.common.await
 import com.zs.core.db.playlists.Playlist
 import com.zs.core.db.playlists.Playlists
@@ -306,3 +308,22 @@ internal suspend fun Playlists.toggleLike(item: MediaItem): Boolean {
         (playlists.insert(listOf(newTrack)).isNotEmpty())
     }
 }
+
+/**
+ * Creates and initializes a [MediaBrowser] instance.
+ *
+ * This function builds a [MediaBrowser] that connects to the `Playback` service.
+ * It sets up a listener to handle connection events and other media browser callbacks.
+ * The connection to the media browser service is established asynchronously.
+ *
+ * TODO: currently a quickfix requirement. find better alternative for component name resolution.
+ *
+ * @param ctx The context used to create the [MediaBrowser].
+ * @param listener The [MediaBrowser.Listener] to receive callbacks from the media browser.
+ * @return A [com.google.common.util.concurrent.ListenableFuture] that resolves to the connected [MediaBrowser].
+ */// TODO: currently a quickfix requirement. find better alternative.
+internal fun MediaBrowser(ctx: Context, listener: MediaBrowser.Listener) =
+    MediaBrowser
+        .Builder(ctx, SessionToken(ctx, ComponentName(ctx, Playback::class.java)))
+        .setListener(listener)
+        .buildAsync()

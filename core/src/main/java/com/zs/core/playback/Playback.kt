@@ -292,7 +292,14 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         // If the mediaItem is null (e.g., end of playlist) or it's a third-party URI,
         // do not proceed with adding it to the "Recent" playlist.
         if (mediaItem == null || mediaItem.mediaUri?.isThirdPartyUri == true) return
-
+        // update like button
+        scope.launch {
+            val key = player.currentMediaItem?.mediaUri?.toString() ?: ""
+            val liked = playlists.contains(Remote.PLAYLIST_FAVOURITE, key)
+            session.setMediaButtonPreferences(
+                listOf(if (liked) LikeButton else UnlikeButton)
+            )
+        }
         // Save the file in the "Recent" playlist.
         // TODO: Implement a delay before saving to "Recent". This ensures only items
         //  viewed for a certain duration are added, improving the relevance of the "Recent" list.

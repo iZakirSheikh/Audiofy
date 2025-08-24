@@ -18,58 +18,35 @@
 
 package com.zs.core.playback
 
-import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
-import androidx.media3.session.SessionToken
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
 import com.zs.core.db.playlists.Playlists
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 
-private const val TAG = "RemoteImpl"
-
-// TODO: currently a quickfix requirement. find better alternative.
-private fun Context.browser(listener: MediaBrowser.Listener) =
-    MediaBrowser
-        .Builder(this, SessionToken(this, ComponentName(this, Playback::class.java)))
-        .setListener(listener)
-        .buildAsync()
-
-/**
- * Player events that trigger state change.
- */
-private val UPDATE_EVENTS = intArrayOf(
-    Player.EVENT_TIMELINE_CHANGED,
-    Player.EVENT_PLAYBACK_STATE_CHANGED,
-    Player.EVENT_REPEAT_MODE_CHANGED,
-    Player.EVENT_IS_PLAYING_CHANGED,
-    Player.EVENT_IS_LOADING_CHANGED,
-    Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
-    Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
-    Player.EVENT_MEDIA_ITEM_TRANSITION,
-    Player.EVENT_VIDEO_SIZE_CHANGED
-)
-
 internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.Listener {
+
+    private val TAG = "RemoteImpl"
+
     // TODO: A quickfix, find better alternative of doing this.
     // The fBrowser variable is lazily initialized with context.browser(this).
     // Whenever fBrowser is accessed, the getter checks if the current value is cancelled.
@@ -77,63 +54,11 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     // Otherwise, it retains the current value.
     // The goal is to ensure that fBrowser always holds a valid browser context,
     // reinitializing it if the current one has been cancelled.
-    private var fBrowser = context.browser(this)
+    private var fBrowser = MediaBrowser(context, this)
         get() {
-            field = if (field.isCancelled) context.browser(this) else field
+            field = if (field.isCancelled) MediaBrowser(context, this) else field
             return field
         }
-    private val playlits = Playlists(context)
-
-    override val state: StateFlow<NowPlaying?> = callbackFlow {
-        // init browser
-        val browser = fBrowser.await()
-        val observer = object : Player.Listener {
-            override fun onEvents(player: Player, events: Player.Events) {
-                if (!events.containsAny(*UPDATE_EVENTS))
-                    return
-                Log.d(TAG, "onEvents: $events")
-                trySend(browser)
-            }
-        }
-        // register
-        send(browser)
-        browser.addListener(observer)
-        // un-register on cancel
-        awaitClose {
-            Log.d(TAG, "state: un-registering")
-            browser.removeListener(observer)
-        }
-    }
-        .debounceAfterFirst(200)
-        .map { provider ->
-            withContext(Dispatchers.Main) {
-                val current = provider.currentMediaItem
-                if (current == null) return@withContext null
-                //return null
-                NowPlaying(
-                    current.title?.toString(),
-                    current.subtitle?.toString(),
-                    current.artworkUri,
-                    provider.playbackParameters.speed,
-                    provider.shuffleModeEnabled,
-                    provider.contentDuration,
-                    provider.contentPosition,
-                    playlits.contains(Remote.PLAYLIST_FAVOURITE, current.mediaUri.toString()),
-                    provider.playWhenReady,
-                    current.mimeType,
-                    provider.playbackState,
-                    provider.repeatMode,
-                    null,
-                    VideoSize(provider.videoSize),
-                    data = current.mediaUri,
-                )
-            }
-        }
-        // StateIn - This simplifies the callback flow, requiring only a single subscription and preserving state for up to 5 seconds.
-        .stateIn(GlobalScope, SharingStarted.WhileSubscribed(5_000), null)
-
-
-    override val queue: Flow<List<MediaFile>> get() = TODO("Not yet implemented")
 
     override suspend fun getViewProvider(): VideoProvider = VideoProvider(fBrowser.await())
 
@@ -169,8 +94,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
 
     override suspend fun togglePlay() {
         val browser = fBrowser.await()
-        if (browser.isPlaying)
-            pause()
+        if (browser.isPlaying) pause()
         else {
             play(true)
         }
@@ -189,15 +113,14 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     override suspend fun seekTo(pct: Float) {
         val browser = fBrowser.await()
         val duration = browser.duration
-        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET)
-            return
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == Remote.TIME_UNSET) return
         browser[Remote.SCRUBBING_MODE] = bundleOf(
             Remote.EXTRA_SCRUBBING_MODE_ENABLED to true
         )
         delay(10)
-       withContext(Dispatchers.Main){
-           browser.seekTo((duration * pct).toLong())
-       }
+        withContext(Dispatchers.Main) {
+            browser.seekTo((duration * pct).toLong())
+        }
         browser[Remote.SCRUBBING_MODE] = bundleOf(
             Remote.EXTRA_SCRUBBING_MODE_ENABLED to false
         )
@@ -224,8 +147,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
      */
     private suspend fun map(index: Int): Int {
         val browser = fBrowser.await()
-        if (!browser.shuffleModeEnabled)
-            return index
+        if (!browser.shuffleModeEnabled) return index
         // FixMe: Return the shuffled index.
         return index
     }
@@ -245,27 +167,23 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
 
     override suspend fun add(values: List<MediaFile>, index: Int): Int {
         // if the list is empty return
-        if (values.isEmpty())
-            return 0
+        if (values.isEmpty()) return 0
         val browser = fBrowser.await()
         // add directly if mediaitemCount is 0. the uniqueness will be checked by set.
-        if (browser.mediaItemCount == 0)
-            return setMediaFiles(values)
+        if (browser.mediaItemCount == 0) return setMediaFiles(values)
         val unique = values.distinctBy { it.mediaUri }.toMutableList()
         // remove any duplicates from the unique that are already in browser
         repeat(browser.mediaItemCount) {
             val item = browser.getMediaItemAt(it)
             unique.removeAll { it.mediaUri == item.mediaUri }
         }
-        if (unique.isEmpty())
-            return 0
+        if (unique.isEmpty()) return 0
         // map index with corresponding playlist index.
         // FixMe: currently it doesn't work with shuffleModeOn
         val newIndex = if (index == C.INDEX_UNSET) browser.mediaItemCount else map(index)
         // add media items.
         browser.addMediaItems(
-            newIndex.coerceIn(0, browser.mediaItemCount),
-            unique.map(MediaFile::value)
+            newIndex.coerceIn(0, browser.mediaItemCount), unique.map(MediaFile::value)
         )
         return unique.size
     }
@@ -297,4 +215,97 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         val browser = fBrowser.await()
         browser[Remote.TOGGLE_LIKE] = bundleOf()
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val remoteScope: CoroutineScope = GlobalScope
+    private val playlists = Playlists(context)
+
+    private val autostopSharing = SharingStarted.WhileSubscribed(5_000)
+
+    // This flow emits Player.Events from the MediaBrowser.
+    // It's designed to ensure only one listener is registered with the MediaBrowser,
+    // even if multiple clients collect this flow.
+    // The `autostopSharing` (5 seconds) helps preserve the listener during brief disconnections/reconnections,
+    // preventing unnecessary unregistering and reregistering.
+    private val events = callbackFlow {
+        // init browser
+        val browser = fBrowser.await()
+        val observer = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                Log.d(TAG, "onEvents: $events")
+                trySend(events)
+            }
+        }
+        // register
+        send(null)
+        browser.addListener(observer)
+        // un-register on cancel
+        awaitClose {
+            Log.d(TAG, "state: un-registering")
+            browser.removeListener(observer)
+        }
+    }.debounceAfterFirst(200)
+
+    override val state: StateFlow<NowPlaying?> = events.transform { events ->
+        Log.d(TAG, "onEvents: $events")
+        // If the events are not null and do not contain any of the relevant state update events,
+        // then there's no need to update the NowPlaying state, so we return early.
+        if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
+        // Await the MediaBrowser instance.
+        val provider = fBrowser.await()
+        // Get the current media item from the provider.
+        val current = provider.currentMediaItem
+        // If there's no current media item, emit null (or the previous state will be retained by stateIn)
+        // and return early.
+        if (current == null) return@transform
+        // Construct a new NowPlaying object with the current media item's details.
+        val state = NowPlaying(
+            title = current.title?.toString(),
+            subtitle = current.subtitle?.toString(),
+            artwork = current.artworkUri,
+            speed = provider.playbackParameters.speed,
+            shuffle = provider.shuffleModeEnabled,
+            duration = provider.contentDuration,
+            position = provider.contentPosition,
+            // Check if the current media item is in the "favourites" playlist.
+            favourite = playlists.contains(Remote.PLAYLIST_FAVOURITE, current.mediaUri.toString()),
+            playWhenReady = provider.playWhenReady,
+            mimeType = current.mimeType,
+            state = provider.playbackState,
+            repeatMode = provider.repeatMode,
+            error = null,
+            videoSize = VideoSize(provider.videoSize),
+            data = current.mediaUri,
+            // Determine the presence of next and previous items.
+            // 2: both next and previous exist
+            // -1: only previous exists
+            // 1: only next exists
+            // 0: neither next nor previous exist
+            neighbours = when {
+                provider.hasNextMediaItem() && provider.hasPreviousMediaItem() -> 2
+                provider.hasPreviousMediaItem() -> -1
+                provider.hasNextMediaItem() -> 1
+                else -> 0
+            }
+        ) // Emit the newly created NowPlaying state.
+        emit(state)
+    }
+        .flowOn(Dispatchers.Main)
+        .stateIn(remoteScope, autostopSharing, null)
+
+    override val queue: Flow<List<MediaFile>> = events.transform { events ->
+        // Check if the received events are relevant for a queue update.
+        // If `events` is null (initial emission from callbackFlow) or if it doesn't contain
+        // `Player.EVENT_TIMELINE_CHANGED`, it means the queue hasn't changed,
+        // so we don't need to re-fetch and emit it.
+        if (events != null && !events.contains(Player.EVENT_TIMELINE_CHANGED)) return@transform
+        // Await the MediaBrowser instance to ensure it's connected and ready.
+        val provider = fBrowser.await()
+        // Retrieve the current queue from the provider and map each item to a MediaFile object.
+        val list = provider.queue.map(::MediaFile)
+        // Emit the updated list of MediaFile objects.
+        emit(list)
+    }
 }
+
+

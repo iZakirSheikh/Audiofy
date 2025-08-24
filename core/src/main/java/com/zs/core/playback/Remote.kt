@@ -45,6 +45,19 @@ interface Remote {
         const val TIME_UNSET = C.TIME_UNSET
         const val INDEX_UNSET = C.INDEX_UNSET
 
+        // Represents all the update events that trigger state change.
+        internal val STATE_UPDATE_EVENTS = intArrayOf(
+            Player.EVENT_TIMELINE_CHANGED,
+            Player.EVENT_PLAYBACK_STATE_CHANGED,
+            Player.EVENT_REPEAT_MODE_CHANGED,
+            Player.EVENT_IS_PLAYING_CHANGED,
+            Player.EVENT_IS_LOADING_CHANGED,
+            Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+            Player.EVENT_MEDIA_ITEM_TRANSITION,
+            Player.EVENT_VIDEO_SIZE_CHANGED
+        )
+
         // The standard global playlists.
         val PLAYLIST_FAVOURITE = Playlists.PRIVATE_PLAYLIST_PREFIX + "favourite"
         val PLAYLIST_RECENT = Playlists.PRIVATE_PLAYLIST_PREFIX + "recent"
