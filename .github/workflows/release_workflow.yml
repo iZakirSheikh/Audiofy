@@ -29,7 +29,8 @@ jobs:
           MAX_COMMITS="${{ github.event.inputs.max_commits || 1 }}"
           echo "Using MAX_COMMITS=$MAX_COMMITS"
           # Build the notes header first
-          notes="## What's new\n"
+          notes="## What's new
+          "
           
           # Take the last MAX_COMMITS from the current branch only, no merges
           commit_notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \

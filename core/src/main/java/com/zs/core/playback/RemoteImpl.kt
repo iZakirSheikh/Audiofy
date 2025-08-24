@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
@@ -220,7 +221,8 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
     private val remoteScope: CoroutineScope = GlobalScope
     private val playlists = Playlists(context)
 
-    private val autostopSharing = SharingStarted.WhileSubscribed(5_000)
+    private val autostopPolicy =
+        SharingStarted.WhileSubscribed(5_000, 5_000)
 
     // This flow emits Player.Events from the MediaBrowser.
     // It's designed to ensure only one listener is registered with the MediaBrowser,
@@ -232,7 +234,6 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         val browser = fBrowser.await()
         val observer = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
-                Log.d(TAG, "onEvents: $events")
                 trySend(events)
             }
         }
@@ -244,13 +245,17 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
             Log.d(TAG, "state: un-registering")
             browser.removeListener(observer)
         }
-    }.debounceAfterFirst(200)
+    }
 
-    override val state: StateFlow<NowPlaying?> = events.transform { events ->
+
+    override val state: StateFlow<NowPlaying?> = events
+        .filter { it?.containsAny(*Remote.STATE_UPDATE_EVENTS) == true }
+        .debounceAfterFirst(200)
+        .transform { events ->
         Log.d(TAG, "onEvents: $events")
         // If the events are not null and do not contain any of the relevant state update events,
         // then there's no need to update the NowPlaying state, so we return early.
-        if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
+        // if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
         // Await the MediaBrowser instance.
         val provider = fBrowser.await()
         // Get the current media item from the provider.
@@ -291,7 +296,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         emit(state)
     }
         .flowOn(Dispatchers.Main)
-        .stateIn(remoteScope, autostopSharing, null)
+        .stateIn(remoteScope, autostopPolicy, null)
 
     override val queue: Flow<List<MediaFile>> = events.transform { events ->
         // Check if the received events are relevant for a queue update.

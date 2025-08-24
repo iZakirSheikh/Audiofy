@@ -82,7 +82,7 @@ class CoilInitializer : Initializer<Unit> {
         // Construct imageLoader
         val loader = ImageLoader(context)
             .error(error)
-            .crossfade(600)
+            .crossfade(450)
             .components { add(VideoThumbnailFetcher.Factory()) }
             .build()
         // set global image loader
