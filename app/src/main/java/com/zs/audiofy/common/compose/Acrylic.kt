@@ -19,20 +19,33 @@
 package com.zs.audiofy.common.compose
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.transformations
 import com.zs.compose.foundation.Background
+import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
+import com.zs.core.coil.RsBlurTransformation
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive
@@ -149,3 +162,90 @@ val Colors.shine
             )
         )
     )
+
+/**
+ * A Composable that displays an image with an acrylic blur effect.
+ *
+ * This Composable applies a blur effect to the provided image [data].
+ * It uses a different blur implementation based on the Android SDK version:
+ * - **Android S (API 31) and above:** Uses the built-in `Modifier.blur()` for a hardware-accelerated blur.
+ * - **Below Android S:** Uses a [RsBlurTransformation] (RenderScript blur) for blurring the image.
+ *
+ * In both cases, a semi-transparent overlay ([containerColor]) is drawn on top,
+ * and a subtle luminosity effect is applied using `BlendMode.DstOut` with a white color.
+ * The alpha of this white color is adjusted based on whether the `containerColor` is light or dark.
+ *
+ * @param data The [Uri] of the image to display and blur. Can be null, in which case nothing is drawn.
+ * @param modifier The [Modifier] to be applied to this Composable.
+ */
+@Composable
+fun Acrylic(
+    data: Uri?,
+    modifier: Modifier = Modifier,
+) {
+    // Determine the base color for the acrylic effect, slightly transparent.
+    val containerColor = AppTheme.colors.background(0.4.dp)
+
+    // For Android S and above, use the more efficient platform blur.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        return Image(
+            contentScale = ContentScale.Crop,
+            contentDescription = null,
+            painter = rememberAsyncImagePainter(data),
+            modifier = modifier
+                .blur(100.dp)
+                .drawWithCache() {
+                    onDrawWithContent {
+                        drawRect(color = containerColor)
+                        val isLight = containerColor.luminance() > 0.5f
+                        drawContent()
+                        drawRect(
+                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.97f),
+                            // DstOut blend mode creates a cutout effect, enhancing luminosity.
+                            // Alpha is adjusted based on light/dark theme for optimal appearance.
+                            blendMode = BlendMode.DstOut
+                        )
+                    }
+                }
+        )
+    }
+    // else
+    // For versions below Android S, use RenderScript blur as a fallback.
+    val ctx = LocalContext.current
+    val trans = remember { RsBlurTransformation(ctx, radius = 25f, sampling = 2.5f) }
+    Image(
+        contentScale = ContentScale.Crop,
+        contentDescription = null,
+        painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(ctx)
+                .data(data)
+                .transformations(trans)
+                .build()
+        ),
+        modifier = modifier
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            // CompositingStrategy.Offscreen is often needed for custom drawing operations
+            // to behave correctly, especially with transformations and blend modes.
+            .drawWithCache() {
+                onDrawWithContent {
+                    // First, draw the container color as a base.
+                    drawRect(color = containerColor)
+                    val isLight = containerColor.luminance() > 0.5f
+                    // Then, draw the (already blurred) image content.
+                    drawContent()
+                    // Finally, apply the luminosity effect.
+                    drawRect(
+                        color = Color.White.copy(alpha = if (isLight) 0.87f else 0.94f),
+                        // DstOut blend mode creates a cutout effect, enhancing luminosity.
+                        blendMode = BlendMode.DstOut
+                    ) // Alpha is adjusted based on light/dark theme.
+                }
+            }
+        /* .visualEffect(
+             ImageBrush.from(R.drawable.noise),
+             if (containerColor.luminance() >= 0.5f) 0.5f else 0.25f,
+             overlay = true,
+             blendMode = BlendMode.SrcIn
+         )*/
+    )
+}

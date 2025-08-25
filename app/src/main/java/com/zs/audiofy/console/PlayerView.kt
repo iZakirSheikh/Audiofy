@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
@@ -73,6 +72,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import com.zs.audiofy.R
 import com.zs.audiofy.common.WindowStyle
+import com.zs.audiofy.common.compose.Acrylic
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
@@ -195,11 +195,7 @@ fun PlayerView(
                         },
                     content = { value ->
                         when (value) {
-                            false -> Spacer(
-                                Modifier
-                                    .background(AppTheme.colors.background)
-                                    .fillMaxSize()
-                            )
+                            false -> Acrylic(state.artwork, Modifier.fillMaxSize())
 
                             else -> Spacer(
                                 Modifier
@@ -260,10 +256,8 @@ fun PlayerView(
                     contentDescription = null,
                     modifier = Modifier
                         .key(C.ID_BTN_COLLAPSE)
-                        .thenIf(!isVideo) {
-                            border(AppTheme.colors.shine, CircleShape)
-                                .background(AppTheme.colors.background(3.dp), shape = CircleShape)
-                        },
+                        .border(AppTheme.colors.shine, CircleShape)
+                        .background(accent.copy(ContentAlpha.indication), shape = CircleShape),
                 )
 
                 // Playing bars.

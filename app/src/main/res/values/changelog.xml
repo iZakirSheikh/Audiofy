@@ -49,7 +49,8 @@
     <string name="changelog_400_dev16" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev16)</font></b>
         <font color='grey'>
-           \n-
+           \n- Implemented an <b>Acrylic effect</b> for the Console background, creating an immersive ambient lighting experience.
+           \n- Resolved an issue with <b>state updates</b> that occasionally caused them to fail, ensuring more reliable UI responsiveness.
         </font>
     </string>
 
