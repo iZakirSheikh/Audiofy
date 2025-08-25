@@ -20,6 +20,7 @@ package com.zs.audiofy
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -182,8 +183,27 @@ private val NavController.primary: State<String?>
                     else -> dest is DialogNavigator.Destination
                 }
 
-                // Return domain only if it's a top-level screen and has no args
-                if (isPrimary && dest.arguments.isEmpty()) dest.domain else null
+                // Determines if the current route is a primary, top-level screen without arguments.
+                //
+                // TODO: Investigate why arguments are sometimes present in `dest.arguments`
+                //       and other times in `entry?.arguments`.
+                //
+                // The logic is as follows:
+                // 1. Check if the current route's domain is one of the primary routes.
+                // 2. Verify that there are no arguments in `dest.arguments`.
+                // 3. Additionally, ensure that `entry?.arguments` is either null or contains only one entry
+                //    (which might be a default or system-added argument).
+                // If all conditions are met, the domain of the primary route is returned.
+                // Otherwise, `null` is returned, indicating it's not a primary, argument-less route.
+                Log.d(TAG, "args: ${dest.arguments} | ${entry?.arguments?.size()}")
+                //if (isPrimary &&( dest.arguments.isEmpty() && (entry?.arguments == null || entry?.arguments?.size() == 1))) dest.domain else null
+                val args = entry?.arguments
+                val noRealArgs = args == null || args.isEmpty || args.keySet().all { key ->
+                    val value = args.get(key)
+                    Log.d(TAG, "$value: $key")
+                    key.startsWith("android-support-nav:controller") || value == null || value == "{$key}"
+                }
+                if (isPrimary && noRealArgs) dest.domain else null
             }
         }
     }

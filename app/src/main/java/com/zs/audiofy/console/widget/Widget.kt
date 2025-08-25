@@ -38,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.zs.audiofy.MainActivity
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
@@ -78,7 +79,8 @@ object Widget {
         // Get the navigation controller.
         val navController = LocalNavController.current
         val state by remote.state.collectAsState()
-        val isConsole = navController.currentDestination?.domain == RouteConsole.domain
+        val entry by navController.currentBackStackEntryAsState()
+        val isConsole = entry?.destination?.domain == RouteConsole.domain
         // State to track whether the widget is expanded or not.
         var expanded by remember { mutableStateOf(false) }
         // Handler to collapse the widget when back is pressed.

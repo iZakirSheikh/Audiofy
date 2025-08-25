@@ -54,11 +54,23 @@
         </font>
     </string>
 
+    <!--v4.0.0-dev17-->
+    <string name="changelog_400_dev17" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev17)</font></b>
+        <font color='grey'>
+           \n- Adjusted parameters of <b>Acrylic background effect</b> for console, enhancing visual depth and clarity.
+           \n- <b>Colorization strategy</b> toggle now switches between <i>default</i> and <i>wallpaper-based</i> themes, offering greater personalization.
+           \n- Fixed an issue where the <b>navigation bar</b> was incorrectly displayed in areas where it should have been hidden.
+           \n- Resolved a problem that caused the <b>Mini-player</b> to appear even when the <b>Console</b> was visible, ensuring a cleaner interface.
+        </font>
+    </string>
+
 
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev16</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev17</string>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev17</item>
         <item>@string/changelog_400_dev16</item>
         <item>@string/changelog_400_dev15</item>
         <item>@string/changelog_400_dev14</item>

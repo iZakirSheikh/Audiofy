@@ -273,7 +273,7 @@ private inline fun LazyListScope.Appearence(
             text = textResource(R.string.pref_colorization_strategy),
             onCheckedChange = { should: Boolean ->
                 val strategy =
-                    if (should) ColorizationStrategy.Artwork else ColorizationStrategy.Default
+                    if (should) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default
                 viewState.set(Settings.COLORIZATION_STRATEGY, strategy)
             },
             modifier = Modifier.background(AppTheme.colors.tileBackgroundColor, CentreTileShape)

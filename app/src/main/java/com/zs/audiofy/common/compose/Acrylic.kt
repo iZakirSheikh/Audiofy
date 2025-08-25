@@ -184,7 +184,7 @@ fun Acrylic(
     modifier: Modifier = Modifier,
 ) {
     // Determine the base color for the acrylic effect, slightly transparent.
-    val containerColor = AppTheme.colors.background(0.4.dp)
+    val containerColor = AppTheme.colors.background
 
     // For Android S and above, use the more efficient platform blur.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -200,7 +200,7 @@ fun Acrylic(
                         val isLight = containerColor.luminance() > 0.5f
                         drawContent()
                         drawRect(
-                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.97f),
+                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.95f),
                             // DstOut blend mode creates a cutout effect, enhancing luminosity.
                             // Alpha is adjusted based on light/dark theme for optimal appearance.
                             blendMode = BlendMode.DstOut
@@ -235,7 +235,7 @@ fun Acrylic(
                     drawContent()
                     // Finally, apply the luminosity effect.
                     drawRect(
-                        color = Color.White.copy(alpha = if (isLight) 0.87f else 0.94f),
+                        color = Color.White.copy(alpha = if (isLight) 0.87f else 0.95f),
                         // DstOut blend mode creates a cutout effect, enhancing luminosity.
                         blendMode = BlendMode.DstOut
                     ) // Alpha is adjusted based on light/dark theme.
