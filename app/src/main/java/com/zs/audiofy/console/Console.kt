@@ -73,6 +73,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -481,7 +482,7 @@ fun Console(viewState: ConsoleViewState) {
             Artwork(
                 model = state.artwork,
                 modifier = Modifier.key(C.ID_ARTWORK),
-                border = 6.dp,
+                border = 0.5.dp,
                 shape = ArtworkShape,
                 shadow = 12.dp
             )

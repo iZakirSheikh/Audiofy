@@ -52,6 +52,7 @@ import coil3.compose.AsyncImage
 import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
+import com.zs.audiofy.common.compose.shine
 import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.foundation.visualEffect
@@ -139,7 +140,7 @@ inline fun Artwork(
             contentScale = ContentScale.Crop,
             modifier = modifier
                 .shadow(shadow, shape, clip = shape != RectangleShape)
-                .thenIf(border > 0.dp) { border(1.dp, Color.White, shape) }
+                .thenIf(border > 0.dp) { border(border, Color.White, shape) }
                 .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .background(AppTheme.colors.background(1.dp)),
         )

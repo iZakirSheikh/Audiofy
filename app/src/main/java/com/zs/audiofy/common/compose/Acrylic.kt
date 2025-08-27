@@ -19,6 +19,7 @@
 package com.zs.audiofy.common.compose
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
@@ -28,14 +29,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.layer.CompositingStrategy
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
@@ -43,10 +48,12 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.transformations
+import com.zs.audiofy.R
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.background
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
+import com.zs.core.coil.ReBlurTransformation
 import com.zs.core.coil.RsBlurTransformation
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
@@ -185,36 +192,16 @@ fun Acrylic(
     data: Uri?,
     modifier: Modifier = Modifier,
 ) {
-    // Determine the base color for the acrylic effect, slightly transparent.
+    val ctx = LocalContext.current
+    val trans = remember {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+            RsBlurTransformation(ctx, radius = 25f, sampling = 3f)
+        else
+            ReBlurTransformation(25f, 3f)
+    }
+    val layer = rememberGraphicsLayer()
     val containerColor = AppTheme.colors.background(0.4.dp)
 
-    // For Android S and above, use the more efficient platform blur.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        return Image(
-            contentScale = ContentScale.Crop,
-            contentDescription = null,
-            painter = rememberAsyncImagePainter(data),
-            modifier = modifier
-                .background(containerColor)
-                .blur(100.dp)
-                .drawWithCache() {
-                    onDrawWithContent {
-                        val isLight = containerColor.luminance() > 0.5f
-                        drawContent()
-                        drawRect(
-                            color = Color.White.copy(alpha = if (isLight) 0.80f else 0.92f),
-                            // DstOut blend mode creates a cutout effect, enhancing luminosity.
-                            // Alpha is adjusted based on light/dark theme for optimal appearance.
-                            blendMode = BlendMode.DstOut
-                        )
-                    }
-                }
-        )
-    }
-    // else
-    // For versions below Android S, use RenderScript blur as a fallback.
-    val ctx = LocalContext.current
-    val trans = remember { RsBlurTransformation(ctx, radius = 25f, sampling = 2.5f) }
     Image(
         contentScale = ContentScale.Crop,
         contentDescription = null,
@@ -225,28 +212,49 @@ fun Acrylic(
                 .build()
         ),
         modifier = modifier
-            .background(containerColor)
-            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             // CompositingStrategy.Offscreen is often needed for custom drawing operations
             // to behave correctly, especially with transformations and blend modes.
-            .drawWithCache() {
+            .drawWithCache {
+                val texture = ShaderBrush(
+                    ImageShader(
+                        BitmapFactory.decodeResource(
+                            ctx.resources,
+                            R.drawable.noise,
+                            BitmapFactory.Options().apply { inScaled = false }
+                        ).asImageBitmap(),
+                        TileMode.Repeated,
+                        TileMode.Repeated
+                    )
+                )
+                // CompositingStrategy.Offscreen is often needed for custom drawing operations
+                // to behave correctly, especially with transformations and blend modes.
+                layer.compositingStrategy = CompositingStrategy.Offscreen
                 onDrawWithContent {
-                    val isLight = containerColor.luminance() > 0.5f
-                    // Then, draw the (already blurred) image content.
-                    drawContent()
-                    // Finally, apply the luminosity effect.
-                    drawRect(
-                        color = Color.White.copy(alpha = if (isLight) 0.80f else 0.93f),
-                        // DstOut blend mode creates a cutout effect, enhancing luminosity.
-                        blendMode = BlendMode.DstOut
-                    ) // Alpha is adjusted based on light/dark theme.
+                    // Draw background
+                    drawRect(color = containerColor)
+                    // record content
+                    layer.record() {
+                        val isLight = containerColor.luminance() > 0.5f
+                        // Then, draw the (already blurred) image content.
+                        this@onDrawWithContent.drawContent()
+
+                        // Finally, apply the luminosity effect.
+                        drawRect(
+                            color = Color.White.copy(alpha = if (isLight) 0.86f else 0.97f),
+                            // DstOut blend mode creates a cutout effect, enhancing luminosity.
+                            blendMode = BlendMode.DstOut
+                        ) // Alpha is adjusted based on light/dark theme.
+
+                        drawRect(
+                            brush = texture,
+                            alpha = if (isLight) 0.1f else 0.05f,
+                            blendMode = BlendMode.Hardlight
+                        )
+
+                    }
+                    // draw layer
+                    drawLayer(layer)
                 }
             }
-        /* .visualEffect(
-             ImageBrush.from(R.drawable.noise),
-             if (containerColor.luminance() >= 0.5f) 0.5f else 0.25f,
-             overlay = true,
-             blendMode = BlendMode.SrcIn
-         )*/
     )
 }
