@@ -114,6 +114,14 @@ fun Activity.toggleRotationLock(): Boolean {
 }
 
 /**
+ * Returns `true` if the screen orientation is locked, `false` otherwise.
+ *
+ * @see ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+ */
+inline val Activity.isOrientationLocked
+    get() = requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+/**
  * Composes a artwork representation for PLayer Console view
  */
 @Composable
@@ -130,9 +138,9 @@ inline fun Artwork(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = modifier
-                .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
-                .thenIf(border > 0.dp) { border(1.dp, Color.White, shape) }
                 .shadow(shadow, shape, clip = shape != RectangleShape)
+                .thenIf(border > 0.dp) { border(1.dp, Color.White, shape) }
+                .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)
                 .background(AppTheme.colors.background(1.dp)),
         )
     }

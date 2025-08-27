@@ -23,6 +23,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.remember
@@ -43,6 +44,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import com.zs.compose.foundation.Background
+import com.zs.compose.foundation.background
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.core.coil.RsBlurTransformation
@@ -184,7 +186,7 @@ fun Acrylic(
     modifier: Modifier = Modifier,
 ) {
     // Determine the base color for the acrylic effect, slightly transparent.
-    val containerColor = AppTheme.colors.background
+    val containerColor = AppTheme.colors.background(0.4.dp)
 
     // For Android S and above, use the more efficient platform blur.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -193,14 +195,14 @@ fun Acrylic(
             contentDescription = null,
             painter = rememberAsyncImagePainter(data),
             modifier = modifier
+                .background(containerColor)
                 .blur(100.dp)
                 .drawWithCache() {
                     onDrawWithContent {
-                        drawRect(color = containerColor)
                         val isLight = containerColor.luminance() > 0.5f
                         drawContent()
                         drawRect(
-                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.95f),
+                            color = Color.White.copy(alpha = if (isLight) 0.80f else 0.92f),
                             // DstOut blend mode creates a cutout effect, enhancing luminosity.
                             // Alpha is adjusted based on light/dark theme for optimal appearance.
                             blendMode = BlendMode.DstOut
@@ -223,19 +225,18 @@ fun Acrylic(
                 .build()
         ),
         modifier = modifier
+            .background(containerColor)
             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             // CompositingStrategy.Offscreen is often needed for custom drawing operations
             // to behave correctly, especially with transformations and blend modes.
             .drawWithCache() {
                 onDrawWithContent {
-                    // First, draw the container color as a base.
-                    drawRect(color = containerColor)
                     val isLight = containerColor.luminance() > 0.5f
                     // Then, draw the (already blurred) image content.
                     drawContent()
                     // Finally, apply the luminosity effect.
                     drawRect(
-                        color = Color.White.copy(alpha = if (isLight) 0.87f else 0.95f),
+                        color = Color.White.copy(alpha = if (isLight) 0.80f else 0.93f),
                         // DstOut blend mode creates a cutout effect, enhancing luminosity.
                         blendMode = BlendMode.DstOut
                     ) // Alpha is adjusted based on light/dark theme.

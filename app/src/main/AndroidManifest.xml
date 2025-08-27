@@ -24,6 +24,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/launcher_label"
         android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Splash">

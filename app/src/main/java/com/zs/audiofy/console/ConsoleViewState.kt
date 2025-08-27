@@ -29,7 +29,7 @@ import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-object RouteConsole: Route {
+object RouteConsole : Route {
     // Component IDs
     const val ID_PLAYING_INDICATOR = "_playing_indicator"
     const val ID_BTN_COLLAPSE = "_btn_collapse"
@@ -66,7 +66,7 @@ object RouteConsole: Route {
     const val VISIBILITY_INVISIBLE = 0
     const val VISIBILITY_INVISIBLE_LOCKED = 1
     const val VISIBILITY_VISIBLE_LOCK = 2
-    const val VISIBILITY_VISIBLE_SEEK= 3
+    const val VISIBILITY_VISIBLE_SEEK = 3
     const val VISIBILITY_VISIBLE = 4
 }
 
@@ -103,7 +103,7 @@ abstract class Constraints(val titleTextSize: Int) {
 
 
     private fun ConstraintSetScope.hide(ref: ConstrainedLayoutReference) {
-        constrain(ref){
+        constrain(ref) {
             visibility = Visibility.Invisible
         }
     }
@@ -111,7 +111,7 @@ abstract class Constraints(val titleTextSize: Int) {
     /**
      * Makes every component invisible [except] these.
      */
-    fun ConstraintSetScope.hideController(except: Array<String>){
+    fun ConstraintSetScope.hideController(except: Array<String>) {
         val hideAll = except.isEmpty()
 
         if (hideAll || !except.contains(RouteConsole.ID_BTN_COLLAPSE)) hide(COLLAPSE)

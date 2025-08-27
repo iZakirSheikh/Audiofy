@@ -665,8 +665,8 @@ fun calculateConstraintSet(
 ): Constraints {
     val (width, height) = windowSize.value
     return when {
-        isVideo && height > width -> PortraitVideo(insets, only)
-        isVideo -> LargeVideo(insets, only)
+        isVideo && width > 650.dp && width > height -> LargeVideo(insets, only)
+        isVideo  -> PortraitVideo(insets, only)
 
         // Compact
         width <= 400.dp && height < 350.dp -> CompactAudio(insets)

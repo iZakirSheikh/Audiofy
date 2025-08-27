@@ -38,7 +38,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -87,6 +89,10 @@ import com.zs.compose.theme.text.Text
 import com.zs.core.billing.Purchase
 import com.zs.core.playback.VideoSize
 import com.zs.preferences.Key
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
 
 private const val TAG = "Delegates"
@@ -531,7 +537,6 @@ fun HorizontalChainScope.linkTo(
 }
 
 
-
 fun ConstraintSetScope.hide(
     vararg elements: ConstrainedLayoutReference,
     visibility: Visibility = Visibility.Invisible
@@ -581,36 +586,48 @@ inline fun rememberAnimatedVectorPainter(@DrawableRes id: Int, atEnd: Boolean) =
 fun Modifier.resize(
     contentScale: ContentScale,
     original: VideoSize,
-): Modifier = if (!original.isSpecified) foreground(Color.Black) else layout { measurable, constraints ->
-    // Compute the "source size" in pixels based on video ratio.
-    val scrSizePx = original.let {
-        val par = it.ratio
-        return@let when {
-            par < 1.0 -> Size(it.height.toFloat(), it.width.toFloat() * par) // Taller/narrower
-            par > 1.0 -> Size(it.width.toFloat(), it.height / par)           // Wider
-            else -> Size(it.width.toFloat(), it.height.toFloat())            // Normal aspect
+): Modifier =
+    if (!original.isSpecified) foreground(Color.Black) else layout { measurable, constraints ->
+        // Compute the "source size" in pixels based on video ratio.
+        val scrSizePx = original.let {
+            val par = it.ratio
+            return@let when {
+                par < 1.0 -> Size(it.height.toFloat(), it.width.toFloat() * par) // Taller/narrower
+                par > 1.0 -> Size(it.width.toFloat(), it.height / par)           // Wider
+                else -> Size(it.width.toFloat(), it.height.toFloat())            // Normal aspect
+            }
+        }
+
+        // Destination size: area available to draw into.
+        val dstSizePx = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
+
+        // Compute how the source needs to scale to fit into the destination.
+        val scaleFactor = contentScale.computeScaleFactor(scrSizePx, dstSizePx)
+        Log.d(TAG, "resizeWithContentScale: $scrSizePx, $dstSizePx, $scaleFactor")
+
+        // Measure the child with scaled constraints.
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = 0, // allow shrinking if needed
+                minHeight = 0,
+                maxWidth = (scrSizePx.width * scaleFactor.scaleX).roundToInt(),
+                maxHeight = (scrSizePx.height * scaleFactor.scaleY).roundToInt(),
+            )
+        )
+
+        // Layout the child at (0,0).
+        layout(placeable.width, placeable.height) {
+            placeable.place(0, 0)
         }
     }
 
-    // Destination size: area available to draw into.
-    val dstSizePx = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
-
-    // Compute how the source needs to scale to fit into the destination.
-    val scaleFactor = contentScale.computeScaleFactor(scrSizePx, dstSizePx)
-    Log.d(TAG, "resizeWithContentScale: $scrSizePx, $dstSizePx, $scaleFactor")
-
-    // Measure the child with scaled constraints.
-    val placeable = measurable.measure(
-        constraints.copy(
-            minWidth = 0, // allow shrinking if needed
-            minHeight = 0,
-            maxWidth = (scrSizePx.width * scaleFactor.scaleX).roundToInt(),
-            maxHeight = (scrSizePx.height * scaleFactor.scaleY).roundToInt(),
-        )
-    )
-
-    // Layout the child at (0,0).
-    layout(placeable.width, placeable.height) {
-        placeable.place(0, 0)
-    }
+@Suppress("StateFlowValueCalledInComposition")
+@Composable
+public fun <T: Any> StateFlow<T?>.collectAsState(
+    default: T,
+    context: CoroutineContext = EmptyCoroutineContext
+): State<T> =   produceState(value ?: default, this, context) {
+    if (context == EmptyCoroutineContext) {
+        collect { value = it ?: default }
+    } else withContext(context) { collect { value = it ?: default } }
 }
