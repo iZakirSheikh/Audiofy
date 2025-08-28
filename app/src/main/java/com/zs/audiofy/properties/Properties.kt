@@ -88,7 +88,7 @@ private inline fun LazyGridScope.Property(
         Text(
             style = AppTheme.typography.label3,
             color = color.copy(ContentAlpha.medium),
-            modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
+            modifier = Modifier.padding(ContentPadding.normal, ContentPadding.small),
             text = buildAnnotatedString {
                 // Title
                 withStyle(TITLE_STYLE) {

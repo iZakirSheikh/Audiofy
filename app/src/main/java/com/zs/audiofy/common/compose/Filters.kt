@@ -18,7 +18,6 @@
 
 package com.zs.audiofy.common.compose
 
-import android.provider.MediaStore
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +29,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.outlined.FilterAltOff
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Straighten
-import androidx.compose.material.icons.outlined.Title
-import androidx.compose.material.icons.outlined.Update
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +50,7 @@ import com.zs.compose.theme.text.Label
 import com.zs.preferences.StringSaver
 
 private val REC_SPACING =
-    Arrangement.spacedBy(ContentPadding.small)
+    Arrangement.spacedBy(ContentPadding.xSmall)
 
 object FilterDefaults {
 
@@ -150,7 +144,7 @@ fun Filters(
                 // if order_id is none- dont allow this.
                 enabled = order != FilterDefaults.ORDER_NONE,
                 modifier = Modifier
-                    .padding(end = ContentPadding.medium),
+                    .padding(end = ContentPadding.small),
                 shape = AppTheme.shapes.small
             )
 

@@ -63,7 +63,7 @@ import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.menu.DropDownMenu
 import com.zs.compose.theme.menu.DropDownMenuItem
 
-private val DefaultItemSpace = Arrangement.spacedBy(ContentPadding.small)
+private val DefaultItemSpace = Arrangement.spacedBy(ContentPadding.xSmall)
 
 @Composable
 @NonRestartableComposable

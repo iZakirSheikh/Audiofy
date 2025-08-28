@@ -51,7 +51,7 @@ import com.zs.core.db.playlists.Playlist.Track
 import androidx.compose.foundation.combinedClickable as clickable
 
 private val MEMBER_ICON_SHAPE = RoundedCornerShape(30)
-private val TrackItemPadding = PaddingValues(horizontal = ContentPadding.large, vertical = ContentPadding.medium)
+private val TrackItemPadding = PaddingValues(horizontal = ContentPadding.large, vertical = ContentPadding.small)
 
 private val CommonTrackStyle = Modifier
     .border(2.dp, Color.White, shape = MEMBER_ICON_SHAPE)
@@ -130,7 +130,7 @@ fun Members(viewState: MembersViewState) {
                             tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
-                                .padding(end = ContentPadding.medium)
+                                .padding(end = ContentPadding.small)
                         )
 
                     // show actions

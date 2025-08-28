@@ -149,7 +149,7 @@ fun Audios(viewState: AudiosViewState) {
                             tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
-                                .padding(end = ContentPadding.medium)
+                                .padding(end = ContentPadding.small)
                         )
 
                     // show actions

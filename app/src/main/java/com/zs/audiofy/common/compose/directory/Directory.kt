@@ -329,8 +329,8 @@ fun <T> Directory(
             LazyVerticalGrid(
                 state = state,
                 columns = GridCells.Adaptive(minSize * multiplier),
-                verticalArrangement = CP.SmallArrangement,
-                horizontalArrangement = CP.SmallArrangement,
+                verticalArrangement = CP.xSmallArrangement,
+                horizontalArrangement = CP.xSmallArrangement,
                 contentPadding = padding,
                 modifier = Modifier
                     .fillMaxSize()
@@ -518,7 +518,7 @@ fun <T> Files(
                                     .padding(horizontal = FilesHorizontalPadding)
                                     .widthIn(max = 500.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = CP.MediumArrangement,
+                                horizontalArrangement = CP.SmallArrangement,
                                 content = {
                                     val modifier = Modifier.weight(1f).height(42.dp)
                                     // Shuffle

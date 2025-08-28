@@ -1,12 +1,18 @@
 package com.zs.audiofy.common.impl
 
+import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.audiofy.console.RouteConsole
+import com.zs.compose.foundation.OrientRed
+import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
@@ -18,27 +24,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
+
     override val state: StateFlow<NowPlaying?> = remote.state
     override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
-
     override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBILITY_VISIBLE)
     override var message: CharSequence? by mutableStateOf(null)
+    override val queue: Flow<List<MediaFile>> = remote.queue
 
-    override val queue: Flow<List<MediaFile>>
-        get() = TODO("Not yet implemented")
-
-    var autohideJob: Job? = null
-    override fun emit(newVisibility: Int, delayed: Boolean) {
-        autohideJob?.cancel()
-        if (!delayed) {
-            this@ConsoleViewModel.visibility = newVisibility
-            return
-        }
-        autohideJob = viewModelScope.launch {
-            delay(RouteConsole.VISIBILITY_AUTO_HIDE_DELAY)
-            this@ConsoleViewModel.visibility = newVisibility
-        }
-    }
 
     init {
         viewModelScope.launch {
@@ -89,7 +81,37 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
         }
     }
 
-    override fun toggleLike() {
+    override fun clear() {
+        viewModelScope.launch {
+            val permission =
+                showSnackbar("Clear queue?", "Clear", icon = Icons.Outlined.ClearAll, accent = Color.OrientRed)
+            if (permission == SnackbarResult.ActionPerformed)
+                remote.clear()
+        }
+    }
+
+    var autohideJob: Job? = null
+    override fun emit(newVisibility: Int, delayed: Boolean) {
+        autohideJob?.cancel()
+        if (!delayed) {
+            this@ConsoleViewModel.visibility = newVisibility
+            return
+        }
+        autohideJob = viewModelScope.launch {
+            delay(RouteConsole.VISIBILITY_AUTO_HIDE_DELAY)
+            this@ConsoleViewModel.visibility = newVisibility
+        }
+    }
+
+    override fun toggleLike(uri: Uri?) {
         viewModelScope.launch { remote.toggleLike() }
+    }
+
+    override fun remove(key: Uri) {
+        TODO("Not yet implemented")
+    }
+
+    override fun playTrack(uri: Uri) {
+        TODO("Not yet implemented")
     }
 }

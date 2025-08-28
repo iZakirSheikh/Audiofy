@@ -68,7 +68,7 @@ fun FabPlayer(
                 ),
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = ContentPadding.medium)
+                    .padding(start = ContentPadding.small)
                     .sharedElement(RouteConsole.ID_PLAYING_INDICATOR)
                     .lottie()
                     .align(Alignment.CenterStart),

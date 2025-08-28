@@ -451,7 +451,7 @@ private fun ColumnScope.AboutUs() {
         footer = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(CP.medium),
+                horizontalArrangement = Arrangement.spacedBy(CP.small),
                 content = {
                     TextButton(
                         textResource(R.string.update_audiofy),
@@ -485,7 +485,7 @@ private fun ColumnScope.AboutUs() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(CP.medium)
+        horizontalArrangement = Arrangement.spacedBy(CP.small)
     ) {
         val colors = ChipDefaults.chipColors(
             backgroundColor = AppTheme.colors.background(1.dp),
@@ -576,7 +576,7 @@ fun Settings(viewState: SettingsViewState) {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(top = CP.medium)
+                    .padding(top = CP.small)
                     .widthIn(max = sPaneMaxWidth)
                     .windowInsetsPadding(
                         WindowInsets.systemBars.union(inAppNavBarInsets).only(
@@ -591,7 +591,7 @@ fun Settings(viewState: SettingsViewState) {
                         style = AppTheme.typography.title3,
                         contentPadding = Padding(
                             vertical = CP.normal,
-                            horizontal = CP.medium
+                            horizontal = CP.small
                         )
                     )
                     AboutUs()
@@ -607,7 +607,7 @@ fun Settings(viewState: SettingsViewState) {
                 // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
                 // Non-immersive layouts only need vertical padding.
                 contentPadding = Padding(
-                    horizontal = if (strategy is SinglePaneStrategy) CP.large else CP.medium, CP.normal
+                    horizontal = if (strategy is SinglePaneStrategy) CP.large else CP.small, CP.normal
                 ) + (WindowInsets.content.union(WindowInsets.systemBars)
                     .union(inAppNavBarInsets).only(
                         WindowInsetsSides.Vertical
@@ -626,7 +626,7 @@ fun Settings(viewState: SettingsViewState) {
                     item(contentType = CONTENT_TYPE_HEADER) {
                         GroupHeader(
                             text = stringResource(id = R.string.general),
-                            padding = Padding(CP.normal, CP.small, CP.normal, CP.xLarge)
+                            padding = Padding(CP.normal, CP.xSmall, CP.normal, CP.xLarge)
                         )
                     }
                     General(viewState)
@@ -648,7 +648,7 @@ fun Settings(viewState: SettingsViewState) {
                             style = AppTheme.typography.title3,
                             contentPadding = Padding(
                                 vertical = CP.normal,
-                                horizontal = CP.medium
+                                horizontal = CP.small
                             )
                         )
                     }

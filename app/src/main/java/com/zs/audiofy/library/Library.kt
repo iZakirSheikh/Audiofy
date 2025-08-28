@@ -206,7 +206,7 @@ private fun LibraryHeader(
 private val Colors.border
     @Composable inline get() = BorderStroke(0.2.dp, accent.copy(0.3f))
 
-private val HeaderMargin = Modifier.padding(top = CP.medium)
+private val HeaderMargin = Modifier.padding(top = CP.small)
 
 @Composable
 fun Library(viewState: LibraryViewState) {
@@ -246,7 +246,7 @@ fun Library(viewState: LibraryViewState) {
             Surface(
                 modifier = Modifier
                     .windowInsetsPadding(insets)
-                    .padding(end = ContentPadding.medium)
+                    .padding(end = ContentPadding.small)
                     .sizeIn(maxWidth = 300.dp),
                 // Use the outline color as the border stroke or null based on the lightness
                 // of the material colors
@@ -265,12 +265,12 @@ fun Library(viewState: LibraryViewState) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(AppTheme.colors.background(2.dp))
-                                .padding(horizontal = CP.medium, vertical = CP.small)
+                                .padding(horizontal = CP.small, vertical = CP.xSmall)
                         )
 
                         Shortcuts(
                             Modifier
-                                .padding(ContentPadding.medium)
+                                .padding(ContentPadding.small)
                                 .fillMaxWidth(),
                         )
                     }
@@ -286,7 +286,7 @@ fun Library(viewState: LibraryViewState) {
                     .fadingEdge2(length = 50.dp),
                 contentPadding = PaddingValues(
                     if (strategy is SinglePaneStrategy) CP.normal else 0.dp,
-                    vertical = CP.medium
+                    vertical = CP.small
                 ) +
                         (WindowInsets.content
                             .union(inAppNavBarInsets)
@@ -306,7 +306,7 @@ fun Library(viewState: LibraryViewState) {
                         item {
                             Shortcuts(
                                 Modifier
-                                    .padding(horizontal = CP.medium)
+                                    .padding(horizontal = CP.small)
                                     .fillMaxWidth(),
                             )
                         }
@@ -328,7 +328,7 @@ fun Library(viewState: LibraryViewState) {
                     item {
                         Promotions(
                             modifier = Modifier
-                                .padding(horizontal = CP.medium, vertical = CP.medium)
+                                .padding(horizontal = CP.small, vertical = CP.small)
                                 .fillMaxWidth(),
                         )
                     }

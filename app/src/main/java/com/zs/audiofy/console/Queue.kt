@@ -18,10 +18,11 @@
 
 package com.zs.audiofy.console
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 
 @Composable
-fun Queue(modifier: Modifier = Modifier) {
+fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
 
 }

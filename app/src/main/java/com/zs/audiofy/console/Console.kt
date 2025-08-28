@@ -73,7 +73,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -275,7 +274,7 @@ fun Console(viewState: ConsoleViewState) {
         Icon(
             painter = Lottie(R.raw.playback_indicator, isPlaying = state.playing),
             contentDescription = null,
-            modifier = Modifier.padding(end = CP.small).lottie().key(C.ID_PLAYING_INDICATOR),
+            modifier = Modifier.padding(end = CP.xSmall).lottie().key(C.ID_PLAYING_INDICATOR),
             tint = accent
         )
 

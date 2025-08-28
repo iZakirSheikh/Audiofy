@@ -169,7 +169,7 @@ private fun NewlyAddedItem(
             Label(
                 text = label,
                 modifier = Modifier
-                    .padding(horizontal = ContentPadding.medium) // Add horizontal padding
+                    .padding(horizontal = ContentPadding.small) // Add horizontal padding
                     .fillMaxWidth(0.5f) // Take up half the available width
                     .align(Alignment.CenterEnd), // Align to the left
                 style = AppTheme.typography.title2,

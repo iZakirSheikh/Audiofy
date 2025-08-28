@@ -70,7 +70,7 @@ fun PlaylistItem(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(CP.medium),
+        verticalArrangement = Arrangement.spacedBy(CP.small),
         content = {
             // TopSection: Contains the artwork, play icon, track count, and focus indicator.
             Box(
@@ -104,7 +104,7 @@ fun PlaylistItem(
                         contentDescription = null,
                         modifier = Modifier
                             .align(Alignment.TopEnd) // Aligns the icon to the top end.
-                            .padding(CP.medium), // Adds padding around the icon.
+                            .padding(CP.small), // Adds padding around the icon.
                         tint = onColor // Sets the icon tint color.
                     )
 
@@ -116,7 +116,7 @@ fun PlaylistItem(
                         modifier = Modifier
                             .align(Alignment.BottomEnd) // Aligns the label to the bottom end.
                             .padding(
-                                bottom = CP.medium,
+                                bottom = CP.small,
                                 end = CP.normal
                             ) // Adds padding around the label.
                     )

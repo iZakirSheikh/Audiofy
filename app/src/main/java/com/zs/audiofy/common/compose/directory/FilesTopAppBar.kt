@@ -136,7 +136,7 @@ fun FilesTopAppBar(
                         contentDescription = null,
                         modifier = Modifier
                             .minimumInteractiveComponentSize()
-                            .padding(horizontal = CP.medium)
+                            .padding(horizontal = CP.small)
                             .layoutId(AppBarDefaults.ID_NAVICON)
                     )
                     // else show the back button
@@ -169,7 +169,7 @@ fun FilesTopAppBar(
                     modifier = Modifier
                         .then(alphaModifier)
                         .road(Alignment.TopStart, Alignment.TopStart)
-                        .offset(0.dp, MIN_HEIGHT - CP.small),
+                        .offset(0.dp, MIN_HEIGHT - CP.xSmall),
                     thickness = 1.dp
                 )
 
@@ -226,7 +226,7 @@ fun FilesTopAppBar(
                         // count
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = CP.MediumArrangement,
+                            verticalArrangement = CP.SmallArrangement,
                             content = {
                                 Icon(
                                     Icons.Outlined.FormatListNumbered,
@@ -248,7 +248,7 @@ fun FilesTopAppBar(
                         // Date
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = CP.MediumArrangement,
+                            verticalArrangement = CP.SmallArrangement,
                             content = {
                                 Icon(
                                     Icons.Outlined.CalendarMonth,

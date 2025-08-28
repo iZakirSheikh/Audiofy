@@ -75,7 +75,7 @@ private fun Album(
             Label(
                 text = value.title,
                 maxLines = 2,
-                modifier = Modifier.padding(top = CP.medium),
+                modifier = Modifier.padding(top = CP.small),
                 style = AppTheme.typography.body3,
             )
 

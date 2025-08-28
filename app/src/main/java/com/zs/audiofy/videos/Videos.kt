@@ -107,7 +107,7 @@ private fun Video(
                 overflow = TextOverflow.StartEllipsis,
                 maxLines = 1,
                 style = AppTheme.typography.label2,
-                modifier = Modifier.padding(vertical = CP.small),
+                modifier = Modifier.padding(vertical = CP.xSmall),
                 color = LocalContentColor.current.copy(ContentAlpha.medium)
             )
         },
@@ -150,7 +150,7 @@ private fun Video(
                     Label(
                         " ${DateUtils.formatElapsedTime(value.duration / 1000)} ",
                         modifier = Modifier
-                            .padding(end = CP.small, bottom = CP.small)
+                            .padding(end = CP.xSmall, bottom = CP.xSmall)
                             .background(Color.Black.copy(0.36f), AppTheme.shapes.small)
                             .padding(1.dp)
                             .align(Alignment.BottomEnd),
@@ -202,7 +202,7 @@ fun Videos(viewState: VideosViewState) {
                             tint = AppTheme.colors.accent,
                             modifier = Modifier
                                 .minimumInteractiveComponentSize()
-                                .padding(end = ContentPadding.medium)
+                                .padding(end = ContentPadding.small)
                         )
 
                     // show actions

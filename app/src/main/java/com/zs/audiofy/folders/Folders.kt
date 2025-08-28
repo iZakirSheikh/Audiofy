@@ -148,7 +148,7 @@ private fun Folder(
         Label(
             modifier = Modifier.padding(
                 top = ContentPadding.normal,
-                start = ContentPadding.medium
+                start = ContentPadding.small
             ),
             style = AppTheme.typography.body2,
             fontWeight = FontWeight.Normal,
@@ -164,7 +164,7 @@ private fun Folder(
             ) + " - " + ctx.fileSizeFormatted(value.size.toLong()),
             style = AppTheme.typography.body3,
             color = AppTheme.colors.onBackground.copy(ContentAlpha.medium),
-            modifier = Modifier.padding(start = ContentPadding.medium),
+            modifier = Modifier.padding(start = ContentPadding.small),
         )
     }
 )

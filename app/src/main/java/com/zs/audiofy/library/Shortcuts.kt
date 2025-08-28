@@ -117,8 +117,8 @@ fun Shortcuts(
     // FlowRow to arrange shortcuts horizontally with spacing
     FlowRow(
         modifier = modifier/*.scaledLayout(1.3f)*/,
-        horizontalArrangement = ContentPadding.MediumArrangement,
-        verticalArrangement = ContentPadding.SmallArrangement,
+        horizontalArrangement = ContentPadding.SmallArrangement,
+        verticalArrangement = ContentPadding.xSmallArrangement,
         content = {
             val navigator = LocalNavController.current
 
@@ -155,7 +155,7 @@ fun Shortcuts(
                 textResource(R.string.folders),
                 style = AppTheme.typography.label3,
                 color = AppTheme.colors.accent,
-                modifier = Modifier.padding(top = ContentPadding.medium)
+                modifier = Modifier.padding(top = ContentPadding.small)
             )
             // Audio Folders
             Shortcut(

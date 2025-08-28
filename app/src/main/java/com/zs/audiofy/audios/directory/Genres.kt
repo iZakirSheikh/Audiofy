@@ -55,7 +55,7 @@ private fun Genre(
             .clip(AppTheme.shapes.small)
             .then(modifier)
             .padding(vertical = 6.dp, horizontal = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(CP.medium),
+        verticalArrangement = Arrangement.spacedBy(CP.small),
         content = {
             //
             Surface (

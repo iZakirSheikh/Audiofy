@@ -303,7 +303,7 @@ internal class RemoteImpl(private val context: Context) : Remote, MediaBrowser.L
         // If `events` is null (initial emission from callbackFlow) or if it doesn't contain
         // `Player.EVENT_TIMELINE_CHANGED`, it means the queue hasn't changed,
         // so we don't need to re-fetch and emit it.
-        if (events != null && !events.contains(Player.EVENT_TIMELINE_CHANGED)) return@transform
+        if (events != null && (!events.contains(Player.EVENT_TIMELINE_CHANGED) || !events.contains(Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED))) return@transform
         // Await the MediaBrowser instance to ensure it's connected and ready.
         val provider = fBrowser.await()
         // Retrieve the current queue from the provider and map each item to a MediaFile object.

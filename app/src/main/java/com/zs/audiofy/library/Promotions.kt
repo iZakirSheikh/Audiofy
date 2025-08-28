@@ -88,7 +88,7 @@ import com.zs.compose.foundation.textResource as stringResource
 private const val TAG = "Promotions"
 
 private val PROMOTION_PADDING =
-    Padding(CP.small, CP.medium, CP.medium, CP.medium)
+    Padding(CP.xSmall, CP.small, CP.small, CP.small)
 
 private val SHIMMER_ANIM_SPEC =
     repeatable<Float>(1, animation = tween(1_000, 1_000, LinearEasing))
@@ -119,7 +119,7 @@ private fun Promotion(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        spacing = CP.medium,
+        spacing = CP.small,
         padding = PROMOTION_PADDING,
         contentColor = AppTheme.colors.onBackground,
         leading = composableIf(icon != null) {
@@ -127,7 +127,7 @@ private fun Promotion(
                 imageVector = icon ?: Icons.Outlined.Info,
                 contentDescription = null,
                 tint = accent,
-                modifier = Modifier.padding(vertical = CP.small)
+                modifier = Modifier.padding(vertical = CP.xSmall)
             )
         },
         modifier = modifier

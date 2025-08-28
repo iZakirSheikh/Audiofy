@@ -47,7 +47,6 @@ import coil3.compose.AsyncImage
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.emit
 import com.zs.compose.theme.AppTheme
-import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.db.playlists.Playlist.Track
 
@@ -95,7 +94,7 @@ private fun Recent(
         Text(
             text = label,
             modifier = Modifier
-                .padding(top = ContentPadding.medium)
+                .padding(top = ContentPadding.small)
                 .width(80.dp),
             style = AppTheme.typography.label3,
             maxLines = 2, // Allow at most 2 lines for label
@@ -122,7 +121,7 @@ fun Recents(
     val recents by state.recent.collectAsState()
     // Display the list with loading, empty, and content states
     LazyRow(
-        horizontalArrangement = ContentPadding.MediumArrangement,
+        horizontalArrangement = ContentPadding.SmallArrangement,
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
         content = {

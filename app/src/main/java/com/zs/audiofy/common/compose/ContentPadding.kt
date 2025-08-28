@@ -22,28 +22,30 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.zs.audiofy.common.compose.ContentPadding.large
-import com.zs.audiofy.common.compose.ContentPadding.medium
-import com.zs.audiofy.common.compose.ContentPadding.normal
 import com.zs.audiofy.common.compose.ContentPadding.small
+import com.zs.audiofy.common.compose.ContentPadding.normal
+import com.zs.audiofy.common.compose.ContentPadding.xSmall
 import com.zs.audiofy.common.compose.ContentPadding.xLarge
 
 /**
  * Provides a setof standard content padding values to ensure consistency across the application.
  *
- * @property small A small 4 [Dp] padding.
- * @property medium A medium 8 [Dp] padding.
+ * @property xSmall A Extra Small 4 [Dp] padding.
+ * @property small A Small 8 [Dp] padding.
+ * @property medium A Medium 12 [Dp] padding.
  * @property normal Normal 16 [Dp] padding.
- * @property large Large22 [Dp] padding.
+ * @property large Large 22 [Dp] padding.
  * @property xLarge Extra large 32 [Dp] padding.
  */
 object ContentPadding {
-    val small: Dp = 4.dp
-    val medium: Dp = 8.dp
+    val xSmall: Dp = 4.dp
+    val small: Dp = 8.dp
+    val medium: Dp = 12.dp
     val normal: Dp = 16.dp
     val large: Dp = 22.dp
     val xLarge: Dp = 32.dp
 
     val LargeArrangement = Arrangement.spacedBy(large)
-    val MediumArrangement = Arrangement.spacedBy(medium)
     val SmallArrangement = Arrangement.spacedBy(small)
+    val xSmallArrangement = Arrangement.spacedBy(xSmall)
 }

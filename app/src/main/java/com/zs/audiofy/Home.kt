@@ -511,7 +511,7 @@ private fun NavigationBar(
             elevation = 12.dp,
             border = colors.shine,
             shape = CircleShape,
-            modifier = modifier.padding(bottom = ContentPadding.medium),
+            modifier = modifier.padding(bottom = ContentPadding.small),
             // Display routes at the contre of available space
             content = { routes() }
         )

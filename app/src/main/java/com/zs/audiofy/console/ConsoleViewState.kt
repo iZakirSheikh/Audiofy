@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.console
 
+import android.net.Uri
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.ConstraintSetScope
@@ -140,9 +141,51 @@ abstract class Constraints(val titleTextSize: Int) {
     }
 }
 
-interface ConsoleViewState {
+/**
+ * Represents the state of the queue.
+ * This interface defines the contract for accessing and manipulating the playback queue.
+ *
+ * @property state A [StateFlow] that emits the currently playing [NowPlaying] object,
+ * or `null` if nothing is playing.
+ *
+ * @property queue A [Flow] that emits a list of [MediaFile] objects representing the
+ * current playback queue.
+ *  - `null` indicates that the queue is currently being loaded.
+ *  - An empty list indicates that the queue is empty.
+ *  - A non-empty list represents the loaded queue.
+ */
+interface QueueViewState {
 
     val state: StateFlow<NowPlaying?>
+    val queue: Flow<List<MediaFile>>
+
+    /**
+     * Play the track of the queue identified by the [uri]
+     */
+    fun playTrack(uri: Uri)
+
+    /**
+     * Remove the track from the queue identified by [key].
+     */
+    fun remove(key: Uri)
+
+    /**
+     * Toggle the like state of the track identified by [uri]. if null toggles like of current.
+     */
+    fun toggleLike(uri: Uri? = null)
+
+    fun cycleRepeatMode()
+
+    /**
+     * Clears the whole queue.
+     */
+    fun clear()
+
+    fun shuffle(enable: Boolean)
+}
+
+interface ConsoleViewState: QueueViewState {
+
     val provider: VideoProvider
 
     /**
@@ -166,11 +209,6 @@ interface ConsoleViewState {
     var message: CharSequence?
 
     /**
-     * The playing queue.
-     */
-    val queue: Flow<List<MediaFile>>
-
-    /**
      * Emits a new visibility state for the player controls.
      *
      * @param visible An array of strings representing the IDs of the UI elements to be shown.
@@ -187,7 +225,4 @@ interface ConsoleViewState {
     fun skipToPrev()
     fun togglePlay()
     fun seekTo(pct: Float)
-    fun shuffle(enable: Boolean)
-    fun cycleRepeatMode()
-    fun toggleLike()
 }
