@@ -62,6 +62,7 @@
            \n- <b>Colorization strategy</b> toggle now switches between <i>default</i> and <i>wallpaper-based</i> themes, offering greater personalization.
            \n- Fixed an issue where the <b>navigation bar</b> was incorrectly displayed in areas where it should have been hidden.
            \n- Resolved a problem that caused the <b>Mini-player</b> to appear even when the <b>Console</b> was visible, ensuring a cleaner interface.
+           \n- Introduced a <b>Queue Management UI</b> that intelligently adapts to screen orientation, positioning itself next to the player, similar to the YouTube application.
         </font>
     </string>
 

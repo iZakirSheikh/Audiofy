@@ -29,7 +29,7 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
     override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBILITY_VISIBLE)
     override var message: CharSequence? by mutableStateOf(null)
-    override val queue: Flow<List<MediaFile>> = remote.queue
+    override val queue: Flow<List<MediaFile>?> = remote.queue
 
 
     init {
@@ -108,10 +108,14 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     }
 
     override fun remove(key: Uri) {
-        TODO("Not yet implemented")
+        viewModelScope.launch {
+            remote.remove(key)
+        }
     }
 
-    override fun playTrack(uri: Uri) {
-        TODO("Not yet implemented")
+    override fun skipTo(key: Uri) {
+        viewModelScope.launch {
+            remote.skipTo(key)
+        }
     }
 }

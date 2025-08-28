@@ -322,8 +322,8 @@ internal suspend fun Playlists.toggleLike(item: MediaItem): Boolean {
  * @param listener The [MediaBrowser.Listener] to receive callbacks from the media browser.
  * @return A [com.google.common.util.concurrent.ListenableFuture] that resolves to the connected [MediaBrowser].
  */// TODO: currently a quickfix requirement. find better alternative.
-internal fun MediaBrowser(ctx: Context, listener: MediaBrowser.Listener) =
+internal fun MediaBrowser(ctx: Context, listener: MediaBrowser.Listener?= null) =
     MediaBrowser
         .Builder(ctx, SessionToken(ctx, ComponentName(ctx, Playback::class.java)))
-        .setListener(listener)
+        .apply { if (listener != null) setListener(listener) }
         .buildAsync()

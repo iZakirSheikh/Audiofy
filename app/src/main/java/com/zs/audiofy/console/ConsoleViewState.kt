@@ -157,12 +157,12 @@ abstract class Constraints(val titleTextSize: Int) {
 interface QueueViewState {
 
     val state: StateFlow<NowPlaying?>
-    val queue: Flow<List<MediaFile>>
+    val queue: Flow<List<MediaFile>?>
 
     /**
      * Play the track of the queue identified by the [uri]
      */
-    fun playTrack(uri: Uri)
+    fun skipTo(key: Uri)
 
     /**
      * Remove the track from the queue identified by [key].

@@ -105,7 +105,7 @@ interface Remote {
     }
 
     val state: StateFlow<NowPlaying?>
-    val queue: Flow<List<MediaFile>>
+    val queue: Flow<List<MediaFile>?>
     suspend fun getViewProvider(): VideoProvider
 
     suspend fun setMediaFiles(values: List<MediaFile>): Int
@@ -179,4 +179,23 @@ interface Remote {
      * Toggles the Like status of the current media item at index.
      */
     suspend fun toggleLike(index: Int = -1)
+
+    /**
+     * Removes the track identified by the given [uri] from the playback queue.
+     *
+     * @param uri The [Uri] of the media file to be removed.
+     * @return `true` if the track was successfully removed from the queue, `false` otherwise (e.g., if the track was not found in the queue).
+     * @see [Player.removeMediaItem]
+     */
+    suspend fun remove(uri: Uri): Boolean
+
+    /**
+     * Skips to the media item identified by the given [uri] within the current queue.
+     *
+     * @param uri The [Uri] of the media file to be played.
+     * @return `true` if the media item was found in the queue and playback was successfully initiated,
+     *         `false` otherwise (e.g., if the media item was not found or an error occurred during playback initiation).
+     * @see Player.seekToNextMediaItem
+     */
+    suspend fun skipTo(uri: Uri): Boolean
 }

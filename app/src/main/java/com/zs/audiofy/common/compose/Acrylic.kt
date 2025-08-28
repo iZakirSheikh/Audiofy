@@ -200,7 +200,7 @@ fun Acrylic(
             ReBlurTransformation(25f, 3f)
     }
     val layer = rememberGraphicsLayer()
-    val containerColor = AppTheme.colors.background(0.4.dp)
+    val containerColor = AppTheme.colors.background
 
     Image(
         contentScale = ContentScale.Crop,
@@ -233,14 +233,14 @@ fun Acrylic(
                     // Draw background
                     drawRect(color = containerColor)
                     // record content
-                    layer.record() {
+                    layer.record {
                         val isLight = containerColor.luminance() > 0.5f
                         // Then, draw the (already blurred) image content.
                         this@onDrawWithContent.drawContent()
 
                         // Finally, apply the luminosity effect.
                         drawRect(
-                            color = Color.White.copy(alpha = if (isLight) 0.86f else 0.97f),
+                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.97f),
                             // DstOut blend mode creates a cutout effect, enhancing luminosity.
                             blendMode = BlendMode.DstOut
                         ) // Alpha is adjusted based on light/dark theme.
@@ -250,7 +250,6 @@ fun Acrylic(
                             alpha = if (isLight) 0.1f else 0.05f,
                             blendMode = BlendMode.Hardlight
                         )
-
                     }
                     // draw layer
                     drawLayer(layer)

@@ -72,7 +72,7 @@ private fun CompactAudio(insets: DpRect) = object : Constraints(34) {
         // Play Button
         constrain(PLAY_PAUSE) {
             end.linkTo(COLLAPSE.end)
-            top.linkTo(ARTWORK.top)
+            linkTo(ARTWORK.top, ARTWORK.bottom)
         }
 
         // Subtitle
@@ -84,7 +84,7 @@ private fun CompactAudio(insets: DpRect) = object : Constraints(34) {
 
         // TITLE
         constrain(TITLE) {
-            linkTo(ARTWORK.end, PLAY_PAUSE.start, CP.normal, CP.small)
+            linkTo(ARTWORK.end, PLAY_PAUSE.start, CP.medium, CP.medium)
             linkTo(ARTWORK.top, ARTWORK.bottom)
             width = Dimension.fillToConstraints
         }

@@ -69,6 +69,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
@@ -500,7 +501,18 @@ fun Console(viewState: ConsoleViewState) {
         strategy = strategy,
         containerColor = COLOR_BACKGROUND,
         spacing = CP.normal,
-        secondary = {},
+        secondary = {
+            val insets = when {
+                strategy is VerticalTwoPaneStrategy -> insets.only(WindowInsetsSides.Bottom)
+                else -> insets.only(WindowInsetsSides.End + WindowInsetsSides.Top)
+            }
+            val shape = when (strategy) {
+                SinglePaneStrategy -> RectangleShape
+                is HorizontalTwoPaneStrategy -> SecondaryHorizontal
+                else -> SecondaryVertical
+            }
+            Queue(viewState, shape, insets)
+        },
         primary = {
             BoxWithConstraints {
                 val insets = when {

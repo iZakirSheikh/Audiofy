@@ -258,5 +258,10 @@
     App <b>Settings</b>\n  <font size="10"> <sup><sup>Tune It Your Way.</sup></sup> </font>
 </string>
     <string name="playing">Playing</string>
+    <string name="scr_queue_title">
+          Playing <b>Queue</b>\n  <font size="10"> <sup><sup>Control, Play, Relax.</sup></sup> </font>
+    </string>
+    <string name="now_playing">Now Playing</string>
+    <string name="up_next">Up Next</string>
 
 </resources>
