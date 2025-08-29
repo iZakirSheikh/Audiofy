@@ -22,6 +22,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import androidx.annotation.CheckResult
 import androidx.annotation.FloatRange
 import androidx.media3.common.C
 import androidx.media3.common.Player
@@ -198,4 +199,11 @@ interface Remote {
      * @see Player.seekToNextMediaItem
      */
     suspend fun skipTo(uri: Uri): Boolean
+
+    /**
+     * Sets the playback speed of the media.
+     */
+
+    suspend fun setPlaybackSpeed(@FloatRange(from = 0.0, fromInclusive = false) value: Float): Boolean
+    @CheckResult suspend fun getPlaybackSpeed(): Float
 }

@@ -19,6 +19,7 @@
 package com.zs.audiofy.console
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,6 +76,7 @@ import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.adaptive.Scaffold
 import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.TopAppBar
+import com.zs.compose.theme.drawHorizontalDivider
 import com.zs.compose.theme.minimumInteractiveComponentSize
 import com.zs.compose.theme.text.Header
 import com.zs.compose.theme.text.Label
@@ -208,7 +210,9 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                         contentDescription = null,
                         onClick = { dispacher?.onBackPressedDispatcher?.onBackPressed() },
                     )
-                }
+                },
+                modifier = Modifier.drawHorizontalDivider(LocalContentColor.current.copy(
+                    ContentAlpha.divider), thickness = 2.dp)
             )
         },
         content = {
@@ -219,8 +223,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                 contentPadding = insets.only(WIS.Bottom + WIS.End)
                     .asPaddingValues(density),
                 modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.content)
-                    .fadingEdge2(vertical = true),
+                    .windowInsetsPadding(WindowInsets.content),
                 content = {
                     val data = emit(true, items) ?: return@LazyColumn
                     for (index in 0 until data.size) {
@@ -292,6 +295,6 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                     listState.scrollToItem(index)
             }
         },
-        containerColor = AppTheme.colors.background(1.dp)
+        containerColor = if (AppTheme.colors.isLight) AppTheme.colors.background else AppTheme.colors.background(1.dp)
     )
 }

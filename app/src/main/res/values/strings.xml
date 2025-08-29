@@ -245,23 +245,27 @@
     <string name="search">Search</string>
     <string name="play">Play</string>
     <string name="shuffle">Shuffle</string>
-    <string name="scr_albums_title">
-           <b>Audio </b>Albums\n  <font size="10"> <sup><sup>Pure Sound. Pure You.</sup></sup> </font>
+    <string name="scr_albums_title"><b>Audio </b>Albums\n<font size="10"><sup><sup>Pure Sound. Pure You.</sup></sup></font>
     </string>
-    <string name="scr_genres_title">
-    <b>Audio</b> Genres\n  <font size="10"> <sup><sup>Tune In to Variety.</sup></sup> </font>
+    <string name="scr_genres_title"><b>Audio</b> Genres\n<font size="10"><sup><sup>Tune In to Variety.</sup></sup></font>
     </string>
-    <string name="scr_artists_title">
-    <b>Audio</b> Artists\n  <font size="10"> <sup><sup>Soundtracks by Your Favorites.</sup></sup> </font>
+    <string name="scr_artists_title"><b>Audio</b> Artists\n<font size="10"><sup><sup>Soundtracks by Your Favorites.</sup></sup></font>
 </string>
-    <string name="scr_settings_title">
-    App <b>Settings</b>\n  <font size="10"> <sup><sup>Tune It Your Way.</sup></sup> </font>
+    <string name="scr_settings_title">App <b>Settings</b>\n<font size="10"><sup><sup>Tune It Your Way.</sup></sup></font>
 </string>
     <string name="playing">Playing</string>
-    <string name="scr_queue_title">
-          Playing <b>Queue</b>\n  <font size="10"> <sup><sup>Control, Play, Relax.</sup></sup> </font>
-    </string>
+    <string name="scr_queue_title">Playing <b>Queue</b>\n<font size="10"><sup><sup>Control, Play, Relax.</sup></sup></font></string>
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
-
+    <!--Appends x to number at end.-->
+    <string name="scale_factor_f">%1$.2fx</string>
+    <string name="scr_title_playback_speed">Playback <b>Speed</b></string>
+    <string name="presets">Presets</string>
+    <string-array name="scr_playback_speed_presets">
+        <item>0.8<small>x</small></item>
+        <item>1.0<small>x</small></item>
+        <item>1.2<small>x</small></item>
+        <item>1.5<small>x</small></item>
+        <item>2.0<small>x</small></item>
+    </string-array>
 </resources>

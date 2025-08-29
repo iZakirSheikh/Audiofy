@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
+import com.zs.audiofy.R
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.audiofy.console.RouteConsole
 import com.zs.compose.foundation.OrientRed
@@ -22,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
 
@@ -118,4 +120,13 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
             remote.skipTo(key)
         }
     }
+
+    override var playbackSpeed: Float
+        get() = runBlocking { remote.getPlaybackSpeed() }
+        set(value) {
+            viewModelScope.launch {
+                val updated = remote.setPlaybackSpeed(value)
+                showPlatformToast(if (updated) "Speed ${getText(R.string.scale_factor_f, value)}" else "Error: playback speed unchanged")
+            }
+        }
 }

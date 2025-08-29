@@ -346,6 +346,17 @@ internal class RemoteImpl(private val context: Context) : Remote {
             // Emit the updated list of MediaFile objects.
             emit(list?.map(::MediaFile))
         }
+
+    override suspend fun setPlaybackSpeed(value: Float): Boolean {
+        val browser = fBrowser.await() // Await the MediaBrowser instance.
+        browser.playbackParameters = browser.playbackParameters.withSpeed(value) // Set the new playback speed.
+        return browser.playbackParameters.speed == value // Verify if the speed was set correctly.
+    }
+
+    override suspend fun getPlaybackSpeed(): Float {
+        val browser = fBrowser.await()
+        return browser.playbackParameters.speed
+    }
 }
 
 

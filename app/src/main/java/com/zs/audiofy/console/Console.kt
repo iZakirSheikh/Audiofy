@@ -589,4 +589,14 @@ fun Console(viewState: ConsoleViewState) {
             else -> facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO
         }
     }
+
+    when (show) {
+        SHOW_SPEED -> PlaybackSpeed(true, viewState.playbackSpeed) { newValue ->
+            if (newValue == -1f) {
+                show = SHOW_NONE
+                return@PlaybackSpeed
+            }
+            viewState.playbackSpeed = newValue
+        }
+    }
 }
