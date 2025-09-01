@@ -26,10 +26,12 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.LongState
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -77,7 +79,7 @@ private fun ContentDrawScope.drawFadedEdge(leftEdge: Boolean) {
 @Deprecated("Think more about this")
 fun Modifier.marque(iterations: Int) =
     Modifier
-        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen}
+        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithContent {
             drawContent()
             drawFadedEdge(leftEdge = true)
@@ -328,4 +330,33 @@ fun VideoSurface(
             Log.d(TAG, "VideoSurface: Releasing")
         }
     )
+}
+
+/**
+ * A simple countdown timer Composable.
+ *
+ * This Composable takes an initial duration in milliseconds and provides a [LongState]
+ * that represents the remaining time. The timer counts down every second.
+ *
+ * The timer will stop when the remaining time reaches zero or less.
+ * If the initial `mills` value changes, the timer will restart with the new duration.
+ *
+ * @param mills The initial duration for the timer in milliseconds.
+ * @return A [LongState] holding the current remaining time in milliseconds.
+ *         This state will be updated every second as the timer counts down.
+ */
+@Composable
+inline fun Timer(mills: Long): LongState {
+    // Remember the state of the timer. Initialize with the provided `mills`.
+    val state = remember { mutableLongStateOf(mills) }
+    // Launch a side-effect that depends on `mills`.
+    // If `mills` changes, the existing coroutine is cancelled and a new one starts.
+    LaunchedEffect(mills) {
+        // Loop as long as there is time remaining.
+        while (state.longValue > 0) {
+            delay(1000) // Wait for 1 second.
+            state.longValue -= 1000 // Decrement the remaining time by 1000 milliseconds.
+        }
+    }
+    return state // Return the state object that holds the current time.
 }

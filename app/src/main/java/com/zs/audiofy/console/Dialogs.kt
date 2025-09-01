@@ -67,6 +67,7 @@ import com.zs.compose.theme.Surface
 import com.zs.compose.theme.appbar.TopAppBar
 import com.zs.compose.theme.text.Header
 import com.zs.compose.theme.text.Label
+import kotlin.math.roundToInt
 import com.zs.audiofy.common.compose.ContentPadding as CP
 
 private val TitleBarHeight = Modifier.height(48.dp)
@@ -124,6 +125,10 @@ private val SPEED_RANGE = 0.25f..3.0f
 private const val SPEED_INCREMENT = 0.25f
 private const val REQUEST_DISMISS = -1.0f
 
+/**
+ * Represents the playback speed dialog.
+ * @param onRequestChange Called when the playback speed is changed. -1; dismiss the dialog.
+ */
 @Composable
 fun PlaybackSpeed(
     expanded: Boolean,
@@ -152,7 +157,7 @@ fun PlaybackSpeed(
             },
             title = {
                 Label(
-                    textResource(R.string.scr_title_playback_speed),
+                    textResource(R.string.scr_playback_speed_title),
                     fontWeight = FontWeight.Light
                 )
             },
@@ -183,7 +188,8 @@ fun PlaybackSpeed(
                         colors = chipColors,
                         border = ChipDefaults.outlinedBorder,
                         onClick = {
-                            val newValue = (speed - SPEED_INCREMENT).coerceAtLeast(SPEED_RANGE.start)
+                            val newValue =
+                                (speed - SPEED_INCREMENT).coerceAtLeast(SPEED_RANGE.start)
                             onValueChange(newValue)
                             onRequestChange(newValue)
                         },
@@ -247,6 +253,104 @@ fun PlaybackSpeed(
                         }
                     }
                 )
+            }
+        )
+    }
+}
+
+
+private val TIMER_RANGE = 10f..120f
+private const val TIMER_INCREMENT = 10f
+
+/**
+ * Represents the sleep timer dialog.
+ */
+@Composable
+fun SleepTimer(
+    expanded: Boolean,
+    onRequestChange: (value: Long) -> Unit
+) {
+    val (width, height) = LocalWindowSize.current
+    val onDismissRequest = { onRequestChange(REQUEST_DISMISS.toLong()) }
+    Dialog(expanded, onDismissRequest = onDismissRequest, properties = CustomWidthProperties) {
+        // Handles the logic for showing dialog at bottom/centre
+        val view = LocalView.current
+        SideEffect {
+            val dialogWindowProvider = view.parent as? DialogWindowProvider ?: return@SideEffect
+            val gravity = if (width > height) Gravity.CENTER else Gravity.BOTTOM
+            val window = dialogWindowProvider.window
+            window.setGravity(gravity)
+        }
+
+        Layout(
+            actions = {},
+            navigationIcon = {
+                IconButton(
+                    icon = Icons.Outlined.Close,
+                    contentDescription = null,
+                    onClick = onDismissRequest
+                )
+            },
+            title = {
+                Label(
+                    textResource(R.string.scr_sleep_timer_title),
+                    fontWeight = FontWeight.Light
+                )
+            },
+            content = {
+                val (mins, onTimerChange) =  remember { mutableFloatStateOf(TIMER_RANGE.start) }
+                // Preview
+                Label(
+                    text = textResource(R.string.scr_sleep_timer_minute_d, mins.roundToInt()),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = AppTheme.typography.title1
+                )
+
+                val colors = AppTheme.colors
+                val isLight = colors.isLight
+                // Controls
+
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = CP.SmallArrangement) {
+                    val chipColors = ChipDefaults.chipColors(
+                        backgroundColor = if (isLight) colors.background(6.dp) else colors.onBackground.copy(ContentAlpha.indication),
+                        contentColor = colors.onBackground
+                    )
+                    // Decrease
+                    Chip(
+                        content = { Icon(Icons.Outlined.Remove, contentDescription = null) },
+                        colors = chipColors,
+                        border = ChipDefaults.outlinedBorder,
+                        onClick = {
+                            val newValue = (mins - TIMER_INCREMENT).coerceAtLeast(TIMER_RANGE.start)
+                            onTimerChange(newValue)
+                        },
+                    )
+                    // Slider
+                    Slider(
+                        value = mins,
+                        onValueChange = onTimerChange,
+                        valueRange = TIMER_RANGE,
+                        steps = 10,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // Increase
+                    Chip(
+                        content = { Icon(Icons.Outlined.Add, contentDescription = null) },
+                        colors = chipColors,
+                        border = ChipDefaults.outlinedBorder,
+                        onClick = {
+                            val newValue =
+                                (mins + TIMER_INCREMENT).coerceAtMost(TIMER_RANGE.endInclusive)
+                            onTimerChange(newValue)
+                        },
+                    )
+                }
+
+                // Start Timer
+                Chip(modifier = Modifier.align(Alignment.End), onClick = {onRequestChange(mins.toLong() * 60_000)}) {
+                    Label(stringResource(R.string.start).uppercase())
+                }
             }
         )
     }

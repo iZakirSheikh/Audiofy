@@ -320,7 +320,8 @@ internal class RemoteImpl(private val context: Context) : Remote {
                     provider.hasPreviousMediaItem() -> -1
                     provider.hasNextMediaItem() -> 1
                     else -> 0
-                }
+                },
+                sleepAt = getSleepTimeAt()
             ) // Emit the newly created NowPlaying state.
             emit(state)
         }
@@ -356,6 +357,25 @@ internal class RemoteImpl(private val context: Context) : Remote {
     override suspend fun getPlaybackSpeed(): Float {
         val browser = fBrowser.await()
         return browser.playbackParameters.speed
+    }
+
+    override suspend fun setSleepTimeAt(mills: Long) {
+        val browser = fBrowser.await()
+        browser[Remote.SCHEDULE_SLEEP_TIME] = bundleOf(
+            Remote.EXTRA_SCHEDULED_TIME_MILLS to mills
+        )
+    }
+
+    override suspend fun getSleepTimeAt(): Long {
+        val browser = fBrowser.await()
+        val result = browser[Remote.SCHEDULE_SLEEP_TIME]
+        // Get the scheduled time from the result or use the uninitialized value
+        return result.extras.getLong(Remote.EXTRA_SCHEDULED_TIME_MILLS)
+    }
+
+    override suspend fun isPlaying(): Boolean {
+        val browser = fBrowser.await()
+        return browser.playWhenReady
     }
 }
 

@@ -47,6 +47,7 @@ import com.zs.core.common.await
 import com.zs.core.db.playlists.Playlist
 import com.zs.core.db.playlists.Playlists
 import com.zs.core.store.models.Audio
+import kotlinx.coroutines.delay
 
 /**
  * Creates a new instance of [NextRenderersFactory] using reflection. The renderer is provided as a dynamic feature module and might not be available at install time. The feature needs to be added to the APK on-demand.
@@ -327,3 +328,17 @@ internal fun MediaBrowser(ctx: Context, listener: MediaBrowser.Listener?= null) 
         .Builder(ctx, SessionToken(ctx, ComponentName(ctx, Playback::class.java)))
         .apply { if (listener != null) setListener(listener) }
         .buildAsync()
+
+/**
+ * Forces the player to emit a shuffle mode change event to its listeners.
+ *
+ * Temporarily toggles [shuffleModeEnabled] so that `onShuffleModeChanged`
+ * callbacks are invoked, even if the shuffle mode ultimately remains unchanged.
+ */
+internal suspend fun Player.poke(){
+    // poke player listeners
+    val shuffle = shuffleModeEnabled
+    shuffleModeEnabled = !shuffle
+    delay(5)
+    shuffleModeEnabled = shuffle
+}

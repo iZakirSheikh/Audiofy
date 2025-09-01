@@ -63,6 +63,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -70,6 +71,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
@@ -83,6 +85,7 @@ import com.zs.audiofy.common.compose.Acrylic
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.LottieAnimatedButton
+import com.zs.audiofy.common.compose.Timer
 import com.zs.audiofy.common.compose.VideoSurface
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.collectAsState
@@ -109,6 +112,7 @@ import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
+import kotlinx.coroutines.delay
 import com.zs.audiofy.common.compose.ContentPadding as CP
 import com.zs.audiofy.common.compose.lottieAnimationPainter as Lottie
 import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter as AnimVectorPainter
@@ -212,7 +216,9 @@ fun Console(viewState: ConsoleViewState) {
             content = { value ->
                 when (value) {
                     BG_STYLE_ACRYLIC -> Acrylic(state.artwork, Modifier.fillMaxSize())
-                    else -> Spacer(Modifier.background(Color.Black).fillMaxSize())
+                    else -> Spacer(Modifier
+                        .background(Color.Black)
+                        .fillMaxSize())
                 }
             }
         )
@@ -275,13 +281,18 @@ fun Console(viewState: ConsoleViewState) {
         Icon(
             painter = Lottie(R.raw.playback_indicator, isPlaying = state.playing),
             contentDescription = null,
-            modifier = Modifier.padding(end = CP.xSmall).lottie().key(C.ID_PLAYING_INDICATOR),
+            modifier = Modifier
+                .padding(end = CP.xSmall)
+                .lottie()
+                .key(C.ID_PLAYING_INDICATOR),
             tint = accent
         )
 
         // Title
         Box(
-            modifier = Modifier.key(C.ID_TITLE).clipToBounds(),
+            modifier = Modifier
+                .key(C.ID_TITLE)
+                .clipToBounds(),
             content = {
                 Label(
                     text = state.title ?: stringResource(id = R.string.unknown),
@@ -383,7 +394,10 @@ fun Console(viewState: ConsoleViewState) {
             content = {
                 val mode = state.repeatMode
                 Icon(
-                    painter = AnimVectorPainter(R.drawable.avd_repeat_more_one_all, mode == Remote.REPEAT_MODE_ALL),
+                    painter = AnimVectorPainter(
+                        R.drawable.avd_repeat_more_one_all,
+                        mode == Remote.REPEAT_MODE_ALL
+                    ),
                     contentDescription = null,
                     tint = onColor.copy(if (mode == Remote.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
                 )
@@ -444,11 +458,25 @@ fun Console(viewState: ConsoleViewState) {
 
         // Timer
         IconButton(
-            icon = Icons.Outlined.Timer,
-            contentDescription = null,
-            onClick = { show = SHOW_TIMER },
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_SLEEP_TIMER)
+            onClick = {
+                if (state.sleepAt != Remote.TIME_UNSET) viewState.sleepAt(Remote.TIME_UNSET) else show =
+                    SHOW_TIMER
+            },
+            modifier = Modifier.layoutId(C.ID_BTN_SLEEP_TIMER),
+            content = {
+                if (state.sleepAt == Remote.TIME_UNSET)
+                    return@IconButton Icon(
+                        imageVector = Icons.Outlined.Timer,
+                        contentDescription = null
+                    )
+                val remaining by Timer(state.sleepAt)
+                Label(
+                    text = DateUtils.formatElapsedTime(remaining / 1000L),
+                    style = AppTheme.typography.label3,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.accent
+                )
+            }
         )
 
         // Equalizer
@@ -597,6 +625,16 @@ fun Console(viewState: ConsoleViewState) {
                 return@PlaybackSpeed
             }
             viewState.playbackSpeed = newValue
+        }
+
+        SHOW_TIMER -> SleepTimer(true) { newValue ->
+            if (newValue == -1L) {
+                show = SHOW_NONE
+                return@SleepTimer
+            }
+            viewState.sleepAt(newValue)
+            show = SHOW_NONE
+            // viewState.sleepTimer = newValue
         }
     }
 }

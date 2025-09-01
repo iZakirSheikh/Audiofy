@@ -22,6 +22,7 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -60,6 +61,7 @@ import com.zs.audiofy.common.compose.emit
 import com.zs.audiofy.common.compose.fadingEdge2
 import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
+import com.zs.audiofy.common.compose.shine
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.foreground
@@ -90,7 +92,7 @@ import com.zs.audiofy.common.compose.ContentPadding as CP
 private val ThumbnailModifier = Modifier.size(110.dp, 64.dp)
 
 private val NonePlaying = NowPlaying(null, null)
-private val NoiseTexture = Modifier.visualEffect(ImageBrush.NoiseBrush, 0.1f, overlay = false)
+private val NoiseTexture = Modifier.visualEffect(ImageBrush.NoiseBrush, 0.2f, overlay = false)
 private val ScrimModifier = Modifier.foreground(Color.Black.copy(0.35f))
 
 
@@ -163,7 +165,10 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
         // TODO- Remove thenIf when bug in TwoPane is fixed.
         modifier = Modifier
             .thenIf(insets.getTop(density) == 0) { padding(top = CP.medium) }
-            .clip(shape),
+            //.clip(shape)
+            .shadow(6.dp, shape)
+            .border(AppTheme.colors.shine,shape)
+        ,
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -212,7 +217,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                     )
                 },
                 modifier = Modifier.drawHorizontalDivider(LocalContentColor.current.copy(
-                    ContentAlpha.divider), thickness = 2.dp)
+                    ContentAlpha.divider), thickness = 1.dp)
             )
         },
         content = {

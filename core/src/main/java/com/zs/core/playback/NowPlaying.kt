@@ -47,6 +47,7 @@ class NowPlaying(
     val videoSize: VideoSize = VideoSize(),
     val data: Uri? = null,
     private val neighbours: Int = 0,
+    val sleepAt: Long = Remote.TIME_UNSET,
 ) {
     val  isNextAvailable get() = neighbours == 1 || neighbours == 2
     val  isPrevAvailable get() = neighbours == -1 || neighbours == 2
@@ -79,6 +80,7 @@ class NowPlaying(
         if (videoSize != other.videoSize) return false
         if (data != other.data) return false
         if (neighbours != other.neighbours) return false
+        if (sleepAt != other.sleepAt) return false
 
         return true
     }
@@ -101,6 +103,7 @@ class NowPlaying(
         result = 31 * result + videoSize.hashCode()
         result = 31 * result + data.hashCode()
         result = 31 * result + neighbours.hashCode()
+        result = 31 * result + sleepAt.hashCode()
 
         return result
     }
@@ -125,6 +128,7 @@ class NowPlaying(
                 " isVideo=$isVideo," +
                 " playing=$playing" +
                 " data=$data" +
-                " neighbours=$neighbours)"
+                " neighbours=$neighbours" +
+                " sleepAt=$sleepAt)"
     }
 }

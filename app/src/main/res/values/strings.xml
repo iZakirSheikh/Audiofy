@@ -259,8 +259,9 @@
     <string name="up_next">Up Next</string>
     <!--Appends x to number at end.-->
     <string name="scale_factor_f">%1$.2fx</string>
-    <string name="scr_title_playback_speed">Playback <b>Speed</b></string>
+    <string name="scr_playback_speed_title">Playback <b>Speed</b></string>
     <string name="presets">Presets</string>
+    <string name="scr_sleep_timer_title">Sleep <b>Timer</b></string>
     <string-array name="scr_playback_speed_presets">
         <item>0.8<small>x</small></item>
         <item>1.0<small>x</small></item>
@@ -268,4 +269,6 @@
         <item>1.5<small>x</small></item>
         <item>2.0<small>x</small></item>
     </string-array>
+    <string name="scr_sleep_timer_minute_d">%d min</string>
+    <string name="start">Start</string>
 </resources>

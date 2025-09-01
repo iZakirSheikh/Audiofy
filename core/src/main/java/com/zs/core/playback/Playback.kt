@@ -108,9 +108,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     /**
      * The timestamp, in milliseconds, representing the scheduled time to pause playback.
      * This variable is used to store the timestamp when playback should be paused in the future.
-     * If no future pause is scheduled, the value is set to -1.
+     * If no future pause is scheduled, the value is set to [Remote.TIME_UNSET].
      */
-    private var scheduledPauseTimeMillis = Remote.SLEEP_TIME_UNSET
+    private var scheduledPauseTimeMillis = Remote.TIME_UNSET
 
     /**
      * The PendingIntent associated with the underlying activity.
@@ -392,7 +392,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         if (!isPlaying) {
             playbackMonitorJob?.cancel()
             // change this to uninitialized
-            scheduledPauseTimeMillis = Remote.SLEEP_TIME_UNSET
+            scheduledPauseTimeMillis = Remote.TIME_UNSET
+            scope.launch { player.poke() }
         }
         // Launch a new job
         else playbackMonitorJob = scope.launch {
@@ -403,12 +404,13 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 Log.i(TAG, "Saved playback position: ${player.currentPosition}")
 
                 // Check if playback is scheduled to be paused.
-                if (scheduledPauseTimeMillis != Remote.SLEEP_TIME_UNSET && scheduledPauseTimeMillis <= System.currentTimeMillis()) {
+                if (scheduledPauseTimeMillis != Remote.TIME_UNSET && scheduledPauseTimeMillis <= System.currentTimeMillis()) {
                     // Pause the player as the scheduled pause time has been reached.
                     player.pause()
 
                     // Once the scheduled pause has been triggered, reset the scheduled time to uninitialized.
-                    scheduledPauseTimeMillis = Remote.SLEEP_TIME_UNSET
+                    scheduledPauseTimeMillis = Remote.TIME_UNSET
+                    player.poke()
                 }
                 // Delay for the specified time
                 delay(SAVE_POSITION_DELAY_MILLS)
@@ -516,14 +518,17 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 // If the new time is not zero, set the new sleep timer.
                 // FixMe: Consider setting the timer only when it's not equal to the default value
                 //  and greater than the current time.
-                if (newTimeMills != 0L) scheduledPauseTimeMillis = newTimeMills
+                if (newTimeMills != 0L) {
+                    scope.launch { player.poke() }
+                    scheduledPauseTimeMillis = if (newTimeMills == Remote.TIME_UNSET) Remote.TIME_UNSET else newTimeMills + System.currentTimeMillis()
+                }
 
                 // Regardless of whether the client wants to set or retrieve the timer,
                 // include the current or updated timer value in the response to the client.
                 Futures.immediateFuture(
                     SessionResult(SessionResult.RESULT_SUCCESS) {
                         putLong(
-                            Remote.EXTRA_SCHEDULED_TIME_MILLS, scheduledPauseTimeMillis
+                            Remote.EXTRA_SCHEDULED_TIME_MILLS, if (scheduledPauseTimeMillis == Remote.TIME_UNSET) Remote.TIME_UNSET else scheduledPauseTimeMillis - System.currentTimeMillis()
                         )
                     })
             }
@@ -573,10 +578,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 val isLiked = playlists.toggleLike(item)
                 session.setMediaButtonPreferences(listOf(if (isLiked) LikeButton else UnlikeButton))
                 // poke player listeners
-                val shuffle = player.shuffleModeEnabled
-                player.shuffleModeEnabled = !shuffle
-                delay(5)
-                player.shuffleModeEnabled = shuffle
+                player.poke()
                 showPlatformToast(if (isLiked) "Liked ❤️✨" else "Unliked 💔")
                 SessionResult(SessionResult.RESULT_SUCCESS)
             }

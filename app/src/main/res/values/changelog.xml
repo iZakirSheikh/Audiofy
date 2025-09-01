@@ -70,7 +70,8 @@
     <string name="changelog_400_dev18" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev18)</font></b>
         <font color='grey'>
-           \n-
+           \n- Integrated <b>Sleep Timer</b> functionality with a dedicated user interface and underlying logic.
+           \n- Implemented <b>Playback Speed</b> controls, complete with user interface elements and operational logic.
         </font>
     </string>
 

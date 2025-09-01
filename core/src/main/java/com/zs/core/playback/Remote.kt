@@ -40,8 +40,6 @@ interface Remote {
     @SuppressLint("UnsafeOptInUsageError")
     companion object {
 
-        const val SLEEP_TIME_UNSET = -1L
-
         const val POSITION_UNSET = C.POSITION_UNSET
         const val TIME_UNSET = C.TIME_UNSET
         const val INDEX_UNSET = C.INDEX_UNSET
@@ -203,7 +201,28 @@ interface Remote {
     /**
      * Sets the playback speed of the media.
      */
-
     suspend fun setPlaybackSpeed(@FloatRange(from = 0.0, fromInclusive = false) value: Float): Boolean
     @CheckResult suspend fun getPlaybackSpeed(): Float
+
+    /**
+     *  A function that sets the sleep timer for the media player
+     *
+     *  The sleep timer is a feature that allows the user to set a time in the future when the
+     *  playback should be paused or slept.
+     *  @param mills The time in milliseconds when playback is scheduled to be paused. If the value is
+     *  [Playback.TIME_UNSET], the sleep timer is disabled or removed.
+     */
+    suspend fun setSleepTimeAt(mills: Long)
+
+    /**
+     *   A function that returns the sleep timer value of the media player.
+     *
+     *   The sleep timer is a feature that allows the user to set a time in the future when the
+     *   playback should be paused or slept.
+     *   @return The time in milliseconds when playback is scheduled to be paused or
+     *   [Remote.TIME_UNSET] to cancel the already one.
+     * */
+    suspend fun getSleepTimeAt(): Long
+
+    suspend fun isPlaying(): Boolean
 }

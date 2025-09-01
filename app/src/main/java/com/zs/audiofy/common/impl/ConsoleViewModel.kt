@@ -1,6 +1,7 @@
 package com.zs.audiofy.common.impl
 
 import android.net.Uri
+import android.text.format.DateUtils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ClearAll
 import androidx.compose.runtime.getValue
@@ -61,6 +62,28 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override fun seekTo(pct: Float) {
         runCatching {
             remote.seekTo(pct)
+        }
+    }
+
+    override fun sleepAt(mills: Long) {
+        viewModelScope.launch {
+            if (!remote.isPlaying()) {
+                return@launch showPlatformToast("Start playback to use sleep timer")
+            }
+
+            remote.setSleepTimeAt(mills)
+            if (mills == Remote.TIME_UNSET) {
+                showPlatformToast("Sleep timer disabled")
+            } else {
+                val endTime = System.currentTimeMillis() + mills
+                val text = DateUtils.getRelativeTimeSpanString(
+                    endTime,
+                    System.currentTimeMillis(),
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE
+                )
+                showPlatformToast("Sleep timer set to end $text")
+            }
         }
     }
 
