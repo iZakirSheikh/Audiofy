@@ -79,8 +79,8 @@ private val DialogSize = Modifier
 private inline fun Layout(
     noinline navigationIcon: @Composable () -> Unit,
     noinline title: @Composable () -> Unit,
-    noinline actions: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
+    noinline actions: @Composable RowScope.() -> Unit = {},
     noinline content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = AppTheme.colors
@@ -161,11 +161,10 @@ fun PlaybackSpeed(
                     fontWeight = FontWeight.Light
                 )
             },
-            actions = {},
             content = {
                 val (speed, onValueChange) = remember { mutableFloatStateOf(value) }
                 // Slider to change the playback speed.
-
+                // Preview
                 Label(
                     text = textResource(R.string.scale_factor_f, speed),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -218,7 +217,6 @@ fun PlaybackSpeed(
                         },
                     )
                 }
-
                 // Presets
                 Header(stringResource(R.string.presets), style = AppTheme.typography.label3)
                 val presetsScrollState = rememberScrollState()
@@ -258,7 +256,6 @@ fun PlaybackSpeed(
     }
 }
 
-
 private val TIMER_RANGE = 10f..120f
 private const val TIMER_INCREMENT = 10f
 
@@ -268,7 +265,7 @@ private const val TIMER_INCREMENT = 10f
 @Composable
 fun SleepTimer(
     expanded: Boolean,
-    onRequestChange: (value: Long) -> Unit
+    onRequestChange: (mills: Long) -> Unit
 ) {
     val (width, height) = LocalWindowSize.current
     val onDismissRequest = { onRequestChange(REQUEST_DISMISS.toLong()) }
@@ -282,8 +279,8 @@ fun SleepTimer(
             window.setGravity(gravity)
         }
 
+        //
         Layout(
-            actions = {},
             navigationIcon = {
                 IconButton(
                     icon = Icons.Outlined.Close,
@@ -292,13 +289,10 @@ fun SleepTimer(
                 )
             },
             title = {
-                Label(
-                    textResource(R.string.scr_sleep_timer_title),
-                    fontWeight = FontWeight.Light
-                )
+                Label(textResource(R.string.scr_sleep_timer_title), fontWeight = FontWeight.Light)
             },
             content = {
-                val (mins, onTimerChange) =  remember { mutableFloatStateOf(TIMER_RANGE.start) }
+                val (mins, onTimerChange) = remember { mutableFloatStateOf(TIMER_RANGE.start) }
                 // Preview
                 Label(
                     text = textResource(R.string.scr_sleep_timer_minute_d, mins.roundToInt()),
@@ -309,10 +303,14 @@ fun SleepTimer(
                 val colors = AppTheme.colors
                 val isLight = colors.isLight
                 // Controls
-
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = CP.SmallArrangement) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = CP.SmallArrangement
+                ) {
                     val chipColors = ChipDefaults.chipColors(
-                        backgroundColor = if (isLight) colors.background(6.dp) else colors.onBackground.copy(ContentAlpha.indication),
+                        backgroundColor = if (isLight) colors.background(6.dp) else colors.onBackground.copy(
+                            ContentAlpha.indication
+                        ),
                         contentColor = colors.onBackground
                     )
                     // Decrease
@@ -348,7 +346,9 @@ fun SleepTimer(
                 }
 
                 // Start Timer
-                Chip(modifier = Modifier.align(Alignment.End), onClick = {onRequestChange(mins.toLong() * 60_000)}) {
+                Chip(
+                    modifier = Modifier.align(Alignment.End),
+                    onClick = { onRequestChange(mins.toLong() * 60_000) }) {
                     Label(stringResource(R.string.start).uppercase())
                 }
             }

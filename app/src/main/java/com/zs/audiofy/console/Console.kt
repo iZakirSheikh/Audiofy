@@ -43,9 +43,12 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.outlined.ArrowBackIos
+import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.Lock
@@ -63,7 +66,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -71,7 +73,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
@@ -85,7 +86,6 @@ import com.zs.audiofy.common.compose.Acrylic
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.LottieAnimatedButton
-import com.zs.audiofy.common.compose.Timer
 import com.zs.audiofy.common.compose.VideoSurface
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.collectAsState
@@ -93,6 +93,7 @@ import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.resize
 import com.zs.audiofy.common.compose.shine
+import com.zs.audiofy.common.compose.timer
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
@@ -112,7 +113,6 @@ import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
-import kotlinx.coroutines.delay
 import com.zs.audiofy.common.compose.ContentPadding as CP
 import com.zs.audiofy.common.compose.lottieAnimationPainter as Lottie
 import com.zs.audiofy.common.compose.rememberAnimatedVectorPainter as AnimVectorPainter
@@ -156,13 +156,13 @@ fun Console(viewState: ConsoleViewState) {
     val facade = LocalSystemFacade.current
     val navController = LocalNavController.current
 
-    var show by remember { mutableIntStateOf(SHOW_NONE) }
+    var showViewOf by remember { mutableIntStateOf(SHOW_NONE) }
     val visibility = viewState.visibility
 
     // BackHandler
     val onNavigateBack = onBack@{
-        if (show != SHOW_NONE) {
-            show = SHOW_NONE
+        if (showViewOf != SHOW_NONE) {
+            showViewOf = SHOW_NONE
             return@onBack
         }
         // Consume request if locked.
@@ -216,9 +216,11 @@ fun Console(viewState: ConsoleViewState) {
             content = { value ->
                 when (value) {
                     BG_STYLE_ACRYLIC -> Acrylic(state.artwork, Modifier.fillMaxSize())
-                    else -> Spacer(Modifier
-                        .background(Color.Black)
-                        .fillMaxSize())
+                    else -> Spacer(
+                        Modifier
+                            .background(Color.Black)
+                            .fillMaxSize()
+                    )
                 }
             }
         )
@@ -266,7 +268,7 @@ fun Console(viewState: ConsoleViewState) {
         val onColor = LocalContentColor.current
         val accent = if (isVideo) onColor else AppTheme.colors.accent
         IconButton(
-            icon = Icons.Outlined.ExpandMore,
+            icon = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
             onClick = onNavigateBack,
             tint = accent,
             enabled = enabled,
@@ -428,7 +430,7 @@ fun Console(viewState: ConsoleViewState) {
         IconButton(
             icon = Icons.Outlined.Queue,
             contentDescription = null,
-            onClick = { show = SHOW_QUEUE },
+            onClick = { showViewOf = SHOW_QUEUE },
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_QUEUE)
         )
@@ -451,7 +453,7 @@ fun Console(viewState: ConsoleViewState) {
         IconButton(
             icon = Icons.Outlined.Speed,
             contentDescription = null,
-            onClick = { show = SHOW_SPEED },
+            onClick = { showViewOf = SHOW_SPEED },
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_PLAYBACK_SPEED)
         )
@@ -459,8 +461,9 @@ fun Console(viewState: ConsoleViewState) {
         // Timer
         IconButton(
             onClick = {
-                if (state.sleepAt != Remote.TIME_UNSET) viewState.sleepAt(Remote.TIME_UNSET) else show =
-                    SHOW_TIMER
+                if (state.sleepAt != Remote.TIME_UNSET)
+                    viewState.sleepAt(Remote.TIME_UNSET)
+                else showViewOf = SHOW_TIMER
             },
             modifier = Modifier.layoutId(C.ID_BTN_SLEEP_TIMER),
             content = {
@@ -469,7 +472,7 @@ fun Console(viewState: ConsoleViewState) {
                         imageVector = Icons.Outlined.Timer,
                         contentDescription = null
                     )
-                val remaining by Timer(state.sleepAt)
+                val remaining by timer(state.sleepAt)
                 Label(
                     text = DateUtils.formatElapsedTime(remaining / 1000L),
                     style = AppTheme.typography.label3,
@@ -483,7 +486,7 @@ fun Console(viewState: ConsoleViewState) {
         IconButton(
             icon = Icons.Outlined.Tune,
             contentDescription = null,
-            onClick = { show = SHOW_EQUALIZER },
+            onClick = { showViewOf = SHOW_EQUALIZER },
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER)
         )
@@ -515,15 +518,18 @@ fun Console(viewState: ConsoleViewState) {
                 shadow = 12.dp
             )
     }
+
     // Layout
     // Compute Two pane strategy
     val clazz = LocalWindowSize.current
     val insets = WindowInsets.systemBars
     val strategy = when {
-        show != SHOW_QUEUE || clazz.height < Category.Medium && clazz.width <= Category.Medium -> SinglePaneStrategy
+        showViewOf != SHOW_QUEUE || clazz.height < Category.Medium && clazz.width <= Category.Medium -> SinglePaneStrategy
         clazz.width < clazz.height -> VerticalTwoPaneStrategy(0.35f)
         else -> HorizontalTwoPaneStrategy(0.6f)
     }
+
+    // Layout
     TwoPane(
         modifier = Modifier.sharedBounds(C.ID_BACKGROUND),
         strategy = strategy,
@@ -587,8 +593,10 @@ fun Console(viewState: ConsoleViewState) {
                     titleTextSize = c.titleTextSize
                     return@remember c
                 }
-                val onColor =
-                    if (background == BG_STYLE_BLACK) Color.SignalWhite else AppTheme.colors.onBackground
+                val onColor = when (background) {
+                    BG_STYLE_BLACK -> Color.SignalWhite
+                    else -> AppTheme.colors.onBackground
+                }
                 CompositionLocalProvider(LocalContentColor provides onColor) {
                     ConstraintLayout(
                         constraints.constraints,
@@ -617,24 +625,23 @@ fun Console(viewState: ConsoleViewState) {
             else -> facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO
         }
     }
-
-    when (show) {
+    //
+    when (showViewOf) {
         SHOW_SPEED -> PlaybackSpeed(true, viewState.playbackSpeed) { newValue ->
             if (newValue == -1f) {
-                show = SHOW_NONE
+                showViewOf = SHOW_NONE
                 return@PlaybackSpeed
             }
             viewState.playbackSpeed = newValue
         }
 
-        SHOW_TIMER -> SleepTimer(true) { newValue ->
-            if (newValue == -1L) {
-                show = SHOW_NONE
+        SHOW_TIMER -> SleepTimer(true) { mills ->
+            if (mills == -1L) {
+                showViewOf = SHOW_NONE
                 return@SleepTimer
             }
-            viewState.sleepAt(newValue)
-            show = SHOW_NONE
-            // viewState.sleepTimer = newValue
+            viewState.sleepAt(mills)
+            showViewOf = SHOW_NONE
         }
     }
 }

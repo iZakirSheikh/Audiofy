@@ -68,12 +68,12 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override fun sleepAt(mills: Long) {
         viewModelScope.launch {
             if (!remote.isPlaying()) {
-                return@launch showPlatformToast("Start playback to use sleep timer")
+                return@launch showPlatformToast(R.string.msg_sleep_timer_playback_inactive)
             }
 
-            remote.setSleepTimeAt(mills)
+            remote.setSleepTimer(mills)
             if (mills == Remote.TIME_UNSET) {
-                showPlatformToast("Sleep timer disabled")
+                showPlatformToast(R.string.msg_sleep_timer_turned_off)
             } else {
                 val endTime = System.currentTimeMillis() + mills
                 val text = DateUtils.getRelativeTimeSpanString(
@@ -82,7 +82,9 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
                     DateUtils.MINUTE_IN_MILLIS,
                     DateUtils.FORMAT_ABBREV_RELATIVE
                 )
-                showPlatformToast("Sleep timer set to end $text")
+                val fMessage =
+                    context.getString(R.string.msg_sleep_timer_set_playback_stops_s, text)
+                showPlatformToast(fMessage)
             }
         }
     }
@@ -90,7 +92,7 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override fun shuffle(enable: Boolean) {
         runCatching {
             remote.shuffle(enable)
-            showPlatformToast("Shuffled")
+            showPlatformToast(if (enable) R.string.msg_shuffle_on else R.string.msg_shuffle_off)
         }
     }
 
@@ -98,9 +100,9 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
         runCatching {
             val new = remote.cycleRepeatMode()
             val msg = when (new) {
-                Remote.REPEAT_MODE_OFF -> "Repeat mode off"
-                Remote.REPEAT_MODE_ONE -> "Repeat mode one"
-                else -> "Repeat mode all"
+                Remote.REPEAT_MODE_OFF -> R.string.msg_repeat_mode_off
+                Remote.REPEAT_MODE_ONE -> R.string.msg_repeat_mode_one
+                else -> R.string.msg_repeat_mode_all
             }
             showPlatformToast(msg)
         }
@@ -108,8 +110,12 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
 
     override fun clear() {
         viewModelScope.launch {
-            val permission =
-                showSnackbar("Clear queue?", "Clear", icon = Icons.Outlined.ClearAll, accent = Color.OrientRed)
+            val permission = showSnackbar(
+                R.string.msg_clear_queue_confirmation,
+                R.string.clear,
+                icon = Icons.Outlined.ClearAll,
+                accent = Color.OrientRed
+            )
             if (permission == SnackbarResult.ActionPerformed)
                 remote.clear()
         }
@@ -149,7 +155,15 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
         set(value) {
             viewModelScope.launch {
                 val updated = remote.setPlaybackSpeed(value)
-                showPlatformToast(if (updated) "Speed ${getText(R.string.scale_factor_f, value)}" else "Error: playback speed unchanged")
+                if (updated)
+                    showPlatformToast(
+                        getText(
+                            R.string.msg_playback_speed_updated_f,
+                            value
+                        ).toString()
+                    )
+                else
+                    showPlatformToast(R.string.msg_error_playback_speed)
             }
         }
 }

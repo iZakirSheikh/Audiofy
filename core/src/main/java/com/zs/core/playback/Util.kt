@@ -329,16 +329,3 @@ internal fun MediaBrowser(ctx: Context, listener: MediaBrowser.Listener?= null) 
         .apply { if (listener != null) setListener(listener) }
         .buildAsync()
 
-/**
- * Forces the player to emit a shuffle mode change event to its listeners.
- *
- * Temporarily toggles [shuffleModeEnabled] so that `onShuffleModeChanged`
- * callbacks are invoked, even if the shuffle mode ultimately remains unchanged.
- */
-internal suspend fun Player.poke(){
-    // poke player listeners
-    val shuffle = shuffleModeEnabled
-    shuffleModeEnabled = !shuffle
-    delay(5)
-    shuffleModeEnabled = shuffle
-}

@@ -190,9 +190,8 @@ interface ConsoleViewState: QueueViewState {
     val provider: VideoProvider
 
     @get:FloatRange(from = 0.25, to = 3.0)
-    @set:FloatRange(from = 0.25, 3.0)
+    @set:FloatRange(from = 0.25, to = 3.0)
     var playbackSpeed: Float
-
 
     /**
      * Represents the visibility state of the UI controls on the console screen.

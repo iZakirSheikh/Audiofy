@@ -271,4 +271,18 @@
     </string-array>
     <string name="scr_sleep_timer_minute_d">%d min</string>
     <string name="start">Start</string>
+    <string name="msg_sleep_timer_playback_inactive">Playback must be active to set a sleep timer</string>
+    <string name="msg_sleep_timer_turned_off">Sleep timer turned off</string>
+    <string name="msg_sleep_timer_set_playback_stops_s">Timer set — playback stops %1$s</string>
+    <string name="msg_shuffle_on">Shuffle: On</string>
+    <string name="msg_shuffle_off">Shuffle: Off</string>
+    <string name="msg_repeat_mode_off">Repeat Mode: Off</string>
+    <string name="msg_repeat_mode_one">Repeat Mode: One</string>
+    <string name="msg_repeat_mode_all">Repeat Mode: All</string>
+    <string name="clear">Clear</string>
+    <string name="msg_clear_queue_confirmation"><b>Clear Queue</b>
+        <font color='grey'>\nAre you sure you want to remove all items from the playing queue?</font>
+    </string>
+    <string name="msg_error_playback_speed"><b>Oops, Error!</b>\nFailed to update playback speed. </string>
+    <string name="msg_playback_speed_updated_f">Playback speed: %1$.2fx</string>
 </resources>

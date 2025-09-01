@@ -205,24 +205,21 @@ interface Remote {
     @CheckResult suspend fun getPlaybackSpeed(): Float
 
     /**
-     *  A function that sets the sleep timer for the media player
+     * Sets a sleep timer for playback.
      *
-     *  The sleep timer is a feature that allows the user to set a time in the future when the
-     *  playback should be paused or slept.
-     *  @param mills The time in milliseconds when playback is scheduled to be paused. If the value is
-     *  [Playback.TIME_UNSET], the sleep timer is disabled or removed.
+     * @param millis Duration in **milliseconds** after which playback should pause.
+     *               For example: 10 minutes → `10 * 60 * 1000`.
+     *               Use [Remote.TIME_UNSET] to cancel any active timer.
      */
-    suspend fun setSleepTimeAt(mills: Long)
+    suspend fun setSleepTimer(mills: Long)
 
     /**
-     *   A function that returns the sleep timer value of the media player.
+     * Gets the remaining duration of the active sleep timer.
      *
-     *   The sleep timer is a feature that allows the user to set a time in the future when the
-     *   playback should be paused or slept.
-     *   @return The time in milliseconds when playback is scheduled to be paused or
-     *   [Remote.TIME_UNSET] to cancel the already one.
-     * */
-    suspend fun getSleepTimeAt(): Long
+     * @return Remaining time in **milliseconds**, or [Remote.TIME_UNSET] if no timer is active.
+     *         For example: a return value of `300000` = 5 minutes left.
+     */
+    suspend fun getRemainingSleepTime(): Long
 
     suspend fun isPlaying(): Boolean
 }

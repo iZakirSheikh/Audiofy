@@ -106,9 +106,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     private var playbackMonitorJob: Job? = null
 
     /**
-     * The timestamp, in milliseconds, representing the scheduled time to pause playback.
-     * This variable is used to store the timestamp when playback should be paused in the future.
-     * If no future pause is scheduled, the value is set to [Remote.TIME_UNSET].
+     * The timestamp, in milliseconds, indicating a future point in time when the player is
+     * scheduled to be paused or [Remote.TIME_UNSET].
      */
     private var scheduledPauseTimeMillis = Remote.TIME_UNSET
 
@@ -207,6 +206,22 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             player.addListener(this@Playback)
             // Initialize the audio effects;
             onAudioSessionIdChanged(-1)
+        }
+    }
+
+    /**
+     * Forces the player to emit a shuffle mode change event to its listeners.
+     *
+     * Temporarily toggles [shuffleModeEnabled] so that `onShuffleModeChanged`
+     * callbacks are invoked, even if the shuffle mode ultimately remains unchanged.
+     */
+    fun Player.emit(){
+        scope.launch {
+            // poke player listeners
+            val shuffle = shuffleModeEnabled
+            shuffleModeEnabled = !shuffle
+            delay(5)
+            shuffleModeEnabled = shuffle
         }
     }
 
@@ -393,7 +408,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             playbackMonitorJob?.cancel()
             // change this to uninitialized
             scheduledPauseTimeMillis = Remote.TIME_UNSET
-            scope.launch { player.poke() }
+            player.emit()
         }
         // Launch a new job
         else playbackMonitorJob = scope.launch {
@@ -410,7 +425,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
                     // Once the scheduled pause has been triggered, reset the scheduled time to uninitialized.
                     scheduledPauseTimeMillis = Remote.TIME_UNSET
-                    player.poke()
+                    player.emit()
                 }
                 // Delay for the specified time
                 delay(SAVE_POSITION_DELAY_MILLS)
@@ -516,10 +531,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 val newTimeMills = args.getLong(Remote.EXTRA_SCHEDULED_TIME_MILLS)
                 // If the new time is 0, it means the client wants to retrieve the sleep timer.
                 // If the new time is not zero, set the new sleep timer.
-                // FixMe: Consider setting the timer only when it's not equal to the default value
-                //  and greater than the current time.
                 if (newTimeMills != 0L) {
-                    scope.launch { player.poke() }
+                    player.emit()
                     scheduledPauseTimeMillis = if (newTimeMills == Remote.TIME_UNSET) Remote.TIME_UNSET else newTimeMills + System.currentTimeMillis()
                 }
 
@@ -578,7 +591,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 val isLiked = playlists.toggleLike(item)
                 session.setMediaButtonPreferences(listOf(if (isLiked) LikeButton else UnlikeButton))
                 // poke player listeners
-                player.poke()
+                player.emit()
                 showPlatformToast(if (isLiked) "Liked ❤️✨" else "Unliked 💔")
                 SessionResult(SessionResult.RESULT_SUCCESS)
             }
@@ -593,6 +606,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
      */
     override fun onDestroy() {
         // Release the media player to free up system resources.
+        player.removeListener(this)
         player.release()
         // Release the audio session associated with the media player.
         session.release()
@@ -609,9 +623,8 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
         super.onTaskRemoved(rootIntent)
         player.playWhenReady = false
         if (runBlocking { preferences[PREF_KEY_CLOSE_WHEN_REMOVED, false] }) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) stopForeground(
-                STOP_FOREGROUND_REMOVE
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }

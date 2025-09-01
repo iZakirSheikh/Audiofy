@@ -346,7 +346,7 @@ fun VideoSurface(
  *         This state will be updated every second as the timer counts down.
  */
 @Composable
-inline fun Timer(mills: Long): LongState {
+inline fun timer(mills: Long): LongState {
     // Remember the state of the timer. Initialize with the provided `mills`.
     val state = remember { mutableLongStateOf(mills) }
     // Launch a side-effect that depends on `mills`.
