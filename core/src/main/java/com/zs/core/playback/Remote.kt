@@ -20,6 +20,7 @@ package com.zs.core.playback
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.audiofx.Equalizer
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.CheckResult
@@ -222,4 +223,26 @@ interface Remote {
     suspend fun getRemainingSleepTime(): Long
 
     suspend fun isPlaying(): Boolean
+
+    /**
+     * Sets a new equalizer in the [Playback]. If the [eq] parameter is null, the equalizer settings
+     * will be overridden and turned off. Note that after calling this function, the previous equalizer
+     * will be automatically released.
+     *
+     * @param eq The new Equalizer instance to be set, or null to turn off the equalizer.
+     */
+    suspend fun setEqualizer(eq: Equalizer?)
+
+    /**
+     * Constructs a new equalizer based on the settings received through the playback and returns the
+     * new Equalizer instance.
+     *
+     * The equalizer in the playback has its property set to 0. To activate the equalizer, use a value
+     * higher than 0 for the [priority] parameter. If the equalizer in playback is not set up, an
+     * Equalizer with default configuration will be returned.
+     *
+     * @param priority The priority level for the new equalizer. Use a value higher than 0 to activate it.
+     * @return The newly created Equalizer instance.
+     */
+    suspend fun getEqualizer(priority: Int): Equalizer
 }

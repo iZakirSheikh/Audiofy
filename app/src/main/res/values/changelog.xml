@@ -72,14 +72,27 @@
         <font color='grey'>
            \n- Integrated <b>Sleep Timer</b> functionality with a dedicated user interface and underlying logic.
            \n- Implemented <b>Playback Speed</b> controls, complete with user interface elements and operational logic.
+           \n- Bug fix - Addressed an issue where removing the current track caused the player to play the first item in the queue instead of the next, improving playback continuity.
+        </font>
+    </string>
+
+    <!--v4.0.0-dev19-->
+    <string name="changelog_400_dev19" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev19)</font></b>
+        <font color='grey'>
+           \n- Added <b>Equalizer</b>; you can now adjust audio frequencies for a personalized listening experience.
+           \n- Implemented <b>Presets</b> for the Equalizer, allowing quick selection of optimized audio settings.
+           \n- Fixed an issue where the <b>Equalizer</b> settings were not consistently applied across sessions.
+           \n- Resolved several minor UI bugs related to the <b>Equalizer</b> interface for a smoother user experience.
         </font>
     </string>
 
 
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev18</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev19</string>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev19</item>
         <item>@string/changelog_400_dev18</item>
         <item>@string/changelog_400_dev17</item>
         <item>@string/changelog_400_dev16</item>

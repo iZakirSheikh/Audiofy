@@ -20,6 +20,7 @@ package com.zs.audiofy.console
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -103,18 +105,21 @@ private fun MediaFile(
     playing: Boolean = false,
     actions: @Composable () -> Unit,
 ) {
+    val progress by animateFloatAsState(if (playing) 1f else 0f, AppTheme.motionScheme.slowEffectsSpec())
+    val colors = AppTheme.colors
     ListItem(
         trailing = actions,
         modifier = modifier.thenIf(playing) {
-            NoiseTexture then Modifier.background(AppTheme.colors.accent.copy(ContentAlpha.indication))
+            NoiseTexture then Modifier.background(AppTheme.colors.accent.copy(progress * ContentAlpha.indication))
         },
+        contentColor = lerp(colors.onBackground, colors.accent, progress),
         heading = {
+            val typography = AppTheme.typography
             Label(
                 text = value.title ?: stringResource(R.string.abbr_not_available),
                 maxLines = 2,
-                style = AppTheme.typography.title3,
+                style = androidx.compose.ui.text.lerp(typography.title3, typography.title2, progress),
             )
-
         },
         subheading = {
             Label(
@@ -167,8 +172,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
             .thenIf(insets.getTop(density) == 0) { padding(top = CP.medium) }
             //.clip(shape)
             .shadow(6.dp, shape)
-            .border(AppTheme.colors.shine,shape)
-        ,
+            .border(AppTheme.colors.shine,shape),
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -243,8 +247,8 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                                     modifier = Modifier
                                         .animateItem()
                                         .padding(
-                                            top = CP.normal,
-                                            start = CP.normal,
+                                            top = CP.small,
+                                            start = CP.large,
                                             bottom = CP.small
                                         ),
                                     style = AppTheme.typography.label2,

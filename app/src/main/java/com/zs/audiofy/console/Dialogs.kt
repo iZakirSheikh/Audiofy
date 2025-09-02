@@ -175,7 +175,7 @@ fun PlaybackSpeed(
                 val isLight = colors.isLight
                 // Controls
                 val chipColors = ChipDefaults.chipColors(
-                    backgroundColor = if (isLight) colors.background(6.dp) else colors.onBackground.copy(
+                    backgroundColor = if (isLight) colors.background(4.dp) else colors.onBackground.copy(
                         ContentAlpha.indication
                     ),
                     contentColor = AppTheme.colors.onBackground

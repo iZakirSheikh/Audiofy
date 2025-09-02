@@ -19,6 +19,7 @@
 package com.zs.core.playback
 
 import android.content.Context
+import android.media.audiofx.Equalizer
 import android.net.Uri
 import android.util.Log
 import androidx.core.os.bundleOf
@@ -379,6 +380,37 @@ internal class RemoteImpl(private val context: Context) : Remote {
     override suspend fun isPlaying(): Boolean {
         val browser = fBrowser.await()
         return browser.playWhenReady
+    }
+
+    override suspend fun setEqualizer(eq: Equalizer?) {
+        // Extract the enabled state and properties from the provided Equalizer instance.
+        val enabled = eq?.enabled ?: false
+        val properties = eq?.properties?.toString()
+
+        // Release the provided Equalizer instance.
+        eq?.release()
+
+        // Get the media browser object from a deferred value
+        val browser = fBrowser.await()
+
+        // Send a custom command to the Playback with required equalizer args.
+        browser[Remote.EQUALIZER_CONFIG] = bundleOf(
+            Remote.EXTRA_EQUALIZER_ENABLED to enabled,
+            Remote.EXTRA_EQUALIZER_PROPERTIES to properties
+        )
+    }
+
+    override suspend fun getEqualizer(priority: Int): Equalizer {
+        // construct an equalizer from the settings received from the service
+        val browser = fBrowser.await()
+
+        val id = browser[Remote.AUDIO_SESSION_ID].extras.getInt(Remote.EXTRA_AUDIO_SESSION_ID)
+        return Equalizer(priority, id).apply {
+            val properties = browser[Remote.EQUALIZER_CONFIG].extras.getString(Remote.EXTRA_EQUALIZER_PROPERTIES)
+            if (!properties.isNullOrBlank())
+                setProperties(Equalizer.Settings(properties))
+            enabled = browser[Remote.EQUALIZER_CONFIG].extras.getBoolean(Remote.EXTRA_EQUALIZER_ENABLED)
+        }
     }
 }
 

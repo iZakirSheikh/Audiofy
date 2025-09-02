@@ -95,6 +95,7 @@ import com.zs.audiofy.common.compose.source
 import com.zs.audiofy.common.domain
 import com.zs.audiofy.common.impl.AlbumsViewModel
 import com.zs.audiofy.common.impl.ArtistsViewModel
+import com.zs.audiofy.common.impl.AudioFxViewModel
 import com.zs.audiofy.common.impl.AudiosViewModel
 import com.zs.audiofy.common.impl.ConsoleViewModel
 import com.zs.audiofy.common.impl.FoldersViewModel
@@ -109,6 +110,8 @@ import com.zs.audiofy.common.shapes.EndConcaveShape
 import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.console.widget.Widget
+import com.zs.audiofy.effects.AudioFx
+import com.zs.audiofy.effects.RouteAudioFx
 import com.zs.audiofy.folders.Folders
 import com.zs.audiofy.folders.RouteFolders
 import com.zs.audiofy.library.Library
@@ -172,15 +175,24 @@ private val NavController.primary: State<String?>
         val entry by currentBackStackEntryAsState()
         return remember {
             derivedStateOf {
-                val dest = entry?.destination ?: return@derivedStateOf null
+                // Determine if the current destination is a primary route without arguments.
+                // If the current destination is a DialogNavigator, the primary route check
+                // needs to be performed on the previous destination. This is because dialogs
+                // are typically floating overlays and shouldn't affect the visibility of the
+                // navigation bar, even though the underlying destination changes.
+                val curr = entry?.destination
+                val dest =
+                    if (curr is DialogNavigator.Destination) previousBackStackEntry?.destination else curr
+                // if primary is null- there is none.
+                if (dest == null) {
+                    Log.d(TAG, "entry: ${curr?.domain}")
+                    return@derivedStateOf null
+                }
 
                 // Check if the destination is one of the known top-level domains
                 val isPrimary = when (dest.domain) {
-                    RouteLibrary.domain -> true
-                    RouteAudios.domain -> true
-                    RouteVideos.domain -> true
-                    RoutePlaylists.domain -> true
-                    else -> dest is DialogNavigator.Destination
+                    RouteLibrary.domain, RouteAudios.domain, RouteVideos.domain, RoutePlaylists.domain -> true
+                    else -> false
                 }
 
                 // Determines if the current route is a primary, top-level screen without arguments.
@@ -405,6 +417,14 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RouteConsole) {
         val viewState = koinViewModel<ConsoleViewModel>()
         Console(viewState)
+    }
+    // AudioFx
+    dialog(
+        RouteAudioFx.route,
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+    ){
+        val viewState = koinViewModel<AudioFxViewModel>()
+        AudioFx(viewState)
     }
 }
 

@@ -285,4 +285,9 @@
     </string>
     <string name="msg_error_playback_speed"><b>Oops, Error!</b>\nFailed to update playback speed. </string>
     <string name="msg_playback_speed_updated_f">Playback speed: %1$.2fx</string>
+    <string name="scr_effects_title">Effects <b>Studio</b>\n<font size="10"><sup><sup>Experiment. Adjust. Enjoy.</sup></sup></font>\n</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="scr_effects_db_suffix_d">%1$s dB</string>
+    <string name="scr_effects_hz_suffix_d">%1$s Hz</string>
+
 </resources>

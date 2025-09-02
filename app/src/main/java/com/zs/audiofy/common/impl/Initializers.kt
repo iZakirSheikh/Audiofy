@@ -143,4 +143,5 @@ private val KoinAppModules = module {
     viewModelOf(::MembersViewModel)
     viewModelOf(::PropertiesViewModel)
     viewModelOf(::ConsoleViewModel)
+    viewModelOf(::AudioFxViewModel)
 }
