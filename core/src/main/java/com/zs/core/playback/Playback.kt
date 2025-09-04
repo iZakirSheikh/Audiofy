@@ -561,8 +561,9 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                     scope.launch() {
                         preferences[PREF_KEY_EQUALIZER_PROPERTIES] = properties
                         preferences[PREF_KEY_EQUALIZER_ENABLED] = isEqualizerEnabled
+                        delay(100) // delay to detach old equalizer.
+                        onAudioSessionIdChanged(-1)
                     }
-                    onAudioSessionIdChanged(-1)
                 }
 
                 // in both cases weather retrieve or set; return the extras

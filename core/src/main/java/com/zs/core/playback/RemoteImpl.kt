@@ -392,8 +392,6 @@ internal class RemoteImpl(private val context: Context) : Remote {
 
         // Get the media browser object from a deferred value
         val browser = fBrowser.await()
-        delay(1000)
-
         // Send a custom command to the Playback with required equalizer args.
         browser[Remote.EQUALIZER_CONFIG] = bundleOf(
             Remote.EXTRA_EQUALIZER_ENABLED to enabled,
