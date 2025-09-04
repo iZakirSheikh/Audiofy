@@ -269,7 +269,7 @@ private inline fun LazyListScope.Appearence(
     item(contentType = CONTENT_TYPE_PREF) {
         val colorizationStrategy by preference(Settings.COLORIZATION_STRATEGY)
         SwitchPreference(
-            checked = colorizationStrategy == ColorizationStrategy.Artwork,
+            checked = colorizationStrategy == ColorizationStrategy.Wallpaper,
             text = textResource(R.string.pref_colorization_strategy),
             onCheckedChange = { should: Boolean ->
                 val strategy =

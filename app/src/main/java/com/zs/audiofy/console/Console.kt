@@ -28,7 +28,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -40,21 +39,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.outlined.ArrowBackIos
-import androidx.compose.material.icons.outlined.ArrowBackIosNew
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
-import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Queue
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.ScreenLockRotation
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
@@ -103,12 +100,15 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
+import com.zs.compose.theme.TonalIconButton
 import com.zs.compose.theme.WindowSize
 import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.adaptive.HorizontalTwoPaneStrategy
 import com.zs.compose.theme.adaptive.SinglePaneStrategy
 import com.zs.compose.theme.adaptive.TwoPane
 import com.zs.compose.theme.adaptive.VerticalTwoPaneStrategy
+import com.zs.compose.theme.menu.DropDownMenu
+import com.zs.compose.theme.menu.DropDownMenuItem
 import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
@@ -137,6 +137,7 @@ private const val SHOW_TIMER = 2
 private const val SHOW_SPEED = 3
 private const val SHOW_EQUALIZER = 4
 private const val SHOW_MEDIA_INFO = 5
+private const val SHOW_MORE = 6
 
 // background styles
 private const val BG_STYLE_ADAPTIVE = 0
@@ -268,16 +269,13 @@ fun Console(viewState: ConsoleViewState) {
         // Collapse
         val onColor = LocalContentColor.current
         val accent = if (isVideo) onColor else AppTheme.colors.accent
-        IconButton(
+        TonalIconButton(
             icon = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
             onClick = onNavigateBack,
-            tint = accent,
             enabled = enabled,
+            border = AppTheme.colors.shine,
             contentDescription = null,
-            modifier = Modifier
-                .key(C.ID_BTN_COLLAPSE)
-                .border(AppTheme.colors.shine, CircleShape)
-                .background(accent.copy(ContentAlpha.indication), shape = CircleShape),
+            modifier = Modifier.key(C.ID_BTN_COLLAPSE)
         )
 
         // Playing bars.
@@ -503,11 +501,43 @@ fun Console(viewState: ConsoleViewState) {
 
         // More
         IconButton(
-            icon = Icons.Outlined.MoreHoriz,
-            contentDescription = null,
-            onClick = {},
-            enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_MORE)
+            onClick = { showViewOf = SHOW_MORE },
+            modifier = Modifier.layoutId(C.ID_BTN_MORE),
+            content = {
+                //
+                Icon(imageVector = Icons.Outlined.MoreHoriz, contentDescription = null)
+
+                // Menu
+                DropDownMenu(
+                    expanded = showViewOf == SHOW_MORE,
+                    onDismissRequest = { showViewOf = SHOW_NONE },
+                    content = {
+                        // Remove
+                        DropDownMenuItem(
+                            stringResource(id = R.string.remove),
+                            icon = Icons.Outlined.Remove,
+                            onClick = {
+                                val key = state.data
+                                if (key != null)
+                                    viewState.remove(key)
+                                showViewOf = SHOW_NONE
+                            }
+                        )
+
+                        // Delete
+                        DropDownMenuItem(
+                            stringResource(id = R.string.delete),
+                            icon = Icons.Outlined.Delete,
+                            onClick = {
+                                val key = state.data
+                                if (key != null)
+                                    viewState.delete(key, facade as Activity)
+                                showViewOf = SHOW_NONE
+                            }
+                        )
+                    }
+                )
+            }
         )
 
         if (!state.isVideo)

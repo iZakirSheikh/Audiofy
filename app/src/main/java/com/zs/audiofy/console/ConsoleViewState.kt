@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.console
 
+import android.app.Activity
 import android.net.Uri
 import androidx.annotation.FloatRange
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
@@ -169,6 +170,11 @@ interface QueueViewState {
      * Remove the track from the queue identified by [key].
      */
     fun remove(key: Uri)
+
+    /**
+     * Delete the track device and then removes from the queue
+     */
+    fun delete(key: Uri, resolver: Activity)
 
     /**
      * Toggle the like state of the track identified by [uri]. if null toggles like of current.

@@ -1,9 +1,12 @@
 package com.zs.audiofy.common.impl
 
+import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ClearAll
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,12 +16,14 @@ import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.R
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.settings.Settings
 import com.zs.compose.foundation.OrientRed
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import com.zs.core.playback.VideoProvider
+import com.zs.core.store.MediaProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +31,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
+class ConsoleViewModel(
+    val remote: Remote,
+    val dataProvider: MediaProvider
+) : KoinViewModel(), ConsoleViewState {
 
     override val state: StateFlow<NowPlaying?> = remote.state
     override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
@@ -141,6 +149,39 @@ class ConsoleViewModel(val remote: Remote) : KoinViewModel(), ConsoleViewState {
     override fun remove(key: Uri) {
         viewModelScope.launch {
             remote.remove(key)
+        }
+    }
+
+    override fun delete(key: Uri, resolver: Activity) {
+        // Execute the deletion logic within a try-catch block to handle potential errors.
+        runCatching {
+            // Determine the deletion action based on Android version and trash can settings.
+            val code = when {
+                // If running on Android R or newer and trash can is enabled, move to trash.
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && preferences[Settings.TRASH_CAN_ENABLED] ->
+                    dataProvider.trash(resolver, key)
+                // If running on Android R or newer and trash can is disabled, delete permanently.
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> dataProvider.delete(resolver, key)
+                // For older Android versions, show a confirmation dialog before deleting.
+                else -> {
+                    val concent = showSnackbar(
+                        R.string.msg_deletion_confirm,
+                        R.string.delete,
+                        icon = Icons.Outlined.Delete,
+                        accent = Color.OrientRed
+                    )
+                    if (concent == SnackbarResult.ActionPerformed)
+                        dataProvider.delete(key)
+                    else
+                        -3 // If user cancels
+                }
+            }
+            // Check the result code from the dataProvider operation. A negative code (except -3) indicates an error.
+            if (code < 0 && code != -3)
+                throw Exception(context.getString(R.string.msg_files_delete_unknown_error))
+            // If deletion was successful (or file was moved to trash), remove the item from the remote queue.
+            if (code != -3)
+                remote.remove(key)
         }
     }
 

@@ -40,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -61,6 +62,7 @@ import com.zs.compose.theme.SelectableChip
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.Surface
 import com.zs.compose.theme.Switch
+import com.zs.compose.theme.TonalIconButton
 import com.zs.compose.theme.appbar.TopAppBar
 import com.zs.compose.theme.text.Label
 import com.zs.audiofy.common.compose.ContentPadding as CP
@@ -219,9 +221,10 @@ fun AudioFx(viewState: AudioFxViewState) {
                     contentColor = LocalContentColor.current,
                     modifier = TitleBarHeight,
                     actions = {
-                        IconButton(
+                        TonalIconButton(
                             icon = Icons.Outlined.Save,
                             contentDescription = null,
+                            modifier = Modifier.scale(0.80f).padding(end = CP.small),
                             onClick = {
                                 viewState.apply()
                                 navController.navigateUp()

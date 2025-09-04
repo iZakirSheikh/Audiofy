@@ -87,11 +87,26 @@
         </font>
     </string>
 
+    <!--v4.0.0-dev20-->
+    <string name="changelog_400_dev20" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev20)</font></b>
+        <font color='grey'>
+           \n- Enhanced <b>Media Management</b>: Added "Remove" and "Delete" options to the Media player screen. "Remove" takes a track out of the current playlist, while "Delete" removes it from the phone and playlist, potentially moving it to a trash folder if supported. Buttons have been updated for a better look and feel.
+           \n- Smoother <b>Playback Queue</b>: Improved animation for currently playing songs in the queue.
+           \n- Improved <b>New Playlist Creation</b>: The screen for creating new playlists has a refreshed look, adapts to phone orientation, features updated "Update" and "Save" buttons, and has an enhanced playlist description area.
+           \n- <b>Audio Effects Screen Update</b>: The "Save" button on the audio effects screen now has a new design.
+           \n- Clearer <b>Titles</b>: Updated titles on the "New Playlist" and "Audio Effects" screens for better descriptiveness.
+           \n- <b>Settings Fix</b>: Resolved a minor issue with color theme settings to ensure proper functionality.
+           \n- <b>Behind-the-Scenes Improvements</b>: Enhanced the functionality of the equalizer (sound settings).
+        </font>
+    </string>
+
 
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev19</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev20</string>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev20</item>
         <item>@string/changelog_400_dev19</item>
         <item>@string/changelog_400_dev18</item>
         <item>@string/changelog_400_dev17</item>
