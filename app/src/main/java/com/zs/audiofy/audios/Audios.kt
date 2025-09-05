@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.zs.audiofy.R
 import com.zs.audiofy.common.Action
+import com.zs.audiofy.common.EDIT
 import com.zs.audiofy.common.GO_TO_ALBUM
 import com.zs.audiofy.common.INFO
 import com.zs.audiofy.common.compose.ContentPadding
@@ -50,6 +51,7 @@ import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.LottieAnimatedIcon
 import com.zs.audiofy.common.compose.OverflowMenu
 import com.zs.audiofy.common.compose.directory.Files
+import com.zs.audiofy.editor.RouteEditor
 import com.zs.audiofy.properties.RouteProperties
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
@@ -173,6 +175,7 @@ fun Audios(viewState: AudiosViewState) {
                                     navController.navigate(route)
                                 }
                                 Action.INFO -> navController.navigate(RouteProperties(audio.path))
+                                Action.EDIT -> navController.navigate(RouteEditor(audio.path))
                                 else -> viewState.onPerformAction(action, facade as Activity, audio)
                             }
                         }

@@ -35,7 +35,7 @@ import com.zs.compose.foundation.fullLineSpan
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.text.Label
 
-fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
+inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
     when {
         // null means loading
         data == null -> item(contentType = "loading", key = "placeholder_loading_list") {

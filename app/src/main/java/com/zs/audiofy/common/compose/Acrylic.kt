@@ -240,7 +240,7 @@ fun Acrylic(
 
                         // Finally, apply the luminosity effect.
                         drawRect(
-                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.97f),
+                            color = Color.White.copy(alpha = if (isLight) 0.87f else 0.96f),
                             // DstOut blend mode creates a cutout effect, enhancing luminosity.
                             blendMode = BlendMode.DstOut
                         ) // Alpha is adjusted based on light/dark theme.

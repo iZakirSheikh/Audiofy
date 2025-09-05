@@ -71,6 +71,7 @@ import com.zs.compose.foundation.textResource
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
@@ -110,8 +111,9 @@ private fun MediaFile(
         tween(500, 200)
     )
     val colors = AppTheme.colors
-    ListItem(
+    BaseListItem(
         trailing = actions,
+        centerAlign = false,
         modifier = modifier.thenIf(playing) {
             NoiseTexture then Modifier.background(AppTheme.colors.accent.copy(progress * ContentAlpha.indication))
         },
@@ -121,7 +123,8 @@ private fun MediaFile(
             Label(
                 text = value.title ?: stringResource(R.string.abbr_not_available),
                 maxLines = 2,
-                style = androidx.compose.ui.text.lerp(typography.title3, typography.title2, progress),
+                fontWeight = androidx.compose.ui.text.font.lerp(FontWeight.Normal, FontWeight.Bold, progress),
+                style = typography.title3,
             )
         },
         subheading = {
@@ -181,8 +184,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                 navigationIcon = {
                     Icon(
                         Icons.Default.QueueMusic,
-                        contentDescription = null,
-                        modifier = Modifier.minimumInteractiveComponentSize()
+                        contentDescription = null
                     )
                 },
                 windowInsets = insets.only(WIS.Top + WIS.End),

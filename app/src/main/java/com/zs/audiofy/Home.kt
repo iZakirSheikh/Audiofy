@@ -98,6 +98,7 @@ import com.zs.audiofy.common.impl.ArtistsViewModel
 import com.zs.audiofy.common.impl.AudioFxViewModel
 import com.zs.audiofy.common.impl.AudiosViewModel
 import com.zs.audiofy.common.impl.ConsoleViewModel
+import com.zs.audiofy.common.impl.EditorViewModel
 import com.zs.audiofy.common.impl.FoldersViewModel
 import com.zs.audiofy.common.impl.GenresViewModel
 import com.zs.audiofy.common.impl.LibraryViewModel
@@ -110,6 +111,8 @@ import com.zs.audiofy.common.shapes.EndConcaveShape
 import com.zs.audiofy.console.Console
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.console.widget.Widget
+import com.zs.audiofy.editor.Editor
+import com.zs.audiofy.editor.RouteEditor
 import com.zs.audiofy.effects.AudioFx
 import com.zs.audiofy.effects.RouteAudioFx
 import com.zs.audiofy.folders.Folders
@@ -425,6 +428,12 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     ){
         val viewState = koinViewModel<AudioFxViewModel>()
         AudioFx(viewState)
+    }
+
+    // TagEditor
+    composable(RouteEditor){
+        val viewState = koinViewModel<EditorViewModel>()
+        Editor(viewState)
     }
 }
 

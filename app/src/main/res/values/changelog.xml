@@ -101,11 +101,21 @@
         </font>
     </string>
 
+    <!--v4.0.0-dev21-->
+    <string name="changelog_400_dev21" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev21)</font></b>
+        <font color='grey'>
+           \n-
+        </font>
+    </string>
+
 
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev20</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev21</string>
+
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/release_notes</item>
         <item>@string/changelog_400_dev20</item>
         <item>@string/changelog_400_dev19</item>
         <item>@string/changelog_400_dev18</item>

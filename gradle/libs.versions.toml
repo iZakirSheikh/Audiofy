@@ -30,7 +30,7 @@ androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.17.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
-androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.0" }
+androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.1" }
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.10" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
