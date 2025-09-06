@@ -3,7 +3,9 @@
 package com.zs.core.coil
 
 import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
 import android.graphics.HardwareRenderer
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
@@ -12,6 +14,7 @@ import android.hardware.HardwareBuffer
 import android.media.ImageReader
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.applyCanvas
 import coil3.size.Size
 import coil3.transform.Transformation
 
@@ -46,6 +49,20 @@ class ReBlurTransformation @JvmOverloads constructor(
 
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
+
+        val input = if (sampling == 1f) input else {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+
+            val scaledWidth = (input.width / sampling).toInt()
+            val scaledHeight = (input.height / sampling).toInt()
+            val result = createBitmap(scaledWidth, scaledHeight, input.safeConfig)
+            result.applyCanvas {
+                scale(1 / sampling, 1 / sampling)
+                drawBitmap(input, 0f, 0f, paint)
+            }
+            result
+        }
+
         val imageReader = ImageReader.newInstance(
             input.width, input.height,
             PixelFormat.RGBA_8888, 1,

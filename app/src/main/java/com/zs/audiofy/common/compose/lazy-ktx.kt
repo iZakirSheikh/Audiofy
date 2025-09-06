@@ -33,11 +33,19 @@ import com.zs.audiofy.R
 import com.zs.audiofy.common.Mapped
 import com.zs.compose.foundation.fullLineSpan
 import com.zs.compose.theme.Icon
+import com.zs.compose.theme.Placeholder
 import com.zs.compose.theme.text.Label
 
 inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
     when {
         // null means loading
+        data == null && vertical -> item(contentType = "loading_vertical", key = "placeholder_loading_list") {
+            Placeholder(
+                title = stringResource(R.string.loading),
+                iconResId = R.raw.lt_loading_bubbles,
+                modifier = Modifier.fillMaxSize().animateItem()
+            )
+        }
         data == null -> item(contentType = "loading", key = "placeholder_loading_list") {
             Row(
                 modifier = Modifier.sizeIn(minWidth = 320.dp, maxWidth = 360.dp, maxHeight = 56.dp).animateItem(),
@@ -53,6 +61,13 @@ inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
 
                     Label(stringResource(R.string.loading))
                 }
+            )
+        }
+        data.isEmpty() && vertical -> item(contentType = "empty_vertical", key = "placeholder_empty_list"){
+            Placeholder(
+                title = stringResource(R.string.empty),
+                iconResId = R.raw.lt_empty_box,
+                modifier = Modifier.fillMaxSize().animateItem()
             )
         }
         data.isEmpty() -> item(contentType = "empty", key = "placeholder_empty_list") {

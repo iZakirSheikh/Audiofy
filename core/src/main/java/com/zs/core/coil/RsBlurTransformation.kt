@@ -60,14 +60,17 @@ class RsBlurTransformation @JvmOverloads constructor(
 
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        val output = if (sampling == 1f) input else {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
-        val scaledWidth = (input.width / sampling).toInt()
-        val scaledHeight = (input.height / sampling).toInt()
-        val output = createBitmap(scaledWidth, scaledHeight, input.safeConfig)
-        output.applyCanvas {
-            scale(1 / sampling, 1 / sampling)
-            drawBitmap(input, 0f, 0f, paint)
+            val scaledWidth = (input.width / sampling).toInt()
+            val scaledHeight = (input.height / sampling).toInt()
+            val result = createBitmap(scaledWidth, scaledHeight, input.safeConfig)
+            result.applyCanvas {
+                scale(1 / sampling, 1 / sampling)
+                drawBitmap(input, 0f, 0f, paint)
+            }
+            result
         }
 
         var script: RenderScript? = null
