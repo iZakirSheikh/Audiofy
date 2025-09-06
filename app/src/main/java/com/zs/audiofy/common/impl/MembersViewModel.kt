@@ -169,9 +169,9 @@ class MembersViewModel(
 
     fun remove(vararg item: Track) {
         runCatching {
-            val id = playlists[playlistName]?.id ?: return@runCatching
+            val id = playlistz[playlistName]?.id ?: return@runCatching
             val uris = item.map(Track::uri).toTypedArray()
-            val count = playlists.remove(id, *uris)
+            val count = playlistz.remove(id, *uris)
 
             val message = when {
                 count == 0 -> "No tracks were removed — they may not be in the playlist."
@@ -199,13 +199,13 @@ class MembersViewModel(
 
     override fun toggleLiked(value: Track) {
         this@MembersViewModel.runCatching {
-            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
-                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
-            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.uri))
-                playlists.remove(playlistId, value.uri)
+            val playlistId = playlistz[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlistz.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlistz.contains(Remote.PLAYLIST_FAVOURITE, value.uri))
+                playlistz.remove(playlistId, value.uri)
             else {
-                val newTrack =  value.copy(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
-                playlists.insert(listOf(newTrack))
+                val newTrack =  value.copy(playlistId, playlistz.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlistz.insert(listOf(newTrack))
             }
             showPlatformToast("Favourite list updated.")
         }

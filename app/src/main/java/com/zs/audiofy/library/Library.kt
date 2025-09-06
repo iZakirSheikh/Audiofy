@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -63,6 +64,7 @@ import coil3.compose.AsyncImage
 import com.zs.audiofy.R
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
+import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.fadingEdge2
 import com.zs.audiofy.common.compose.rememberAcrylicSurface
@@ -90,6 +92,7 @@ import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.AdaptiveLargeTopAppBar
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.appbar.TopAppBarScrollBehavior
+import com.zs.compose.theme.snackbar.SnackbarDuration
 import com.zs.compose.theme.text.Text
 import com.zs.core.store.MediaProvider
 import com.zs.audiofy.common.compose.ContentPadding as CP
@@ -127,9 +130,16 @@ private fun LibraryTopAppBar(
             )
         },
         navigationIcon = {
+            val facade = LocalSystemFacade.current
             IconButton(
                 Icons.Default.Info,
-                onClick = {},
+                onClick = {
+                    facade.showSnackbar(
+                        R.string.release_notes,
+                        icon = Icons.Outlined.NewReleases,
+                        duration = SnackbarDuration.Indefinite
+                    )
+                },
                 contentDescription = null
             )
         },

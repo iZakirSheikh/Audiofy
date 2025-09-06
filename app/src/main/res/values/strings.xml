@@ -312,4 +312,5 @@
     <string name="url">Url</string>
     <string name="total_disks">Total disks</string>
     <string name="msg_upgrade_to_pro">Upgrade to the Pro version to unlock this feature.</string>
+    <string name="scr_playlists_dialog_empty_placeholder">Pick <b>Playlist</b>\n<font color="grey" size="11"><sup>Tap to add tracks to playlist.</sup></font></string>
 </resources>

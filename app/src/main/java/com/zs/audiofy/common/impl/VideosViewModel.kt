@@ -181,13 +181,13 @@ class VideosViewModel(
 
     override fun toggleLiked(value: Video) {
         runCatching {
-            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
-                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
-            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.contentUri.toString()))
-                playlists.remove(playlistId, value.contentUri.toString())
+            val playlistId = playlistz[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlistz.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlistz.contains(Remote.PLAYLIST_FAVOURITE, value.contentUri.toString()))
+                playlistz.remove(playlistId, value.contentUri.toString())
             else {
-                val newTrack = value.toTrack(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
-                playlists.insert(listOf(newTrack))
+                val newTrack = value.toTrack(playlistId, playlistz.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlistz.insert(listOf(newTrack))
             }
             showPlatformToast("Favourite list updated.")
         }

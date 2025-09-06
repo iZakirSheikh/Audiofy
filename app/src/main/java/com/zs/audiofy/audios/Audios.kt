@@ -33,6 +33,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -44,6 +47,7 @@ import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.EDIT
 import com.zs.audiofy.common.GO_TO_ALBUM
 import com.zs.audiofy.common.INFO
+import com.zs.audiofy.common.PLAYLIST_ADD
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
@@ -52,6 +56,7 @@ import com.zs.audiofy.common.compose.LottieAnimatedIcon
 import com.zs.audiofy.common.compose.OverflowMenu
 import com.zs.audiofy.common.compose.directory.Files
 import com.zs.audiofy.editor.RouteEditor
+import com.zs.audiofy.playlists.Playlists
 import com.zs.audiofy.properties.RouteProperties
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
@@ -118,11 +123,30 @@ fun Audios(viewState: AudiosViewState) {
     val navController = LocalNavController.current
     val surface = rememberHazeState()
 
+    var showPlaylists by remember { mutableStateOf(false) }
+
+    var focused: Audio? by remember { mutableStateOf(null) }
+    Playlists (
+        showPlaylists,
+        viewState.playlists,
+        onSelect = { playlist ->
+            if (playlist != null) {
+                viewState.addToPlaylist(playlist.id, focused)
+                focused = null
+            }
+            showPlaylists = false
+        }
+    )
 
     Files(
         viewState,
         surface = surface,
-        onTapAction = { viewState.onPerformAction(it, facade as Activity) },
+        onTapAction = {
+            when(it){
+                Action.PLAYLIST_ADD -> showPlaylists = true
+                else -> viewState.onPerformAction(it, facade as Activity)
+            }
+        },
         key = Audio::id,
         itemContent = { audio ->
             Audio(
@@ -168,14 +192,20 @@ fun Audios(viewState: AudiosViewState) {
                             tint = AppTheme.colors.accent,
                         )
                         // More
-                        val onPerformAction = {action: Action ->
+                        val onPerformAction = { action: Action ->
                             when (action) {
                                 Action.GO_TO_ALBUM -> {
-                                    val route =  RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}")
+                                    val route =
+                                        RouteAudios(RouteAudios.SOURCE_ALBUM, "${audio.albumId}")
                                     navController.navigate(route)
                                 }
+
                                 Action.INFO -> navController.navigate(RouteProperties(audio.path))
                                 Action.EDIT -> navController.navigate(RouteEditor(audio.path))
+                                Action.PLAYLIST_ADD -> {
+                                    showPlaylists = true; focused = audio
+                                }
+
                                 else -> viewState.onPerformAction(action, facade as Activity, audio)
                             }
                         }

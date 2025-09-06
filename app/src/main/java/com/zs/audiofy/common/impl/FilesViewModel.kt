@@ -32,9 +32,12 @@ import com.zs.audiofy.R
 import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.Mapped
+import com.zs.audiofy.common.PLAYLIST_ADD
 import com.zs.audiofy.common.PLAY_NEXT
 import com.zs.audiofy.common.SelectionTracker.Level
 import com.zs.audiofy.common.compose.directory.FilesViewState
+import com.zs.core.db.playlists.Playlist
+import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.Remote
@@ -43,16 +46,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 
-abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): KoinViewModel(), FilesViewState<T> {
+abstract class FilesViewModel<T>(val remote: Remote, val playlistz: Playlists): KoinViewModel(), FilesViewState<T> {
 
     //common actions
-    val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
+    val ACTION_ADD_TO_PLAYLIST = Action.PLAYLIST_ADD
     val ACTION_PLAY_NEXT = Action.PLAY_NEXT
     val ACTION_ADD_TO_QUEUE = Action(R.string.add_to_queue, Icons.AutoMirrored.Outlined.QueueMusic)
     val ACTION_SELECT_ALL = Action(R.string.select_all, Icons.Outlined.SelectAll)
 
     // Represents the
     override fun clear() = selected.clear()
+    override val playlists: Flow<List<Playlist>> = playlistz.observe()
     override val selected = mutableStateListOf<Long>()
     override val isInSelectionMode: Boolean by derivedStateOf(selected::isNotEmpty)
     override val allSelected: Boolean by derivedStateOf {
@@ -62,7 +66,7 @@ abstract class FilesViewModel<T>(val remote: Remote, val playlists: Playlists): 
     }
 
     override val favourites: Flow<Set<String>> =
-        playlists.observeKeysOf(Remote.PLAYLIST_FAVOURITE).map(List<String>::toHashSet)
+        playlistz.observeKeysOf(Remote.PLAYLIST_FAVOURITE).map(List<String>::toHashSet)
 
     /**
      * Consumes the selected items and returns a list of focused items.

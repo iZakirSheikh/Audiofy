@@ -83,8 +83,6 @@ class AudiosViewModel(
     playlists: Playlists,
     private val provider: MediaProvider
 ) : StoreViewModel<Audio>(provider, remote, playlists), AudiosViewState {
-
-
     override val Audio.key: Long get() = this.id
 
     val _args = handle[RouteAudios]
@@ -271,15 +269,38 @@ class AudiosViewModel(
 
     override fun toggleLiked(value: Audio) {
         runCatching {
-            val playlistId = playlists[Remote.PLAYLIST_FAVOURITE]?.id
-                ?: playlists.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
-            if (playlists.contains(Remote.PLAYLIST_FAVOURITE, value.uri.toString()))
-                playlists.remove(playlistId, value.uri.toString())
+            val playlistId = playlistz[Remote.PLAYLIST_FAVOURITE]?.id
+                ?: playlistz.insert(Playlist(Remote.PLAYLIST_FAVOURITE, ""))
+            if (playlistz.contains(Remote.PLAYLIST_FAVOURITE, value.uri.toString()))
+                playlistz.remove(playlistId, value.uri.toString())
             else {
-                val newTrack = value.toTrack(playlistId, playlists.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
-                playlists.insert(listOf(newTrack))
+                val newTrack = value.toTrack(playlistId, playlistz.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                playlistz.insert(listOf(newTrack))
             }
             showPlatformToast("Favourite list updated.")
+        }
+    }
+
+    override fun addToPlaylist(playlistID: Long, audio: Audio?){
+        runCatching {
+            val items = audio?.let { listOf(it) } ?: consume().also { items ->
+                require(items.isNotEmpty()) { "Error - Playable items must not be empty." }
+            }
+
+            val playlist = playlistz[playlistID]
+                ?: error("Playlist not found for id=$playlistID")
+
+            val filtered = items.filter {
+                !playlistz.contains(playlist.name, it.uri.toString())
+            }
+
+            var lastPlayOrder = playlistz.lastPlayOrder(playlist.name)
+            val tracks = filtered.map {  item ->
+                item.toTrack(playlistID, ++lastPlayOrder)
+            }
+
+            val ids = playlistz.insert(tracks)
+            showPlatformToast("${ids.size}/${items.size} items added to playlist.")
         }
     }
 

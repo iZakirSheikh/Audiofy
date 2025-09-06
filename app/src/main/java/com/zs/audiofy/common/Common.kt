@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -161,5 +162,7 @@ val Action.Companion.GO_TO_ALBUM get() = ACTION_GO_TO_ALBUM
 val Action.Companion.GO_TO_ARTIST get() = ACTION_GO_TO_ARTIST
 val Action.Companion.EDIT get() = ACTION_EDIT
 val Action.Companion.PLAY_NEXT get() = ACTION_PLAY_NEXT
+val ACTION_ADD_TO_PLAYLIST = Action(R.string.add_to_playlist, Icons.Outlined.PlaylistAdd)
+val Action.Companion.PLAYLIST_ADD get() = ACTION_ADD_TO_PLAYLIST
 
 

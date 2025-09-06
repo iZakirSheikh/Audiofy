@@ -24,6 +24,7 @@ import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.Mapped
 import com.zs.audiofy.common.SelectionTracker
+import com.zs.core.db.playlists.Playlist
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -67,6 +68,7 @@ interface DirectoryViewState<T> {
 interface FilesViewState<T>: SelectionTracker {
     var info: MetaData
     val data: Mapped<T>?
+    val playlists: Flow<List<Playlist>>
 
     val filter: Filter
     val orders: List<Action>

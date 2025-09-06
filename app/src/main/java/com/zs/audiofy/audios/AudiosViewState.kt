@@ -61,4 +61,6 @@ interface AudiosViewState: FilesViewState<Audio> {
     fun onPerformAction(value: Action, resolver: Activity, focused: Audio?= null)
 
     fun toggleLiked(value: Audio)
+
+    fun addToPlaylist(playlistID: Long, audio: Audio?)
 }

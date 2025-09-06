@@ -105,13 +105,15 @@
     <string name="changelog_400_dev21" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev21)</font></b>
         <font color='grey'>
-           \n- Introduced <b>Tag Editor</b> for MP3 files, allowing users to view and modify metadata like title, artist, album, genre, year, track number, lyrics, and album artwork.
-           \n- The Tag Editor UI is adaptive, supporting both single-pane and two-pane layouts for optimal viewing on different screen sizes.
-           \n- Added Pro features to the Tag Editor, such as editing lyrics and changing album artwork, available with purchase.
+           \n- Added MP3 <b>Tag Editor</b>: View/edit metadata (title, artist, album, etc.). Adaptive UI; Pro features for lyrics/artwork.
            \n- Refined UI in the <b>Queue</b>: the currently playing item\'s title now animates its font weight.
            \n- Adjusted the <b>Acrylic</b> effect\'s luminosity alpha in both light and dark themes for better visual balance.
-           \n- Optimized <b>Image Blur Transformations</b>: Improved bitmap handling in `ReBlurTransformation` and `RsBlurTransformation` for better performance and reduced memory usage, especially when no downscaling is applied or when downscaling before blurring.
-           \n- Enhanced <b>LazyList Placeholders</b>: Introduced full-screen Lottie animation placeholders for `LazyList` components in vertical orientation when data is loading (`lt_loading_bubbles`) or empty (`lt_empty_box`), providing a more engaging user experience. Row-based placeholders are retained for other scenarios.
+           \n- Optimized <b>Image Blur Transformations</b>: Improved bitmap handling for better performance and reduced memory usage.
+           \n- Enhanced <b>LazyList Placeholders</b>: Full-screen Lottie animations for loading/empty states in vertical `LazyList` components.
+           \n- Streamlined <b>\"Add to Playlist\"</b>:
+           \n    - New playlist selection dialog (name, track count, date, artwork). Adapts position to screen size.
+           \n    - "Close" button, tap to select, placeholder for no playlists.
+           \n    - Consistent dialog in Audio/Video sections. Adds tracks, filters duplicates, confirms with toast.
         </font>
     </string>
 
