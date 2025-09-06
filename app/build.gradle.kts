@@ -107,6 +107,8 @@ dependencies {
     // Play
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review.ktx)
+    // This is here temporarily needs to be moved to other pkg.
+    implementation(libs.mp3agic)
 
     // bundles
     implementation(libs.bundles.icons)

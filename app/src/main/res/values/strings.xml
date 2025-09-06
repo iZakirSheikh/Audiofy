@@ -290,4 +290,26 @@
     <string name="scr_effects_db_suffix_d">%1$s dB</string>
     <string name="scr_effects_hz_suffix_d">%1$s Hz</string>
 
+    <string name="scr_tag_editor_pro_title">Tag <b>Editor</b> <sup><font color="#00a300" size="11">Pro</font></sup>\n<font size="10"><sup><sup>Edit. Enhance. Perfect your tags.</sup></sup></font></string>
+    <string name="scr_tag_editor_title">Tag <b>Editor</b>\n<font size="10"><sup><sup>Edit. Enhance. Perfect your tags.</sup></sup></font></string>
+    <string name="scr_tag_editor_extra_info_ssss"><small>Channel</small> <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
+    <string name="msg_tag_editor_buy_me_banner">Enhance your experience by upgrading to
+        <b>Tag Editor Pro</b>, where you can edit lyrics and album art seamlessly.
+    </string>
+    <string name="scr_tag_editor_screen_buy_now_action">Get Tag Editor Pro</string>
+    <string name="scr_tag_editor_property_placeholder">Tap here to enter text</string>
+    <string name="lyrics">Lyrics</string>
+    <string name="scr_tag_editor_lyrics_placeholder">
+        Please input your lyrics in either:\n
+        1. Synchronized Lyrics (“[MM:SS.XX] line”), or\n
+        2. Un-Synchronized Text.
+    </string>
+    <string name="album_artist">Album artist</string>
+    <string name="comment">Comment</string>
+    <string name="original_artist">Original artist</string>
+    <string name="publisher">Publisher</string>
+    <string name="copywriter">Copywriter</string>
+    <string name="url">Url</string>
+    <string name="total_disks">Total disks</string>
+    <string name="msg_upgrade_to_pro">Upgrade to the Pro version to unlock this feature.</string>
 </resources>
