@@ -33,6 +33,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +53,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.zs.audiofy.R
 import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.INFO
+import com.zs.audiofy.common.PLAYLIST_ADD
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
@@ -57,6 +61,7 @@ import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.LottieAnimatedIcon
 import com.zs.audiofy.common.compose.OverflowMenu
 import com.zs.audiofy.common.compose.directory.Files
+import com.zs.audiofy.playlists.Playlists
 import com.zs.audiofy.properties.RouteProperties
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.theme.AppTheme
@@ -172,10 +177,30 @@ fun Videos(viewState: VideosViewState) {
     val navController = LocalNavController.current
     val surface = rememberHazeState()
 
+    var showPlaylists by remember { mutableStateOf(false) }
+
+    var focused: Video? by remember { mutableStateOf(null) }
+    Playlists(
+        showPlaylists,
+        viewState.playlists,
+        onSelect = { playlist ->
+            if (playlist != null) {
+                viewState.addToPlaylist(playlist.id, focused)
+                focused = null
+            }
+            showPlaylists = false
+        }
+    )
+
     Files(
         viewState,
         surface = surface,
-        onTapAction = { viewState.onPerformAction(it, facade as Activity) },
+        onTapAction = {
+            when(it){
+                Action.PLAYLIST_ADD -> showPlaylists = true
+                else -> viewState.onPerformAction(it, facade as Activity)
+            }
+        },
         key = Video::id,
         itemContent = { video ->
             Video(
@@ -222,6 +247,10 @@ fun Videos(viewState: VideosViewState) {
                         val onPerformAction = {action: Action ->
                             when (action) {
                                 Action.INFO -> navController.navigate(RouteProperties(video.path))
+                                Action.PLAYLIST_ADD -> {
+                                    showPlaylists = true
+                                    focused = video
+                                }
                                 else -> viewState.onPerformAction(action, facade as Activity, video)
                             }
                         }

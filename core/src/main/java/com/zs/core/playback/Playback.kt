@@ -335,7 +335,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             playlists.update(playlist = playlist.copy(desc = ""))
 
             // Check if the media item already exists in the "Recent" playlist.
-            val member = playlists._get(playlistId, mediaItem.requestMetadata.mediaUri.toString())
+            val member = playlists._get(playlistId, mediaItem.mediaUri.toString())
             if (member != null) {
                 // If the item exists, update its order to 0 (move it to the top).
                 playlists.update(member = member.copy(order = 0))

@@ -26,6 +26,7 @@ import com.zs.audiofy.common.Route
 import com.zs.audiofy.common.compose.directory.FilesViewState
 import com.zs.core.db.playlists.Playlist.Track
 import com.zs.core.store.models.Audio
+import com.zs.core.store.models.Video
 
 
 private const val PARAM_PLAYLIST_NAME = "param_name"
@@ -49,4 +50,6 @@ interface MembersViewState: FilesViewState<Track> {
     fun onPerformAction(value: Action, focused: Track?= null)
 
     fun toggleLiked(value: Track)
+
+    fun addToPlaylist(playlistID: Long, track: Track?)
 }

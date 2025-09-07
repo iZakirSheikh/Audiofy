@@ -53,7 +53,6 @@
            \n- Resolved an issue with <b>state updates</b> that occasionally caused them to fail, ensuring more reliable UI responsiveness.
         </font>
     </string>
-
     <!--v4.0.0-dev17-->
     <string name="changelog_400_dev17" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev17)</font></b>
@@ -65,7 +64,6 @@
            \n- Introduced a <b>Queue Management UI</b> that intelligently adapts to screen orientation, positioning itself next to the player, similar to the YouTube application.
         </font>
     </string>
-
     <!--v4.0.0-dev18-->
     <string name="changelog_400_dev18" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev18)</font></b>
@@ -75,7 +73,6 @@
            \n- Bug fix - Addressed an issue where removing the current track caused the player to play the first item in the queue instead of the next, improving playback continuity.
         </font>
     </string>
-
     <!--v4.0.0-dev19-->
     <string name="changelog_400_dev19" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev19)</font></b>
@@ -86,7 +83,6 @@
            \n- Resolved several minor UI bugs related to the <b>Equalizer</b> interface for a smoother user experience.
         </font>
     </string>
-
     <!--v4.0.0-dev20-->
     <string name="changelog_400_dev20" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev20)</font></b>
@@ -100,7 +96,6 @@
            \n- <b>Behind-the-Scenes Improvements</b>: Enhanced the functionality of the equalizer (sound settings).
         </font>
     </string>
-
     <!--v4.0.0-dev21-->
     <string name="changelog_400_dev21" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev21)</font></b>
@@ -116,21 +111,20 @@
            \n    - Consistent dialog in Audio/Video sections. Adds tracks, filters duplicates, confirms with toast.
         </font>
     </string>
-
     <!--v4.0.0-dev22-->
     <string name="changelog_400_dev22" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev22)</font></b>
         <font color='grey'>
            \n- <b>Save MP3 Tag Edits</b>: You can now save changes to MP3 tags with a confirmation before overwriting.
-           \n- <b>MP3 Only Edits</b>: The "Edit" option now checks if a file is an MP3, showing a message if it's not.
+           \n- <b>MP3 Only Edits</b>: The "Edit" option now checks if a file is an MP3, showing a message if it\'s not.
+           \n- <b>Add to Playlist from Videos &amp; Playlists</b>: Easily add individual videos or tracks from one playlist to another.
            \n- <b>Improved Tag Handling</b>: Better reading and writing of common ID3 tags.
+           \n- <b>"Liked" Playlist Title</b>: The title for your "Liked" songs playlist is now clearer.
+           \n- <b>"Recent" Playlist Update</b>: Fixed a small issue to make sure recently played items are correctly added to the "Recent" playlist.
         </font>
     </string>
-
-
     <!--Points to the changelog of current version.-->
     <string name="release_notes" translatable="false">@string/changelog_400_dev22</string>
-
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
         <item>@string/changelog_400_dev22</item>

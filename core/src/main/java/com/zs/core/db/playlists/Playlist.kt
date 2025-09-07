@@ -138,8 +138,9 @@ class Playlist @Deprecated("This is used by Room internally") internal construct
             subtitle: String = this.subtitle,
             uri: String = this.uri,
             artwork: String? = this.artwork,
-            mimeType: String? = this.mimeType
-        ) = Track(id, playlistID, order, uri, title, subtitle, artwork, mimeType)
+            mimeType: String? = this.mimeType,
+            id: Long = this.id,
+        ) = Track(id, playlistId, order, uri, title, subtitle, artwork, mimeType)
 
         /** Returns the unique key for this member. */
         val key inline get() =  uri

@@ -36,7 +36,6 @@ import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.Mapped
 import com.zs.audiofy.common.compose.FilterDefaults
-import com.zs.audiofy.common.compose.FilterDefaults.ORDER_BY_DATE_MODIFIED
 import com.zs.audiofy.common.compose.FilterDefaults.ORDER_BY_TITLE
 import com.zs.audiofy.common.compose.FilterDefaults.ORDER_NONE
 import com.zs.audiofy.common.compose.directory.MetaData
@@ -77,30 +76,26 @@ class MembersViewModel(
 
     override val Track.key: Long get() = this.id
     val playlistName = handle[RouteMembers]!!
-    override val orders: List<Action> = listOf(ORDER_NONE, ORDER_BY_TITLE, ORDER_BY_DATE_MODIFIED)
+    override val orders: List<Action> = listOf(ORDER_NONE, ORDER_BY_TITLE,/* ORDER_BY_DATE_MODIFIED*/)
 
     override val showFavButton: Boolean get() = playlistName != Remote.PLAYLIST_FAVOURITE
 
     override var info: MetaData = let {
         val playlist = runBlocking { playlists[playlistName] }
-        when (playlistName) {
-            Remote.PLAYLIST_FAVOURITE -> MetaData(
-                getText(R.string.scr_members_liked_playlist_title),
-                null,
-                playlist?.artwork?.toUri(),
-                playlist?.count ?: -1,
-                playlist?.dateModified ?: -1L
-            )
-
-            else -> MetaData(playlistName)
-        }
+        MetaData(
+            if (playlistName == Remote.PLAYLIST_FAVOURITE) getText(R.string.scr_members_liked_playlist_title) else playlist?.name ?:"",
+            null,
+            playlist?.artwork?.toUri(),
+            playlist?.count ?: -1,
+            playlist?.dateModified ?: -1L
+        )
     }
 
     override val filterKey: Key.Key2<String, Filter?> = stringPreferenceKey(
         "playlist_filter", null, FilterDefaults.FilterSaver { id ->
             when (id) {
                 ORDER_NONE.id -> ORDER_NONE
-                ORDER_BY_DATE_MODIFIED.id -> ORDER_BY_DATE_MODIFIED
+               // ORDER_BY_DATE_MODIFIED.id -> ORDER_BY_DATE_MODIFIED
                 ORDER_BY_TITLE.id -> ORDER_BY_TITLE
                 else -> error("Unknown order passed. $id")
             }
@@ -204,10 +199,34 @@ class MembersViewModel(
             if (playlistz.contains(Remote.PLAYLIST_FAVOURITE, value.uri))
                 playlistz.remove(playlistId, value.uri)
             else {
-                val newTrack =  value.copy(playlistId, playlistz.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1)
+                val newTrack =  value.copy(playlistId, playlistz.lastPlayOrder(Remote.PLAYLIST_FAVOURITE) + 1, id = 0)
                 playlistz.insert(listOf(newTrack))
             }
             showPlatformToast("Favourite list updated.")
+        }
+    }
+
+    override fun addToPlaylist(playlistID: Long, track: Track?) {
+        runCatching {
+            val items = track?.let { listOf(it) } ?: consume().also { items ->
+                require(items.isNotEmpty()) { "Error - Playable items must not be empty." }
+            }
+
+            val playlist = playlistz[playlistID]
+                ?: error("Playlist not found for id=$playlistID")
+
+            val filtered = items.filter {
+                !playlistz.contains(playlist.name, it.key)
+            }
+
+            var lastPlayOrder = playlistz.lastPlayOrder(playlist.name)
+            val tracks = filtered.map {  item ->
+                // create new because we are doing this from one playlist to another.
+                item.copy(playlistID, ++lastPlayOrder, id = 0)
+            }
+
+            val ids = playlistz.insert(tracks)
+            showPlatformToast("${ids.size}/${items.size} items added to playlist.")
         }
     }
 }

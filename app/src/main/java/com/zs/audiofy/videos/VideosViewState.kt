@@ -43,4 +43,6 @@ interface VideosViewState: FilesViewState<Video> {
     fun onPerformAction(value: Action, resolver: Activity, focused: Video?= null)
 
     fun toggleLiked(value: Video)
+
+    fun addToPlaylist(playlistID: Long, video: Video?)
 }

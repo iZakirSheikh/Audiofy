@@ -29,6 +29,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -37,12 +40,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.zs.audiofy.R
+import com.zs.audiofy.common.Action
+import com.zs.audiofy.common.PLAYLIST_ADD
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.LottieAnimatedIcon
 import com.zs.audiofy.common.compose.OverflowMenu
 import com.zs.audiofy.common.compose.directory.Files
+import com.zs.audiofy.playlists.Playlists
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.minimumInteractiveComponentSize
@@ -99,9 +105,30 @@ fun Members(viewState: MembersViewState) {
     val selected = viewState.selected
     val favourites by viewState.favourites.collectAsState(emptySet())
     val navController = LocalNavController.current
+
+    var showPlaylists by remember { mutableStateOf(false) }
+
+    var focused: Track? by remember { mutableStateOf(null) }
+    Playlists(
+        showPlaylists,
+        viewState.playlists,
+        onSelect = { playlist ->
+            if (playlist != null) {
+                viewState.addToPlaylist(playlist.id, focused)
+                focused = null
+            }
+            showPlaylists = false
+        }
+    )
+
     Files(
         viewState,
-        onTapAction = { viewState.onPerformAction(it) },
+        onTapAction = {
+            when(it){
+                Action.PLAYLIST_ADD -> { showPlaylists = true }
+                else -> viewState.onPerformAction(it)
+            }
+        },
         key = Track::id,
         itemContent = { audio ->
             Track(
@@ -154,7 +181,13 @@ fun Members(viewState: MembersViewState) {
                             items = viewState.actions,
                             expanded = 5,
                             onItemClicked = {
-                                viewState.onPerformAction(it, audio)
+                                when(it){
+                                    Action.PLAYLIST_ADD -> {
+                                        focused = audio
+                                        showPlaylists = true
+                                    }
+                                    else -> viewState.onPerformAction(it, audio)
+                                }
                             }
                         )
                     }

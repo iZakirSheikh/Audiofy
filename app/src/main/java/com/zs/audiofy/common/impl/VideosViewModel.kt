@@ -192,4 +192,27 @@ class VideosViewModel(
             showPlatformToast("Favourite list updated.")
         }
     }
+
+    override fun addToPlaylist(playlistID: Long, video: Video?) {
+        runCatching {
+            val items = video?.let { listOf(it) } ?: consume().also { items ->
+                require(items.isNotEmpty()) { "Error - Playable items must not be empty." }
+            }
+
+            val playlist = playlistz[playlistID]
+                ?: error("Playlist not found for id=$playlistID")
+
+            val filtered = items.filter {
+                !playlistz.contains(playlist.name, it.contentUri.toString())
+            }
+
+            var lastPlayOrder = playlistz.lastPlayOrder(playlist.name)
+            val tracks = filtered.map {  item ->
+                item.toTrack(playlistID, ++lastPlayOrder)
+            }
+
+            val ids = playlistz.insert(tracks)
+            showPlatformToast("${ids.size}/${items.size} items added to playlist.")
+        }
+    }
 }
