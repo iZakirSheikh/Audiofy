@@ -126,7 +126,7 @@ fun Audios(viewState: AudiosViewState) {
     var showPlaylists by remember { mutableStateOf(false) }
 
     var focused: Audio? by remember { mutableStateOf(null) }
-    Playlists (
+    Playlists(
         showPlaylists,
         viewState.playlists,
         onSelect = { playlist ->
@@ -142,7 +142,7 @@ fun Audios(viewState: AudiosViewState) {
         viewState,
         surface = surface,
         onTapAction = {
-            when(it){
+            when (it) {
                 Action.PLAYLIST_ADD -> showPlaylists = true
                 else -> viewState.onPerformAction(it, facade as Activity)
             }
@@ -201,7 +201,15 @@ fun Audios(viewState: AudiosViewState) {
                                 }
 
                                 Action.INFO -> navController.navigate(RouteProperties(audio.path))
-                                Action.EDIT -> navController.navigate(RouteEditor(audio.path))
+                                Action.EDIT -> {
+                                    val isMp3 = audio.mimeType.equals("audio/mpeg", ignoreCase = true) ||
+                                            audio.mimeType.equals("audio/mp3", ignoreCase = true)
+                                    if (!isMp3)
+                                        facade.showToast("Oops! That’s not an MP3 file.")
+                                    else
+                                        navController.navigate(RouteEditor(audio.path))
+                                }
+
                                 Action.PLAYLIST_ADD -> {
                                     showPlaylists = true; focused = audio
                                 }

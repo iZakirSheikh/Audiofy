@@ -19,12 +19,24 @@
 package com.zs.audiofy.common.impl
 
 
+import android.app.Activity
+import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.text.format.DateUtils
 import android.webkit.MimeTypeMap
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -39,10 +51,15 @@ import com.zs.audiofy.R
 import com.zs.audiofy.editor.EditorViewState
 import com.zs.audiofy.editor.RouteEditor
 import com.zs.audiofy.editor.get
+import com.zs.compose.foundation.findActivity
+import com.zs.compose.theme.snackbar.SnackbarDuration
 import com.zs.compose.theme.snackbar.SnackbarResult
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.UUID
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 private const val TAG = "TagEditorViewModel"
@@ -67,7 +84,7 @@ private var Mp3File.title
  * otherwise, it uses the artist from ID3v2.
  */
 private var Mp3File.artist
-    get() = id3v2Tag?.artist?: id3v1Tag?.artist
+    get() = id3v2Tag?.artist ?: id3v1Tag?.artist
     set(value) {
         if (artist == value) return
         id3v1Tag?.artist = value
@@ -80,7 +97,7 @@ private var Mp3File.artist
  * otherwise, it uses the album from ID3v2.
  */
 private var Mp3File.album
-    get() =  id3v2Tag?.album?: id3v1Tag?.album
+    get() = id3v2Tag?.album ?: id3v1Tag?.album
     set(value) {
         if (album == value) return
         id3v1Tag?.album = value
@@ -222,7 +239,7 @@ private var Mp3File.albumArtMimeType
  * then the ID3v2 tag, and defaults to 0 if neither has a valid year.
  */
 private var Mp3File.year
-    get() = id3v2Tag?.year?.toIntOrNull() ?: id3v1Tag?.year?.toIntOrNull()  ?: 0
+    get() = id3v2Tag?.year?.toIntOrNull() ?: id3v1Tag?.year?.toIntOrNull() ?: 0
     set(value) {
         if (year == value) return
         id3v1Tag?.year = "$value"
@@ -234,7 +251,7 @@ private var Mp3File.year
  * then the ID3v2 tag, and defaults to 0 if neither has a valid track number.
  */
 private var Mp3File.trackNumber
-    get() =  id3v2Tag?.track?.toIntOrNull() ?: id3v1Tag?.track?.toIntOrNull() ?: 0
+    get() = id3v2Tag?.track?.toIntOrNull() ?: id3v1Tag?.track?.toIntOrNull() ?: 0
     set(value) {
         if (trackNumber == value) return
         id3v1Tag?.track = "$value"
@@ -289,7 +306,24 @@ private var Mp3File.diskNumber: Int
         id3v2Tag?.partOfSet = "$value" + "/" + (parts.getOrNull(0) ?: "0")
     }
 
-class EditorViewModel(handle: SavedStateHandle): KoinViewModel(), EditorViewState {
+/**
+ * @see registerActivityResultLauncher
+ */
+private suspend fun <I, O> ComponentActivity.awaitActivityResult(
+    contract: ActivityResultContract<I, O>,
+    request: I,
+): O = suspendCoroutine { continuation ->
+    val key = UUID.randomUUID().toString()
+    var launcher: ActivityResultLauncher<I>? = null
+    val callback = ActivityResultCallback<O> { output ->
+        continuation.resume(output)
+        launcher?.unregister()
+    }
+    launcher = activityResultRegistry.register(key, contract, callback)
+    launcher.launch(request)
+}
+
+class EditorViewModel(handle: SavedStateHandle) : KoinViewModel(), EditorViewState {
     val path = handle[RouteEditor]
 
     /**
@@ -433,6 +467,69 @@ class EditorViewModel(handle: SavedStateHandle): KoinViewModel(), EditorViewStat
     }
 
     override fun save(ctx: Context) {
-       viewModelScope.launch { showSnackbar("Not implemented yet!") }
+        runCatching {
+            // Show a confirmation Snackbar to the user before proceeding with the save operation
+            val action = showSnackbar(
+                "Warning: Existing file will be replaced.",
+                action = "Confirm",
+                icon = Icons.Outlined.Save,
+                duration = SnackbarDuration.Indefinite
+            )
+            // If the user dismisses the Snackbar, abort the save operation
+            if (action == SnackbarResult.Dismissed)
+                return@runCatching
+            // Apply the edited tags to the Mp3File object
+            file.apply()
+            // Define the path for a temporary file in the cache directory.
+            // Mp3File library doesn't support overwriting files directly, so a temp file is needed.
+            val tmpFilePath = "${ctx.cacheDir.path}/tmp.edit"
+            // Save the modified Mp3File to the temporary file
+            file.save(tmpFilePath)
+            // Get the ContentResolver to interact with the MediaStore
+            val resolver = context.contentResolver
+            // Query the MediaStore to find the URI of the original audio file
+            val uri = resolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Audio.Media._ID),
+                "${MediaStore.Audio.Media.DATA}=?",
+                arrayOf(path),
+                null
+            ).use { // Use 'use' block to ensure the cursor is closed automatically
+                it?.moveToFirst()
+                // Get the ID of the audio file from the cursor
+                val id =
+                    it?.getLong(0) ?: throw IllegalStateException("File not found in media library.")
+                // Construct the content URI for the audio file using its ID
+                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+            }
+            // Ask for write permission if above R
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // For Android R and above, use MediaStore.createWriteRequest for scoped storage
+                val request = MediaStore.createWriteRequest(resolver, listOf(uri)).let {
+                    IntentSenderRequest.Builder(it).build()
+                }
+                // The context must be a ComponentActivity to launch the intent sender
+                val activity = ctx.findActivity() as ComponentActivity
+                // Launch the intent sender and wait for the result
+                val result = activity.awaitActivityResult(
+                    ActivityResultContracts.StartIntentSenderForResult(),
+                    request
+                )
+                // If the result is not OK, throw an error
+                if (result.resultCode != Activity.RESULT_OK) {
+                    error("Failed to save file.")
+                }
+            }
+            // For versions below Android R, or after successful write request on R+, proceed with direct file stream copy.
+            // This assumes write permission is already granted.
+            val tmpFile = File(tmpFilePath)
+            tmpFile.inputStream().use { inputStream -> // Open an input stream from the temporary file
+                resolver.openOutputStream(uri)?.use { outputStream -> // Open an output stream to the original file's URI
+                    inputStream.copyTo(outputStream) // Copy the contents of the temp file to the original file
+                }
+            }
+            tmpFile.delete()
+            showPlatformToast("Done! Your changes have been saved.")
+        }
     }
 }

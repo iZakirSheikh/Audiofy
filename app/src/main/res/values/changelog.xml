@@ -117,13 +117,24 @@
         </font>
     </string>
 
+    <!--v4.0.0-dev22-->
+    <string name="changelog_400_dev22" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev22)</font></b>
+        <font color='grey'>
+           \n- <b>Save MP3 Tag Edits</b>: You can now save changes to MP3 tags with a confirmation before overwriting.
+           \n- <b>MP3 Only Edits</b>: The "Edit" option now checks if a file is an MP3, showing a message if it's not.
+           \n- <b>Improved Tag Handling</b>: Better reading and writing of common ID3 tags.
+        </font>
+    </string>
+
 
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev21</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev22</string>
 
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
-        <item>@string/release_notes</item>
+        <item>@string/changelog_400_dev22</item>
+        <item>@string/changelog_400_dev21</item>
         <item>@string/changelog_400_dev20</item>
         <item>@string/changelog_400_dev19</item>
         <item>@string/changelog_400_dev18</item>
