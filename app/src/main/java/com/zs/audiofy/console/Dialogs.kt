@@ -48,6 +48,7 @@ import com.zs.compose.theme.ChipDefaults
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
+import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.text.Header
@@ -200,6 +201,7 @@ fun SleepTimer(
     if (!expanded) return
     val (width, height) = LocalWindowSize.current
     val onDismissRequest = { onRequestChange(-1) }
+    val (mins, onTimerChange) = remember { mutableFloatStateOf(TIMER_RANGE.start) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         properties = CustomWidthProperties,
@@ -214,8 +216,21 @@ fun SleepTimer(
         title = {
             Label(textResource(R.string.scr_sleep_timer_title), fontWeight = FontWeight.Light)
         },
+        actions = {
+            // Start Timer
+            val color = LocalContentColor.current
+            Chip(
+                modifier = Modifier.padding(end = CP.small),
+                colors = ChipDefaults.chipColors(
+                    backgroundColor = color.copy(ContentAlpha.indication),
+                    contentColor =color
+                ),
+                onClick = { onRequestChange(mins.toLong() * 60_000) }) {
+                Label(stringResource(R.string.start).uppercase())
+            }
+        },
         content = {
-            val (mins, onTimerChange) = remember { mutableFloatStateOf(TIMER_RANGE.start) }
+
             // Preview
             Label(
                 text = textResource(R.string.scr_sleep_timer_minute_d, mins.roundToInt()),
@@ -266,13 +281,6 @@ fun SleepTimer(
                         onTimerChange(newValue)
                     },
                 )
-            }
-
-            // Start Timer
-            Chip(
-                modifier = Modifier.align(Alignment.End),
-                onClick = { onRequestChange(mins.toLong() * 60_000) }) {
-                Label(stringResource(R.string.start).uppercase())
             }
         }
     )

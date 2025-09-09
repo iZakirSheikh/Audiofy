@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Changelog-->
+    <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev23</item>
+        <item>@string/changelog_400_dev22</item>
+        <item>@string/changelog_400_dev21</item>
+        <item>@string/changelog_400_dev20</item>
+        <item>@string/changelog_400_dev19</item>
+        <item>@string/changelog_400_dev18</item>
+        <item>@string/changelog_400_dev17</item>
+        <item>@string/changelog_400_dev16</item>
+        <item>@string/changelog_400_dev15</item>
+        <item>@string/changelog_400_dev14</item>
+        <item>@string/changelog_400_dev13</item>
+        <item>@string/changelog_400_dev12</item>
+    </string-array>
+    <!--Points to the changelog of current version.-->
+    <string name="release_notes" translatable="false">@string/changelog_400_dev23</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='yellow'>(v4.0.0-dev12)</font></b>
@@ -123,20 +140,13 @@
            \n- <b>"Recent" Playlist Update</b>: Fixed a small issue to make sure recently played items are correctly added to the "Recent" playlist.
         </font>
     </string>
-    <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev22</string>
-    <!--Changelog-->
-    <string-array name="changelog" translatable="false">
-        <item>@string/changelog_400_dev22</item>
-        <item>@string/changelog_400_dev21</item>
-        <item>@string/changelog_400_dev20</item>
-        <item>@string/changelog_400_dev19</item>
-        <item>@string/changelog_400_dev18</item>
-        <item>@string/changelog_400_dev17</item>
-        <item>@string/changelog_400_dev16</item>
-        <item>@string/changelog_400_dev15</item>
-        <item>@string/changelog_400_dev14</item>
-        <item>@string/changelog_400_dev13</item>
-        <item>@string/changelog_400_dev12</item>
-    </string-array>
+    <!--v4.0.0-dev23-->
+    <string name="changelog_400_dev23" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev23)</font></b>
+        <font color='grey'>
+           \n- Introduced `AppConfig` for centralized application settings, including thumbnail caching and background blur options.
+           \n- Refined Console UI: Streamlined dialog management and introduced dedicated state for queue visibility.
+           \n- Improved Sleep Timer Dialog: "Start" button moved to actions slot with updated styling.
+        </font>
+    </string>
 </resources>

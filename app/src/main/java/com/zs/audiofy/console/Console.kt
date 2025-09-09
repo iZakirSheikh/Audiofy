@@ -132,12 +132,10 @@ private val DefaultAnimSpecs = tween<Float>()
 
 // Represents different dialogs to be shown
 private const val SHOW_NONE = 0
-private const val SHOW_QUEUE = 1
-private const val SHOW_TIMER = 2
-private const val SHOW_SPEED = 3
-private const val SHOW_EQUALIZER = 4
-private const val SHOW_MEDIA_INFO = 5
-private const val SHOW_MORE = 6
+private const val SHOW_TIMER = 1
+private const val SHOW_SPEED = 2
+private const val SHOW_MEDIA_INFO = 3
+private const val SHOW_MORE = 4
 
 // background styles
 private const val BG_STYLE_ADAPTIVE = 0
@@ -159,12 +157,14 @@ fun Console(viewState: ConsoleViewState) {
     val navController = LocalNavController.current
 
     var showViewOf by remember { mutableIntStateOf(SHOW_NONE) }
+    var showQueue by remember { mutableStateOf(false) }
     val visibility = viewState.visibility
 
     // BackHandler
     val onNavigateBack = onBack@{
-        if (showViewOf != SHOW_NONE) {
+        if (showViewOf != SHOW_NONE || showQueue) {
             showViewOf = SHOW_NONE
+            showQueue = false
             return@onBack
         }
         // Consume request if locked.
@@ -429,7 +429,7 @@ fun Console(viewState: ConsoleViewState) {
         IconButton(
             icon = Icons.Outlined.Queue,
             contentDescription = null,
-            onClick = { showViewOf = SHOW_QUEUE },
+            onClick = { showQueue = !showQueue },
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_QUEUE)
         )
@@ -555,7 +555,7 @@ fun Console(viewState: ConsoleViewState) {
     val clazz = LocalWindowSize.current
     val insets = WindowInsets.systemBars
     val strategy = when {
-        showViewOf != SHOW_QUEUE || clazz.height < Category.Medium && clazz.width <= Category.Medium -> SinglePaneStrategy
+        !showQueue || clazz.height < Category.Medium && clazz.width <= Category.Medium -> SinglePaneStrategy
         clazz.width < clazz.height -> VerticalTwoPaneStrategy(0.35f)
         else -> HorizontalTwoPaneStrategy(0.6f)
     }
