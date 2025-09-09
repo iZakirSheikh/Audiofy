@@ -26,6 +26,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,11 +44,13 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.zs.audiofy.R
+import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.lottie
@@ -63,10 +66,10 @@ import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.FloatingActionButton
 import com.zs.compose.theme.FloatingActionButtonDefaults
 import com.zs.compose.theme.Icon
-import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.SliderDefaults
+import com.zs.compose.theme.TonalIconButton
 import com.zs.compose.theme.sharedBounds
 import com.zs.compose.theme.sharedElement
 import com.zs.compose.theme.text.Label
@@ -83,13 +86,13 @@ private const val TAG = "MistyTunes"
 fun MistyTunes(
     state: NowPlaying,
     surface: HazeState,
-    onAction: (Float) -> Unit,
+    onRequest: (code: Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val onColor = AppTheme.colors.onBackground
     // The position (Long.MIN_VALUE if N/A) animated from 0; stops at duration (if not N/A)
     val chronometer = state.chronometer
-    // content
+    // Layout
     BaseListItem(
         centerAlign = true,
         modifier = modifier
@@ -125,21 +128,32 @@ fun MistyTunes(
                 modifier = Modifier.sharedElement(RouteConsole.ID_SUBTITLE),
             )
         },
-        // Duration
+        // Extra
         overline = {
-            val elapsed = chronometer.elapsed
-            val fPos =
-                if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(elapsed / 1000)
-            val duration = state.duration
-            val fDuration =
-                if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(duration / 1000)
             Label(
-                "$fPos / $fDuration (${
-                    stringResource(R.string.postfix_x_f, state.speed)
-                })",
                 style = AppTheme.typography.label3,
                 color = onColor.copy(ContentAlpha.medium),
-                modifier = Modifier.sharedElement(RouteConsole.ID_EXTRA_INFO)
+                modifier = Modifier.sharedElement(RouteConsole.ID_EXTRA_INFO),
+                text = buildString {
+                    val elapsed = chronometer.elapsed
+                    val fPos =
+                        if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(
+                            elapsed / 1000
+                        )
+                    val duration = state.duration
+                    val fDuration =
+                        if (duration == Remote.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(
+                            duration / 1000
+                        )
+                    append(
+                        "$fPos / $fDuration (${
+                            stringResource(
+                                R.string.postfix_x_f,
+                                state.speed
+                            )
+                        })"
+                    )
+                }
             )
         },
         // Artwork
@@ -159,7 +173,7 @@ fun MistyTunes(
         // Play Toggle
         trailing = {
             FloatingActionButton(
-                onClick = { onAction(Widget.ACTION_PLAY_TOGGLE) },
+                onClick = { onRequest(Widget.REQUEST_PLAY_TOGGLE) },
                 shape = AppTheme.shapes.large,
                 modifier = Modifier
                     .sharedElement(RouteConsole.ID_BTN_PLAY_PAUSE)
@@ -173,8 +187,7 @@ fun MistyTunes(
                             progressRange = 0.0f..0.29f,
                             animationSpec = tween(easing = LinearEasing)
                         ),
-                        modifier = Modifier
-                            .lottie(1.5f),
+                        modifier = Modifier.lottie(1.5f),
                         contentDescription = null
                     )
                 }
@@ -184,16 +197,33 @@ fun MistyTunes(
         footer = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     // Placeholder for playingbars
                     Spacer(Modifier.sharedElement(RouteConsole.ID_PLAYING_INDICATOR))
+                    // Like
+                    val size = Modifier.size(35.dp)
+                    LottieAnimatedButton(
+                        R.raw.lt_twitter_heart_filled_unfilled,
+                        onClick = { onRequest(Widget.REQUEST_LIKED) },
+                        animationSpec = tween(800),
+                        atEnd = state.favourite, // if fav
+                        contentDescription = null,
+                        progressRange = 0.13f..1.0f,
+                        scale = 3.5f,
+                        tint = AppTheme.colors.accent,
+                        modifier = Modifier.layoutId(RouteConsole.ID_BTN_LIKED) then size
+                    )
+                    val tint = AppTheme.colors.accent
                     // Skip to previous
-                    IconButton(
-                        onClick = { onAction(Widget.ACTION_SKIP_TO_PREVIOUS) },
+                    TonalIconButton(
+                        onClick = { onRequest(Widget.REQUEST_SKIP_TO_PREVIOUS) },
                         icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
-                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_PREVIOUS)
+                        color = tint,
+                        enabled = state.isPrevAvailable,
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_PREVIOUS) then size
                     )
                     // Slider
                     Slider(
@@ -204,7 +234,7 @@ fun MistyTunes(
                         },
                         onValueChangeFinished = {
                             val progress = chronometer.elapsed / state.duration.toFloat()
-                            onAction(progress)
+                            onRequest(progress)
                         },
                         enabled = state.duration > 0,
                         modifier = Modifier
@@ -216,18 +246,21 @@ fun MistyTunes(
                         )
                     )
                     // SeekNext
-                    IconButton(
-                        onClick = { onAction(Widget.ACTION_SKIP_TO_NEXT) },
+                    TonalIconButton(
+                        onClick = { onRequest(Widget.REQUEST_SKIP_TO_NEXT) },
                         icon = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
-                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_TO_NEXT)
+                        color = tint,
+                        enabled = state.isNextAvailable,
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_TO_NEXT) then size
                     )
                     // Expand to fill
-                    IconButton(
+                    TonalIconButton(
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,
                         contentDescription = null,
-                        onClick = { onAction(Widget.ACTION_OPEN_CONSOLE) },
-                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_COLLAPSE)
+                        onClick = { onRequest(Widget.REQUEST_OPEN_CONSOLE) },
+                        color = tint,
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_COLLAPSE) then size
                     )
                 }
             )

@@ -279,7 +279,7 @@ internal class RemoteImpl(private val context: Context) : Remote {
 
 
     override val state: StateFlow<NowPlaying?> = events
-        .filter { it?.containsAny(*Remote.STATE_UPDATE_EVENTS) == true }
+        .filter { it == null || it.containsAny(*Remote.STATE_UPDATE_EVENTS) }
         .debounceAfterFirst(200)
         .transform { events ->
             Log.d(TAG, "onEvents: $events")
@@ -292,7 +292,10 @@ internal class RemoteImpl(private val context: Context) : Remote {
             val current = provider.currentMediaItem
             // If there's no current media item, emit null (or the previous state will be retained by stateIn)
             // and return early.
-            if (current == null) return@transform
+            if (current == null) {
+                emit(null)
+                return@transform
+            }
             // Construct a new NowPlaying object with the current media item's details.
             val state = NowPlaying(
                 title = current.title?.toString(),

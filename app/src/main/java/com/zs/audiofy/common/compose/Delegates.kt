@@ -84,6 +84,7 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import com.zs.compose.theme.Placeholder
+import com.zs.compose.theme.TonalIconButton
 import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.billing.Purchase
@@ -195,6 +196,34 @@ inline fun LottieAnimatedButton(
     enabled: Boolean = true,
 ) {
     IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
+        Icon(
+            painter = lottieAnimationPainter(
+                id = id,
+                atEnd = atEnd,
+                progressRange = progressRange,
+                animationSpec = animationSpec
+            ),
+            tint = tint,
+            contentDescription = contentDescription,
+            modifier = Modifier.lottie(scale),
+        )
+    }
+}
+
+@Composable
+inline fun LottieTonalButton(
+    @RawRes id: Int,
+    noinline onClick: () -> Unit,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    atEnd: Boolean = false,
+    scale: Float = 1f,
+    progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    tint: Color = Color.Unspecified,
+    animationSpec: AnimationSpec<Float>? = null,
+    enabled: Boolean = true,
+) {
+    TonalIconButton(onClick = onClick, modifier = modifier, enabled = enabled, tint) {
         Icon(
             painter = lottieAnimationPainter(
                 id = id,

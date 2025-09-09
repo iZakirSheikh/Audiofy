@@ -32,12 +32,11 @@ import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.sharedElement
 import com.zs.core.playback.NowPlaying
 
-
 /** Represents the compact [Widget] of the console. */
 @Composable
 fun FabPlayer(
     state: NowPlaying,
-    onAction: (code: Float) -> Unit,
+    onRequest: (code: Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shape = AppTheme.shapes.large
@@ -46,7 +45,7 @@ fun FabPlayer(
             .sharedElement(RouteConsole.ID_BACKGROUND)
             .border(AppTheme.colors.shine, shape)
             .shadow(8.dp, shape)
-            .background(AppTheme.colors.background(1.dp)) then Widget.FabRequiredSize,
+            .background(AppTheme.colors.background(1.dp)) then Widget.FabSize,
         content = {
             // Artwork
             AsyncImage(
@@ -77,7 +76,7 @@ fun FabPlayer(
 
             // Play Toggle
             IconButton(
-                onClick = { onAction(Widget.ACTION_PLAY_TOGGLE) },
+                onClick = { onRequest(Widget.REQUEST_PLAY_TOGGLE) },
                 modifier = Modifier
                     .sharedElement(RouteConsole.ID_BTN_PLAY_PAUSE)
                     .align(Alignment.CenterEnd),

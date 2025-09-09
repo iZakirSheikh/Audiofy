@@ -28,7 +28,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsetsSides as WIS
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -598,7 +598,7 @@ fun Home(
                 Widget(
                     surface = surface,
                     modifier = Modifier.thenIf(!requiresNavBar && portrait) {
-                        windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                        windowInsetsPadding(WindowInsets.navigationBars.only(WIS.Bottom + WIS.End))
                     }
                 )
             },

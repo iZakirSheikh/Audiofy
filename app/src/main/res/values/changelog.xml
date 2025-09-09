@@ -144,9 +144,14 @@
     <string name="changelog_400_dev23" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev23)</font></b>
         <font color='grey'>
-           \n- Introduced `AppConfig` for centralized application settings, including thumbnail caching and background blur options.
-           \n- Refined Console UI: Streamlined dialog management and introduced dedicated state for queue visibility.
-           \n- Improved Sleep Timer Dialog: "Start" button moved to actions slot with updated styling.
+          \n- Refined <b>Console</b> UI: Streamlined dialog management and introduced dedicated state for queue visibility.
+          \n- Improved <b>Sleep Timer</b> Dialog: "Start" button moved to actions slot with updated styling.
+          \n- <b>Widget Overhaul</b>:
+          \n    - Introduced Close button for the widget.
+          \n    - <b>New FAB Video Player</b>: A new floating action button style player for video content.
+          \n    - <b>Expanded Widget (MistyTunes)</b>: Added a <b>Like</b> button with a Lottie animation. Skip buttons now use `TonalIconButton` and reflect availability. "Open Console" is now a `TonalIconButton`. Footer controls layout adjusted.
+          \n    - <b>Compact Widget (FabPlayer)</b>: Updated to use new request constants.
+          \n- Adjusted widget padding on the Home screen for better layout when the navigation bar is not visible in portrait mode.
         </font>
     </string>
 </resources>
