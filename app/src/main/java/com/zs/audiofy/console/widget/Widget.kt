@@ -83,7 +83,8 @@ object Widget {
         val remote = (facade as? MainActivity)?.relay ?: return Spacer(modifier)
         // Get the navigation controller.
         val navController = LocalNavController.current
-        val state by remote.state.collectAsState()
+        val s by remote.state.collectAsState()
+        val state = s ?: return Spacer(modifier)
         val entry by navController.currentBackStackEntryAsState()
         val isConsole = entry?.destination?.domain == RouteConsole.domain
         // State to track whether the widget is expanded or not.
@@ -114,7 +115,7 @@ object Widget {
             indication = scale(),
             // Toggle expanded state on click.
             onClick = {
-                when (state?.isVideo) {
+                when (state.isVideo) {
                     true -> onRequest(REQUEST_PLAY_TOGGLE)
                     else -> expanded = !expanded
                 }
@@ -130,8 +131,8 @@ object Widget {
         AnimatedContent(
             // choose target appropriately.
             targetState = when {
-                isConsole || state == null -> ID_PLACEHOLDER
-                state!!.isVideo -> ID_FAB_VIDEO_PLAYER
+                isConsole -> ID_PLACEHOLDER
+                state.isVideo -> ID_FAB_VIDEO_PLAYER
                 expanded -> ID_MISTY_TUNES
                 else -> ID_FAB_PLAYER
             },
@@ -141,9 +142,9 @@ object Widget {
                 CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                     when (id) {
                         ID_PLACEHOLDER -> Spacer(FabSize)
-                        ID_MISTY_TUNES -> MistyTunes(state!!, surface, onRequest, clickable)
-                        ID_FAB_PLAYER -> FabPlayer(state!!, onRequest, clickable)
-                        ID_FAB_VIDEO_PLAYER -> FabVideoPlayer(state!!, runBlocking { remote.getViewProvider() }, onRequest, clickable)
+                        ID_MISTY_TUNES -> MistyTunes(state, surface, onRequest, clickable)
+                        ID_FAB_PLAYER -> FabPlayer(state, onRequest, clickable)
+                        ID_FAB_VIDEO_PLAYER -> FabVideoPlayer(state, runBlocking { remote.getViewProvider() }, onRequest, clickable)
                     }
                 }
             }

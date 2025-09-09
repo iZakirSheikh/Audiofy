@@ -24,6 +24,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.InstallMobile
 import androidx.compose.material.icons.outlined.Downloading
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
@@ -48,12 +49,20 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.requestAppUpdateInfo
+import com.google.android.play.core.ktx.requestProgressFlow
 import com.google.android.play.core.ktx.requestReview
 import com.google.android.play.core.ktx.requestUpdateFlow
+import com.google.android.play.core.ktx.status
 import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
+import com.zs.audiofy.common.IAP_NO_ADS
 import com.zs.audiofy.common.SystemFacade
 import com.zs.audiofy.common.WindowStyle
 import com.zs.audiofy.common.domain
+import com.zs.audiofy.common.dynamicFeatureRequest
+import com.zs.audiofy.common.dynamicModuleName
+import com.zs.audiofy.common.isDynamicFeature
 import com.zs.audiofy.common.products
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.library.RouteLibrary
@@ -67,6 +76,7 @@ import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.billing.Paymaster
 import com.zs.core.billing.Product
 import com.zs.core.billing.Purchase
+import com.zs.core.billing.purchased
 import com.zs.core.common.getPackageInfoCompat
 import com.zs.core.common.logEvent
 import com.zs.core.common.showPlatformToast
@@ -91,6 +101,7 @@ import org.koin.android.ext.android.inject
 import kotlin.time.Duration.Companion.days
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import androidx.navigation.NavController.OnDestinationChangedListener as NavDestListener
+import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 
 private const val TAG = "MainActivity"
 
@@ -161,6 +172,126 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
 
     var inAppUpdateProgress by mutableFloatStateOf(Float.NaN)
         private set
+
+    private val inAppFeatureManager by lazy {
+        val manager = SplitInstallManagerFactory.create(this@MainActivity)
+        // Request progress updates for dynamic feature installation
+        manager.requestProgressFlow()
+            .onEach { state ->
+                when (state.status) {
+                    Flag.DOWNLOADING -> {
+                        // Calculate the download progress as a percentage
+                        val percent =
+                            state.bytesDownloaded().toFloat() / state.totalBytesToDownload()
+                        Log.d("SplitInstall", "Download progress: $percent%")
+                        // Update the progress indicator
+                        inAppUpdateProgress = percent
+                    }
+
+                    Flag.INSTALLING, Flag.PENDING -> {
+                        // Set the progress to an indeterminate state
+                        inAppUpdateProgress = -1f
+                        Log.d("SplitInstall", "Installing...")
+                    }
+
+                    Flag.INSTALLED -> {
+                        // There is a known issue when observing the state of dynamic module installations.
+                        // If the user has requested the installation of the dynamic module during this session,
+                        // the inAppTaskProgress flag will not be NaN once the state is reached.
+                        // However, if inAppTaskProgress is NaN, it indicates that this callback was triggered due to an app restart,
+                        // and no installation request was made in the current session. Therefore, we can safely ignore this state.
+                        if (inAppUpdateProgress.isNaN()) return@onEach
+                        // Hide the progress bar
+                        inAppUpdateProgress = Float.NaN
+                        Log.d("SplitInstall", "Module installed successfully!")
+                        // Show a toast message requesting the app restart
+                        val res = snackbarHostState.showSnackbar(
+                            getString(R.string.msg_apply_changes_restart),
+                            getString(R.string.restart),
+                            duration = SnackbarDuration.Indefinite
+                        )
+                        // Restart the app if the user chooses to
+                        if (res == SnackbarResult.ActionPerformed)
+                            restart(true)
+                        // The dynamic feature module can now be accessed
+                    }
+
+                    else -> {
+                        // Hide the progress bar for unknown statuses
+                        inAppUpdateProgress = Float.NaN
+                        Log.d("SplitInstall", "Unknown status: ${state.status()}")
+                    }
+                }
+            }
+            .launchIn(lifecycleScope)
+        manager
+    }
+    // Observe purchases and prompt the user to install any purchased dynamic features
+    private val inAppPurchasesFlow get() = paymaster.purchases.onEach {purchases ->
+        for (purchase in purchases) {
+            // Skip if the purchase is not purchased
+            if (!purchase.purchased) continue
+            // Update the isAdFreeVersion flag
+            if (purchase.id == Paymaster.IAP_NO_ADS) {
+                //isAdFreeVersion = purchase.purchased
+                continue
+            }
+            val details = paymaster.details.value.find { it.id == purchase.id }
+            // Skip if product details are unavailable or the product is not a dynamic feature
+            if (details == null || !details.isDynamicFeature) continue
+            // Skip if the dynamic feature is already installed
+            if (isFeatureInstalled(details.dynamicModuleName)) continue
+            // Prompt the user to install the dynamic feature
+            val response = snackbarHostState.showSnackbar(
+                resources.getText2(
+                    id = R.string.msg_install_dynamic_module_ss,
+                    details.title
+                ),
+                duration = SnackbarDuration.Indefinite,
+                action = resources.getText2(R.string.install),
+                icon = Icons.Default.InstallMobile,
+            )
+            if (response == SnackbarResult.ActionPerformed)
+                initiateFeatureInstall(details.dynamicFeatureRequest)
+        }
+    }
+
+    fun isFeatureInstalled(id: String): Boolean = inAppFeatureManager.installedModules.contains(id)
+
+    fun initiateFeatureInstall(request: SplitInstallRequest) {
+        inAppFeatureManager.startInstall(request)
+    }
+
+    override fun restart(global: Boolean) {
+        // Get the launch intent for the app's main activity
+        val packageManager = packageManager
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+
+        // Ensure the intent is not null
+        if (intent == null) {
+            Log.e("AppRestart", "Unable to restart: Launch intent is null")
+            return
+        }
+        // restart just the current activity
+        if (!global) {
+            // Restart just the current activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()  // Finish the current activity to ensure it is restarted
+            return
+        }
+        // Get the main component for the restart task
+        val componentName = intent.component
+        if (componentName == null) {
+            Log.e("AppRestart", "Unable to restart: Component name is null")
+            return
+        }
+        // Create the main restart intent and start the activity
+        val mainIntent = Intent.makeRestartActivityTask(componentName)
+        startActivity(mainIntent)
+        // Terminate the current process to complete the restart
+        Runtime.getRuntime().exit(0)
+    }
 
     override fun showToast(message: String, duration: Int) =
         showPlatformToast(message, duration)
@@ -388,6 +519,10 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         // This is determined by checking if savedInstanceState is null.
         // If null, it's a cold start (first time launch or activity recreated from scratch)
         val isColdStart = savedInstanceState == null
+        // show promo message
+        // update the state of variables dependent on payment master.
+        // Observe active purchases and prompt the user to install any purchased dynamic features.
+        inAppPurchasesFlow.launchIn(lifecycleScope)
         // Configure the splash screen for the app
         initSplashScreen()
         // Initialize

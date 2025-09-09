@@ -152,6 +152,8 @@
           \n    - <b>Expanded Widget (MistyTunes)</b>: Added a <b>Like</b> button with a Lottie animation. Skip buttons now use `TonalIconButton` and reflect availability. "Open Console" is now a `TonalIconButton`. Footer controls layout adjusted.
           \n    - <b>Compact Widget (FabPlayer)</b>: Updated to use new request constants.
           \n- Adjusted widget padding on the Home screen for better layout when the navigation bar is not visible in portrait mode.
-        </font>
+          \n- <b>Dynamic Feature Module Installation</b>:
+          \n    - Implemented infrastructure to install dynamic feature modules (e.g., "Codex") via the Play Store.
+          </font>
     </string>
 </resources>

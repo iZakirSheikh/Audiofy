@@ -313,4 +313,7 @@
     <string name="total_disks">Total disks</string>
     <string name="msg_upgrade_to_pro">Upgrade to the Pro version to unlock this feature.</string>
     <string name="scr_playlists_dialog_empty_placeholder">Pick <b>Playlist</b>\n<font color="grey" size="11"><sup>Tap to add tracks to playlist.</sup></font></string>
+    <string name="restart">Restart</string>
+    <string name="msg_apply_changes_restart">Restart the app for changes to take effect.</string>
+    <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font color='grey' size="11">A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
 </resources>

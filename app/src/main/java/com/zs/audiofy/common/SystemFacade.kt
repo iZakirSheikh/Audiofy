@@ -151,4 +151,29 @@ interface SystemFacade {
     //          through value class; instead make unspecified case of these.
     // This will be null when the lib has not been refreshed otherwise this must not be null.
     fun getProductInfo(id: String): Product?
+
+    /**
+     * Restarts either the entire application or just the current activity, based on the specified mode.
+     *
+     * If [global] is set to `true`, this method will restart the entire application by launching the main activity
+     * and terminating the current process. This results in a full app relaunch as if the user manually reopened the app.
+     *
+     * If `global` is set to `false`, only the current activity will be restarted. The activity is relaunched
+     * with a fresh instance, mimicking an activity lifecycle reset (similar to what happens after a configuration change).
+     *
+     * @param global Set to `true` to restart the entire application (default is `false`).
+     *               - `true`: Restarts the whole app by relaunching the main activity and terminating the current process.
+     *               - `false`: Restarts only the current activity, clearing the current instance and relaunching it.
+     *
+     *
+     * Example Usage:
+     * ```
+     * // Restart only the current activity
+     * restart()
+     *
+     * // Restart the entire app
+     * restart(global = true)
+     * ```
+     */
+    fun restart(global: Boolean = false)
 }

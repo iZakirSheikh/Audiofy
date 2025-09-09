@@ -6,11 +6,6 @@ media3 = "1.8.0"
 toolkit = "3.7.4-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
-junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-appcompat = "1.7.1"
-material = "1.12.0"
 room = "2.7.2"
 
 [plugins]
@@ -66,15 +61,12 @@ firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-
 play-app-update-ktx = { module = "com.google.android.play:app-update-ktx", version = "2.1.0" }
 play-app-review-ktx = { module = "com.google.android.play:review-ktx", version = "2.0.1" }
 google-billing-ktx = { module = "com.android.billingclient:billing-ktx", version = "8.0.0" }
+play_feature_delivery-ktx = { module = "com.google.android.play:feature-delivery-ktx", version = "2.1.0" }
 
 # Icons
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "material_icons" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material_icons" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
 # Room Runtime
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
