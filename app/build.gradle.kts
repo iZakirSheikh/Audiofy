@@ -57,8 +57,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1025
-        versionName = "4.0.0-dev23"
+        versionCode = 1026
+        versionName = "4.0.0-dev24"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // Load secrets into BuildConfig
@@ -116,4 +116,5 @@ dependencies {
     implementation(libs.bundles.compose.ui)
     debugImplementation(libs.bundles.compose.ui.tooling)
     api(project(":core"))
+    implementation(project(":feature:widget"))
 }

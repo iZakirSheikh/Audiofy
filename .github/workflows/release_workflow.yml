@@ -142,6 +142,7 @@ jobs:
           packageName: com.prime.player
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: internal
+          changesNotSentForReview: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

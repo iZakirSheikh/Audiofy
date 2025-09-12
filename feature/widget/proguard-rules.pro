@@ -19,14 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-
-# Media3 ShuffleOrder; Dont rename
--keepnames class androidx.media3.exoplayer.ExoPlayerImpl {
-    private androidx.media3.exoplayer.source.ShuffleOrder shuffleOrder;
-}
-
--keepnames class androidx.media3.exoplayer.source.ShuffleOrder$DefaultShuffleOrder {
-    private int[] shuffled;
-}
-
--keep class com.zs.feature.telemetry.AnalyticsImpl { *; }

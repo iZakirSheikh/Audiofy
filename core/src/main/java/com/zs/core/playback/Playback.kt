@@ -21,6 +21,8 @@ package com.zs.core.playback
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -388,6 +390,33 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             // Save the current shuffle order to preferences.
             preferences[PREF_KEY_ORDERS] =
                 player.orders.joinToString(LIST_ITEM_DELIMITER.toString())
+        }
+    }
+
+    var stateJob: Job? = null
+    override fun onEvents(player: Player, events: Player.Events) {
+        // Check if the received events contain any of the predefined state update events.
+        // If not, there's no need to proceed with emitting a state update.
+        if (!events.containsAny(*Remote.STATE_UPDATE_EVENTS))
+            return
+
+        // Cancel any existing state update job. This is important to handle
+        // cases where multiple events might trigger this method in quick succession.
+        stateJob?.cancel()
+        // Launch a new coroutine to handle the state update.
+        stateJob = scope.launch {
+            // Introduce a delay (debounce) to prevent emitting state updates too frequently.
+            // This helps in scenarios where multiple related events occur close together.
+            delay(200)
+            val update = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
+                `package` = "com.prime.player"
+                val ids = AppWidgetManager.getInstance(applicationContext)
+                    .getAppWidgetIds(
+                        ComponentName(applicationContext, "com.zs.feature.widget.AppWidget")
+                    )
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            }
+            sendBroadcast(update)
         }
     }
 

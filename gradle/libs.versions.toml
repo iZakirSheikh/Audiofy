@@ -1,12 +1,13 @@
 [versions]
 agp = "8.13.0"
-kotlin = "2.2.10"
-compose = "1.9.0"
+kotlin = "2.2.20"
+compose = "1.9.1"
 media3 = "1.8.0"
 toolkit = "3.7.4-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
-room = "2.7.2"
+room = "2.8.0"
+glance = "1.1.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -20,14 +21,14 @@ ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version = "0.37.3" }
-androidx-activity = { module = "androidx.activity:activity", version = "1.10.1" }
+androidx-activity = { module = "androidx.activity:activity", version = "1.11.0" }
 androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version = "1.4.0-alpha02" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.17.0" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.1" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.3" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version = "2.9.4" }
 androidx-koin = { module = "io.insert-koin:koin-androidx-compose", version = "4.1.1" }
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.10" }
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.11.0" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.7" }
@@ -37,7 +38,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compo
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.0" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.1" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
 androidx-animation-compose = {module= "androidx.compose.animation:animation-graphics", version.ref = "compose"}
@@ -77,6 +78,9 @@ androidx-media3-session = { module = "androidx.media3:media3-session", version.r
 mp3agic = { module = "com.mpatric:mp3agic", version = "0.9.1" }
 nextlib = { module = "io.github.anilbeesetti:nextlib-media3ext", version = "1.8.0-0.9.0" }
 
+# Compose Glance
+glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 [bundles]
 icons = ["androidx-material-icons-core", "androidx-material-icons-extended"]

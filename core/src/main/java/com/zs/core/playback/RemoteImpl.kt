@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
@@ -278,60 +279,58 @@ internal class RemoteImpl(private val context: Context) : Remote {
     }
 
 
+    override suspend fun getNowPlaying(): NowPlaying? {
+        // If the events are not null and do not contain any of the relevant state update events,
+        // then there's no need to update the NowPlaying state, so we return early.
+        // if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
+        // Await the MediaBrowser instance.
+        val provider = fBrowser.await()
+        // Get the current media item from the provider.
+        val current = provider.currentMediaItem
+        // If there's no current media item, emit null (or the previous state will be retained by stateIn)
+        // and return early.
+        if (current == null)
+            return null
+        // Emit the newly created NowPlaying state.
+        return NowPlaying(
+            title = current.title?.toString(),
+            subtitle = current.subtitle?.toString(),
+            artwork = current.artworkUri,
+            speed = provider.playbackParameters.speed,
+            shuffle = provider.shuffleModeEnabled,
+            duration = provider.contentDuration,
+            position = provider.contentPosition,
+            // Check if the current media item is in the "favourites" playlist.
+            favourite = playlists.contains(
+                Remote.PLAYLIST_FAVOURITE,
+                current.mediaUri.toString()
+            ),
+            playWhenReady = provider.playWhenReady,
+            mimeType = current.mimeType,
+            state = provider.playbackState,
+            repeatMode = provider.repeatMode,
+            error = null,
+            videoSize = VideoSize(provider.videoSize),
+            data = current.mediaUri,
+            // Determine the presence of next and previous items.
+            // 2: both next and previous exist
+            // -1: only previous exists
+            // 1: only next exists
+            // 0: neither next nor previous exist
+            neighbours = when {
+                provider.hasNextMediaItem() && provider.hasPreviousMediaItem() -> 2
+                provider.hasPreviousMediaItem() -> -1
+                provider.hasNextMediaItem() -> 1
+                else -> 0
+            },
+            sleepAt = getRemainingSleepTime()
+        )
+    }
+
     override val state: StateFlow<NowPlaying?> = events
         .filter { it == null || it.containsAny(*Remote.STATE_UPDATE_EVENTS) }
         .debounceAfterFirst(200)
-        .transform { events ->
-            Log.d(TAG, "onEvents: $events")
-            // If the events are not null and do not contain any of the relevant state update events,
-            // then there's no need to update the NowPlaying state, so we return early.
-            // if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
-            // Await the MediaBrowser instance.
-            val provider = fBrowser.await()
-            // Get the current media item from the provider.
-            val current = provider.currentMediaItem
-            // If there's no current media item, emit null (or the previous state will be retained by stateIn)
-            // and return early.
-            if (current == null) {
-                emit(null)
-                return@transform
-            }
-            // Construct a new NowPlaying object with the current media item's details.
-            val state = NowPlaying(
-                title = current.title?.toString(),
-                subtitle = current.subtitle?.toString(),
-                artwork = current.artworkUri,
-                speed = provider.playbackParameters.speed,
-                shuffle = provider.shuffleModeEnabled,
-                duration = provider.contentDuration,
-                position = provider.contentPosition,
-                // Check if the current media item is in the "favourites" playlist.
-                favourite = playlists.contains(
-                    Remote.PLAYLIST_FAVOURITE,
-                    current.mediaUri.toString()
-                ),
-                playWhenReady = provider.playWhenReady,
-                mimeType = current.mimeType,
-                state = provider.playbackState,
-                repeatMode = provider.repeatMode,
-                error = null,
-                videoSize = VideoSize(provider.videoSize),
-                data = current.mediaUri,
-                // Determine the presence of next and previous items.
-                // 2: both next and previous exist
-                // -1: only previous exists
-                // 1: only next exists
-                // 0: neither next nor previous exist
-                neighbours = when {
-                    provider.hasNextMediaItem() && provider.hasPreviousMediaItem() -> 2
-                    provider.hasPreviousMediaItem() -> -1
-                    provider.hasNextMediaItem() -> 1
-                    else -> 0
-                },
-                sleepAt = getRemainingSleepTime()
-            ) // Emit the newly created NowPlaying state.
-            emit(state)
-        }
+        .map { getNowPlaying() }
         .flowOn(Dispatchers.Main)
         .stateIn(remoteScope, autostopPolicy, null)
 
@@ -357,7 +356,8 @@ internal class RemoteImpl(private val context: Context) : Remote {
 
     override suspend fun setPlaybackSpeed(value: Float): Boolean {
         val browser = fBrowser.await() // Await the MediaBrowser instance.
-        browser.playbackParameters = browser.playbackParameters.withSpeed(value) // Set the new playback speed.
+        browser.playbackParameters =
+            browser.playbackParameters.withSpeed(value) // Set the new playback speed.
         return browser.playbackParameters.speed == value // Verify if the speed was set correctly.
     }
 
@@ -408,10 +408,12 @@ internal class RemoteImpl(private val context: Context) : Remote {
 
         val id = browser[Remote.AUDIO_SESSION_ID].extras.getInt(Remote.EXTRA_AUDIO_SESSION_ID)
         return Equalizer(priority, id).apply {
-            val properties = browser[Remote.EQUALIZER_CONFIG].extras.getString(Remote.EXTRA_EQUALIZER_PROPERTIES)
+            val properties =
+                browser[Remote.EQUALIZER_CONFIG].extras.getString(Remote.EXTRA_EQUALIZER_PROPERTIES)
             if (!properties.isNullOrBlank())
                 setProperties(Equalizer.Settings(properties))
-            enabled = browser[Remote.EQUALIZER_CONFIG].extras.getBoolean(Remote.EXTRA_EQUALIZER_ENABLED)
+            enabled =
+                browser[Remote.EQUALIZER_CONFIG].extras.getBoolean(Remote.EXTRA_EQUALIZER_ENABLED)
         }
     }
 }

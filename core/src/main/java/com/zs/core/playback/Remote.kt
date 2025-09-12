@@ -245,4 +245,12 @@ interface Remote {
      * @return The newly created Equalizer instance.
      */
     suspend fun getEqualizer(priority: Int): Equalizer
+
+
+    /**
+     * Retrieves the current [NowPlaying] information.
+     *
+     * @return The [NowPlaying] object representing the currently playing media, or `null` if no media is playing.
+     */
+    suspend fun getNowPlaying(): NowPlaying?
 }

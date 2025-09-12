@@ -35,6 +35,12 @@
 #    public static int e(...);
 }
 
+## Don't remove classes from feature modules
+-keepclassmembers class com.zs.feature.codex.** {
+    public static * Codex(android.content.Context);
+}
+-keep class io.github.anilbeesetti.nextlib.media3ext.ffdecoder.** { *; }
+
 # Deon't obscate names of those objects that implements SafeArgs and Route
 -keepnames class * implements com.zs.audiofy.common.Route
 # FIXME: Firebase is currently throwing this error.

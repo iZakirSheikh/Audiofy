@@ -2,6 +2,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_dev24</item>
         <item>@string/changelog_400_dev23</item>
         <item>@string/changelog_400_dev22</item>
         <item>@string/changelog_400_dev21</item>
@@ -16,7 +17,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev23</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_dev24</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='yellow'>(v4.0.0-dev12)</font></b>
@@ -155,5 +156,19 @@
           \n- <b>Dynamic Feature Module Installation</b>:
           \n    - Implemented infrastructure to install dynamic feature modules (e.g., "Codex") via the Play Store.
           </font>
+    </string>
+
+    <!--v4.0.0-dev24-->
+    <string name="changelog_400_dev24" translatable="false">
+         <b>What’s New <font color='yellow'>(v4.0.0-dev24)</font></b>
+        <font color='grey'>
+          \n- <b>New Glance-based App Widget:</b>
+          \n    - Displays playback information and controls.
+          \n    - Adapts layout based on size (Compact, Square, Normal).
+          \n    - <b>Compact:</b> Artwork, Chronometer, Title, Play/Pause.
+          \n    - <b>Square:</b> Artwork with overlaid Chronometer, Prev/Play/Pause/Next controls.
+          \n    - <b>Normal:</b> Artwork, Title, Subtitle, Prev/Play/Pause/Next controls, Favourite button.
+          \n    - Launches the main app on click.
+        </font>
     </string>
 </resources>
