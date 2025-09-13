@@ -179,6 +179,7 @@
         <font color='grey'>
           \n- <b>Better Media Handling:</b> Improved playback of files opened from other apps (e.g., file manager), now with metadata and artwork.
           \n- <b>Smoother App Start:</b> Fixed potential playback issues when opening media on a cold app start.
+          \n- <b>True Album Art:</b> Option to display actual embedded album art instead of MediaStore thumbnails for a richer visual experience (can be toggled in settings).
           \n- <b>UI Polish:</b> Minor layout adjustments in the player for better text and control display.
           \n- <b>Under-the-Hood Fixes:</b> Internal optimizations for a smaller app size.
         </font>

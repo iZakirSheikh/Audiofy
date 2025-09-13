@@ -192,7 +192,6 @@ class VideoThumbnailFetcher(
         )
 
         // Return the decoded drawable result
-        // Return the decoded drawable result
         return ImageFetchResult(
             image = bitmap.asImage(),
             isSampled = isSampled,

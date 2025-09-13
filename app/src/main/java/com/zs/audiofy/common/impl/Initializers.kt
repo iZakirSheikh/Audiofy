@@ -20,14 +20,15 @@ package com.zs.audiofy.common.impl
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.animation.core.AnimationConstants
 import androidx.startup.Initializer
 import coil3.annotation.DelicateCoilApi
 import coil3.asImage
 import coil3.request.crossfade
 import com.zs.audiofy.R
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.settings.Settings
 import com.zs.compose.theme.snackbar.SnackbarHostState
+import com.zs.core.coil.MediaMetaDataArtFetcher
 import com.zs.core.coil.VideoThumbnailFetcher
 import com.zs.core.db.playlists.Playlists
 import com.zs.core.playback.Remote
@@ -83,7 +84,11 @@ class CoilInitializer : Initializer<Unit> {
         val loader = ImageLoader(context)
             .error(error)
             .crossfade(450)
-            .components { add(VideoThumbnailFetcher.Factory()) }
+            .components {
+                if (!AppConfig.isLoadThumbnailFromCache)
+                    add(MediaMetaDataArtFetcher.Factory())
+                add(VideoThumbnailFetcher.Factory())
+            }
             .build()
         // set global image loader
         Coil(loader)
