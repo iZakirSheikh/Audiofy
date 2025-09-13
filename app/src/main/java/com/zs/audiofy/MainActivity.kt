@@ -483,12 +483,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         val data = intent.data ?: return
         // Use a coroutine to handle the media item construction and playback.
         lifecycleScope.launch {
-            // Construct a MediaItem using the obtained parameters.
-            // (Currently, details about playback queue setup are missing.)
-            // TODO - Extract artwork using MediaMetaDataRetriever
-            val item = MediaFile(data, mimeType = intent.type)
-            // Play the media item by replacing the existing queue.
-            relay.setMediaFiles(listOf(item))
+            relay.setMediaItem(data)
             relay.play()
         }
         // FixMe - Don't navigate if this is main intent; as we have already set it as origin.
@@ -529,6 +524,16 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         if (isColdStart) {
             // Trigger update flow
             initiateUpdateFlow()
+            // Handle pending intents after a brief delay to ensure UI readiness
+            // TODO: Replace this with new approach
+            lifecycleScope.launch {
+                // Introducing a delay of 1000 milliseconds (1 second) here is essential
+                // to ensure that the UI is fully prepared to receive the intent.
+                // This delay gives the UI components time to initialize and be ready
+                // to handle the incoming intent without any potential issues.
+                delay(1000)
+                onNewIntent(intent)
+            }
             // Promote media player on every 5th launch
             // TODO - properly handle promotional content.
             lifecycleScope.launch {

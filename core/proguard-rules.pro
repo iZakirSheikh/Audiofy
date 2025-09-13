@@ -28,5 +28,3 @@
 -keepnames class androidx.media3.exoplayer.source.ShuffleOrder$DefaultShuffleOrder {
     private int[] shuffled;
 }
-
--keep class com.zs.feature.telemetry.AnalyticsImpl { *; }

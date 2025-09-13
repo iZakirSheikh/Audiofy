@@ -46,3 +46,6 @@
 # FIXME: Firebase is currently throwing this error.
 # TODO: Investigate and resolve this error. It began appearing after relocating Firebase to the Telemetry feature module.
 -dontwarn com.google.firebase.encoders.json.NumberedEnum
+# Keep feature dynamic module Analytics
+-keep class com.zs.feature.telemetry.AnalyticsImpl { *; }
+ō

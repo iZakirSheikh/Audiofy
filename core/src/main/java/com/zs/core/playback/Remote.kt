@@ -253,4 +253,13 @@ interface Remote {
      * @return The [NowPlaying] object representing the currently playing media, or `null` if no media is playing.
      */
     suspend fun getNowPlaying(): NowPlaying?
+
+    /**
+     * Sets the media item to be played using the provided [Uri].
+     * This function prepares the player with the specified media item.
+     * Playback does not start automatically; use [play] to start playback.
+     *
+     * @param uri The [Uri] of the media item to be set.
+     */
+    suspend fun setMediaItem(uri: Uri)
 }
