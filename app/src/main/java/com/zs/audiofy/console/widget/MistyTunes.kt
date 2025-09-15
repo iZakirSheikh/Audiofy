@@ -203,7 +203,7 @@ fun MistyTunes(
                     // Placeholder for playingbars
                     Spacer(Modifier.sharedElement(RouteConsole.ID_PLAYING_INDICATOR))
                     // Like
-                    val size = Modifier.size(35.dp)
+                    val size = Modifier.size(35.dp).scale(0.9f)
                     LottieAnimatedButton(
                         R.raw.lt_twitter_heart_filled_unfilled,
                         onClick = { onRequest(Widget.REQUEST_LIKED) },

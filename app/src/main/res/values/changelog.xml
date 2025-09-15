@@ -182,6 +182,8 @@
           \n- <b>True Album Art:</b> Option to display actual embedded album art instead of MediaStore thumbnails for a richer visual experience (can be toggled in settings).
           \n- <b>UI Polish:</b> Minor layout adjustments in the player for better text and control display.
           \n- <b>Under-the-Hood Fixes:</b> Internal optimizations for a smaller app size.
+          \n- <b>UI Consistency:</b> Standardized rounded corners in various player components for a more unified look.
+          \n- <b>Widget Refinement:</b> The "Like" button animation in the MistyTunes widget has been slightly adjusted for a smoother visual.
         </font>
     </string>
 </resources>

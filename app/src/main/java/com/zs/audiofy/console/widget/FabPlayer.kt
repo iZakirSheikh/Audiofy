@@ -39,7 +39,7 @@ fun FabPlayer(
     onRequest: (code: Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = AppTheme.shapes.large
+    val shape = AppTheme.shapes.medium
     Box(
         modifier = modifier
             .sharedElement(RouteConsole.ID_BACKGROUND)
