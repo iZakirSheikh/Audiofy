@@ -30,7 +30,9 @@ import androidx.compose.runtime.LongState
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -48,7 +50,9 @@ import com.zs.compose.theme.AppTheme
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.Remote
 import com.zs.core.playback.VideoProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
@@ -291,44 +295,46 @@ fun VideoSurface(
     modifier: Modifier = Modifier,
     keepScreenOn: Boolean = false
 ) {
+    var view by remember { mutableStateOf<SurfaceView?>(null) }
+
     AndroidView(
         modifier = modifier,
-
         // Factory: creates a new SurfaceView when this Composable first enters the composition.
         factory = ::SurfaceView,
-
-        // Update: called on every recomposition to keep the SurfaceView in sync.
-        update = { surface ->
+        onReset = {},
+        update = {
             Log.d(TAG, "VideoSurface: updating")
             // Prevents the screen from turning off during video playback.
-            surface.keepScreenOn = keepScreenOn
-
-            // Wrap the tag in a VideoProvider to check which provider is currently attached.
-            val attached = VideoProvider(surface.tag)
-
-            // If this SurfaceView is either unbound (isEmpty) OR bound to a different provider,
-            // detach it from the old provider and reattach it to the new one.
-            if (attached.isEmpty || (attached != provider && attached.canSetVideoSurface)) {
-                attached.clearVideoSurfaceView(surface)
-                provider.setVideoSurfaceView(surface)
-
-                // Remember the current provider in the SurfaceView's tag,
-                // so we can detect changes in future recompositions.
-                surface.tag = provider.value
-            }
+            it.keepScreenOn = keepScreenOn
+            view = it
         },
-
-        // onRelease: called when the SurfaceView is being disposed (removed from the UI).
-        // Ensures that the player is properly detached from this surface.
-        onRelease = { surface ->
-            val attached = VideoProvider(surface.tag)
-            surface.keepScreenOn = false
-            if (attached.canSetVideoSurface) {
-                attached.clearVideoSurfaceView(surface)
-            }
-            Log.d(TAG, "VideoSurface: Releasing")
-        }
     )
+
+    view?.let { view ->
+        LaunchedEffect(view, provider.value) {
+            val attached = VideoProvider(view.tag)
+
+            if (provider.isEmpty) {
+                // Handle null provider safely
+                withContext(Dispatchers.Main) {
+                    if (attached.canSetVideoSurface)
+                        attached.clearVideoSurfaceView(view)
+                    view.tag = null
+                }
+                return@LaunchedEffect
+            }
+
+            if (attached.value != provider.value) {
+                if (attached.canSetVideoSurface)
+                    attached.clearVideoSurfaceView(view)
+
+                if (provider.canSetVideoSurface) {
+                    provider.setVideoSurfaceView(view)
+                    view.tag = provider.value
+                }
+            }
+        }
+    }
 }
 
 /**

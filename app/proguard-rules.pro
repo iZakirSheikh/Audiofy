@@ -48,4 +48,3 @@
 -dontwarn com.google.firebase.encoders.json.NumberedEnum
 # Keep feature dynamic module Analytics
 -keep class com.zs.feature.telemetry.AnalyticsImpl { *; }
-ō
