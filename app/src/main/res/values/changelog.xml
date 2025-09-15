@@ -177,13 +177,14 @@
     <string name="changelog_400_dev25" translatable="false">
          <b>What’s New <font color='yellow'>(v4.0.0-dev25)</font></b>
         <font color='grey'>
-          \n- <b>Better Media Handling:</b> Improved playback of files opened from other apps (e.g., file manager), now with metadata and artwork.
-          \n- <b>Smoother App Start:</b> Fixed potential playback issues when opening media on a cold app start.
-          \n- <b>True Album Art:</b> Option to display actual embedded album art instead of MediaStore thumbnails for a richer visual experience (can be toggled in settings).
-          \n- <b>UI Polish:</b> Minor layout adjustments in the player for better text and control display.
-          \n- <b>Under-the-Hood Fixes:</b> Internal optimizations for a smaller app size.
-          \n- <b>UI Consistency:</b> Standardized rounded corners in various player components for a more unified look.
+          \n- <b>Better Media Playback:</b> Enjoy smoother playback of files opened from other apps (like your file manager), now showing correct song info and artwork.
+          \n- <b>Smoother App Start:</b> Fixed issues when opening media files if the app wasn\'t already running.
+          \n- <b>Real Album Art:</b> See the actual album art embedded in your music files, not just generic thumbnails. You can turn this on in settings for a richer look.
+          \n- <b>Player UI Tweaks:</b> Small visual improvements in the player for clearer text and easier control access.
+          \n- <b>Smaller App Size:</b> We\'ve made some internal changes to make the app a bit smaller.
+          \n- <b>Consistent Look:</b> Player elements now have matching rounded corners for a cleaner design.
           \n- <b>Widget Refinement:</b> The "Like" button animation in the MistyTunes widget has been slightly adjusted for a smoother visual.
+          \n- <b>Improved Background Visuals:</b> If your device doesn\'t support background blur, the Acrylic background now has a nice "frosted glass" effect, ensuring the app still looks great.
         </font>
     </string>
 </resources>

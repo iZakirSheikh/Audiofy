@@ -20,6 +20,7 @@ package com.zs.audiofy.common.compose
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
+import android.graphics.BlurMaskFilter
 import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
@@ -30,13 +31,18 @@ import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.luminance
@@ -49,8 +55,11 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import com.zs.audiofy.R
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.Background
+import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.background
+import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.Colors
 import com.zs.core.coil.ReBlurTransformation
@@ -102,33 +111,32 @@ fun Colors.background(
     luminance: Float = 0.07f,
     blendMode: BlendMode = BlendMode.SrcOver,
     progressive: Float = -1f,
-) = Background(
-    Modifier.hazeEffect(state = surface) {
-        this.blurEnabled = true
-        this.blurRadius = blurRadius
-        this.backgroundColor = containerColor
-        // Disable noise factor on Android versions below 12.
-        this.noiseFactor = noiseFactor
-        this.tints = buildList {
-            // apply luminosity just like in Microsoft Acrylic.
-            if (luminance != -1f)
-                this += HazeTint(Color.White.copy(0.07f), BlendMode.Luminosity)
-            this += HazeTint(tint, blendMode = blendMode)
-        }
-        // Configure progressive blurring (if enabled).
-        if (progressive != -1f) {
-            this.progressive = HazeProgressive.verticalGradient(
-                startIntensity = progressive,
-                endIntensity = 0f,
-                preferPerformance = true
-            )
-            // Adjust input scale for Android versions below 12 for better visuals.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
-                inputScale = HazeInputScale.Fixed(0.5f)
-            mask = PROGRESSIVE_MASK
-        }
+) = if (!AppConfig.isBackgroundBlurEnabled) Background(Modifier.acrylic(background, accent))
+else Background(Modifier.hazeEffect(state = surface) {
+    this.blurEnabled = true
+    this.blurRadius = blurRadius
+    this.backgroundColor = containerColor
+    // Disable noise factor on Android versions below 12.
+    this.noiseFactor = noiseFactor
+    this.tints = buildList {
+        // apply luminosity just like in Microsoft Acrylic.
+        if (luminance != -1f)
+            this += HazeTint(Color.White.copy(0.07f), BlendMode.Luminosity)
+        this += HazeTint(tint, blendMode = blendMode)
     }
-)
+    // Configure progressive blurring (if enabled).
+    if (progressive != -1f) {
+        this.progressive = HazeProgressive.verticalGradient(
+            startIntensity = progressive,
+            endIntensity = 0f,
+            preferPerformance = true
+        )
+        // Adjust input scale for Android versions below 12 for better visuals.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+            inputScale = HazeInputScale.Fixed(0.5f)
+        mask = PROGRESSIVE_MASK
+    }
+})
 
 /** Creates and [remember] s the instance of [HazeState] */
 @Composable
@@ -257,3 +265,103 @@ fun Acrylic(
             }
     )
 }
+
+private fun Modifier.acrylic(containerColor: Color, accent: Color) =
+    background(containerColor)
+        .graphicsLayer(compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen)
+        .drawWithCache {
+            val paint = Paint().apply {
+                style = PaintingStyle.Stroke
+                // Add blur effect on the Paint (but check if it renders well on lines)
+                this.asFrameworkPaint().maskFilter =
+                    BlurMaskFilter(200f, BlurMaskFilter.Blur.NORMAL)
+            }
+            // Algorithm
+            // This effect simulates the appearance of frosted glass or acrylic material. It involves:
+            // 1. Drawing a base rectangle with the [containerColor].
+            // 2. Drawing a series of blurred circles with varying colors and opacities, based on the [accent] color
+            //    and the luminance of the [containerColor].
+            // 3. Drawing an overlay rectangle with a slightly transparent version of the [containerColor].
+            // 4. Applying a noise texture visual effect on top.
+            // The positions and sizes of the circles are determined dynamically based on the dimensions
+            // of the drawing area.
+            onDrawBehind {
+                // Determine if the container color is light based on its luminance.
+                val isLight = containerColor.luminance() >= 0.5f
+
+                // Draw the main rectangle with the container color.
+                // drawRect(containerColor)
+
+                // Get the width and height of the drawing area and calculate the diameter for circles.
+                val (w, h) = size
+                val vertical = w < h
+                val dp = if (vertical) h / 8 else w / 8
+
+                // Set the paint color to accent and adjust the stroke width.
+                paint.color = accent
+                paint.strokeWidth = dp * 0.7f
+                // Draw the first circle with the accent color.
+                var x = if (!vertical) 2 * dp else size.center.x
+                var y = if (!vertical) size.center.y else 2 * dp
+                this.drawContext.canvas.drawCircle(
+                    Offset(x, y),
+                    dp,
+                    paint
+                )
+
+                // Change the paint color based on whether the container color is light or dark.
+                paint.color = if (isLight) Color.Black else Color.White.copy(0.5f)
+                // Draw the second circle with the modified color.
+                x = if (!vertical) 3 * dp else size.center.x
+                y = if (!vertical) size.center.y else 3 * dp
+                this.drawContext.canvas.drawCircle(
+                    Offset(x, y),
+                    dp,
+                    paint
+                )
+
+                // Set the paint color to a slightly transparent version of the accent color.
+                paint.color = accent.copy(0.7f)
+                // Draw the third circle with the adjusted accent color.
+                x = if (!vertical) 5 * dp else size.center.x
+                y = if (!vertical) size.center.y else 5 * dp
+                this.drawContext.canvas.drawCircle(
+                    Offset(x, y),
+                    dp,
+                    paint
+                )
+
+                // Reset the paint color to the original accent color.
+                paint.color = accent
+
+                // Draw the fourth circle with the accent color.
+                x = if (!vertical) 8 * dp else size.center.x
+                y = if (!vertical) size.center.y else 8 * dp
+                this.drawContext.canvas.drawCircle(
+                    Offset(x, y),
+                    dp,
+                    paint
+                )
+
+                // Set the paint color to black.
+                paint.color = Color.Black
+                // Draw the fifth circle with black color.
+                x = if (!vertical) 10 * dp else size.center.x
+                y = if (!vertical) size.center.y else 10 * dp
+                this.drawContext.canvas.drawCircle(
+                    Offset(x, y),
+                    dp,
+                    paint
+                )
+
+                // Draw the top rectangle with a slightly transparent version of the container color.
+                // drawRect(containerColor.copy(if (isLight) 0.73f else 0.60f))
+                // Finally, apply the luminosity effect.
+                drawRect(
+                    color = Color.White.copy(alpha = if (isLight) 0.80f else 0.90f),
+                    // DstOut blend mode creates a cutout effect, enhancing luminosity.
+                    blendMode = BlendMode.DstOut
+                ) // Alpha is adjusted based on light/dark theme.
+            }
+        }
+        .visualEffect(ImageBrush.NoiseBrush, if (containerColor.luminance() > 0.5f) 0.1f else 0.05f)
