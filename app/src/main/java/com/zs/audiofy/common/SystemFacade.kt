@@ -11,6 +11,7 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.net.toUri
+import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.zs.audiofy.BuildConfig
 import com.zs.audiofy.settings.Settings.PKG_MARKET_ID
 import com.zs.audiofy.settings.Settings.PREFIX_MARKET_FALLBACK
@@ -176,4 +177,8 @@ interface SystemFacade {
      * ```
      */
     fun restart(global: Boolean = false)
+
+    fun isFeatureInstalled(id: String): Boolean
+
+    fun initiateFeatureInstall(request: SplitInstallRequest)
 }

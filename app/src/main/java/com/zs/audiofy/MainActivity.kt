@@ -155,7 +155,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
     private val preferences: Preferences by inject()
     private var navController: NavHostController? = null
     private val analytics: Analytics by inject()
-    private val paymaster by lazy {
+    val paymaster by lazy {
         Paymaster(this, BuildConfig.PLAY_CONSOLE_APP_RSA_KEY, Paymaster.products)
     }
 
@@ -256,9 +256,9 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }
     }
 
-    fun isFeatureInstalled(id: String): Boolean = inAppFeatureManager.installedModules.contains(id)
+    override fun isFeatureInstalled(id: String): Boolean = inAppFeatureManager.installedModules.contains(id)
 
-    fun initiateFeatureInstall(request: SplitInstallRequest) {
+    override fun initiateFeatureInstall(request: SplitInstallRequest) {
         inAppFeatureManager.startInstall(request)
     }
 

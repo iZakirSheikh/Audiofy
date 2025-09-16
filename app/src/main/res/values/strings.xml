@@ -58,7 +58,7 @@
         <item quantity="one">1 file</item>
         <item quantity="other">%d files</item>
     </plurals>
-    <string name="scr_new_playlists_title">New <b>Playlist</b>\n<font color='grey' size='11'><sup>Quickly create or edit.</sup></font></string>
+    <string name="scr_new_playlists_title">New <b>Playlist</b><font color='grey' size='11'><sup>\nQuickly create or edit.</sup></font></string>
     <string name="scr_new_playlist_enter_name">Enter playlist name.</string>
     <string name="scr_new_playlist_text_field_placeholder">Tap here to start typing…</string>
     <string name="scr_new_playlist_desc_placeholder">Type playlist description…</string>
@@ -98,8 +98,7 @@
     <string name="sponsor">Sponsor</string>
     <string name="unlock">Unlock</string>
     <!--Title to the audio library screen-->
-    <string name="scr_library_title">
-        Media <b>Library</b>\n  <font size="10"> <sup><sup>Let\'s make the magic happen.</sup></sup> </font>
+    <string name="scr_library_title">Media <b>Library</b><font size="10"> <sup><sup>\nLet\'s make the magic happen.</sup></sup> </font>
     </string>
     <string name="library_shortcuts">Shortcuts\n<font color='grey' size="11"><sup>The faster way to get things done</sup></font> </string>
     <string name="library_history">History\n<font color='grey' size="11"><sup>Where Memories are Made.</sup></font> </string>
@@ -219,16 +218,14 @@
     <string name="duration_under_5_min">Small (≤ 5 min)</string>
     <string name="duration_under_10_min">Normal (≤ 10 min)</string>
     <string name="duration_over_10_min">Long (10+ min)</string>
-    <string name="scr_audios_title">
-          Audio <b>Library</b>\n  <font size="10"> <sup><sup>Organize. Discover. Enjoy.</sup></sup> </font>
+    <string name="scr_audios_title">Audio <b>Library</b><font size="10"> <sup><sup>\nOrganize. Discover. Enjoy.</sup></sup> </font>
     </string>
     <string name="scr_video_folders_title"><b>Video</b> Folders<font size="10"> <sup><sup>\nTune into Your Collection.</sup></sup> </font></string>
     <string name="scr_audio_folders_title"><b>Audio</b> Folders<font size="10"> <sup><sup>\nLights, Camera, Organized.</sup></sup> </font></string>
     <string name="remove">Remove</string>
     <string name="scr_members_liked_playlist_title">Liked<font size="10"> <sup><sup>\nOnly the Essentials.</sup></sup> </font></string>
     <string name="playlists">Playlists</string>
-    <string name="scr_videos_title">
-          Video <b>Library</b>\n  <font size="10"> <sup><sup>Keep It Local. Keep It Yours.</sup></sup> </font>
+    <string name="scr_videos_title">Video <b>Library</b><font size="10"> <sup><sup>\nKeep It Local. Keep It Yours.</sup></sup> </font>
     </string>
     <string name="allow">Allow</string>
     <string name="scr_permission_title">Storage Permission</string>
@@ -245,16 +242,16 @@
     <string name="search">Search</string>
     <string name="play">Play</string>
     <string name="shuffle">Shuffle</string>
-    <string name="scr_albums_title"><b>Audio </b>Albums\n<font size="10"><sup><sup>Pure Sound. Pure You.</sup></sup></font>
+    <string name="scr_albums_title"><b>Audio </b>Albums<font size="10"><sup><sup>\nPure Sound. Pure You.</sup></sup></font>
     </string>
-    <string name="scr_genres_title"><b>Audio</b> Genres\n<font size="10"><sup><sup>Tune In to Variety.</sup></sup></font>
+    <string name="scr_genres_title"><b>Audio</b> Genres<font size="10"><sup><sup>\nTune In to Variety.</sup></sup></font>
     </string>
-    <string name="scr_artists_title"><b>Audio</b> Artists\n<font size="10"><sup><sup>Soundtracks by Your Favorites.</sup></sup></font>
+    <string name="scr_artists_title"><b>Audio</b> Artists<font size="10"><sup><sup>\nSoundtracks by Your Favorites.</sup></sup></font>
 </string>
-    <string name="scr_settings_title">App <b>Settings</b>\n<font size="10"><sup><sup>Tune It Your Way.</sup></sup></font>
+    <string name="scr_settings_title">App <b>Settings</b><font size="10"><sup><sup>\nTune It Your Way.</sup></sup></font>
 </string>
     <string name="playing">Playing</string>
-    <string name="scr_queue_title">Playing <b>Queue</b>\n<font size="10"><sup><sup>Control, Play, Relax.</sup></sup></font></string>
+    <string name="scr_queue_title">Playing <b>Queue</b><font size="10"><sup><sup>\nControl, Play, Relax.</sup></sup></font></string>
     <string name="now_playing">Now Playing</string>
     <string name="up_next">Up Next</string>
     <!--Appends x to number at end.-->
@@ -285,13 +282,13 @@
     </string>
     <string name="msg_error_playback_speed"><b>Oops, Error!</b>\nFailed to update playback speed. </string>
     <string name="msg_playback_speed_updated_f">Playback speed: %1$.2fx</string>
-    <string name="scr_effects_title">Studio<b>Fx</b>\n<font size="10"><sup><sup>Experiment. Adjust. Enjoy.</sup></sup></font>\n</string>
+    <string name="scr_effects_title">Studio<b>Fx</b><font size="10"><sup><sup>\nExperiment. Adjust. Enjoy.</sup></sup></font>\n</string>
     <string name="equalizer">Equalizer</string>
     <string name="scr_effects_db_suffix_d">%1$s dB</string>
     <string name="scr_effects_hz_suffix_d">%1$s Hz</string>
 
     <string name="scr_tag_editor_pro_title">Tag <b>Editor</b> <sup><font color="#00a300" size="11">Pro</font></sup>\n<font size="10"><sup><sup>Edit. Enhance. Perfect your tags.</sup></sup></font></string>
-    <string name="scr_tag_editor_title">Tag <b>Editor</b>\n<font size="10"><sup><sup>Edit. Enhance. Perfect your tags.</sup></sup></font></string>
+    <string name="scr_tag_editor_title">Tag <b>Editor</b><font size="10"><sup><sup>\nEdit. Enhance. Perfect your tags.</sup></sup></font></string>
     <string name="scr_tag_editor_extra_info_ssss"><small>Channel</small> <b>\n%1s\n</b> Bitrate <b>\n%1s  kbps</b>\n Duration \n <b>\n%1s\n</b> Sample rate <b>\n%1s Hz\n</b></string>
     <string name="msg_tag_editor_buy_me_banner">Enhance your experience by upgrading to
         <b>Tag Editor Pro</b>, where you can edit lyrics and album art seamlessly.
@@ -316,4 +313,11 @@
     <string name="restart">Restart</string>
     <string name="msg_apply_changes_restart">Restart the app for changes to take effect.</string>
     <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font color='grey' size="11">A new feature has been unlocked!\n<b>Download</b> it now and remember to <b>restart</b> the app to use it.</font></string>
+
+    <string name="scr_about_us_title">About <b>Us</b><font size="10"> <sup><sup>\nDesigned with passion, built for you.</sup></sup> </font></string>
+    <string name="installed">Installed</string>
+    <string name="purchased">Purchased</string>
+    <string name="tap_to_install">Tap to Install</string>
+    <string name="tap_to_purchase">Tap to Purchase</string>
+
 </resources>

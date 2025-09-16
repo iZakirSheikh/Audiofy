@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+        Changelog Version Color Coding Rules:
+        1. Dev / Nightly : Crimson #DC143C    (Experimental builds, potentially unstable)
+        2. Alpha         : Orange     (Early testing phase, features may be incomplete)
+        3. Beta          : DodgerBlue (More stable testing phase, nearing feature completion)
+        4. RC            : Purple     (Release Candidate, polish and bug fixing phase)
+        5. Release       : Green      (Stable public release)
+    -->
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
         <item>@string/changelog_400_dev25</item>
@@ -18,10 +26,10 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_dev25</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_alpha01</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
-        <b>What’s New <font color='yellow'>(v4.0.0-dev12)</font></b>
+        <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
         <font color='grey'>
             \n - Added Video Surface support.
             \n - Added support compact layout in support Console, new rich animations.
@@ -38,7 +46,7 @@
     </string>
     <!--v4.0.0-dev13-->
     <string name="changelog_400_dev13" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev13)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev13)\n</font></b>
         <font color='grey'>
            \n- Fixed an issue where <b>scrubbing</b> could cause an <font color='red'>ANR</font> crash.
            \n- Fixed an issue where the <b>slider</b> would jump unexpectedly during seek.
@@ -47,7 +55,7 @@
     </string>
     <!--v4.0.0-dev14-->
     <string name="changelog_400_dev14" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev14)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev14)\n</font></b>
         <font color='grey'>
            \n- Implemented an <b>auto-hide controller</b> for a more immersive video playback experience.
            \n- Introduced a <b>toggle for rotation lock</b>, giving users more control over screen orientation.
@@ -57,7 +65,7 @@
     </string>
     <!--v4.0.0-dev15-->
     <string name="changelog_400_dev15" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev15)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev15)\n</font></b>
         <font color='grey'>
            \n- Added <b><i>Like/Unlike</i></b> button in <b>Media Notification</b>
            \n- Added a <b>Lock controller</b> for the player controller when playing videos, preventing accidental interactions.
@@ -66,7 +74,7 @@
     </string>
     <!--v4.0.0-dev16-->
     <string name="changelog_400_dev16" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev16)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev16)\n</font></b>
         <font color='grey'>
            \n- Implemented an <b>Acrylic effect</b> for the Console background, creating an immersive ambient lighting experience.
            \n- Resolved an issue with <b>state updates</b> that occasionally caused them to fail, ensuring more reliable UI responsiveness.
@@ -74,7 +82,7 @@
     </string>
     <!--v4.0.0-dev17-->
     <string name="changelog_400_dev17" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev17)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev17)\n</font></b>
         <font color='grey'>
            \n- Adjusted parameters of <b>Acrylic background effect</b> for console, enhancing visual depth and clarity.
            \n- <b>Colorization strategy</b> toggle now switches between <i>default</i> and <i>wallpaper-based</i> themes, offering greater personalization.
@@ -85,7 +93,7 @@
     </string>
     <!--v4.0.0-dev18-->
     <string name="changelog_400_dev18" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev18)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev18)\n</font></b>
         <font color='grey'>
            \n- Integrated <b>Sleep Timer</b> functionality with a dedicated user interface and underlying logic.
            \n- Implemented <b>Playback Speed</b> controls, complete with user interface elements and operational logic.
@@ -94,7 +102,7 @@
     </string>
     <!--v4.0.0-dev19-->
     <string name="changelog_400_dev19" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev19)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev19)\n</font></b>
         <font color='grey'>
            \n- Added <b>Equalizer</b>; you can now adjust audio frequencies for a personalized listening experience.
            \n- Implemented <b>Presets</b> for the Equalizer, allowing quick selection of optimized audio settings.
@@ -104,7 +112,7 @@
     </string>
     <!--v4.0.0-dev20-->
     <string name="changelog_400_dev20" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev20)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev20)\n</font></b>
         <font color='grey'>
            \n- Enhanced <b>Media Management</b>: Added "Remove" and "Delete" options to the Media player screen. "Remove" takes a track out of the current playlist, while "Delete" removes it from the phone and playlist, potentially moving it to a trash folder if supported. Buttons have been updated for a better look and feel.
            \n- Smoother <b>Playback Queue</b>: Improved animation for currently playing songs in the queue.
@@ -117,7 +125,7 @@
     </string>
     <!--v4.0.0-dev21-->
     <string name="changelog_400_dev21" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev21)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev21)\n</font></b>
         <font color='grey'>
            \n- Added MP3 <b>Tag Editor</b>: View/edit metadata (title, artist, album, etc.). Adaptive UI; Pro features for lyrics/artwork.
            \n- Refined UI in the <b>Queue</b>: the currently playing item\'s title now animates its font weight.
@@ -132,7 +140,7 @@
     </string>
     <!--v4.0.0-dev22-->
     <string name="changelog_400_dev22" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev22)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev22)\n</font></b>
         <font color='grey'>
            \n- <b>Save MP3 Tag Edits</b>: You can now save changes to MP3 tags with a confirmation before overwriting.
            \n- <b>MP3 Only Edits</b>: The "Edit" option now checks if a file is an MP3, showing a message if it\'s not.
@@ -144,7 +152,7 @@
     </string>
     <!--v4.0.0-dev23-->
     <string name="changelog_400_dev23" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev23)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev23)\n</font></b>
         <font color='grey'>
           \n- Refined <b>Console</b> UI: Streamlined dialog management and introduced dedicated state for queue visibility.
           \n- Improved <b>Sleep Timer</b> Dialog: "Start" button moved to actions slot with updated styling.
@@ -161,7 +169,7 @@
 
     <!--v4.0.0-dev24-->
     <string name="changelog_400_dev24" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev24)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev24)\n</font></b>
         <font color='grey'>
           \n- <b>New Glance-based App Widget:</b>
           \n    - Displays playback information and controls.
@@ -175,7 +183,7 @@
 
     <!--v4.0.0-dev25-->
     <string name="changelog_400_dev25" translatable="false">
-         <b>What’s New <font color='yellow'>(v4.0.0-dev25)</font></b>
+         <b>What’s New <font color='maroon'>(v4.0.0-dev25)\n</font></b>
         <font color='grey'>
           \n- <b>Better Media Playback:</b> Enjoy smoother playback of files opened from other apps (like your file manager), now showing correct song info and artwork.
           \n- <b>Smoother App Start:</b> Fixed issues when opening media files if the app wasn\'t already running.
@@ -185,6 +193,19 @@
           \n- <b>Consistent Look:</b> Player elements now have matching rounded corners for a cleaner design.
           \n- <b>Widget Refinement:</b> The "Like" button animation in the MistyTunes widget has been slightly adjusted for a smoother visual.
           \n- <b>Improved Background Visuals:</b> If your device doesn\'t support background blur, the Acrylic background now has a nice "frosted glass" effect, ensuring the app still looks great.
+        </font>
+    </string>
+
+    <!--v4.0.0-dev26-->
+    <string name="changelog_400_alpha01" translatable="false">
+         <b>What’s New <font color='olive'>(v4.0.0-alpha01)\n</font></b>
+        <font color='grey'>
+          \n- <b><u>New "About Us" Screen</u>:</b> App info, changelogs, and our other apps in one place (Library "Info" icon).
+          \n- <b><u>Rate &amp; Support Us</u>:</b> Rate the app or <b>Buy me a coffee</b> via the new "About Us" screen.
+          \n- <b><u>Discover More Apps</u>:</b> Find our other apps with icons and Play Store links in <b><u>More from Us</u></b> on the "About Us" screen.
+          \n- <b><u>Stay Updated</u>:</b> Access the full changelog in-app, with highlighted release notes.
+          \n- <b><u>Quick Links</u>:</b> <i><b>Feedback, GitHub, bug reports, Telegram</b></i> links now in the <u><b>About Us</b></u> top bar.
+          \n- <b><u>Minor UI Tweaks</u>:</b> Small text and layout adjustments for a smoother experience.
         </font>
     </string>
 </resources>

@@ -70,6 +70,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.zs.audiofy.about.AboutUs
+import com.zs.audiofy.about.RouteAboutUs
 import com.zs.audiofy.audios.Audios
 import com.zs.audiofy.audios.RouteAudios
 import com.zs.audiofy.audios.directory.Albums
@@ -434,6 +436,11 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RouteEditor){
         val viewState = koinViewModel<EditorViewModel>()
         Editor(viewState)
+    }
+
+    // AboutUs
+    composable(RouteAboutUs){
+        AboutUs()
     }
 }
 
