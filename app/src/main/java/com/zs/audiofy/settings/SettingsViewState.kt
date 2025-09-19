@@ -15,7 +15,6 @@ import com.zs.audiofy.common.ColorizationStrategy
 import com.zs.audiofy.common.IAP_ARTWORK_SHAPE_ROUNDED_RECT
 import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_IPHONE
 import com.zs.audiofy.common.NightMode
-import com.zs.audiofy.common.Route
 import com.zs.audiofy.settings.Settings.BLACKLISTED_FILES
 import com.zs.audiofy.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
 import com.zs.audiofy.settings.Settings.GitHubIssuesPage
@@ -39,7 +38,7 @@ import com.zs.preferences.stringSetPreferenceKey
 
 private const val TAG = "Settings"
 
-object RouteSettings : Route
+
 
 private val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
@@ -245,5 +244,22 @@ object Settings {
  */
 @Stable
 interface SettingsViewState {
+
+    val save: Boolean
+
+    var trashCanEnabled: Boolean
+    var preferCachedThumbnails: Boolean
+    var enabledBackgroundBlur: Boolean
+    var fontScale: Float
+    var minTrackLengthSecs: Int
+    var shouldUseSystemAudioEffects: Boolean
+    var gridItemSizeMultiplier: Float
+
+    /**
+     * Commits [AppConfig] to memory.
+     */
+    fun apply()
+
+    /** Sets the value of the given [key] to [value]. */
     fun <S, O> set(key: Key<S, O>, value: O)
 }

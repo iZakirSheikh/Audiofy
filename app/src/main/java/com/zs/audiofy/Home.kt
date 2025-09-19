@@ -28,7 +28,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides as WIS
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -155,6 +154,7 @@ import com.zs.compose.theme.text.Label
 import com.zs.core.common.checkSelfPermissions
 import com.zs.core.common.isAppearanceLightSystemBars
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.layout.WindowInsetsSides as WIS
 import com.google.accompanist.permissions.rememberMultiplePermissionsState as Permissions
 
 private const val TAG = "Home"
@@ -361,7 +361,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     // Settings
     composable(RouteSettings) {
         val viewModel = koinViewModel<SettingsViewModel>()
-        Settings(viewModel)
+        RouteSettings(viewModel)
     }
 
     // Audios

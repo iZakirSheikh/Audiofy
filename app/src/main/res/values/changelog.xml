@@ -200,12 +200,18 @@
     <string name="changelog_400_alpha01" translatable="false">
          <b>What’s New <font color='olive'>(v4.0.0-alpha01)\n</font></b>
         <font color='grey'>
-          \n- <b><u>New "About Us" Screen</u>:</b> App info, changelogs, and our other apps in one place (Library "Info" icon).
-          \n- <b><u>Rate &amp; Support Us</u>:</b> Rate the app or <b>Buy me a coffee</b> via the new "About Us" screen.
-          \n- <b><u>Discover More Apps</u>:</b> Find our other apps with icons and Play Store links in <b><u>More from Us</u></b> on the "About Us" screen.
-          \n- <b><u>Stay Updated</u>:</b> Access the full changelog in-app, with highlighted release notes.
-          \n- <b><u>Quick Links</u>:</b> <i><b>Feedback, GitHub, bug reports, Telegram</b></i> links now in the <u><b>About Us</b></u> top bar.
-          \n- <b><u>Minor UI Tweaks</u>:</b> Small text and layout adjustments for a smoother experience.
+          \n- <b><u>New About Us Screen</u>:</b> App info, changelogs, other apps.
+          \n- <b><u>Rate &amp; Support</u>:</b> Rate or "Buy me a coffee" via About Us.
+          \n- <b><u>More Apps</u>:</b> Discover our apps in "More from Us" (About Us).
+          \n- <b><u>Stay Updated</u>:</b> In-app changelog with release notes.
+          \n- <b><u>Quick Links</u>:</b> Feedback, GitHub, etc. in About Us top bar.
+          \n- <b><u>UI Tweaks</u>:</b> Minor layout adjustments.
+          \n- <b>Revamped Settings:</b> Reorganized for easier navigation.
+          \n- <b>Save Changes:</b> New "Save" button in settings for preferences.
+          \n- <b>Unlock Ad-Free:</b> Clear "Unlock Ad-free" option in "Sponsor".
+          \n- <b>New "Upgrades" Section:</b> Unlock premium features from settings.
+          \n- <b>Consistent Styling:</b> Unified preference item appearance.
+          \n- <b>Internal Improvements:</b> More efficient settings management.
         </font>
     </string>
 </resources>

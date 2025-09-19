@@ -18,10 +18,43 @@
 
 package com.zs.audiofy.common.impl
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.zs.audiofy.settings.SettingsViewState
 import com.zs.preferences.Key
 
 class SettingsViewModel : KoinViewModel(), SettingsViewState{
+
+
+    override var trashCanEnabled: Boolean by mutableStateOf(false)
+    override var preferCachedThumbnails: Boolean by mutableStateOf(false)
+    override var enabledBackgroundBlur: Boolean by mutableStateOf(false)
+    override var fontScale: Float by mutableFloatStateOf(-1f)
+    override var minTrackLengthSecs: Int by mutableIntStateOf(30)
+    override var shouldUseSystemAudioEffects: Boolean by mutableStateOf(true)
+    override var gridItemSizeMultiplier: Float by mutableFloatStateOf(1.0f)
+
+    // if there is change in above; this must be enabled;
+    override val save: Boolean by derivedStateOf {
+        trashCanEnabled != false ||
+                preferCachedThumbnails != false ||
+                enabledBackgroundBlur != false ||
+                fontScale != -1f ||
+                minTrackLengthSecs != 30 ||
+                shouldUseSystemAudioEffects != true ||
+                gridItemSizeMultiplier != 1.0f
+    }
+
+
+    override fun apply() {
+        // causes the app to resatrt.
+        TODO("Not yet implemented")
+    }
+
     override fun <S, O> set(key: Key<S, O>, value: O) {
         preferences[key] = value
     }

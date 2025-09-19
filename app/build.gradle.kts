@@ -34,7 +34,8 @@ android {
             "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-Xopt-in=com.zs.compose.theme.ExperimentalThemeApi",
             "-Xnon-local-break-continue",
-            "-Xcontext-sensitive-resolution"
+            "-Xcontext-sensitive-resolution",
+            "-Xcontext-parameters"
         )
     }
     // Config. the compose compiler
@@ -82,7 +83,7 @@ android {
         // Appends ".debug" to the application ID. This allows installing debug and release versions on the same device.
         // Defines a string resource specifically for the debug build.
         debug {
-          //  applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug"
             resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }
