@@ -251,6 +251,13 @@
           \n    - The "Save" button in Settings is now a Floating Action Button (FAB) for better visibility and appears only when you have pending changes.
           \n    - The app restart prompt for settings changes now uses a clearer icon and appears *before* settings are applied, so you know what to expect.
           \n- <b><u>Equalizer Button Logic:</u></b> The equalizer button in the player console now more reliably launches the system equalizer when in-app effects are off.
+          \n- <b><u>New "Playback" Settings Section:</u></b> We\'ve added a dedicated section in Settings for all your playback preferences.
+          \n- <b><u>Choose Your Video Renderer (SurfaceView vs. TextureView):</u></b>
+          \n    - You can now select between `SurfaceView` (default, better performance) and `TextureView` (better for visual effects integration) for video playback. Find this in Settings > Playback > "Video Renderer".
+          \n- <b><u>Customize FAB Player Long-Press:</u></b>
+          \n    - Decide what happens when you tap and hold the Floating Action Button (FAB) player:
+          \n        - <b>Open Console (Default):</b> Long-press opens the main player screen.
+          \n        - <b>Expand to Widget:</b> Long-press expands the FAB into the in-app widget.
         </font>
     </string>
 </resources>

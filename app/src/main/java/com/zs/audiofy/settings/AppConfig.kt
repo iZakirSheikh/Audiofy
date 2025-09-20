@@ -66,6 +66,18 @@ object AppConfig {
     /** Multiplier for adjusting the size of items in grid layouts. */
     var gridItemSizeMultiplier: Float = 1.0f
 
+    /**
+     * Determines FAB player long press action.
+     * `true`: launch [com.zs.audiofy.console.Console].
+     * `false`: launch in-app widget. Defaults to `true`.
+     */
+    var fabLongPressLaunchConsole = true
+
+    /**
+     * Toggles between SurfaceView and TextureView for video rendering.
+     * `true` enables SurfaceView, `false` enables TextureView. Defaults to `true`.
+     */
+    var isSurfaceViewVideoRenderingPreferred = true
 
 
     // Delimiters
@@ -80,6 +92,8 @@ object AppConfig {
     private const val KEY_MIN_TRACK_LENGTH_SECS = "param5"
     private const val KEY_USE_SYSTEM_AUDIO_FX = "param6"
     private const val KEY_GRID_ITEM_SIZE_MULTIPLIER = "param7"
+    private const val KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE = "param8"
+    private const val KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED = "param9"
 
 
     /**
@@ -136,6 +150,8 @@ object AppConfig {
         records[KEY_MIN_TRACK_LENGTH_SECS] = minTrackLengthSecs
         records[KEY_USE_SYSTEM_AUDIO_FX] = inAppAudioEffectsEnabled
         records[KEY_GRID_ITEM_SIZE_MULTIPLIER] = gridItemSizeMultiplier
+        records[KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE] = fabLongPressLaunchConsole
+        records[KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED] = isSurfaceViewVideoRenderingPreferred
         Log.i(TAG, "stringify: $records")
         return records.toString()
     }
@@ -175,6 +191,8 @@ object AppConfig {
                 KEY_MIN_TRACK_LENGTH_SECS -> minTrackLengthSecs = value.toInt()
                 KEY_USE_SYSTEM_AUDIO_FX -> inAppAudioEffectsEnabled = value.toBoolean()
                 KEY_GRID_ITEM_SIZE_MULTIPLIER -> gridItemSizeMultiplier = value.toFloat()
+                KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE -> fabLongPressLaunchConsole = value.toBoolean()
+                KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED -> isSurfaceViewVideoRenderingPreferred = value.toBoolean()
             }
         }
     }

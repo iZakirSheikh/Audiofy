@@ -105,18 +105,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                         .wrapContentSize(Alignment.Center)
                 )
             },
-            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape),
-        )
-    }
-    // Use Inbuilt Audio FX
-    // Whether to use inbuilt audio effects or inApp.
-    item(contentType = CONTENT_TYPE_PREF) {
-        SwitchPreference(
-            text = textResource(R.string.pref_use_inbuilt_audio_effects),
-            checked = viewState.inAppAudioEffectsEnabled,
-            onCheckedChange = { viewState.inAppAudioEffectsEnabled = it},
-            icon = Icons.Outlined.Tune,
-            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape),
         )
     }
     // Appearance
@@ -239,6 +228,48 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             onCheckedChange = { should: Boolean ->
                 viewState.set(Settings.TRANSPARENT_SYSTEM_BARS, should)
             },
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
+        )
+    }
+
+    // Playback
+    item(contentType = RS.CONTENT_TYPE_HEADER) {
+        Header(
+            textResource(R.string.playback),
+            style = AppTheme.typography.title3,
+            color = AppTheme.colors.accent,
+            contentPadding = RS.HeaderPadding
+        )
+    }
+    // Use Inbuilt Audio FX
+    // Whether to use inbuilt audio effects or inApp.
+    item(contentType = CONTENT_TYPE_PREF) {
+        SwitchPreference(
+            text = textResource(R.string.pref_use_inbuilt_audio_effects),
+            checked = viewState.inAppAudioEffectsEnabled,
+            onCheckedChange = { viewState.inAppAudioEffectsEnabled = it},
+            icon = Icons.Outlined.Tune,
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.TopTileShape)
+        )
+    }
+    // FAB player long press behaviour
+    item(contentType = CONTENT_TYPE_PREF) {
+        SwitchPreference(
+            text = textResource(R.string.pref_fab_long_press_behaviour),
+            checked = viewState.fabLongPressLaunchConsole,
+            onCheckedChange = { viewState.fabLongPressLaunchConsole = it},
+            icon = Icons.Outlined.Tune,
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
+        )
+    }
+
+    // Texture View/Surface view
+    item(contentType = CONTENT_TYPE_PREF) {
+        SwitchPreference(
+            text = textResource(R.string.pref_use_surface_view_video_rendering),
+            checked = viewState.isSurfaceViewVideoRenderingPreferred,
+            onCheckedChange = { viewState.isSurfaceViewVideoRenderingPreferred = it},
+            icon = Icons.Outlined.Tune,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
         )
     }

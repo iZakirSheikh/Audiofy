@@ -20,6 +20,8 @@ package com.zs.audiofy.common.compose
 
 import android.util.Log
 import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -293,14 +295,15 @@ val NowPlaying.chronometer: Chronometer
 fun VideoSurface(
     provider: VideoProvider,
     modifier: Modifier = Modifier,
+    typeSurfaceView: Boolean = true,
     keepScreenOn: Boolean = false
 ) {
-    var view by remember { mutableStateOf<SurfaceView?>(null) }
+    var view by remember { mutableStateOf<View?>(null) }
 
     AndroidView(
         modifier = modifier,
         // Factory: creates a new SurfaceView when this Composable first enters the composition.
-        factory = ::SurfaceView,
+        factory = {if (typeSurfaceView) SurfaceView(it) else TextureView(it)},
         onReset = {},
         update = {
             Log.d(TAG, "VideoSurface: updating")

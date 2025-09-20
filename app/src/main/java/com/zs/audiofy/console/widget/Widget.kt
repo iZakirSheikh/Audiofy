@@ -45,6 +45,7 @@ import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.scale
 import com.zs.audiofy.common.domain
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
@@ -115,16 +116,48 @@ object Widget {
             indication = scale(),
             // Toggle expanded state on click.
             onClick = {
-                when (state.isVideo) {
-                    true -> onRequest(REQUEST_PLAY_TOGGLE)
-                    else -> expanded = !expanded
+                val isFab = !expanded
+                // Determine if the player is currently in FAB (mini) mode.
+                // If not expanded, it's considered a FAB player.
+                when {
+                    state.isVideo ->
+                        onRequest(REQUEST_PLAY_TOGGLE)
+                    // If currently viewing a video, toggle playback (play/pause).
+
+                    isFab && AppConfig.fabLongPressLaunchConsole ->
+                        expanded = true
+                    // If in FAB mode and the "long-press FAB opens console" setting is enabled,
+                    // expand the player to show the console.
+
+                    isFab && !AppConfig.fabLongPressLaunchConsole ->
+                        navController.navigate(RouteConsole())
+                    // If in FAB mode but the "long-press FAB opens console" setting is disabled,
+                    // navigate directly to the console screen without expanding.
+                    else -> expanded = false
                 }
             },
             // Navigate to console on long click if not expanded, otherwise collapse.
             onLongClick = {
-                if (!expanded)
-                    navController.navigate(RouteConsole())
-                else expanded = false
+                val isFab = !expanded
+                // Determine if the player is currently in FAB (mini) mode.
+                // If not expanded, it's considered a FAB player.
+
+                when {
+                    isFab && AppConfig.fabLongPressLaunchConsole ->
+                        // If in FAB mode AND the user preference "long-press FAB opens console" is enabled,
+                        // navigate to the console screen.
+                        navController.navigate(RouteConsole())
+
+                    isFab && !AppConfig.fabLongPressLaunchConsole ->
+                        // If in FAB mode but the preference is disabled,
+                        // expand the player to show the full-screen view instead.
+                        expanded = true
+
+                    else ->
+                        // If the player is already expanded (not in FAB mode),
+                        // collapse it back to FAB mode.
+                        expanded = false
+                }
             }
         )
         // Layout

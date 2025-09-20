@@ -224,6 +224,8 @@ interface SettingsViewState {
     var minTrackLengthSecs: Int
     var inAppAudioEffectsEnabled: Boolean
     var gridItemSizeMultiplier: Float
+    var fabLongPressLaunchConsole: Boolean
+    var isSurfaceViewVideoRenderingPreferred: Boolean
 
     /**
      * Commits [AppConfig] to memory.

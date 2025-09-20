@@ -238,7 +238,8 @@ fun Console(viewState: ConsoleViewState) {
                 keepScreenOn = state.playWhenReady,
                 modifier = Modifier
                     .key(C.ID_VIDEO_SURFACE)
-                    .resize(scale, state.videoSize)
+                    .resize(scale, state.videoSize),
+                typeSurfaceView = AppConfig.isSurfaceViewVideoRenderingPreferred
             )
             // Scrim
             Spacer(

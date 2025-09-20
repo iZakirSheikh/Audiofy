@@ -327,4 +327,9 @@
         </font>
     </string>
     <string name="msg_3rd_party_equalizer_not_found">Oops! No audio enhancer found.</string>
+    <string name="playback">Playback</string>
+    <string name="pref_fab_long_press_behaviour"><b>FAB Player Tap &amp; Hold\n</b>
+        <font color="grey" size="14">Tap or long-press the <b><i>FAB</i></b> Player to open <i>Console</i> or inApp <i>Widget</i>.</font>
+    </string>
+    <string name="pref_use_surface_view_video_rendering"><b>Video Renderer\n</b><font color="grey" size="14">Enable SurfaceView for faster video rendering, or switch to TextureView for better visual effects.</font></string>
 </resources>

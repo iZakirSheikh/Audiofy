@@ -44,6 +44,8 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
     override var minTrackLengthSecs: Int by mutableIntStateOf(AppConfig.minTrackLengthSecs)
     override var inAppAudioEffectsEnabled: Boolean by mutableStateOf(AppConfig.inAppAudioEffectsEnabled)
     override var gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
+    override var fabLongPressLaunchConsole: Boolean by mutableStateOf(AppConfig.fabLongPressLaunchConsole)
+    override var isSurfaceViewVideoRenderingPreferred: Boolean by mutableStateOf(AppConfig.isSurfaceViewVideoRenderingPreferred)
 
     override val save: Boolean by derivedStateOf {
         trashCanEnabled != AppConfig.isTrashCanEnabled ||
@@ -52,7 +54,9 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 fontScale != AppConfig.fontScale ||
                 minTrackLengthSecs != AppConfig.minTrackLengthSecs ||
                 inAppAudioEffectsEnabled != AppConfig.inAppAudioEffectsEnabled ||
-                gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier
+                gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier ||
+                fabLongPressLaunchConsole != AppConfig.fabLongPressLaunchConsole ||
+                isSurfaceViewVideoRenderingPreferred != AppConfig.isSurfaceViewVideoRenderingPreferred
     }
 
     override fun commit(facade: SystemFacade) {
@@ -77,6 +81,8 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 AppConfig.minTrackLengthSecs = minTrackLengthSecs
                 AppConfig.inAppAudioEffectsEnabled = inAppAudioEffectsEnabled
                 AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
+                AppConfig.fabLongPressLaunchConsole = fabLongPressLaunchConsole
+                AppConfig.isSurfaceViewVideoRenderingPreferred = isSurfaceViewVideoRenderingPreferred
 
                 // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
                 // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
@@ -98,6 +104,8 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 preferCachedThumbnails = AppConfig.isLoadThumbnailFromCache
                 enabledBackgroundBlur = AppConfig.isBackgroundBlurEnabled
                 trashCanEnabled = AppConfig.isTrashCanEnabled
+                fabLongPressLaunchConsole = AppConfig.fabLongPressLaunchConsole
+                isSurfaceViewVideoRenderingPreferred = AppConfig.isSurfaceViewVideoRenderingPreferred
             }
         }
     }
