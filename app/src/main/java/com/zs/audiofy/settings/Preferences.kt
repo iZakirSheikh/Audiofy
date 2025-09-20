@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.settings
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
@@ -53,6 +54,7 @@ import kotlin.math.roundToInt
 import com.zs.audiofy.settings.RouteSettings as RS
 
 private const val CONTENT_TYPE_PREF = "preference"
+private const val TAG = "Preferences"
 
 context(_: RS)
 fun LazyListScope.preferences(viewState: SettingsViewState) {
@@ -93,7 +95,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             value = viewState.minTrackLengthSecs.toFloat(),
             onRequestChange = { viewState.minTrackLengthSecs = it.toInt() },
             valueRange = 0f..100f,
-            steps = 5,
+            steps = 9,
             icon = Icons.Outlined.Straighten,
             preview = {
                 Label(
@@ -111,8 +113,8 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
     item(contentType = CONTENT_TYPE_PREF) {
         SwitchPreference(
             text = textResource(R.string.pref_use_inbuilt_audio_effects),
-            checked = !viewState.shouldUseSystemAudioEffects,
-            onCheckedChange = { viewState.shouldUseSystemAudioEffects = it },
+            checked = viewState.inAppAudioEffectsEnabled,
+            onCheckedChange = { viewState.inAppAudioEffectsEnabled = it},
             icon = Icons.Outlined.Tune,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
         )
@@ -188,7 +190,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             value = viewState.fontScale,
             text = textResource(R.string.pref_font_scale),
             valueRange = 0.7f..2f,
-            steps = 13,   // (2.0 - 0.7) / 0.1 = 13 steps
+            steps = 12,   // steps=(max−min)stepSize−1/ (2.0 - 0.7) / 0.1 - 1 =  12 steps
             icon = Icons.Outlined.FormatSize,
             preview = {
                 Label(
@@ -213,7 +215,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             value = viewState.gridItemSizeMultiplier,
             text = textResource(R.string.pref_grid_item_size_multiplier),
             valueRange = 0.6f..2f,
-            steps = 14, // (2.0 - 0.7) / 0.1 = 13 steps
+            steps = 13, // (2.0 - 0.7) / 0.1 = 13 steps
             icon = Icons.Outlined.Dashboard,
             preview = {
                 Label(

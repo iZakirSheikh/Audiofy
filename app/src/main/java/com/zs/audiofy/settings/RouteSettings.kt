@@ -22,6 +22,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -50,7 +51,6 @@ import androidx.compose.ui.unit.sp
 import com.zs.audiofy.R
 import com.zs.audiofy.common.Route
 import com.zs.audiofy.common.compose.FloatingLargeTopAppBar
-import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.fadingEdge2
@@ -59,10 +59,10 @@ import com.zs.audiofy.common.compose.source
 import com.zs.compose.foundation.plus
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.FloatingActionButton
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalWindowSize
-import com.zs.compose.theme.TonalIconButton
 import com.zs.compose.theme.WindowSize.Category
 import com.zs.compose.theme.adaptive.HorizontalTwoPaneStrategy
 import com.zs.compose.theme.adaptive.SinglePaneStrategy
@@ -142,15 +142,6 @@ object RouteSettings : Route {
                             contentDescription = null,
                             onClick = { facade.launch(Settings.TelegramIntent) },
                         )
-
-                        // Save Btn
-                        if (viewState.save)
-                            TonalIconButton(
-                                icon = Icons.Outlined.Save,
-                                onClick = { viewState.commit(facade) },
-                                contentDescription = null
-                            )
-
                         // Report Bugs on Github.
                         IconButton(
                             icon = Icons.Outlined.BugReport,
@@ -183,6 +174,18 @@ object RouteSettings : Route {
                             contentPadding = HeaderPadding
                         )
                         AboutUs()
+                    }
+                )
+            },
+            floatingActionButton = {
+                if (!viewState.save)
+                    return@TwoPane
+                val facade = LocalSystemFacade.current
+                FloatingActionButton(
+                    onClick = { viewState.commit(facade) },
+                    modifier = Modifier.windowInsetsPadding(inAppNavBarInsets.union(WindowInsets.navigationBars)),
+                    content = {
+                        Icon(Icons.Outlined.Save, contentDescription = null)
                     }
                 )
             },

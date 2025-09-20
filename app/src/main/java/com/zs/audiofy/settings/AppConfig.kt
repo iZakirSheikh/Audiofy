@@ -61,7 +61,7 @@ object AppConfig {
     var minTrackLengthSecs: Int = 30
 
     /** Indicates whether to use the system's built-in audio effects. */
-    var shouldUseSystemAudioEffects: Boolean = true
+    var inAppAudioEffectsEnabled: Boolean = false
 
     /** Multiplier for adjusting the size of items in grid layouts. */
     var gridItemSizeMultiplier: Float = 1.0f
@@ -134,7 +134,7 @@ object AppConfig {
         records[KEY_TRASH_CAN_ENABLED] = isTrashCanEnabled
         records[KEY_FONT_SCALE] = fontScale
         records[KEY_MIN_TRACK_LENGTH_SECS] = minTrackLengthSecs
-        records[KEY_USE_SYSTEM_AUDIO_FX] = shouldUseSystemAudioEffects
+        records[KEY_USE_SYSTEM_AUDIO_FX] = inAppAudioEffectsEnabled
         records[KEY_GRID_ITEM_SIZE_MULTIPLIER] = gridItemSizeMultiplier
         Log.i(TAG, "stringify: $records")
         return records.toString()
@@ -173,7 +173,7 @@ object AppConfig {
                 KEY_TRASH_CAN_ENABLED -> isTrashCanEnabled = value.toBoolean()
                 KEY_FONT_SCALE -> fontScale = value.toFloat()
                 KEY_MIN_TRACK_LENGTH_SECS -> minTrackLengthSecs = value.toInt()
-                KEY_USE_SYSTEM_AUDIO_FX -> shouldUseSystemAudioEffects = value.toBoolean()
+                KEY_USE_SYSTEM_AUDIO_FX -> inAppAudioEffectsEnabled = value.toBoolean()
                 KEY_GRID_ITEM_SIZE_MULTIPLIER -> gridItemSizeMultiplier = value.toFloat()
             }
         }

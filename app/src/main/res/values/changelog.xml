@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--
+
+<!--
         Changelog Version Color Coding Rules:
         1. Dev / Nightly : Crimson #DC143C    (Experimental builds, potentially unstable)
         2. Alpha         : Orange     (Early testing phase, features may be incomplete)
@@ -8,8 +8,11 @@
         4. RC            : Purple     (Release Candidate, polish and bug fixing phase)
         5. Release       : Green      (Stable public release)
     -->
+
+<resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_alpha02</item>
         <item>@string/changelog_400_alpha01</item>
         <item>@string/changelog_400_dev25</item>
         <item>@string/changelog_400_dev24</item>
@@ -27,7 +30,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_alpha02</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_alpha03</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -233,6 +236,21 @@
           \n    - If "Inbuilt Audio FX" is disabled, the Equalizer button in the player console will now attempt to launch your system\'s audio effects control panel.
           \n- <b><u>Faster Startup:</u></b> Your personalized settings are now loaded instantly when the app launches, ensuring a smooth start every time.
           \n- <b><u>Behind-the-Scenes Enhancements:</u></b> We\'ve made internal improvements for smoother animations and overall app performance.
+        </font>
+    </string>
+
+    <!--v4.0.0-alpha03-->
+    <string name="changelog_400_alpha03" translatable="false">
+         <b>What’s New <font color='olive'>(v4.0.0-alpha03)\n</font></b>
+        <font color='grey'>
+          \n- <b><u>Improved Audio Effects Control:</u></b> "In-app Audio Effects" setting is now clearer. Disabling it now correctly uses your phone\'s built-in equalizer if available.
+          \n- <b><u>Smarter Track Filtering:</u></b> Tracks shorter than your set "Minimum Track Length" (e.g., ringtones) are now properly filtered out from your music library.
+          \n- <b><u>Refined Settings UI:</u></b>
+          \n    - The "Min Track Length" slider now goes from 0 to 100 seconds in 10-second steps for easier selection.
+          \n    - "Font Scale" and "Grid Item Size" sliders offer more precise adjustments with more steps.
+          \n    - The "Save" button in Settings is now a Floating Action Button (FAB) for better visibility and appears only when you have pending changes.
+          \n    - The app restart prompt for settings changes now uses a clearer icon and appears *before* settings are applied, so you know what to expect.
+          \n- <b><u>Equalizer Button Logic:</u></b> The equalizer button in the player console now more reliably launches the system equalizer when in-app effects are off.
         </font>
     </string>
 </resources>

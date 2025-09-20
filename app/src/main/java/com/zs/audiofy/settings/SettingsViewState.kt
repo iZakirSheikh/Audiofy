@@ -222,7 +222,7 @@ interface SettingsViewState {
     var enabledBackgroundBlur: Boolean
     var fontScale: Float
     var minTrackLengthSecs: Int
-    var shouldUseSystemAudioEffects: Boolean
+    var inAppAudioEffectsEnabled: Boolean
     var gridItemSizeMultiplier: Float
 
     /**

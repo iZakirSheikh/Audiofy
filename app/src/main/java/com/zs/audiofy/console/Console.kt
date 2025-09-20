@@ -489,7 +489,7 @@ fun Console(viewState: ConsoleViewState) {
             enabled = enabled,
             modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER),
             onClick = {
-                if (AppConfig.shouldUseSystemAudioEffects)
+                if (!AppConfig.inAppAudioEffectsEnabled)
                     facade.launchEqualizer(0)
                 else
                     navController.navigate(RouteAudioFx()) },

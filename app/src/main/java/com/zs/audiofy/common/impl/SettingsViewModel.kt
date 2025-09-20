@@ -19,7 +19,7 @@
 package com.zs.audiofy.common.impl
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -42,7 +42,7 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
     override var enabledBackgroundBlur: Boolean by mutableStateOf(AppConfig.isBackgroundBlurEnabled)
     override var fontScale: Float by mutableFloatStateOf(AppConfig.fontScale)
     override var minTrackLengthSecs: Int by mutableIntStateOf(AppConfig.minTrackLengthSecs)
-    override var shouldUseSystemAudioEffects: Boolean by mutableStateOf(AppConfig.shouldUseSystemAudioEffects)
+    override var inAppAudioEffectsEnabled: Boolean by mutableStateOf(AppConfig.inAppAudioEffectsEnabled)
     override var gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
 
     override val save: Boolean by derivedStateOf {
@@ -51,39 +51,39 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 enabledBackgroundBlur != AppConfig.isBackgroundBlurEnabled ||
                 fontScale != AppConfig.fontScale ||
                 minTrackLengthSecs != AppConfig.minTrackLengthSecs ||
-                shouldUseSystemAudioEffects != AppConfig.shouldUseSystemAudioEffects ||
+                inAppAudioEffectsEnabled != AppConfig.inAppAudioEffectsEnabled ||
                 gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier
     }
 
     override fun commit(facade: SystemFacade) {
         viewModelScope.launch {
-            // [CORE_SETTING_CHANGE] Update AppConfig with new settings values
-            // This directly modifies the global AppConfig object, which is used throughout the application
-            // to determine runtime behavior based on user preferences.
-            val global = AppConfig.isLoadThumbnailFromCache != preferCachedThumbnails
-            AppConfig.isLoadThumbnailFromCache = preferCachedThumbnails
-            AppConfig.isBackgroundBlurEnabled = enabledBackgroundBlur
-            AppConfig.isTrashCanEnabled = trashCanEnabled
-            AppConfig.fontScale = fontScale
-            AppConfig.minTrackLengthSecs = minTrackLengthSecs
-            AppConfig.shouldUseSystemAudioEffects = shouldUseSystemAudioEffects
-            AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
-
-            // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
-            // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
-            // for storage. `preferences` is an abstraction over SharedPreferences or DataStore.
-            preferences[Settings.KEY_APP_CONFIG] = AppConfig.stringify()
-
             // [USER_FEEDBACK] Inform the user that a restart is required for some changes to take effect
             // Display a snackbar with a "Restart" action.
             val result = showSnackbar(
                 R.string.msg_apply_changes_restart,
                 R.string.restart,
-                icon = Icons.Outlined.RestartAlt
+                icon = Icons.Outlined.PowerSettingsNew
             )
             // [APP_LIFECYCLE] If the user confirms, trigger an application restart via the SystemFacade
-            if (result == SnackbarResult.ActionPerformed)
+            if (result == SnackbarResult.ActionPerformed) {
+                // [CORE_SETTING_CHANGE] Update AppConfig with new settings values
+                // This directly modifies the global AppConfig object, which is used throughout the application
+                // to determine runtime behavior based on user preferences.
+                val global = AppConfig.isLoadThumbnailFromCache != preferCachedThumbnails
+                AppConfig.isLoadThumbnailFromCache = preferCachedThumbnails
+                AppConfig.isBackgroundBlurEnabled = enabledBackgroundBlur
+                AppConfig.isTrashCanEnabled = trashCanEnabled
+                AppConfig.fontScale = fontScale
+                AppConfig.minTrackLengthSecs = minTrackLengthSecs
+                AppConfig.inAppAudioEffectsEnabled = inAppAudioEffectsEnabled
+                AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
+
+                // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
+                // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
+                // for storage. `preferences` is an abstraction over SharedPreferences or DataStore.
+                preferences[Settings.KEY_APP_CONFIG] = AppConfig.stringify()
                 facade.restart(global)
+            }
         }
     }
 
@@ -93,7 +93,7 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
             if (res == SnackbarResult.ActionPerformed) {
                 fontScale = AppConfig.fontScale
                 minTrackLengthSecs = AppConfig.minTrackLengthSecs
-                shouldUseSystemAudioEffects = AppConfig.shouldUseSystemAudioEffects
+                inAppAudioEffectsEnabled = AppConfig.inAppAudioEffectsEnabled
                 gridItemSizeMultiplier = AppConfig.gridItemSizeMultiplier
                 preferCachedThumbnails = AppConfig.isLoadThumbnailFromCache
                 enabledBackgroundBlur = AppConfig.isBackgroundBlurEnabled
@@ -106,4 +106,3 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
         preferences[key] = value
     }
 }
-
