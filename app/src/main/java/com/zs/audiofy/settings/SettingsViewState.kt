@@ -15,6 +15,7 @@ import com.zs.audiofy.common.ColorizationStrategy
 import com.zs.audiofy.common.IAP_ARTWORK_SHAPE_ROUNDED_RECT
 import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_IPHONE
 import com.zs.audiofy.common.NightMode
+import com.zs.audiofy.common.SystemFacade
 import com.zs.audiofy.settings.Settings.BLACKLISTED_FILES
 import com.zs.audiofy.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
 import com.zs.audiofy.settings.Settings.GitHubIssuesPage
@@ -228,6 +229,8 @@ object Settings {
     val KEY_LAUNCH_COUNTER =
         intPreferenceKey("Audiofy_launch_counter", 0)
     val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", false)
+    val KEY_APP_CONFIG = stringPreferenceKey("${PREFIX}_app_config")
+
 
     /** @see mapKeyToShape */
     val ARTWORK_SHAPE_KEY =
@@ -258,7 +261,7 @@ interface SettingsViewState {
     /**
      * Commits [AppConfig] to memory.
      */
-    fun apply()
+    fun commit(facade: SystemFacade)
 
     /** Sets the value of the given [key] to [value]. */
     fun <S, O> set(key: Key<S, O>, value: O)

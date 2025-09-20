@@ -114,9 +114,17 @@ class AdNetworkInitializer : Initializer<Unit> {
 private val KoinAppModules = module {
     // Define Koin modules for dependency injection.
     // Declare a singleton instance of Preferences.
-    single {
+    single(createdAtStart = true) {
         // Initialize Preferences
         val preferences = Preferences(get(), "Shared_Preferences")
+        // Retrieve the app configuration from preferences and update config only if not null
+        val config = preferences[Settings.KEY_APP_CONFIG]
+        if (config != null) {
+            val result = runCatching { AppConfig.update(config) }
+            if (result.isFailure) {
+                Log.e(TAG, "Error updating app config", result.exceptionOrNull())
+            }
+        }
         // Retrieve the current launch counter value, defaulting to 0 if not set
         val counter = preferences[Settings.KEY_LAUNCH_COUNTER]
         // Increment the launch counter for cold starts

@@ -139,7 +139,7 @@ object RouteSettings : Route {
                         if (viewState.save)
                             TonalIconButton(
                                 icon = Icons.Outlined.Save,
-                                onClick = viewState::apply,
+                                onClick = { viewState.commit(facade) },
                                 contentDescription = null
                             )
 
@@ -188,8 +188,8 @@ object RouteSettings : Route {
                     contentPadding = Padding(horizontal = CP.large, CP.normal) +
                             (WindowInsets.content.union(WindowInsets.systemBars)
                                 .union(inAppNavBarInsets).only(
-                                WIS.Vertical
-                            )).asPaddingValues(),
+                                    WIS.Vertical
+                                )).asPaddingValues(),
                     modifier = Modifier
                         .source(surface)
                         .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)

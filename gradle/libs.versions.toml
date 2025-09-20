@@ -31,7 +31,7 @@ chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.10" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.11.0" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
-lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.7" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.9" }
 
 # Androidx compose
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
