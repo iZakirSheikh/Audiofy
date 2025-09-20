@@ -90,11 +90,10 @@ import com.zs.audiofy.common.compose.ProvideAnimationScope
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.emit
 import com.zs.audiofy.common.compose.fadingEdge2
-import com.zs.audiofy.common.compose.preference
 import com.zs.audiofy.common.compose.rememberAcrylicSurface
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.common.compose.source
-import com.zs.audiofy.settings.Settings
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.Background
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.fullLineSpan
@@ -322,7 +321,7 @@ fun <T> Directory(
             // Collect the data from the viewState, initially null representing loading state.
             // Get the grid item size multiplier from user preferences.
             val data by viewState.data.collectAsState()
-            val multiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
+            val multiplier = AppConfig.gridItemSizeMultiplier
             val padding = ContentPadding +
                     inAppNavInsets.union(WindowInsets.content).union(WindowInsets.systemBars)
                         .asPaddingValues()

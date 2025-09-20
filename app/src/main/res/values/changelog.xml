@@ -220,12 +220,17 @@
     <string name="changelog_400_alpha02" translatable="false">
          <b>What’s New <font color='olive'>(v4.0.0-alpha02)\n</font></b>
         <font color='grey'>
-          \n- <b><u>Revamped App Configuration:</u></b> We\'ve improved how app settings are managed, leading to a more stable and efficient experience.
-          \n    - Your preferences for Trash Can, Font Scale, Minimum Track Length, System Audio Effects, and Grid Item Size are now reliably saved.
+          \n- <b><u>Revamped App Configuration:</u></b> We\'ve improved how app settings are managed for a more stable and efficient experience.
+          \n    - Preferences for <b>Trash Can</b>, <b>Font Scale</b>, <b>Minimum Track Length</b>, <b>System Audio Effects</b>, and <b>Grid Item Size</b> are now centrally managed and reliably saved.
           \n    - We\'ve optimized the way settings are stored for better performance.
           \n- <b><u>Streamlined Settings Screen:</u></b>
-          \n    - When you adjust a setting, it\'s now visually indicated that your changes need to be saved.
-          \n    - If a restart is necessary for certain settings to take effect, you\'ll now receive a prompt with a convenient <b>Restart</b> button after saving.
+          \n    - Unsaved changes are now clearly indicated, and you can easily <b>Discard Changes</b> if needed.
+          \n    - Prompts for app restart (if required for settings to take effect) are now clearer.
+          \n    - Navigating back from settings with unsaved changes will now prompt you to save or discard them.
+          \n- <b><u>New "Acrylic Blur" Preference (Beta):</u></b> Add a stylish blur effect to backgrounds (experimental).
+          \n- <b><u>Global Font Scaling:</u></b> Font size adjustments now apply consistently across the entire application.
+          \n- <b><u>System Equalizer Integration:</u></b>
+          \n    - If "Inbuilt Audio FX" is disabled, the Equalizer button in the player console will now attempt to launch your system\'s audio effects control panel.
           \n- <b><u>Faster Startup:</u></b> Your personalized settings are now loaded instantly when the app launches, ensuring a smooth start every time.
           \n- <b><u>Behind-the-Scenes Enhancements:</u></b> We\'ve made internal improvements for smoother animations and overall app performance.
         </font>

@@ -185,8 +185,8 @@ abstract class Playlists {
     /**
      * This is not the recommended way to do it.
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun update(member: Track): Long
+    @Update
+    abstract suspend fun update(member: Track)
 
     @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members m INNER JOIN tbl_playlists p ON m.playlist_id == p.playlist_id WHERE p.name = :name AND m.uri = :key)")
     abstract suspend fun contains(name: String, key: String): Boolean

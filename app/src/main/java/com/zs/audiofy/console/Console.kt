@@ -92,6 +92,7 @@ import com.zs.audiofy.common.compose.resize
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.common.compose.timer
 import com.zs.audiofy.effects.RouteAudioFx
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.SignalWhite
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
@@ -485,10 +486,14 @@ fun Console(viewState: ConsoleViewState) {
         IconButton(
             icon = Icons.Outlined.Tune,
             contentDescription = null,
-            onClick = { navController.navigate(RouteAudioFx()) },
             enabled = enabled,
-            modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER)
-        )
+            modifier = Modifier.layoutId(C.ID_BTN_EQUALIZER),
+            onClick = {
+                if (AppConfig.shouldUseSystemAudioEffects)
+                    facade.launchEqualizer(0)
+                else
+                    navController.navigate(RouteAudioFx()) },
+            )
 
         // Info
         IconButton(

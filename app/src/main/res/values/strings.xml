@@ -321,4 +321,10 @@
     <string name="tap_to_purchase">Tap to Purchase</string>
     <string name="upgrades">Upgrades</string>
     <string name="msg_settings_upgrade_unlocked">You\’ve already unlocked this feature.</string>
+    <string name="pref_acrylic_effect"><b>Acrylic Blur <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
+         <font color="grey" size="14">
+            \nEnable a Windows 11-style acrylic blur effect for the background. This feature is experimental and may impact performance.
+        </font>
+    </string>
+    <string name="msg_3rd_party_equalizer_not_found">Oops! No audio enhancer found.</string>
 </resources>

@@ -18,6 +18,7 @@
 
 package com.zs.audiofy.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import com.zs.audiofy.R
 import com.zs.audiofy.common.Route
 import com.zs.audiofy.common.compose.FloatingLargeTopAppBar
+import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.fadingEdge2
@@ -102,6 +104,12 @@ object RouteSettings : Route {
         val surface = rememberAcrylicSurface()
         val topAppBarScrollBehavior = AppBarDefaults.exitUntilCollapsedScrollBehavior()
         val colors = AppTheme.colors
+
+        //
+        BackHandler(enabled = viewState.save) {
+            viewState.discard()
+        }
+
         // Place the content
         TwoPane(
             strategy = strategy,

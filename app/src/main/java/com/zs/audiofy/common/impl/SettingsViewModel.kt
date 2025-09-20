@@ -20,6 +20,7 @@ package com.zs.audiofy.common.impl
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,72 +37,37 @@ import com.zs.preferences.Key
 import kotlinx.coroutines.launch
 
 class SettingsViewModel : KoinViewModel(), SettingsViewState {
+    override var trashCanEnabled: Boolean by mutableStateOf(AppConfig.isTrashCanEnabled)
+    override var preferCachedThumbnails: Boolean by mutableStateOf(AppConfig.isLoadThumbnailFromCache)
+    override var enabledBackgroundBlur: Boolean by mutableStateOf(AppConfig.isBackgroundBlurEnabled)
+    override var fontScale: Float by mutableFloatStateOf(AppConfig.fontScale)
+    override var minTrackLengthSecs: Int by mutableIntStateOf(AppConfig.minTrackLengthSecs)
+    override var shouldUseSystemAudioEffects: Boolean by mutableStateOf(AppConfig.shouldUseSystemAudioEffects)
+    override var gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
 
-    // By default save is false
-    override var save: Boolean by mutableStateOf(false)
-
-    var _trashCanEnabled: Boolean by mutableStateOf(AppConfig.isTrashCanEnabled)
-    var _preferCachedThumbnails: Boolean by mutableStateOf(AppConfig.isLoadThumbnailFromCache)
-    var _enabledBackgroundBlur: Boolean by mutableStateOf(AppConfig.isBackgroundBlurEnabled)
-    var _fontScale: Float by mutableFloatStateOf(AppConfig.fontScale)
-    var _minTrackLengthSecs: Int by mutableIntStateOf(AppConfig.minTrackLengthSecs)
-    var _shouldUseSystemAudioEffects: Boolean by mutableStateOf(AppConfig.shouldUseSystemAudioEffects)
-    var _gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
-
-    override var trashCanEnabled: Boolean
-        get() = _trashCanEnabled
-        set(value) {
-            _trashCanEnabled = value
-            save = true
-        }
-
-    override var preferCachedThumbnails: Boolean
-        get() = _preferCachedThumbnails
-        set(value) {
-            _preferCachedThumbnails = value
-            save = true
-        }
-    override var enabledBackgroundBlur: Boolean
-        get() = _enabledBackgroundBlur
-        set(value) {
-            _enabledBackgroundBlur = value
-            save = true
-        }
-    override var fontScale: Float
-        get() = _fontScale
-        set(value) {
-            _fontScale = value
-            save = true
-        }
-
-    override var minTrackLengthSecs: Int
-        get() = _minTrackLengthSecs
-        set(value) {
-            _minTrackLengthSecs = value
-            save = true
-        }
-
-    override var shouldUseSystemAudioEffects: Boolean
-        get() = _shouldUseSystemAudioEffects
-        set(value) {
-            _shouldUseSystemAudioEffects = value
-            save = true
-        }
-
-    override var gridItemSizeMultiplier: Float
-        get() = _gridItemSizeMultiplier
-        set(value) {
-            _gridItemSizeMultiplier = value
-            save = true
-        }
+    override val save: Boolean by derivedStateOf {
+        trashCanEnabled != AppConfig.isTrashCanEnabled ||
+                preferCachedThumbnails != AppConfig.isLoadThumbnailFromCache ||
+                enabledBackgroundBlur != AppConfig.isBackgroundBlurEnabled ||
+                fontScale != AppConfig.fontScale ||
+                minTrackLengthSecs != AppConfig.minTrackLengthSecs ||
+                shouldUseSystemAudioEffects != AppConfig.shouldUseSystemAudioEffects ||
+                gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier
+    }
 
     override fun commit(facade: SystemFacade) {
         viewModelScope.launch {
             // [CORE_SETTING_CHANGE] Update AppConfig with new settings values
             // This directly modifies the global AppConfig object, which is used throughout the application
             // to determine runtime behavior based on user preferences.
+            val global = AppConfig.isLoadThumbnailFromCache != preferCachedThumbnails
             AppConfig.isLoadThumbnailFromCache = preferCachedThumbnails
             AppConfig.isBackgroundBlurEnabled = enabledBackgroundBlur
+            AppConfig.isTrashCanEnabled = trashCanEnabled
+            AppConfig.fontScale = fontScale
+            AppConfig.minTrackLengthSecs = minTrackLengthSecs
+            AppConfig.shouldUseSystemAudioEffects = shouldUseSystemAudioEffects
+            AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
 
             // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
             // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
@@ -115,10 +81,24 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 R.string.restart,
                 icon = Icons.Outlined.RestartAlt
             )
-            save = false
             // [APP_LIFECYCLE] If the user confirms, trigger an application restart via the SystemFacade
             if (result == SnackbarResult.ActionPerformed)
-                facade.restart(true)
+                facade.restart(global)
+        }
+    }
+
+    override fun discard() {
+        viewModelScope.launch {
+            val res = showSnackbar("Discard unsaved changes?", "Discard")
+            if (res == SnackbarResult.ActionPerformed) {
+                fontScale = AppConfig.fontScale
+                minTrackLengthSecs = AppConfig.minTrackLengthSecs
+                shouldUseSystemAudioEffects = AppConfig.shouldUseSystemAudioEffects
+                gridItemSizeMultiplier = AppConfig.gridItemSizeMultiplier
+                preferCachedThumbnails = AppConfig.isLoadThumbnailFromCache
+                enabledBackgroundBlur = AppConfig.isBackgroundBlurEnabled
+                trashCanEnabled = AppConfig.isTrashCanEnabled
+            }
         }
     }
 
@@ -126,3 +106,4 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
         preferences[key] = value
     }
 }
+

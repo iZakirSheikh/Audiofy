@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.R
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.settings.Settings
 import com.zs.compose.foundation.OrientRed
 import com.zs.compose.theme.snackbar.SnackbarResult
@@ -158,7 +159,7 @@ class ConsoleViewModel(
             // Determine the deletion action based on Android version and trash can settings.
             val code = when {
                 // If running on Android R or newer and trash can is enabled, move to trash.
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && preferences[Settings.TRASH_CAN_ENABLED] ->
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && AppConfig.isTrashCanEnabled ->
                     dataProvider.trash(resolver, key)
                 // If running on Android R or newer and trash can is disabled, delete permanently.
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> dataProvider.delete(resolver, key)

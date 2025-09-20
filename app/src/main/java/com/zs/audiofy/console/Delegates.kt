@@ -20,6 +20,7 @@ package com.zs.audiofy.console
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.media.audiofx.AudioEffect
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -49,10 +50,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.zs.audiofy.BuildConfig
 import com.zs.audiofy.R
+import com.zs.audiofy.common.SystemFacade
 import com.zs.audiofy.common.compose.lottie
 import com.zs.audiofy.common.compose.lottieAnimationPainter
-import com.zs.audiofy.common.compose.shine
 import com.zs.compose.foundation.ImageBrush
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.foundation.visualEffect
@@ -257,3 +259,16 @@ fun PlayButton(
     }
 }
 
+fun SystemFacade.launchEqualizer(id: Int) {
+    if (id == AudioEffect.ERROR_BAD_VALUE)
+        return showToast(R.string.msg_unknown_error)
+    val intent = android.content.Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
+        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+    }
+    val res = runCatching { launch(intent) }
+    if (!res.isFailure)
+        return
+    showToast(message = R.string.msg_3rd_party_equalizer_not_found)
+}

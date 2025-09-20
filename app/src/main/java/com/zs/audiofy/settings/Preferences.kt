@@ -22,6 +22,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BlurOn
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
@@ -107,16 +109,15 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
     // Use Inbuilt Audio FX
     // Whether to use inbuilt audio effects or inApp.
     item(contentType = CONTENT_TYPE_PREF) {
-        val enabled by preference(Settings.USE_IN_BUILT_AUDIO_FX)
         SwitchPreference(
             text = textResource(R.string.pref_use_inbuilt_audio_effects),
-            checked = enabled,
-            onCheckedChange = { viewState.set(Settings.USE_IN_BUILT_AUDIO_FX, it) },
+            checked = !viewState.shouldUseSystemAudioEffects,
+            onCheckedChange = { viewState.shouldUseSystemAudioEffects = it },
             icon = Icons.Outlined.Tune,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
         )
     }
-    // General
+    // Appearance
     item(contentType = RS.CONTENT_TYPE_HEADER) {
         Header(
             textResource(R.string.appearance),
@@ -138,6 +139,18 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             onRequestChange = { viewState.set(Settings.NIGHT_MODE, it) },
             values = NightMode.values(),
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.TopTileShape)
+        )
+    }
+    // Acrylic effect
+    item(contentType = CONTENT_TYPE_PREF) {
+        SwitchPreference(
+            checked = viewState.enabledBackgroundBlur,
+            text = textResource(R.string.pref_acrylic_effect),
+            onCheckedChange = { should: Boolean ->
+                viewState.enabledBackgroundBlur = should
+            },
+            icon = Icons.Default.BlurOn,
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
         )
     }
 
@@ -164,6 +177,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     if (should) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default
                 viewState.set(Settings.COLORIZATION_STRATEGY, strategy)
             },
+            icon = Icons.Default.ColorLens,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
         )
     }

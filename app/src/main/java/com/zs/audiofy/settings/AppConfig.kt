@@ -19,6 +19,7 @@
 package com.zs.audiofy.settings
 
 import android.os.Build
+import android.util.Log
 import com.zs.audiofy.settings.AppConfig.KEYS_DELIMITER
 import com.zs.audiofy.settings.AppConfig.RECORD_DELIMITER
 import com.zs.audiofy.settings.AppConfig.isBackgroundBlurEnabled
@@ -135,6 +136,7 @@ object AppConfig {
         records[KEY_MIN_TRACK_LENGTH_SECS] = minTrackLengthSecs
         records[KEY_USE_SYSTEM_AUDIO_FX] = shouldUseSystemAudioEffects
         records[KEY_GRID_ITEM_SIZE_MULTIPLIER] = gridItemSizeMultiplier
+        Log.i(TAG, "stringify: $records")
         return records.toString()
     }
 
@@ -156,8 +158,10 @@ object AppConfig {
      *             following the same format.
      */
     fun update(from: String){
+        Log.i(TAG, "update: $from")
         val records = from.split(KEYS_DELIMITER).filter { it.isNotEmpty() }
         for (record in records) {
+            Log.i(TAG, "record: $record")
             val sepIndex = record.indexOf(RECORD_DELIMITER)
             if (sepIndex <= 0) continue
 

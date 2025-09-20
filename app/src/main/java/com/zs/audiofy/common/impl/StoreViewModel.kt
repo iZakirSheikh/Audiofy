@@ -34,6 +34,7 @@ import com.zs.audiofy.common.INFO
 import com.zs.audiofy.common.ShareFilesIntent
 import com.zs.audiofy.common.compose.FilterDefaults
 import com.zs.audiofy.common.raw
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.settings.Settings
 import com.zs.compose.foundation.Rose
 import com.zs.compose.foundation.runCatching
@@ -128,7 +129,7 @@ abstract class StoreViewModel<T>(
     /** Deletes or Trashes file(s) represented by id(s).*/
     fun remove(resolver: Activity, vararg id: Long) {
         runCatching {
-            val isTrashEnabled = preferences[Settings.TRASH_CAN_ENABLED]
+            val isTrashEnabled = AppConfig.isTrashCanEnabled
             if (isTrashEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                 trash(resolver = resolver, *id)
             else {

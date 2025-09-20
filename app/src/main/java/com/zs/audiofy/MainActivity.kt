@@ -18,7 +18,9 @@
 
 package com.zs.audiofy
 
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -66,6 +68,7 @@ import com.zs.audiofy.common.isDynamicFeature
 import com.zs.audiofy.common.products
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.library.RouteLibrary
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.settings.Settings
 import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.getText2
@@ -262,6 +265,25 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         inAppFeatureManager.startInstall(request)
     }
 
+    override fun attachBaseContext(newBase: Context?) {
+        // Retrieve the desired font scale from application configuration.
+        val scale = AppConfig.fontScale
+        // If the scale is invalid (-1f) or the newBase context is null,
+        // fallback to the default behavior without applying any font scaling.
+        if (scale == -1f || newBase == null) {
+            super.attachBaseContext(newBase)
+            return
+        }
+        // Create a new Configuration object based on the resources of the newBase context.
+        val config = Configuration(newBase.resources.configuration)
+        // Set the fontScale property of the configuration to the desired scale.
+        config.fontScale = scale
+        // Create a new context with the modified configuration.
+        val scaledContext = newBase.createConfigurationContext(config)
+        // Call the superclass method with the new scaled context.
+        super.attachBaseContext(scaledContext)
+    }
+
     override fun restart(global: Boolean) {
         // Get the launch intent for the app's main activity
         val packageManager = packageManager
@@ -272,14 +294,7 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             Log.e("AppRestart", "Unable to restart: Launch intent is null")
             return
         }
-        // restart just the current activity
-        if (!global) {
-            // Restart just the current activity
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-            finish()  // Finish the current activity to ensure it is restarted
-            return
-        }
+
         // Get the main component for the restart task
         val componentName = intent.component
         if (componentName == null) {
@@ -290,7 +305,8 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         val mainIntent = Intent.makeRestartActivityTask(componentName)
         startActivity(mainIntent)
         // Terminate the current process to complete the restart
-        Runtime.getRuntime().exit(0)
+        if (global) Runtime.getRuntime().exit(0)
+        finish()
     }
 
     override fun showToast(message: String, duration: Int) =

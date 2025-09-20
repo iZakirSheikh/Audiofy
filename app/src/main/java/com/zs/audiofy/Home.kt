@@ -126,6 +126,7 @@ import com.zs.audiofy.playlists.members.Members
 import com.zs.audiofy.playlists.members.RouteMembers
 import com.zs.audiofy.properties.Properties
 import com.zs.audiofy.properties.RouteProperties
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.settings.RouteSettings
 import com.zs.audiofy.settings.Settings
 import com.zs.audiofy.videos.RouteVideos
@@ -238,25 +239,6 @@ private val NavRailBorder = BorderStroke(
         )
     )
 )
-
-/**
- * Provides a [Density] object that reflects the user's preferred font scale.
- *
- * This extension function on [Preferences] observes the `KEY_FONT_SCALE` preference
- * and returns a modified [Density] object if the user has set a custom font scale.
- * If the font scale is set to -1 (default), the current [LocalDensity] is returned.
- *
- * @return A [Density] object with the appropriate font scale applied.
- */
-private val SystemFacade.density: Density
-    @NonRestartableComposable
-    @Composable
-    inline get() {
-        // Observe font scale preference and create a modified Density if necessary
-        val fontScale by observeAsState(key = Settings.FONT_SCALE)
-        val density = LocalDensity.current
-        return if (fontScale == -1f) density else Density(density.density, fontScale)
-    }
 
 /**
  *Navigates to the specified route, managing the back stack for a seamless experience.
@@ -668,7 +650,6 @@ fun Home(
             CompositionLocalProvider(
                 LocalNavController provides navController,
                 LocalSystemFacade provides (activity as SystemFacade),
-                LocalDensity provides activity.density,
                 LocalWindowSize provides when {
                     !requiresNavBar -> clazz
                     portrait -> clazz.consume(height = 56.dp)
@@ -680,10 +661,8 @@ fun Home(
     )
 
     // Observe the state of the IMMERSE_VIEW setting
-    // Observe the state of the IMMERSE_VIEW setting
-    val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
     val transparentSystemBars by activity.observeAsState(Settings.TRANSPARENT_SYSTEM_BARS)
-    LaunchedEffect(immersiveView, style, isDark, transparentSystemBars) {
+    LaunchedEffect( style, isDark, transparentSystemBars) {
         // Get the WindowInsetsController for managing system bars
         val window = activity.window
         val controller = WindowCompat.getInsetsController(window, window.decorView)
@@ -692,7 +671,7 @@ fun Home(
         val visible = when (style.flagSystemBarVisibility) {
             WindowStyle.FLAG_SYSTEM_BARS_HIDDEN -> false  // Hide system bars
             WindowStyle.FLAG_SYSTEM_BARS_VISIBLE -> true  // Show system bars
-            else -> !immersiveView  // If not explicitly set, use the immersiveView setting
+            else -> true
         }
         // Apply the visibility setting to the system bars
         if (!visible) controller.hide(WindowInsetsCompat.Type.systemBars())

@@ -16,26 +16,18 @@ import com.zs.audiofy.common.IAP_ARTWORK_SHAPE_ROUNDED_RECT
 import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_IPHONE
 import com.zs.audiofy.common.NightMode
 import com.zs.audiofy.common.SystemFacade
-import com.zs.audiofy.settings.Settings.BLACKLISTED_FILES
-import com.zs.audiofy.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
 import com.zs.audiofy.settings.Settings.GitHubIssuesPage
 import com.zs.audiofy.settings.Settings.GithubIntent
-import com.zs.audiofy.settings.Settings.MIN_TRACK_LENGTH_SECS
 import com.zs.audiofy.settings.Settings.PrivacyPolicyIntent
-import com.zs.audiofy.settings.Settings.TRASH_CAN_ENABLED
 import com.zs.audiofy.settings.Settings.TelegramIntent
-import com.zs.audiofy.settings.Settings.USE_IN_BUILT_AUDIO_FX
-import com.zs.audiofy.settings.Settings.USE_LEGACY_ARTWORK_METHOD
 import com.zs.core.billing.Paymaster
 import com.zs.core.common.Intent
 import com.zs.preferences.IntSaver
 import com.zs.preferences.Key
 import com.zs.preferences.StringSaver
 import com.zs.preferences.booleanPreferenceKey
-import com.zs.preferences.floatPreferenceKey
 import com.zs.preferences.intPreferenceKey
 import com.zs.preferences.stringPreferenceKey
-import com.zs.preferences.stringSetPreferenceKey
 
 private const val TAG = "Settings"
 
@@ -179,28 +171,8 @@ object Settings {
             PREFIX + "_force_colorize",
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         )
-    val IMMERSIVE_VIEW =
-        booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
-    val MIN_TRACK_LENGTH_SECS =
-        intPreferenceKey(PREFIX + "_track_duration_", 30)
-    val USE_LEGACY_ARTWORK_METHOD =
-        booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
-    val TRASH_CAN_ENABLED =
-        booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = true)
-    val BLACKLISTED_FILES =
-        stringSetPreferenceKey(PREFIX + "_blacklisted_files")
-    val GAP_LESS_PLAYBACK =
-        booleanPreferenceKey(PREFIX + "_gap_less_playback")
-    val CROSS_FADE_DURATION_SECS =
-        intPreferenceKey(PREFIX + "_cross_fade_tracks_durations")
 
     //val CLOSE_WHEN_TASK_REMOVED = Playback.PREF_KEY_CLOSE_WHEN_REMOVED
-    val USE_IN_BUILT_AUDIO_FX =
-        booleanPreferenceKey(PREFIX + "_use_in_built_audio_fx", true)
-    val GRID_ITEM_SIZE_MULTIPLIER =
-        floatPreferenceKey(PREFIX + "_grid_item_size_multiplier", defaultValue = 1.0f)
-    val FONT_SCALE =
-        floatPreferenceKey(PREFIX + "_font_scale", -1f)
     val COLORIZATION_STRATEGY = intPreferenceKey(
         "${PREFIX}_colorization_strategy",
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default,
@@ -215,11 +187,6 @@ object Settings {
         }
     )
 
-    val SIGNATURE = stringPreferenceKey("${PREFIX}_signature")
-    val ARTWORK_BORDERED =
-        booleanPreferenceKey("${PREFIX}_artwork_bordered", false)
-
-    val ARTWORK_ELEVATED = booleanPreferenceKey("${PREFIX}_artwork_elevated", true)
     val COLOR_ACCENT_LIGHT =
         intPreferenceKey("${PREFIX}_color_accent_light", LightAccentColor, ColorSaver)
     val COLOR_ACCENT_DARK =
@@ -262,6 +229,8 @@ interface SettingsViewState {
      * Commits [AppConfig] to memory.
      */
     fun commit(facade: SystemFacade)
+
+    fun discard()
 
     /** Sets the value of the given [key] to [value]. */
     fun <S, O> set(key: Key<S, O>, value: O)
