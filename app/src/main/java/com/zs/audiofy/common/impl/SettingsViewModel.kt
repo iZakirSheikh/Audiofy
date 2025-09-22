@@ -61,6 +61,28 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
 
     override fun commit(facade: SystemFacade) {
         viewModelScope.launch {
+            // [CORE_SETTING_CHANGE] Update AppConfig with new settings values
+            // This directly modifies the global AppConfig object, which is used throughout the application
+            // to determine runtime behavior based on user preferences.
+            val global = AppConfig.isLoadThumbnailFromCache != preferCachedThumbnails
+            AppConfig.isLoadThumbnailFromCache = preferCachedThumbnails
+            AppConfig.isBackgroundBlurEnabled = enabledBackgroundBlur
+            AppConfig.isTrashCanEnabled = trashCanEnabled
+            AppConfig.fontScale = fontScale
+            AppConfig.minTrackLengthSecs = minTrackLengthSecs
+            AppConfig.inAppAudioEffectsEnabled = inAppAudioEffectsEnabled
+            AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
+            AppConfig.fabLongPressLaunchConsole = fabLongPressLaunchConsole
+            AppConfig.isSurfaceViewVideoRenderingPreferred = isSurfaceViewVideoRenderingPreferred
+
+            // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
+            // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
+            // for storage. `preferences` is an abstraction over SharedPreferences or DataStore.
+            preferences[Settings.KEY_APP_CONFIG] = AppConfig.stringify()
+            // trigger save
+            val enabled = trashCanEnabled
+            trashCanEnabled = !enabled
+            trashCanEnabled = enabled
             // [USER_FEEDBACK] Inform the user that a restart is required for some changes to take effect
             // Display a snackbar with a "Restart" action.
             val result = showSnackbar(
@@ -69,27 +91,8 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 icon = Icons.Outlined.PowerSettingsNew
             )
             // [APP_LIFECYCLE] If the user confirms, trigger an application restart via the SystemFacade
-            if (result == SnackbarResult.ActionPerformed) {
-                // [CORE_SETTING_CHANGE] Update AppConfig with new settings values
-                // This directly modifies the global AppConfig object, which is used throughout the application
-                // to determine runtime behavior based on user preferences.
-                val global = AppConfig.isLoadThumbnailFromCache != preferCachedThumbnails
-                AppConfig.isLoadThumbnailFromCache = preferCachedThumbnails
-                AppConfig.isBackgroundBlurEnabled = enabledBackgroundBlur
-                AppConfig.isTrashCanEnabled = trashCanEnabled
-                AppConfig.fontScale = fontScale
-                AppConfig.minTrackLengthSecs = minTrackLengthSecs
-                AppConfig.inAppAudioEffectsEnabled = inAppAudioEffectsEnabled
-                AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
-                AppConfig.fabLongPressLaunchConsole = fabLongPressLaunchConsole
-                AppConfig.isSurfaceViewVideoRenderingPreferred = isSurfaceViewVideoRenderingPreferred
-
-                // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
-                // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
-                // for storage. `preferences` is an abstraction over SharedPreferences or DataStore.
-                preferences[Settings.KEY_APP_CONFIG] = AppConfig.stringify()
+            if (result == SnackbarResult.ActionPerformed)
                 facade.restart(global)
-            }
         }
     }
 

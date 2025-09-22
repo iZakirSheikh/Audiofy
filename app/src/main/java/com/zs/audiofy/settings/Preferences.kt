@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Recycling
 import androidx.compose.material.icons.outlined.Straighten
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -255,10 +256,10 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
     // FAB player long press behaviour
     item(contentType = CONTENT_TYPE_PREF) {
         SwitchPreference(
-            text = textResource(R.string.pref_fab_long_press_behaviour),
-            checked = viewState.fabLongPressLaunchConsole,
-            onCheckedChange = { viewState.fabLongPressLaunchConsole = it},
-            icon = Icons.Outlined.Tune,
+            text = textResource(R.string.pref_fab_player_tap_behaviour),
+            checked = !viewState.fabLongPressLaunchConsole,
+            onCheckedChange = { viewState.fabLongPressLaunchConsole = !it},
+            icon = Icons.Outlined.TouchApp,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
         )
     }
@@ -269,7 +270,6 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
             text = textResource(R.string.pref_use_surface_view_video_rendering),
             checked = viewState.isSurfaceViewVideoRenderingPreferred,
             onCheckedChange = { viewState.isSurfaceViewVideoRenderingPreferred = it},
-            icon = Icons.Outlined.Tune,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
         )
     }

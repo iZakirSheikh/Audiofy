@@ -243,6 +243,7 @@
     <string name="changelog_400_alpha03" translatable="false">
          <b>What’s New <font color='olive'>(v4.0.0-alpha03)\n</font></b>
         <font color='grey'>
+          \n- <font color='magenta' size = '11'><b>Note:</b> <i>This is an <b>Alpha</b> release. Some features are missing and bugs may occur, but improvements and fixes are coming soon!</i></font>
           \n- <b><u>Improved Audio Effects Control:</u></b> "In-app Audio Effects" setting is now clearer. Disabling it now correctly uses your phone\'s built-in equalizer if available.
           \n- <b><u>Smarter Track Filtering:</u></b> Tracks shorter than your set "Minimum Track Length" (e.g., ringtones) are now properly filtered out from your music library.
           \n- <b><u>Refined Settings UI:</u></b>
@@ -254,10 +255,10 @@
           \n- <b><u>New "Playback" Settings Section:</u></b> We\'ve added a dedicated section in Settings for all your playback preferences.
           \n- <b><u>Choose Your Video Renderer (SurfaceView vs. TextureView):</u></b>
           \n    - You can now select between `SurfaceView` (default, better performance) and `TextureView` (better for visual effects integration) for video playback. Find this in Settings > Playback > "Video Renderer".
-          \n- <b><u>Customize FAB Player Long-Press:</u></b>
-          \n    - Decide what happens when you tap and hold the Floating Action Button (FAB) player:
-          \n        - <b>Open Console (Default):</b> Long-press opens the main player screen.
-          \n        - <b>Expand to Widget:</b> Long-press expands the FAB into the in-app widget.
+          \n- <b><u>Customize FAB Player Tap Behavior:</u></b>
+          \n    - Decide what happens when you tap the Floating Action Button (FAB) player:
+          \n        - <b>Open Console (Default):</b> Tap opens the main player screen.
+          \n        - <b>Expand to Widget:</b> Tap expands the FAB into the in-app widget.
         </font>
     </string>
 </resources>
