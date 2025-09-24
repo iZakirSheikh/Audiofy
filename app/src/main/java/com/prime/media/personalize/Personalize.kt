@@ -100,7 +100,7 @@ private val hPadding = CP.large
 private val hPaddingValues = Padding(horizontal = hPadding)
 private val vPadding = CP.normal
 private val vPaddingValues = Padding(vertical = vPadding)
-private val Padding = Padding(hPadding, vPadding)
+private val cPadding = Padding(hPadding, vPadding)
 private val HeaderPadding = Padding(CP.medium, CP.normal, CP.medium, CP.medium)
 
 private val ComponentSpacing = Arrangement.spacedBy(CP.medium)
@@ -280,7 +280,7 @@ fun Personalize(viewState: ViewState) {
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = ComponentSpacing,
-                contentPadding = Padding + WindowInsets.navigationBars.asPaddingValues(),
+                contentPadding = cPadding + WindowInsets.navigationBars.asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(WindowInsets.contentInsets)

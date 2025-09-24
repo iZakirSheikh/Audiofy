@@ -74,7 +74,6 @@ import com.zs.ads.Reward
 import com.zs.core.paymaster.Paymaster
 import com.zs.core.paymaster.purchased
 import com.zs.core_ui.WindowStyle
-import com.zs.core_ui.getPackageInfoCompat
 import com.zs.core_ui.toast.Toast
 import com.zs.core_ui.toast.ToastHostState
 import kotlinx.coroutines.delay
@@ -414,8 +413,8 @@ class MainActivity :
             // Get the first install time of the app.
             // Check if enough time has passed since the first install.
             val firstInstallTime =
-                packageManager.getPackageInfoCompat(BuildConfig.APPLICATION_ID)?.firstInstallTime
-                    ?: 0
+                /*packageManager.getPackageInfoCompat(BuildConfig.APPLICATION_ID)?.firstInstallTime
+                    ?:*/ 0
             val currentTime = System.currentTimeMillis()
             if (currentTime - firstInstallTime < INITIAL_REVIEW_DELAY.inWholeMilliseconds)
                 return@launch

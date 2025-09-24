@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
-import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.observeProductInfoAsState
@@ -239,9 +238,10 @@ private fun GetApp(
     // Check if the Gallery app is already installed
     val ctx = LocalContext.current
     val isInstalled = remember(pkg) {
-        com.primex.core.runCatching(TAG) {
+        /*com.primex.core.runCatching(TAG) {
             ctx.packageManager.getPackageInfo(pkg, 0)
-        } != null
+        } != null*/
+        false
     }
     if (isInstalled) return
     Promotion(

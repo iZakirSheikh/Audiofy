@@ -107,7 +107,8 @@ jobs:
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: production
           status: inProgress
-          userFraction: 0.30
+          userFraction: 0.90
+          changesNotSentForReview: true
           mappingFile: app/build/outputs/mapping/release/mapping.txt
 
       - name: Create Release
