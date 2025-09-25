@@ -37,7 +37,7 @@ jobs:
             --pretty=format:"- %s (%h)")
   
 
-  # Combine
+          # Combine
           notes="$notes$commit_notes"
           
           # If there are no commits, provide a fallback message
