@@ -444,16 +444,10 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
             // Check if the minimum launch count has been reached.
             if (count < MIN_LAUNCHES_BEFORE_REVIEW)
                 return@launch
-            // Get the first install time of the app.
-            // Check if enough time has passed since the first install.
-            val firstInstallTime =
-                packageManager.getPackageInfoCompat(BuildConfig.APPLICATION_ID)?.firstInstallTime
-                    ?: 0
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - firstInstallTime < INITIAL_REVIEW_DELAY.inWholeMilliseconds)
-                return@launch
+
             // Get the last time the review prompt was shown.
             // Check if enough time has passed since the last review prompt.
+            val currentTime = System.currentTimeMillis()
             val lastAskedTime = preferences[KEY_LAST_REVIEW_TIME]
             if (currentTime - lastAskedTime <= STANDARD_REVIEW_DELAY.inWholeMilliseconds)
                 return@launch
@@ -556,11 +550,15 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
                 // Show "What's New" message if the app version has changed
                 val versionCode = BuildConfig.VERSION_CODE
                 val savedVersionCode = preferences[KEY_APP_VERSION_CODE]
+                // Update review-time to current time if this is a new install.
+                if (savedVersionCode == -1)
+                    preferences[KEY_LAST_REVIEW_TIME] = System.currentTimeMillis()
                 if (savedVersionCode != versionCode) {
                     preferences[KEY_APP_VERSION_CODE] = versionCode
                     showPromoToast(0) // What's new
                     return@launch
                 }
+
                 // Promotional messages are displayed only after the app has been launched
                 // more than 5 times (MIN_LAUNCHES_BEFORE_REVIEW).
                 // This ensures that users have had a chance to familiarize themselves with the app

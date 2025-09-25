@@ -12,6 +12,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_alpha03</item>
         <item>@string/changelog_400_alpha02</item>
         <item>@string/changelog_400_alpha01</item>
         <item>@string/changelog_400_dev25</item>
@@ -30,7 +31,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_alpha03</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_alpha04</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -243,22 +244,33 @@
     <string name="changelog_400_alpha03" translatable="false">
          <b>What’s New <font color='olive'>(v4.0.0-alpha03)\n</font></b>
         <font color='grey'>
-          \n- <font color='magenta' size = '11'><b>Note:</b> <i>This is an <b>Alpha</b> release. Some features are missing and bugs may occur, but improvements and fixes are coming soon!</i></font>
-          \n- <b><u>Improved Audio Effects Control:</u></b> "In-app Audio Effects" setting is now clearer. Disabling it now correctly uses your phone\'s built-in equalizer if available.
-          \n- <b><u>Smarter Track Filtering:</u></b> Tracks shorter than your set "Minimum Track Length" (e.g., ringtones) are now properly filtered out from your music library.
-          \n- <b><u>Refined Settings UI:</u></b>
+          \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
+          \n✓ <b><u>Improved Audio Effects Control:</u></b> "In-app Audio Effects" setting is now clearer. Disabling it now correctly uses your phone\'s built-in equalizer if available.
+          \n✓ <b><u>Smarter Track Filtering:</u></b> Tracks shorter than your set "Minimum Track Length" (e.g., ringtones) are now properly filtered out from your music library.
+          \n✓ <b><u>Refined Settings UI:</u></b>
           \n    - The "Min Track Length" slider now goes from 0 to 100 seconds in 10-second steps for easier selection.
           \n    - "Font Scale" and "Grid Item Size" sliders offer more precise adjustments with more steps.
           \n    - The "Save" button in Settings is now a Floating Action Button (FAB) for better visibility and appears only when you have pending changes.
           \n    - The app restart prompt for settings changes now uses a clearer icon and appears *before* settings are applied, so you know what to expect.
-          \n- <b><u>Equalizer Button Logic:</u></b> The equalizer button in the player console now more reliably launches the system equalizer when in-app effects are off.
-          \n- <b><u>New "Playback" Settings Section:</u></b> We\'ve added a dedicated section in Settings for all your playback preferences.
-          \n- <b><u>Choose Your Video Renderer (SurfaceView vs. TextureView):</u></b>
+          \n✓ <b><u>Equalizer Button Logic:</u></b> The equalizer button in the player console now more reliably launches the system equalizer when in-app effects are off.
+          \n✓ <b><u>New "Playback" Settings Section:</u></b> We\'ve added a dedicated section in Settings for all your playback preferences.
+          \n✓ <b><u>Choose Your Video Renderer (SurfaceView vs. TextureView):</u></b>
           \n    - You can now select between `SurfaceView` (default, better performance) and `TextureView` (better for visual effects integration) for video playback. Find this in Settings > Playback > "Video Renderer".
-          \n- <b><u>Customize FAB Player Tap Behavior:</u></b>
+          \n✓ <b><u>Customize FAB Player Tap Behavior:</u></b>
           \n    - Decide what happens when you tap the Floating Action Button (FAB) player:
           \n        - <b>Open Console (Default):</b> Tap opens the main player screen.
           \n        - <b>Expand to Widget:</b> Tap expands the FAB into the in-app widget.
+        </font>
+    </string>
+
+    <!--v4.0.0-alpha04-->
+    <string name="changelog_400_alpha04" translatable="false">
+         <b>What’s New <font color='olive'>(v4.0.0-alpha04)\n</font></b>
+        <font color='grey'>
+          \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
+          \n✓ <b><u>Stream from the Web:</u></b> You can now play media directly from network URLs!
+          \n    ◦ Access this new feature via a "Link" button on the Library screen.
+          \n    ◦ Paste or type a URL, and we\'ll start streaming.
         </font>
     </string>
 </resources>

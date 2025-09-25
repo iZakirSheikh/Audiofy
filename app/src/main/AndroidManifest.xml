@@ -23,6 +23,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/launcher_label"
+        android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
         android:roundIcon="@mipmap/ic_launcher_round"

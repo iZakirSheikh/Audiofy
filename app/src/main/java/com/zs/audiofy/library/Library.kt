@@ -40,11 +40,15 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -81,6 +85,8 @@ import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.AppTheme.colors
 import com.zs.compose.theme.Colors
+import com.zs.compose.theme.FloatingActionButton
+import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalWindowSize
 import com.zs.compose.theme.Surface
@@ -240,6 +246,24 @@ fun Library(viewState: LibraryViewState) {
                 viewState = viewState,
                 behavior = topAppBarScrollBehavior,
                 background = colors.background(surface),
+            )
+        },
+        // fab
+        floatingActionButton = {
+            var expanded by remember { mutableStateOf(false) }
+            FloatingActionButton(
+                onClick = { expanded = !expanded },
+                modifier = Modifier.windowInsetsPadding(
+                    inAppNavBarInsets.union(WindowInsets.systemBars)
+                        .only(WindowInsetsSides.End + WindowInsetsSides.Bottom)
+                ),
+                content = {
+                    NewMediaLink(expanded) { link ->
+                        if (link != null) viewState.onNewLink(link)
+                        expanded = false
+                    }
+                    Icon(Icons.Outlined.Link, contentDescription = null)
+                }
             )
         },
         // Show only when strategy is TwoPane.

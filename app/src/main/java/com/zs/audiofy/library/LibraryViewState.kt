@@ -61,4 +61,9 @@ interface LibraryViewState {
      * @param id The unique identifier of the recently added history item.
      */
     fun onClickRecentAddedFile(id: Long)
+
+    /**
+     * Callback method for handling new link input.
+     */
+    fun onNewLink(link: String)
 }

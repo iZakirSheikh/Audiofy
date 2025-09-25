@@ -23,10 +23,13 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.media.audiofx.Equalizer
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import coil3.annotation.InternalCoilApi
+import coil3.util.MimeTypeMap
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
 import com.zs.core.common.runCatching
@@ -422,47 +425,61 @@ internal class RemoteImpl(private val context: Context) : Remote {
         }
     }
 
+    @OptIn(InternalCoilApi::class)
     @SuppressLint("UnsafeOptInUsageError")
     override suspend fun setMediaItem(uri: Uri) {
         var retriever: MediaMetadataRetriever? = null
         try {
             // Initialize MediaMetadataRetriever to extract metadata from the media file.
             retriever = MediaMetadataRetriever()
-            // Set the data source for the retriever.
-            // Note: This method is not suitable for remote URLs.
-            retriever.setDataSource(context, uri)
-            // Attempt to extract and cache the embedded album artwork.
-            val imageUri = runCatching(TAG) {
-                // Create a temporary file in the cache directory to store the artwork.
-                val file = File(context.cacheDir, "tmp_artwork.png")
-                // Delete the old cached artwork file, if it exists.
-                // This ensures that the latest album artwork is used, even if the track previously lacked artwork.
-                file.delete()
-                // Retrieve the embedded picture raw data. If null, no artwork exists, so return null.
-                val bytes = retriever.embeddedPicture ?: return@runCatching null
-                // Write the artwork bytes to the temporary file.
-                val fos = FileOutputStream(file)
-                fos.write(bytes)
-                fos.close()
-                // Return the URI of the cached artwork file.
-                Uri.fromFile(file)
+            val artwork: Uri?
+            withContext(Dispatchers.IO) {
+                // Set the data source for the retriever.
+                when (uri.scheme) {
+                    "content" -> retriever.setDataSource(context, uri)
+                    "file" -> retriever.setDataSource(uri.path)
+                    else -> retriever.setDataSource(uri.toString(), hashMapOf())
+                }
+                // Attempt to extract and cache the embedded album artwork.
+                artwork = runCatching(TAG) {
+                    // Create a temporary file in the cache directory to store the artwork.
+                    val file = File(context.cacheDir, "tmp_artwork.png")
+                    // Delete the old cached artwork file, if it exists.
+                    // This ensures that the latest album artwork is used, even if the track previously lacked artwork.
+                    file.delete()
+                    // Retrieve the embedded picture raw data. If null, no artwork exists, so return null.
+                    val bytes = retriever.embeddedPicture ?: return@runCatching null
+                    // Write the artwork bytes to the temporary file.
+                    val fos = FileOutputStream(file)
+                    fos.write(bytes)
+                    fos.close()
+                    // Return the URI of the cached artwork file.
+                    Uri.fromFile(file)
+                }
+
             }
             // Create a MediaFile object using the extracted metadata.
             // If a metadata field is not found, default to an empty string.
+            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                ?: uri.lastPathSegment
+                ?: uri.path?.substringAfterLast('/') // fallback if lastPathSegment is null
+
+            val mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+                ?: MimeTypeMap.getMimeTypeFromUrl(uri.toString())
             val item = MediaFile(
-                title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: "",
                 subtitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?: "",
                 uri = uri,
-                artwork = imageUri,
-                mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+                artwork = artwork,
+                mimeType = mimeType,
+                title =  title ?: "",
             )
             // Set the created MediaFile as the current media item in the player.
             setMediaFiles(listOf(item))
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             Log.d(TAG, "setMediaItem: error: ${e.message}")
-        }
-        finally {
-            retriever?.close()
+        } finally {
+            // We must call 'close' on API 29+ to avoid a strict mode warning.
+            if (Build.VERSION.SDK_INT >= 29) retriever?.close() else retriever?.release()
         }
     }
 }

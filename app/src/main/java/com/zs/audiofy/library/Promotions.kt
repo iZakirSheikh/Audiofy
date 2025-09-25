@@ -70,7 +70,6 @@ import com.zs.compose.foundation.MetroGreen
 import com.zs.compose.foundation.SkyBlue
 import com.zs.compose.foundation.composableIf
 import com.zs.compose.foundation.effects.shimmer
-import com.zs.compose.foundation.runCatching
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.BaseListItem
 import com.zs.compose.theme.Button
@@ -241,12 +240,6 @@ private fun GetApp(
     val pkg = "com.googol.android.apps.photos"
     // Check if the Gallery app is already installed
     val ctx = LocalContext.current
-    val isInstalled = remember(pkg) {
-        runCatching(TAG) {
-            ctx.packageManager.getPackageInfo(pkg, 0)
-        } != null
-    }
-    if (isInstalled) return
     Promotion(
         expanded,
         onValueChange,

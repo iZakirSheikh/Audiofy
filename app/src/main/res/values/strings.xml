@@ -1,20 +1,20 @@
-<resources>
-    <!--
-   Naming convention for string resources:
-    - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
-    - The string resources should be named as follows:
-      1. If the string is simple, like Delete, its name should be R.string.delete.
-      2. If the string contains complex text, the name should be in this format: scr_screen_name_purpose_variables
-         (optional; if no variables, omit this). For example, timeline_scr_items_d
-      3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional).
-         The message can be styled as bold or experimental, like alpha superscript. The message
-         can have any length.
-      4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s
-         (optional). E.g., msg_preference_permission_s
-      5. The snackbar message should have this structure: Title\n bold + experimental + message.
-         The string resources should follow the above rules strictly
-    -->
+<!--
+ Naming convention for string resources:
+  - The string can be styled following the rules of styling without CDATA, as the toolkit does not support CDATA.
+  - The string resources should be named as follows:
+    1. If the string is simple, like Delete, its name should be R.string.delete.
+    2. If the string contains complex text, the name should be in this format: scr_screen_name_purpose_variables
+       (optional; if no variables, omit this). For example, timeline_scr_items_d
+    3. General message (snackbar) messages should be named as msg_add_to_playlist_error_s (optional).
+       The message can be styled as bold or experimental, like alpha superscript. The message
+       can have any length.
+    4. Snackbar messages that belong to a specific screen should be named as msg_screen_name_s
+       (optional). E.g., msg_preference_permission_s
+    5. The snackbar message should have this structure: Title\n bold + experimental + message.
+       The string resources should follow the above rules strictly
+  -->
 
+<resources>
     <string name="app_name" translatable="false">Audiofy</string>
     <!--
        App icon name. Dynamically set to reflect the build type (e.g., debug, release).
@@ -331,4 +331,5 @@
     <string name="pref_fab_player_tap_behaviour"><b>FAB Player Tap\n</b><font color="grey" size="14">Tap the <b><i>FAB</i></b> Player to open <i>Console</i>.</font>
     </string>
     <string name="pref_use_surface_view_video_rendering"><b>Video Renderer\n</b><font color="grey" size="14">Enable <b>SurfaceView</b> for faster video rendering, or switch to <b>TextureView</b> for better visual effects.</font></string>
+    <string name="scr_network_stream_title">Network <b>Link</b><sup><font color='#ae1c27' size='10'><b> Beta</b></font></sup><font size="10"><sup><sup>\nStream media from the web.</sup></sup></font>\n</string>
 </resources>
