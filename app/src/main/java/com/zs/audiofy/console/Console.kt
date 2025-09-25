@@ -344,7 +344,7 @@ fun Console(viewState: ConsoleViewState) {
 
         // Slider
         TimeBar(
-            progress = chronometer.progress(state.duration),
+            progress = if (state.state == Remote.PLAYER_STATE_BUFFERING) -1f else chronometer.progress(state.duration),
             onValueChange = {
                 if (isVideo) viewState.emit(C.VISIBILITY_VISIBLE_SEEK)
                 val mills = (it * state.duration).toLong()

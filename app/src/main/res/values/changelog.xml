@@ -271,6 +271,7 @@
           \n✓ <b><u>Stream from the Web:</u></b> You can now play media directly from network URLs!
           \n    ◦ Access this new feature via a "Link" button on the Library screen.
           \n    ◦ Paste or type a URL, and we\'ll start streaming.
+          \n✓ <b><u>Buffering Indicator:</u></b> The TimeBar now displays an indeterminate progress indicator when the player is buffering media.
         </font>
     </string>
 </resources>

@@ -62,6 +62,7 @@ import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
+import com.zs.compose.theme.LinearProgressIndicator
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.SliderDefaults
@@ -170,19 +171,25 @@ fun TimeBar(
     Box(modifier.onSizeChanged() {
         width = it.width
     }) {
-        Slider(
-            progress,
-            onValueChange = onValueChange,
-            onValueChangeFinished = onValueChangeFinished,
-            modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
-            enabled = enabled,
-            colors = SliderDefaults.colors(
-                thumbColor = accent,
-                activeTrackColor = accent,
-                disabledThumbColor = accent,
-                disabledActiveTrackColor = accent
+        when{
+            progress >= 0 -> Slider(
+                progress,
+                onValueChange = onValueChange,
+                onValueChangeFinished = onValueChangeFinished,
+                modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
+                enabled = enabled,
+                colors = SliderDefaults.colors(
+                    thumbColor = accent,
+                    activeTrackColor = accent,
+                    disabledThumbColor = accent,
+                    disabledActiveTrackColor = accent
+                )
             )
-        )
+            else -> LinearProgressIndicator(
+                color = accent,
+                backgroundColor = accent.copy(ContentAlpha.indication)
+            )
+        }
     }
 }
 
