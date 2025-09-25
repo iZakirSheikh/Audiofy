@@ -144,7 +144,6 @@ jobs:
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: internal
           whatsNewDirectory: ./whatsnew
-          changesNotSentForReview: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
