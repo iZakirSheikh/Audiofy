@@ -34,9 +34,10 @@ jobs:
           
           # Take the last MAX_COMMITS from the current branch only, no merges
           commit_notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
-            --pretty=format:"### %s (%h)%n%b%n")
-          
-          # Combine
+            --pretty=format:"- %s (%h)")
+  
+
+  # Combine
           notes="$notes$commit_notes"
           
           # If there are no commits, provide a fallback message
@@ -142,6 +143,7 @@ jobs:
           packageName: com.prime.player
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: internal
+          whatsNewDirectory: ./whatsnew
           changesNotSentForReview: true
 
       - name: Create Release

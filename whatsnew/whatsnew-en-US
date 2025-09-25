@@ -1,0 +1,3 @@
+* Stream from the Web: Play media directly from network URLs using the "Link" button in the Library.
+* Buffering Indicator: The TimeBar now shows when media is buffering.
+* Note: This is an alpha release. Some features may be missing or contain bugs.
