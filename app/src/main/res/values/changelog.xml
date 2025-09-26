@@ -276,13 +276,17 @@
         </font>
     </string>
 
-    <!--v4.0.0-alpha04-->
+
+    <!--v4.0.0-alpha05-->
     <string name="changelog_400_alpha05" translatable="false">
-         <b>What’s New <font color='olive'>(v4.0.0-alpha05)\n</font></b>
+         <b>What’s New <font color='olive'>(v4.0.0-alpha06)\n</font></b>
         <font color='grey'>
             \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
-            \n✓ <b><u>Buffering Indicator Refinement:</u></b> The <code>TimeBar</code> now conditionally displays a <code>LinearProgressIndicator</code> (using the accent color) when buffering (progress is -1f), providing a clearer visual cue.
-            \n✓ <b><u>Code Cleanup:</u></b>
+            \n✓ <b><u>"Organize Files into Sections" Preference:</u></b> You can now choose to display files in library views (Albums, Audios, etc.) as a flat list or grouped into sections. Find this in Settings > General.
+            \n✓ <b><u>UI Polish:</u></b>
+            \n    - The <b>Close Button</b> preference and the new <b>File Grouping</b> preference in Settings now have a background color and distinct tile shapes for better visual organization.
+            \n    - Increased the shadow elevation for the "Newly Added" item card and updated its shape for a more modern look.
+            \n✓ <b><u>Behind-the-Scenes:</u></b>
             \n    - Removed redundant logic in <code>TimeBar</code> for handling negative progress.
             \n    - Removed accent color from "new update downloaded" snackbar message.
         </font>

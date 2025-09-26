@@ -226,6 +226,7 @@ interface SettingsViewState {
     var gridItemSizeMultiplier: Float
     var fabLongPressLaunchConsole: Boolean
     var isSurfaceViewVideoRenderingPreferred: Boolean
+    var isFileGroupingEnabled: Boolean
 
     /**
      * Commits [AppConfig] to memory.

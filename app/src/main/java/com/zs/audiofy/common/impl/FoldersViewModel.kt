@@ -38,6 +38,7 @@ import com.zs.audiofy.common.raw
 import com.zs.audiofy.folders.FoldersViewState
 import com.zs.audiofy.folders.RouteFolders
 import com.zs.audiofy.folders.get
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.castTo
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.store.MediaProvider
@@ -128,12 +129,16 @@ class FoldersViewModel(
                     )
                 val result = when (order) {
                     ORDER_BY_NONE -> folders.groupBy { "" }
-                    ORDER_BY_TITLE -> folders.sortedBy { it.firstTitleChar }
-                        .let { if (ascending) it else it.reversed() }.groupBy { it.firstTitleChar }
+                    ORDER_BY_TITLE -> folders.sortedBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else ""}
+                        .let { if (ascending) it else it.reversed() }.groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
 
                     ORDER_BY_DATE_MODIFIED -> folders.sortedBy { it.lastModified }
                         .let { if (ascending) it else it.reversed() }
-                        .groupBy { DateUtils.getRelativeTimeSpanString(it.lastModified).toString() }
+                        .groupBy {
+                            if (!AppConfig.isFileGroupingEnabled)
+                                return@groupBy ""
+                            DateUtils.getRelativeTimeSpanString(it.lastModified).toString()
+                        }
 
                     else -> error("Oops invalid id passed $order")
                 }

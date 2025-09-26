@@ -79,6 +79,19 @@ object AppConfig {
      */
     var isSurfaceViewVideoRenderingPreferred = true
 
+    /**
+     * Controls whether files displayed in directories (e.g., playlist members, audio files,
+     * video files, artist-specific files) are grouped.
+     *
+     * When `true` (default), files within these directory views will be organized into
+     * groups, potentially based on criteria like album, artist, or folder structure.
+     * This can enhance readability and navigation for large collections.
+     *
+     * When `false`, files will be displayed as a flat list without any grouping,
+     * which might be preferred for smaller collections or specific user preferences.
+     */
+    var isFileGroupingEnabled = true
+
 
     // Delimiters
     private const val KEYS_DELIMITER = '\u001E'
@@ -94,6 +107,7 @@ object AppConfig {
     private const val KEY_GRID_ITEM_SIZE_MULTIPLIER = "param7"
     private const val KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE = "param8"
     private const val KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED = "param9"
+    private const val KEY_FILE_GROUPING_ENABLED = "param10"
 
 
     /**
@@ -152,6 +166,7 @@ object AppConfig {
         records[KEY_GRID_ITEM_SIZE_MULTIPLIER] = gridItemSizeMultiplier
         records[KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE] = fabLongPressLaunchConsole
         records[KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED] = isSurfaceViewVideoRenderingPreferred
+        records[KEY_FILE_GROUPING_ENABLED] = isFileGroupingEnabled
         Log.i(TAG, "stringify: $records")
         return records.toString()
     }
@@ -193,6 +208,7 @@ object AppConfig {
                 KEY_GRID_ITEM_SIZE_MULTIPLIER -> gridItemSizeMultiplier = value.toFloat()
                 KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE -> fabLongPressLaunchConsole = value.toBoolean()
                 KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED -> isSurfaceViewVideoRenderingPreferred = value.toBoolean()
+                KEY_FILE_GROUPING_ENABLED -> isFileGroupingEnabled = value.toBoolean()
             }
         }
     }

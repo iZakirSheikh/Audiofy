@@ -29,6 +29,7 @@ import com.zs.audiofy.common.Action
 import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.Mapped
 import com.zs.audiofy.common.compose.FilterDefaults
+import com.zs.audiofy.settings.AppConfig
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio.Genre
 import com.zs.preferences.stringPreferenceKey
@@ -78,7 +79,7 @@ class GenresViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Genre>(
         val (ascending, order) = filter
         val result = provider.fetchGenres(query, order.toMediaStoreOrder, ascending)
         return when (order) {
-            ORDER_BY_TITLE -> result.groupBy { it.firstTitleChar }
+            ORDER_BY_TITLE -> result.groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
             else -> result.groupBy { "" }
         }
     }

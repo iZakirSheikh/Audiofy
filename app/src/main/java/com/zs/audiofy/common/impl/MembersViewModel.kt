@@ -43,6 +43,7 @@ import com.zs.audiofy.common.raw
 import com.zs.audiofy.playlists.members.MembersViewState
 import com.zs.audiofy.playlists.members.RouteMembers
 import com.zs.audiofy.playlists.members.get
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.castTo
 import com.zs.core.common.debounceAfterFirst
 import com.zs.core.db.playlists.Playlist
@@ -124,9 +125,9 @@ class MembersViewModel(
         playlists.observer(playlistName, query).debounceAfterFirst(300L).map { tracks ->
             when (order) {
                 ORDER_NONE -> tracks.groupBy { "" }
-                ORDER_BY_TITLE -> tracks.sortedBy { it.firstTitleChar }
+                ORDER_BY_TITLE -> tracks.sortedBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
                     .let { if (ascending) it else it.reversed() }
-                    .groupBy { it.firstTitleChar }
+                    .groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
 
                 else -> error("Oops!! invalid order passed $order")
             }

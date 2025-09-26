@@ -220,10 +220,12 @@ class AudiosViewModel(
         // Group data.
         data = when (filter.second) {
             ORDER_BY_NONE -> files.groupBy { "" }
-            ORDER_BY_TITLE -> files.groupBy { it.firstTitleChar }
-            ORDER_BY_ALBUM -> files.groupBy { it.album }
-            ORDER_BY_ARTIST -> files.groupBy { it.artist }
+            ORDER_BY_TITLE -> files.groupBy {  if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
+            ORDER_BY_ALBUM -> files.groupBy {  if (AppConfig.isFileGroupingEnabled) it.album else "" }
+            ORDER_BY_ARTIST -> files.groupBy { if (AppConfig.isFileGroupingEnabled) it.artist else "" }
             ORDER_BY_DATE_MODIFIED -> files.groupBy {
+                if (!AppConfig.isFileGroupingEnabled)
+                    return@groupBy ""
                 val mills = System.currentTimeMillis()
                 DateUtils.getRelativeTimeSpanString(
                     /* time = */ it.dateModified,
@@ -233,6 +235,8 @@ class AudiosViewModel(
             }
 
             ORDER_BY_LENGTH -> files.groupBy { audio ->
+                if (!AppConfig.isFileGroupingEnabled)
+                    return@groupBy ""
                 when {
                     audio.duration < TimeUnit.MINUTES.toMillis(2) -> getText(R.string.duration_under_2_min)
                     audio.duration < TimeUnit.MINUTES.toMillis(5) -> getText(R.string.duration_under_5_min)

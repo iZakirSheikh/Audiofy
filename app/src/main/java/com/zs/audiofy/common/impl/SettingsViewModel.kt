@@ -46,6 +46,7 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
     override var gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
     override var fabLongPressLaunchConsole: Boolean by mutableStateOf(AppConfig.fabLongPressLaunchConsole)
     override var isSurfaceViewVideoRenderingPreferred: Boolean by mutableStateOf(AppConfig.isSurfaceViewVideoRenderingPreferred)
+    override var isFileGroupingEnabled: Boolean by mutableStateOf(AppConfig.isFileGroupingEnabled)
 
     override val save: Boolean by derivedStateOf {
         trashCanEnabled != AppConfig.isTrashCanEnabled ||
@@ -56,7 +57,8 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 inAppAudioEffectsEnabled != AppConfig.inAppAudioEffectsEnabled ||
                 gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier ||
                 fabLongPressLaunchConsole != AppConfig.fabLongPressLaunchConsole ||
-                isSurfaceViewVideoRenderingPreferred != AppConfig.isSurfaceViewVideoRenderingPreferred
+                isSurfaceViewVideoRenderingPreferred != AppConfig.isSurfaceViewVideoRenderingPreferred ||
+                isFileGroupingEnabled != AppConfig.isFileGroupingEnabled
     }
 
     override fun commit(facade: SystemFacade) {
@@ -74,6 +76,7 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
             AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
             AppConfig.fabLongPressLaunchConsole = fabLongPressLaunchConsole
             AppConfig.isSurfaceViewVideoRenderingPreferred = isSurfaceViewVideoRenderingPreferred
+            AppConfig.isFileGroupingEnabled = isFileGroupingEnabled
 
             // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
             // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
@@ -109,6 +112,7 @@ class SettingsViewModel : KoinViewModel(), SettingsViewState {
                 trashCanEnabled = AppConfig.isTrashCanEnabled
                 fabLongPressLaunchConsole = AppConfig.fabLongPressLaunchConsole
                 isSurfaceViewVideoRenderingPreferred = AppConfig.isSurfaceViewVideoRenderingPreferred
+                isFileGroupingEnabled = AppConfig.isFileGroupingEnabled
             }
         }
     }

@@ -40,6 +40,7 @@ import com.zs.audiofy.common.Mapped
 import com.zs.audiofy.common.compose.FilterDefaults
 import com.zs.audiofy.common.raw
 import com.zs.audiofy.playlists.PlaylistsViewState
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.RedViolet
 import com.zs.compose.foundation.castTo
 import com.zs.compose.theme.snackbar.SnackbarDuration
@@ -130,12 +131,15 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
             playlists.observe(query).map { playlists ->
                 val result = when (order) {
                     ORDER_NONE -> playlists.groupBy { "" }
-                    ORDER_NAME -> playlists.sortedBy { it.firstTitleChar }
-                        .let { if (ascending) it else it.reversed() }.groupBy { it.firstTitleChar }
+                    ORDER_NAME -> playlists.sortedBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
+                        .let { if (ascending) it else it.reversed() }.groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
 
                     ORDER_BY_MODIFIED -> playlists.sortedBy { it.dateModified }
                         .let { if (ascending) it else it.reversed() }
-                        .groupBy { DateUtils.getRelativeTimeSpanString(it.dateModified).toString() }
+                        .groupBy {
+                            if (!AppConfig.isFileGroupingEnabled)
+                                return@groupBy ""
+                            DateUtils.getRelativeTimeSpanString(it.dateModified).toString() }
 
                     else -> error("Oops!! invalid order passed $order")
                 }

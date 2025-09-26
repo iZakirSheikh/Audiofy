@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Segment
 import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.LightMode
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Recycling
+import androidx.compose.material.icons.outlined.Segment
 import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
@@ -106,9 +108,21 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                         .wrapContentSize(Alignment.Center)
                 )
             },
+            modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape),
+        )
+    }
+    // File grouping
+    item(contentType = CONTENT_TYPE_PREF) {
+        SwitchPreference(
+            text = textResource(R.string.pref_enable_file_grouping),
+            checked = viewState.isFileGroupingEnabled,
+            onCheckedChange = { viewState.isFileGroupingEnabled = it },
+            icon = Icons.AutoMirrored.Default.Segment,
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape),
         )
     }
+
+
     // Appearance
     item(contentType = RS.CONTENT_TYPE_HEADER) {
         Header(

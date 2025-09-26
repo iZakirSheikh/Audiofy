@@ -34,6 +34,7 @@ import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.compose.FilterDefaults
 import com.zs.audiofy.common.compose.directory.MetaData
 import com.zs.audiofy.common.ellipsize
+import com.zs.audiofy.settings.AppConfig
 import com.zs.audiofy.videos.RouteVideos
 import com.zs.audiofy.videos.VideosViewState
 import com.zs.audiofy.videos.get
@@ -129,8 +130,10 @@ class VideosViewModel(
         // Group data.
         data = when (filter.second) {
             ORDER_BY_NONE -> files.groupBy { "" }
-            ORDER_BY_TITLE -> files.groupBy { it.firstTitleChar }
+            ORDER_BY_TITLE -> files.groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
             ORDER_BY_DATE_MODIFIED -> files.groupBy {
+                if (!AppConfig.isFileGroupingEnabled)
+                    return@groupBy ""
                 val mills = System.currentTimeMillis()
                 DateUtils.getRelativeTimeSpanString(
                     /* time = */ it.dateModified,

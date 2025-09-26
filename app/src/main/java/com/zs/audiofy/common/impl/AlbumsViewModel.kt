@@ -29,6 +29,7 @@ import com.zs.audiofy.common.Filter
 import com.zs.audiofy.common.Mapped
 import com.zs.audiofy.common.compose.FilterDefaults
 import com.zs.audiofy.common.compose.FilterDefaults.FilterSaver
+import com.zs.audiofy.settings.AppConfig
 import com.zs.core.store.MediaProvider
 import com.zs.core.store.models.Audio.Album
 import com.zs.preferences.stringPreferenceKey
@@ -80,8 +81,8 @@ class AlbumsViewModel(provider: MediaProvider) : LocalDirectoryViewModel<Album>(
         val (ascending, order) = filter
         val albums = provider.fetchAlbums(query, order.toMediaStoreOrder, ascending)
         return when (order) {
-            ORDER_BY_TITLE -> albums.groupBy { it.firstTitleChar }
-            ORDER_BY_ARTIST -> albums.groupBy { it.artist }
+            ORDER_BY_TITLE -> albums.groupBy { if (AppConfig.isFileGroupingEnabled) it.firstTitleChar else "" }
+            ORDER_BY_ARTIST -> albums.groupBy {if (AppConfig.isFileGroupingEnabled) it.artist else "" }
             else -> albums.groupBy { "" }
         }
     }

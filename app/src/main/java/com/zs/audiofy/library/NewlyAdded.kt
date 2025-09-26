@@ -102,7 +102,7 @@ private fun NewlyAddedItem(
 ) {
     Box(
         modifier = modifier
-            .shadow(4.dp, AppTheme.shapes.medium) // Light shadow
+            .shadow(8.dp, AppTheme.shapes.large) // Light shadow
             .clickable(onClick = onClick) // Enable clicking
             .size(224.dp, 132.dp), // Set minimum size
         contentAlignment = Alignment.Center, // Center content within the box
