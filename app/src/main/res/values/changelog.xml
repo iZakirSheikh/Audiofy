@@ -12,6 +12,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_alpha04</item>
         <item>@string/changelog_400_alpha03</item>
         <item>@string/changelog_400_alpha02</item>
         <item>@string/changelog_400_alpha01</item>
@@ -31,7 +32,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_alpha04</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_alpha05</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -272,6 +273,15 @@
           \n    ◦ Access this new feature via a "Link" button on the Library screen.
           \n    ◦ Paste or type a URL, and we\'ll start streaming.
           \n✓ <b><u>Buffering Indicator:</u></b> The TimeBar now displays an indeterminate progress indicator when the player is buffering media.
+        </font>
+    </string>
+
+    <!--v4.0.0-alpha04-->
+    <string name="changelog_400_alpha05" translatable="false">
+         <b>What’s New <font color='olive'>(v4.0.0-alpha05)\n</font></b>
+        <font color='grey'>
+          \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
+          \n✓
         </font>
     </string>
 </resources>

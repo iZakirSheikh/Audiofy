@@ -1,12 +1,12 @@
 [versions]
 agp = "8.13.0"
 kotlin = "2.2.20"
-compose = "1.9.1"
+compose = "1.9.2"
 media3 = "1.8.0"
-toolkit = "3.7.4-dev"
+toolkit = "3.7.7-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
-room = "2.8.0"
+room = "2.8.1"
 glance = "1.1.1"
 
 [plugins]
@@ -38,7 +38,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compo
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.1" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.2" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
 androidx-animation-compose = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
