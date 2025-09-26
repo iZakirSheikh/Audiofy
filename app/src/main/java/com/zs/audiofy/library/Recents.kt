@@ -22,6 +22,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable as clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -66,17 +67,15 @@ private val RECENT_ICON_SHAPE = RoundedCornerShape(30)
 @Composable
 private fun Recent(
     label: CharSequence,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     artworkUri: String? = null
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = Modifier
             .clip(AppTheme.shapes.small) // Apply rounded corners
-            .clickable(onClick = onClick) // Enable clicking
-        //.then(modifier) // Apply additional modifiers
+                then modifier
     ) {
         // Artwork section with border and shadow
         AsyncImage(
@@ -135,12 +134,11 @@ fun Recents(
             items(values, key = Track::uri) {
                 Recent(
                     it.title,             // Use the item's title
-                    onClick = { state.onClickRecentFile(it.uri) },  // Trigger click action
-                    modifier = Modifier.animateItem(
-                        null,
-                        fadeOutSpec = null
-                    ),      // Animate item placement
                     artworkUri = it.artwork,// Display artwork if available
+                    modifier = Modifier.clickable(
+                        onClick = { state.onClickRecentFile(it.uri) }, // maybe play.
+                        onLongClick = { state.onRequestRemoveRecentItem(it.uri) }
+                    ).animateItem(null, fadeOutSpec = null) // Animate item placement
                 )
             }
         }

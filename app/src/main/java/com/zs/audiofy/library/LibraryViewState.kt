@@ -66,4 +66,14 @@ interface LibraryViewState {
      * Callback method for handling new link input.
      */
     fun onNewLink(link: String)
+
+    /**
+     * Callback method invoked when the user requests the removal of a recent item.
+     *
+     * This function initiates the process of removing a specified item from the list
+     * of recently played or accessed media.
+     *
+     * @param uri The URI of the recent item to be removed.
+     */
+    fun onRequestRemoveRecentItem(uri: String)
 }

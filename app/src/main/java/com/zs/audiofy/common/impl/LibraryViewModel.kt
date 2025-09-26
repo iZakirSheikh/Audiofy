@@ -126,7 +126,8 @@ class LibraryViewModel(
         //     an error message is displayed.
         runCatching {
             val index = remote.indexOf(Uri.parse(uri))
-            val isAlreadyInPlaylist = index != Remote.INDEX_UNSET // Check if the item is in the current playlist.
+            val isAlreadyInPlaylist =
+                index != Remote.INDEX_UNSET // Check if the item is in the current playlist.
 
             if (isAlreadyInPlaylist) {
                 // If already in playlist, seek to it and play.
@@ -141,7 +142,11 @@ class LibraryViewModel(
 
             if (item == null) {
                 // This case should ideally not happen if the UI is displaying valid recent items.
-                showSnackbar("Oops! Unknown error", icon = Icons.Outlined.Error, accent = Color.Rose)
+                showSnackbar(
+                    "Oops! Unknown error",
+                    icon = Icons.Outlined.Error,
+                    accent = Color.Rose
+                )
                 return@runCatching
             }
             // If found in recent, create a new playlist with this item and play it.
@@ -160,7 +165,11 @@ class LibraryViewModel(
             val item = newlyAddedItems?.find { it.id == id }
             if (item == null) {
                 // This case should ideally not happen if the UI is displaying valid newly added items.
-                showSnackbar("Oops! Unknown error", icon = Icons.Outlined.Error, accent = Color.Rose)
+                showSnackbar(
+                    "Oops! Unknown error",
+                    icon = Icons.Outlined.Error,
+                    accent = Color.Rose
+                )
                 return@runCatching
             }
             // Create a new playlist with this item and start playback.
@@ -191,5 +200,22 @@ class LibraryViewModel(
         }
         // Errors from setMediaItem or play are not handled inside the block.
         // Instead, they bubble up and are caught by runCatching, allowing centralized error handling elsewhere.
+    }
+
+    override fun onRequestRemoveRecentItem(uri: String) {
+        runCatching {
+            // Retrieve the "Recently Played" playlist entry
+            val playlist = playlists[Remote.PLAYLIST_RECENT]
+                ?: error("Recent playlist not found. Cannot proceed with removal.")
+
+            // Attempt to remove the item from the playlist
+            val removedCount = playlists.remove(playlist.id, uri)
+
+            // Show feedback based on result
+            if (removedCount == 1)
+                showPlatformToast("Item removed from history.")
+            else
+                error("Failed to remove item from recent playlist. URI may be invalid or missing.")
+        }
     }
 }

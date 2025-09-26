@@ -289,6 +289,8 @@
             \n✓ <b><u>Behind-the-Scenes:</u></b>
             \n    - Removed redundant logic in <code>TimeBar</code> for handling negative progress.
             \n    - Removed accent color from "new update downloaded" snackbar message.
+            \n✓ <b><u>Remove from "Recents":</u></b> Long-press an item in the "Recently Played" list on the Library screen to remove it from your history.
+            \n✓ <b><u>Clearer Setting Description:</u></b> Updated the description for the "Organize Files into Sections" preference for better clarity.
         </font>
     </string>
 </resources>
