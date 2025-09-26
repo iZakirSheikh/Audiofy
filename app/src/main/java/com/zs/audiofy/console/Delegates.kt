@@ -162,6 +162,12 @@ fun TimeBar(
     enabled: Boolean = true,
     accent: Color = AppTheme.colors.accent
 ) {
+    if (progress == -1f)
+        return LinearProgressIndicator(
+            color = accent,
+            backgroundColor = accent.copy(ContentAlpha.indication),
+            modifier = modifier
+        )
     // FIXME: This is a temporary workaround.
     //  Problem:
     //  The Slider composable uses BoxWithConstraints internally. When used within a ConstraintLayout
@@ -171,25 +177,19 @@ fun TimeBar(
     Box(modifier.onSizeChanged() {
         width = it.width
     }) {
-        when{
-            progress >= 0 -> Slider(
-                progress,
-                onValueChange = onValueChange,
-                onValueChangeFinished = onValueChangeFinished,
-                modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
-                enabled = enabled,
-                colors = SliderDefaults.colors(
-                    thumbColor = accent,
-                    activeTrackColor = accent,
-                    disabledThumbColor = accent,
-                    disabledActiveTrackColor = accent
-                )
+        Slider(
+            progress,
+            onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
+            modifier = Modifier.width(with(LocalDensity.current) { width.toDp() }),
+            enabled = enabled,
+            colors = SliderDefaults.colors(
+                thumbColor = accent,
+                activeTrackColor = accent,
+                disabledThumbColor = accent,
+                disabledActiveTrackColor = accent
             )
-            else -> LinearProgressIndicator(
-                color = accent,
-                backgroundColor = accent.copy(ContentAlpha.indication)
-            )
-        }
+        )
     }
 }
 
@@ -261,7 +261,7 @@ fun PlayButton(
     simple: Boolean = false,
 ) {
     when {
-        !simple -> OutlinedPlayButton(onClick, isPlaying, modifier,enabled)
+        !simple -> OutlinedPlayButton(onClick, isPlaying, modifier, enabled)
         else -> SimplePlayButton(onClick, isPlaying, modifier, enabled)
     }
 }
@@ -269,11 +269,12 @@ fun PlayButton(
 fun SystemFacade.launchEqualizer(id: Int) {
     if (id == AudioEffect.ERROR_BAD_VALUE)
         return showToast(R.string.msg_unknown_error)
-    val intent = android.content.Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
-        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
-        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-    }
+    val intent =
+        android.content.Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
+            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, id)
+            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+        }
     val res = runCatching { launch(intent) }
     if (!res.isFailure)
         return

@@ -410,7 +410,6 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
                         message = resources.getText2(R.string.msg_new_update_downloaded),
                         action = resources.getText2(R.string.install),
                         duration = SnackbarDuration.Long,
-                        accent = Color.MetroGreen,
                         icon = Icons.Outlined.Downloading
                     )
                     // complete update when ever user clicks on action.
