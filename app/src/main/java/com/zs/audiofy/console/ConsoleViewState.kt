@@ -28,6 +28,8 @@ import androidx.constraintlayout.compose.Visibility
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
+import com.zs.core.playback.Remote
+import com.zs.core.playback.Remote.TrackInfo
 import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -238,4 +240,9 @@ interface ConsoleViewState: QueueViewState {
     fun seekTo(pct: Float)
 
     fun sleepAt(mills: Long)
+
+
+    suspend fun getAvailableTracks(type: Int): List<TrackInfo>
+    suspend fun getCheckedTrack(type: Int): TrackInfo?
+    fun setCheckedTrack(type: Int, info: TrackInfo?)
 }

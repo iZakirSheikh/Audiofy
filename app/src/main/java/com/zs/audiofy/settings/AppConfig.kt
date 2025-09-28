@@ -61,7 +61,7 @@ object AppConfig {
     var minTrackLengthSecs: Int = 30
 
     /** Indicates whether to use the system's built-in audio effects. */
-    var inAppAudioEffectsEnabled: Boolean = false
+    var inAppAudioEffectsEnabled: Boolean = true
 
     /** Multiplier for adjusting the size of items in grid layouts. */
     var gridItemSizeMultiplier: Float = 1.0f

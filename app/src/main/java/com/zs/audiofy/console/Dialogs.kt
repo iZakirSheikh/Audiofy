@@ -23,26 +23,36 @@ import androidx.annotation.FloatRange
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.zs.audiofy.R
+import com.zs.audiofy.common.compose.emit
+import com.zs.audiofy.common.ellipsize
 import com.zs.compose.foundation.fadingEdge
 import com.zs.compose.foundation.textArrayResource
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AlertDialog
 import com.zs.compose.theme.AppTheme
+import com.zs.compose.theme.ButtonDefaults
 import com.zs.compose.theme.Chip
 import com.zs.compose.theme.ChipDefaults
 import com.zs.compose.theme.ContentAlpha
@@ -50,9 +60,13 @@ import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.LocalWindowSize
+import com.zs.compose.theme.SelectableChip
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.text.Header
 import com.zs.compose.theme.text.Label
+import com.zs.compose.theme.text.Text
+import com.zs.core.playback.Remote
+import com.zs.core.playback.Remote.TrackInfo
 import kotlin.math.roundToInt
 import com.zs.audiofy.common.compose.ContentPadding as CP
 
@@ -223,7 +237,7 @@ fun SleepTimer(
                 modifier = Modifier.padding(end = CP.small),
                 colors = ChipDefaults.chipColors(
                     backgroundColor = color.copy(ContentAlpha.indication),
-                    contentColor =color
+                    contentColor = color
                 ),
                 onClick = { onRequestChange(mins.toLong() * 60_000) }) {
                 Label(stringResource(R.string.start).uppercase())
@@ -282,6 +296,138 @@ fun SleepTimer(
                     },
                 )
             }
+        }
+    )
+}
+
+
+/**
+ * A dialog that allows the user to configure media tracks (audio and video).
+ *
+ * @param viewState The current state of the console view.
+ * @param onDismissRequest A callback that is invoked when the dialog is dismissed.
+ */
+@Composable
+fun MediaConfigDialog(
+    viewState: ConsoleViewState,
+    onDismissRequest: () -> Unit
+) {
+    val (width, height) = LocalWindowSize.current
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        properties = CustomWidthProperties,
+        gravity = if (width > height) Gravity.CENTER else Gravity.BOTTOM,
+        navigationIcon = {
+            IconButton(
+                icon = Icons.Outlined.Close,
+                contentDescription = null,
+                onClick = onDismissRequest
+            )
+        },
+        title = {
+            Text(
+                text = textResource(id = R.string.scr_media_config_title),
+                fontWeight = FontWeight.Light,
+                lineHeight = 23.sp,
+            )
+        },
+        content = {
+            val colors = ChipDefaults.selectableChipColors()
+            // Audio Tracks
+            val audioTracks: List<TrackInfo>? by produceState(null) {
+                value = viewState.getAvailableTracks(Remote.TRACK_TYPE_AUDIO)
+            }
+            val checkedAudioTrack: TrackInfo? by produceState(null) {
+                value = viewState.getCheckedTrack(Remote.TRACK_TYPE_AUDIO)
+            }
+            Header(
+                "Audio Track",
+                style = AppTheme.typography.title3,
+                color = AppTheme.colors.accent,
+                drawDivider = true,
+            )
+
+            LazyRow(
+                horizontalArrangement = CP.SmallArrangement,
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    val data = emit(false, audioTracks) ?: return@LazyRow
+                    items(
+                        items = data,
+                        key = TrackInfo::name,
+                        itemContent = {
+                            val selected  = checkedAudioTrack?.name == it.name
+                            SelectableChip(
+                                selected,
+                                colors = colors,
+                                border = if (selected) ChipDefaults.outlinedBorder else ButtonDefaults.outlinedBorder,
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Audiotrack,
+                                        contentDescription = null
+                                    )
+                                },
+                                content = { Label(it.name.ellipsize(25)) },
+                                onClick = {
+                                    viewState.setCheckedTrack(
+                                        Remote.TRACK_TYPE_AUDIO,
+                                        it
+                                    )
+                                    onDismissRequest()
+                                },
+                            )
+                        }
+                    )
+                }
+            )
+
+            // Video Tracks
+            val videoTracks: List<TrackInfo>? by produceState(null) {
+                value = viewState.getAvailableTracks(Remote.TRACK_TYPE_VIDEO)
+            }
+            val checkedVideoTrack: TrackInfo? by produceState(null) {
+                value = viewState.getCheckedTrack(Remote.TRACK_TYPE_VIDEO)
+            }
+            Header(
+                "Video Track",
+                style = AppTheme.typography.title3,
+                color = AppTheme.colors.accent,
+                drawDivider = true,
+            )
+
+            LazyRow(
+                horizontalArrangement = CP.SmallArrangement,
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    val data = emit(false, videoTracks) ?: return@LazyRow
+                    items(
+                        items = data,
+                        key = TrackInfo::name,
+                        itemContent = {
+                            val selected  = checkedVideoTrack?.name == it.name
+                            SelectableChip(
+                                selected,
+                                colors = colors,
+                                border = if (selected) ChipDefaults.outlinedBorder else ButtonDefaults.outlinedBorder,
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.VideoLibrary,
+                                        contentDescription = null
+                                    )
+                                },
+                                content = { Label(it.name.ellipsize(25)) },
+                                onClick = {
+                                    viewState.setCheckedTrack(
+                                        Remote.TRACK_TYPE_VIDEO,
+                                        it
+                                    )
+                                    onDismissRequest()
+                                },
+                            )
+                        }
+                    )
+                }
+            )
         }
     )
 }

@@ -28,12 +28,14 @@ import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
 import coil3.annotation.InternalCoilApi
 import coil3.util.MimeTypeMap
 import com.zs.core.common.await
 import com.zs.core.common.debounceAfterFirst
 import com.zs.core.common.runCatching
 import com.zs.core.db.playlists.Playlists
+import com.zs.core.playback.Remote.TrackInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -481,5 +483,108 @@ internal class RemoteImpl(private val context: Context) : Remote {
             // We must call 'close' on API 29+ to avoid a strict mode warning.
             if (Build.VERSION.SDK_INT >= 29) retriever?.close() else retriever?.release()
         }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    override suspend fun getAvailableTracks(type: Int): List<TrackInfo> {
+        val browser = fBrowser.await()
+        val provider = DefaultTrackNameProvider(context.resources)
+        // Get the current tracks from the player or return an empty list if the player is null
+        val tracks = browser.currentTracks
+        // Get the track groups from the tracks
+        val groups = tracks.groups
+        // Create an empty list to store the track infos
+        val list = ArrayList<TrackInfo>()
+        // Loop through the indices of the track groups
+        for (index in groups.indices) {
+            // Get the track group at the current index
+            val group = groups[index]
+            // Skip the group if it is not of the given type
+            if (group.type != type)
+                continue
+            // Loop through the tracks in the group
+            for (trackIndex in 0 until group.length) {
+                // Skip the track if it is not selected
+                if (!group.isTrackSupported(trackIndex))
+                    continue
+                // Get the format of the track
+                val format = group.getTrackFormat(trackIndex)
+                // Skip the track if it has the forced selection flag
+                /*if (format.selectionFlags and C.SELECTION_FLAG_FORCED != 0) {
+                    continue
+                }*/
+                // Get the name of the track from the track name provider
+                val name = provider.getTrackName(format)
+                // Create a track selection override object with the group and the track index
+                val params = TrackSelectionOverride(group.mediaTrackGroup, trackIndex)
+                // Create a track info object with the name and the params
+                list.add(TrackInfo(name, params))
+            }
+        }
+        // Return the list of track infos
+        return list
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    override suspend fun getSelectedTrackFor(type: Int): TrackInfo? {
+        val player = fBrowser.await()// return null if player is null
+        // check if the player can set track selection parameters
+        if (!player.isCommandAvailable(Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS)) return null
+        // get the current tracks and loop through the groups
+        val groups = player.currentTracks.groups
+        val provider = DefaultTrackNameProvider(context.resources)
+        for (group in groups) {
+            // skip the group if it is not of the given type
+            if (group.type != type) continue
+            // loop through the tracks in the group
+            for (trackIndex in 0 until group.length) {
+                // skip the track if it is not selected
+                if (!group.isTrackSelected(trackIndex)) continue
+                // get the format and the name of the track
+                val format = group.getTrackFormat(trackIndex)
+                val name = provider.getTrackName(format)
+                // create a track selection override object with the group and the track index
+                val params = TrackSelectionOverride(group.mediaTrackGroup, trackIndex)
+                // create and return a track info object with the name and the params
+                return TrackInfo(name, params)
+            }
+        }
+        return null // no selection is made or possible
+    }
+
+    override suspend fun setCheckedTrack(info: TrackInfo?, type: Int): Boolean {
+        val player = fBrowser.await()
+        // check if the player can set track selection parameters
+        if (!player.isCommandAvailable(Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS)) return false
+        // Get the current track selection parameters and build a new one
+        player.trackSelectionParameters =
+            player.trackSelectionParameters
+                .buildUpon()
+                .apply {
+                    when{
+                        type == C.TRACK_TYPE_TEXT && info == null -> {
+                            // clear text track overrides and ignore forced text tracks
+                            clearOverridesOfType(C.TRACK_TYPE_TEXT)
+                            setIgnoredTextSelectionFlags(C.SELECTION_FLAG_FORCED.inv())
+                        }
+                        type == C.TRACK_TYPE_AUDIO && info == null -> {
+                            // clear audio track overrides and enable audio track rendering
+                            clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                                .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                        }
+                        type == C.TRACK_TYPE_VIDEO && info == null -> {
+                            // clear video track overrides and enable audio track rendering
+                            clearOverridesOfType(C.TRACK_TYPE_VIDEO)
+                                .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, false)
+                        }
+                        info != null -> {
+                            // select the specified audio track and enable track rendering
+                            setOverrideForType(info.params)
+                            setTrackTypeDisabled(info.params.type, false)
+                        }
+                        else -> error("Track $info & $type cannot be null or invalid")
+                    }
+                }.build()
+        return true
     }
 }

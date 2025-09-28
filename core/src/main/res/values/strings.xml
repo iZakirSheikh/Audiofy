@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Name of a media track about which nothing is known. Shown in a list view that allows the user to choose between multiple media tracks. [CHAR LIMIT=20] -->
+    <string name="exo_track_unknown">Unknown</string>
+    <!-- Name of a media track of which the language name could not be identified. Shown in a list view that allows the user to choose between multiple media tracks. [CHAR LIMIT=20] -->
+    <string name="exo_track_unknown_name">Unknown (<xliff:g id="name" example="Frengligian">%1$s</xliff:g>)</string>
+    <!-- Resolution of a video track. [CHAR LIMIT=20] -->
+    <string name="exo_track_resolution"><xliff:g id="width" example="1024">%1$d</xliff:g> × <xliff:g id="height" example="768">%2$d</xliff:g></string>
+    <!-- Describes the bitrate of a media track in Megabits (https://en.wikipedia.org/wiki/Megabit) per second. [CHAR LIMIT=20] -->
+    <string name="exo_track_bitrate"><xliff:g id="bitrate" example="5.2">%1$.2f</xliff:g> Mbps</string>
+    <!-- Describes an audio track with one channel. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=20] -->
+    <string name="exo_track_mono">Mono</string>
+    <!-- Describes an audio track with two channels. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=20] -->
+    <string name="exo_track_stereo">Stereo</string>
+    <!-- Describes a 5.1 surround sound (https://en.wikipedia.org/wiki/5.1_surround_sound) audio track. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_surround_5_point_1">5.1 surround sound</string>
+    <!-- Describes a 7.1 (https://en.wikipedia.org/wiki/7.1_surround_sound) audio track. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_surround_7_point_1">7.1 surround sound</string>
+    <!-- Describes a surround sound audio track. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_surround">Surround sound</string>
+    <!-- Describes an alternate media track, e.g. a video recorded from a different viewpoint. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_role_alternate">Alternate</string>
+    <!-- Describes a supplementary track. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_role_supplementary">Supplementary</string>
+    <!-- Describes a track containing commentary. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_role_commentary">Commentary</string>
+    <!-- Describes a track with closed captions. Shown in a list view that allows the user to choose between multiple audio tracks. [CHAR LIMIT=40] -->
+    <string name="exo_track_role_closed_captions">CC</string>
+    <!-- Defines a way of appending an item to a list of items. For example appending "banana" to "apple, pear" to get "apple, pear, banana". Note: the command separator will appear between all consecutive list items, so do not use an equivalent of 'and'. [CHAR LIMIT=40] -->
+    <string name="exo_item_list"><xliff:g id="list" example="apple, pear">%1$s</xliff:g>, <xliff:g id="item" example="banana">%2$s</xliff:g></string>
+
+</resources>

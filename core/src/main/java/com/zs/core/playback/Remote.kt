@@ -27,8 +27,12 @@ import androidx.annotation.CheckResult
 import androidx.annotation.FloatRange
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.session.SessionCommand
 import com.zs.core.db.playlists.Playlists
+import com.zs.core.playback.Remote.Companion.TRACK_TYPE_AUDIO
+import com.zs.core.playback.Remote.Companion.TRACK_TYPE_TEXT
+import com.zs.core.playback.Remote.Companion.TRACK_TYPE_VIDEO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -37,6 +41,8 @@ import kotlinx.coroutines.flow.StateFlow
  * Represents the controller for [Playback]
  */
 interface Remote {
+
+    data class TrackInfo(val name: String, internal val params: TrackSelectionOverride)
 
     @SuppressLint("UnsafeOptInUsageError")
     companion object {
@@ -72,6 +78,11 @@ interface Remote {
         const val PLAYER_STATE_BUFFERING = Player.STATE_BUFFERING
         const val PLAYER_STATE_READY = Player.STATE_READY
         const val PLAYER_STATE_ENDED = Player.STATE_ENDED
+
+        // track types
+        const val TRACK_TYPE_TEXT = C.TRACK_TYPE_TEXT
+        const val TRACK_TYPE_AUDIO = C.TRACK_TYPE_AUDIO
+        const val TRACK_TYPE_VIDEO = C.TRACK_TYPE_VIDEO
 
         // Commands
         private const val PREFIX = "com.prime.player"
@@ -262,4 +273,34 @@ interface Remote {
      * @param uri The [Uri] of the media item to be set.
      */
     suspend fun setMediaItem(uri: Uri)
+
+
+    /**
+     * Retrieves a list of available tracks of a specific [type].
+     *
+     * This function queries the underlying player for all tracks that match the given [type]
+     * (e.g., [TRACK_TYPE_AUDIO], [TRACK_TYPE_VIDEO], [TRACK_TYPE_TEXT]).
+     *
+     * @param type The type of tracks to retrieve. See [C.TrackType] for available types.
+     * @return A list of [TrackInfo] objects, each representing an available track of the specified type.
+     *         Returns an empty list if no tracks of the given type are available or if the player is not prepared.
+     */
+    suspend fun getAvailableTracks(type: Int): List<TrackInfo>
+
+    /**
+     * Retrieves the currently selected track for a given [type].
+     *
+     * @param type The type of track to query (e.g., [Remote.TRACK_TYPE_AUDIO], [Remote.TRACK_TYPE_VIDEO], [Remote.TRACK_TYPE_TEXT]).
+     * @return A [TrackInfo] object representing the selected track, or `null` if no track of the specified type is selected or available.
+     */
+    suspend fun getSelectedTrackFor(type: Int): TrackInfo?
+
+    /**
+     * Sets the track to be played for the specified [type].
+     *
+     * @param info The [TrackInfo] representing the track to be selected.
+     * @param type The type of track to be set (e.g., [TRACK_TYPE_AUDIO], [TRACK_TYPE_VIDEO], [TRACK_TYPE_TEXT]).
+     * @return `true` if the track was successfully set, `false` otherwise.
+     */
+    suspend fun setCheckedTrack(info: TrackInfo?, type: Int): Boolean
 }

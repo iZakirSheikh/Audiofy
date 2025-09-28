@@ -66,7 +66,7 @@ inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
         data.isEmpty() && vertical -> item(contentType = "empty_vertical", key = "placeholder_empty_list"){
             Placeholder(
                 title = stringResource(R.string.empty),
-                iconResId = R.raw.lt_empty_box,
+                iconResId = R.raw.no_data,
                 modifier = Modifier.fillMaxSize().animateItem()
             )
         }
@@ -77,7 +77,7 @@ inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
                 verticalAlignment = Alignment.CenterVertically,
                 content = {
                     Icon(
-                        painter = lottieAnimationPainter(R.raw.lt_empty_box),
+                        painter = lottieAnimationPainter(R.raw.no_data),
                         contentDescription = null,
                         tint = Color.Unspecified
                     )
@@ -117,7 +117,7 @@ fun <T> LazyListScope.emit(
             content = {
                 Placeholder(
                     title = stringResource(R.string.empty),
-                    iconResId = R.raw.lt_empty_box,
+                    iconResId = R.raw.no_data,
                     modifier = Modifier
                         .fillMaxSize()
                         .animateItem()
@@ -159,7 +159,7 @@ fun <T> LazyGridScope.emit(
             content = {
                 Placeholder(
                     title = stringResource(R.string.empty),
-                    iconResId = R.raw.lt_empty_box,
+                    iconResId = R.raw.no_data,
                     modifier = Modifier
                         .fillMaxSize()
                         .animateItem()

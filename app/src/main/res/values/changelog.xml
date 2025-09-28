@@ -291,6 +291,16 @@
             \n    - Removed accent color from "new update downloaded" snackbar message.
             \n✓ <b><u>Remove from "Recents":</u></b> Long-press an item in the "Recently Played" list on the Library screen to remove it from your history.
             \n✓ <b><u>Clearer Setting Description:</u></b> Updated the description for the "Organize Files into Sections" preference for better clarity.
+            \n✓ <b><u>Media Track Selection:</u></b> You can now choose specific audio and video tracks directly from the player Console!
+            \n    - Access "Media Config." from the "More" menu in the Console.
+            \n    - Select your preferred audio and video tracks from the available options.
+            \n    - The player will use your selections for playback.
+            \n✓ <b><u>New "No Data" Animation:</u></b> Updated the animation used for empty lists and placeholders throughout the app for a fresh look.
+            \n✓ <b><u>Audio Effects Enabled by Default:</u></b> In-app audio effects are now turned on by default for new installations, providing an enhanced audio experience out-of-the-box. You can still toggle this in Settings > Playback.
+            \n✓ <b><u>Better Track Names:</u></b> Improved how track information (like language, resolution, bitrate) is displayed, making it easier to understand your media options.
+            \n✓ <b><u>Behind-the-Scenes:</u></b>
+            \n    - Major refactoring of how the app handles media tracks internally.
+            \n    - Added new string resources to support clearer track naming (leveraging ExoPlayer utilities).
         </font>
     </string>
 </resources>

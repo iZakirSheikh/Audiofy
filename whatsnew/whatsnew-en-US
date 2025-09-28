@@ -1,3 +1,6 @@
-* Stream from the Web: Play media directly from network URLs using the "Link" button in the Library.
-* Buffering Indicator: The TimeBar now shows when media is buffering.
-* Note: This is an alpha release. Some features may be missing or contain bugs.
+* List/Group Files: Display files in library as a list or grouped
+* UI Polish: Better organization of *Close Button* & *File Grouping* in Settings. New "Newly Added" card.
+* Remove from Recents: Long-press item in "Recently Played" to remove.
+* Media Track Selection: Pick audio/video tracks in player Console ("Media Config." in "More").
+* New Animation: Updated empty list animation.
+* Better Track Names: Improved track info display (language, resolution, bitrate).

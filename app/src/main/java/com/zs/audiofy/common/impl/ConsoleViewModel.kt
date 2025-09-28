@@ -17,7 +17,6 @@ import com.zs.audiofy.R
 import com.zs.audiofy.console.ConsoleViewState
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.settings.AppConfig
-import com.zs.audiofy.settings.Settings
 import com.zs.compose.foundation.OrientRed
 import com.zs.compose.theme.snackbar.SnackbarResult
 import com.zs.core.playback.MediaFile
@@ -208,4 +207,14 @@ class ConsoleViewModel(
                     showPlatformToast(R.string.msg_error_playback_speed)
             }
         }
+
+    override suspend fun getAvailableTracks(type: Int): List<Remote.TrackInfo> = remote.getAvailableTracks(type)
+
+    override suspend fun getCheckedTrack(type: Int): Remote.TrackInfo? = remote.getSelectedTrackFor(type)
+
+    override fun setCheckedTrack(type: Int, info: Remote.TrackInfo?) {
+        runCatching {
+            remote.setCheckedTrack(info, type)
+        }
+    }
 }

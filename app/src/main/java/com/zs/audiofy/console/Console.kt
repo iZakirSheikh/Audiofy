@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FitScreen
 import androidx.compose.material.icons.outlined.Fullscreen
@@ -137,6 +138,7 @@ private const val SHOW_TIMER = 1
 private const val SHOW_SPEED = 2
 private const val SHOW_MEDIA_INFO = 3
 private const val SHOW_MORE = 4
+private const val SHOW_MEDIA_CONFIG = 5
 
 // background styles
 private const val BG_STYLE_ADAPTIVE = 0
@@ -514,6 +516,11 @@ fun Console(viewState: ConsoleViewState) {
                 Icon(imageVector = Icons.Outlined.MoreHoriz, contentDescription = null)
 
                 // Menu
+                if (showViewOf == SHOW_MEDIA_CONFIG)
+                    MediaConfigDialog(viewState) {
+                        showViewOf = SHOW_NONE
+                    }
+
                 DropDownMenu(
                     expanded = showViewOf == SHOW_MORE,
                     onDismissRequest = { showViewOf = SHOW_NONE },
@@ -539,6 +546,18 @@ fun Console(viewState: ConsoleViewState) {
                                 if (key != null)
                                     viewState.delete(key, facade as Activity)
                                 showViewOf = SHOW_NONE
+                            }
+                        )
+
+                        // Media Config
+
+
+
+                        DropDownMenuItem(
+                            title = "Media Config.",
+                            icon = Icons.Default.Tune,
+                            onClick = {
+                                showViewOf = SHOW_MEDIA_CONFIG
                             }
                         )
                     }

@@ -333,5 +333,6 @@
     <string name="pref_use_surface_view_video_rendering"><b>Video Renderer\n</b><font color="grey" size="14">Enable <b>SurfaceView</b> for faster video rendering, or switch to <b>TextureView</b> for better visual effects.</font></string>
     <string name="scr_network_stream_title">Network <b>Link</b><sup><font color='#ae1c27' size='10'><b> Beta</b></font></sup><font size="10"><sup><sup>\nStream media from the web.</sup></sup></font>\n</string>
     <string name="pref_enable_file_grouping"><b>Organize Files into Sections\n</b><font color="grey" size="14">When enabled, files are displayed in organized sections.</font></string>
+    <string name="scr_media_config_title">Media <b>Config.</b><font size="10"> <sup><sup>\nFine-tune <b>Playback</b> for a seamless experience.</sup></sup> </font></string>
 
 </resources>
