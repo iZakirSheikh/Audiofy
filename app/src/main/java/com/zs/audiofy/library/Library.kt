@@ -22,6 +22,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -49,9 +50,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -85,7 +86,7 @@ import com.zs.compose.foundation.visualEffect
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.AppTheme.colors
 import com.zs.compose.theme.Colors
-import com.zs.compose.theme.FloatingActionButton
+import com.zs.compose.theme.ExtendedFloatingActionButton
 import com.zs.compose.theme.Icon
 import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalWindowSize
@@ -98,6 +99,7 @@ import com.zs.compose.theme.adaptive.content
 import com.zs.compose.theme.appbar.AdaptiveLargeTopAppBar
 import com.zs.compose.theme.appbar.AppBarDefaults
 import com.zs.compose.theme.appbar.TopAppBarScrollBehavior
+import com.zs.compose.theme.text.Label
 import com.zs.compose.theme.text.Text
 import com.zs.core.store.MediaProvider
 import com.zs.audiofy.common.compose.ContentPadding as CP
@@ -114,7 +116,7 @@ private fun LibraryTopAppBar(
     AdaptiveLargeTopAppBar(
         immersive,
         behavior = behavior,
-        modifier = modifier.clipToBounds(),
+        modifier = modifier,
         style = AppBarDefaults.largeAppBarStyle(height = 56.dp, maxHeight = 220.dp),
         insets = WindowInsets.statusBars.only(WindowInsetsSides.Top),
         actions = {
@@ -144,13 +146,17 @@ private fun LibraryTopAppBar(
             )
         },
         background = {
-            // The id of the current album art to show in SlideShow
-            val current by viewState.carousel.collectAsState()
-            val alpha = lerp(0f, 1f, fraction)
-
-            if (alpha > 0.05f) {
+            //
+            if (fraction > 0.05f) {
+                val current by viewState.carousel.collectAsState()
+                val alpha = lerp(0f, 1f, fraction)
                 val veil =
-                    Brush.verticalGradient(colors = listOf(Color.Transparent, colors.background))
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            colors.background
+                        )
+                    )
                 Crossfade(
                     targetState = current,
                     animationSpec = tween(4_000),
@@ -179,16 +185,51 @@ private fun LibraryTopAppBar(
                         .visualEffect(ImageBrush.NoiseBrush, alpha = 0.35f, true)
                 )
             }
-            if (alpha < 0.9) {
+            // This Spacer provides a background that fades in as the app bar collapses.
+            if (fraction < 0.9f)
                 Spacer(
                     modifier = Modifier
                         .graphicsLayer() {
-                            this.alpha = lerp(1f, 0f, alpha * 3f)
+                            this.alpha = lerp(1f, 0f, fraction * 3f)
                         }
                         .thenIf(!immersive) { clip(AppBarDefaults.FloatingTopBarShape) }
                         .background(background)
                 )
+            // Open link button
+            var expanded by remember { mutableStateOf(false) }
+            NewMediaLink(expanded) { link ->
+                if (link != null) viewState.onNewLink(link)
+                expanded = false
             }
+            if (fraction < 0.5f)
+                return@AdaptiveLargeTopAppBar
+            Box(
+                contentAlignment = Alignment.BottomEnd,
+                content = {
+                    ExtendedFloatingActionButton(
+                        icon = { Icon(Icons.Outlined.Link, contentDescription = null) },
+                        text = { Label("Link") },
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.graphicsLayer {
+                            // Calculate the scaled value based on the fraction.
+                            // The fraction ranges from 0.0 to 1.0. We want to scale the animation
+                            // to start when fraction is 0.5 and end when fraction is 1.0.
+                            // So, subtract 0.5 to make the range -0.5 to 0.5, then divide by 0.5
+                            // to normalize it to -1.0 to 1.0. We are interested in 0.0 to 1.0 part.
+                            val scaled = ((fraction - 0.5f) / 0.5f)
+                            // Animate alpha from 0 (transparent) to 1 (opaque) as scaled goes from 0 to 1.
+                            this.alpha = lerp(0f, 1f, scaled)
+                            // Animate scale from 0.8 to 1.0 as scaled goes from 0 to 1.
+                            val scale = lerp(0.8f, 1f, scaled)
+                            scaleX = scale
+                            scaleY = scale
+                            // Translate the button slightly to create a subtle movement effect.
+                            translationX = -CP.normal.toPx()
+                            translationY = CP.xLarge.toPx()
+                        }
+                    )
+                }
+            )
         }
     )
 }
@@ -246,24 +287,6 @@ fun Library(viewState: LibraryViewState) {
                 viewState = viewState,
                 behavior = topAppBarScrollBehavior,
                 background = colors.background(surface),
-            )
-        },
-        // fab
-        floatingActionButton = {
-            var expanded by remember { mutableStateOf(false) }
-            FloatingActionButton(
-                onClick = { expanded = !expanded },
-                modifier = Modifier.windowInsetsPadding(
-                    inAppNavBarInsets.union(WindowInsets.systemBars)
-                        .only(WindowInsetsSides.End + WindowInsetsSides.Bottom)
-                ),
-                content = {
-                    NewMediaLink(expanded) { link ->
-                        if (link != null) viewState.onNewLink(link)
-                        expanded = false
-                    }
-                    Icon(Icons.Outlined.Link, contentDescription = null)
-                }
             )
         },
         // Show only when strategy is TwoPane.
