@@ -29,6 +29,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.zs.audiofy.R
 import com.zs.audiofy.library.LibraryViewState
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.Rose
 import com.zs.core.common.debounceAfterFirst
 import com.zs.core.db.playlists.Playlist.Track
@@ -41,11 +42,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlin.collections.filter
 
 class LibraryViewModel(
     val provider: MediaProvider,
@@ -103,7 +106,7 @@ class LibraryViewModel(
                 ascending = false,
                 offset = 0,
                 limit = SHOW_CASE_MAX_ITEMS
-            )
+            ).filter { it.duration  > AppConfig.minTrackLengthSecs * 1000 }
         }
         .catch {
             Log.d("TAG", "ssd: $it")
