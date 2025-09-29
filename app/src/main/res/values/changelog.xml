@@ -12,6 +12,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_alpha05</item>
         <item>@string/changelog_400_alpha04</item>
         <item>@string/changelog_400_alpha03</item>
         <item>@string/changelog_400_alpha02</item>
@@ -32,7 +33,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_alpha05</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_alpha06</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -279,7 +280,7 @@
 
     <!--v4.0.0-alpha05-->
     <string name="changelog_400_alpha05" translatable="false">
-         <b>What’s New <font color='olive'>(v4.0.0-alpha06)\n</font></b>
+         <b>What’s New <font color='olive'>(v4.0.0-alpha05)\n</font></b>
         <font color='grey'>
             \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
             \n✓ <b><u>"Organize Files into Sections" Preference:</u></b> You can now choose to display files in library views (Albums, Audios, etc.) as a flat list or grouped into sections. Find this in Settings > General.
@@ -301,6 +302,15 @@
             \n✓ <b><u>Behind-the-Scenes:</u></b>
             \n    - Major refactoring of how the app handles media tracks internally.
             \n    - Added new string resources to support clearer track naming (leveraging ExoPlayer utilities).
+        </font>
+    </string>
+
+    <!--v4.0.0-alpha06-->
+    <string name="changelog_400_alpha06" translatable="false">
+         <b>What’s New <font color='olive'>(v4.0.0-alpha06)\n</font></b>
+        <font color='grey'>
+            \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
+            \n✓
         </font>
     </string>
 </resources>
