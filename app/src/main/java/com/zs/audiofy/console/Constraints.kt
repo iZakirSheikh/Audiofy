@@ -111,6 +111,13 @@ private fun CompactAudio(insets: DpRect) = object : Constraints(34) {
             bottom.linkTo(timeBar.top, -CP.small)
         }
 
+        // Message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            bottom.linkTo(parent.bottom, CP.medium)
+        }
+
+
         // Make these invisible
         hide(INFO, ROTATION_LOCK, REPEAT_MODE, SHUFFLE)
     }
@@ -292,6 +299,12 @@ private fun PortraitAudio(insets: DpRect) = object : Constraints(44) {
             width = Dimension.fillToConstraints
             horizontalBias = 0f
         }
+
+        // Message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            top.linkTo(timeBar.bottom, CP.medium)
+        }
     }
 }
 
@@ -385,6 +398,12 @@ private fun LandscapeAudio(insets: DpRect) = object : Constraints(44) {
         constrain(controls) {
             top.linkTo(timeBar.bottom, CP.normal)
         }
+
+        // Message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            top.linkTo(timeBar.bottom, CP.medium)
+        }
     }
 }
 //
@@ -468,6 +487,12 @@ private fun LargeAudio(insets: DpRect) = object : Constraints(44) {
             linkTo(COLLAPSE.bottom, timeBar.top,  CP.large, CP.large)
             width = Dimension.fillToConstraints.atMost(260.dp)
             height = Dimension.ratio("1:1")
+        }
+
+        // Message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            top.linkTo(timeBar.bottom, CP.medium)
         }
     }
 }
@@ -563,6 +588,14 @@ private fun PortraitVideo(insets: DpRect,   only: Array<String>?,) = object : Co
         constrain(more) {
             bottom.linkTo(EXTRA_INFO.top)
         }
+
+        // message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            top.linkTo(title.bottom, CP.large)
+        }
+
+
         if (only == null)
             return@ConstraintSet
         hideController(only)
@@ -639,6 +672,12 @@ private fun LargeVideo(insets: DpRect,   only: Array<String>?,) = object : Const
             start.linkTo(SEEK_BAR.start, 6.dp)
             bottom.linkTo(SEEK_BAR.top, -CP.small)
         }
+
+        // message
+        constrain(TOAST){
+            linkTo(parent.start, parent.end)
+            top.linkTo(options.bottom, CP.large)
+        }
         if (only == null)
             return@ConstraintSet
         hideController(only)
@@ -684,4 +723,3 @@ fun calculateConstraintSet(
         else -> PortraitAudio(insets)
     }
 }
-

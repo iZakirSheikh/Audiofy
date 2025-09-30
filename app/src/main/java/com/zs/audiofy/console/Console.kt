@@ -69,6 +69,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -95,6 +96,8 @@ import com.zs.audiofy.common.compose.timer
 import com.zs.audiofy.effects.RouteAudioFx
 import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.SignalWhite
+import com.zs.compose.foundation.background
+import com.zs.compose.foundation.shadow
 import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
@@ -346,7 +349,9 @@ fun Console(viewState: ConsoleViewState) {
 
         // Slider
         TimeBar(
-            progress = if (state.state == Remote.PLAYER_STATE_BUFFERING) -1f else chronometer.progress(state.duration),
+            progress = if (state.state == Remote.PLAYER_STATE_BUFFERING) -1f else chronometer.progress(
+                state.duration
+            ),
             onValueChange = {
                 if (isVideo) viewState.emit(C.VISIBILITY_VISIBLE_SEEK)
                 val mills = (it * state.duration).toLong()
@@ -495,8 +500,9 @@ fun Console(viewState: ConsoleViewState) {
                 if (!AppConfig.inAppAudioEffectsEnabled)
                     facade.launchEqualizer(0)
                 else
-                    navController.navigate(RouteAudioFx()) },
-            )
+                    navController.navigate(RouteAudioFx())
+            },
+        )
 
         // Info
         IconButton(
@@ -552,7 +558,6 @@ fun Console(viewState: ConsoleViewState) {
                         // Media Config
 
 
-
                         DropDownMenuItem(
                             title = "Media Config.",
                             icon = Icons.Default.Tune,
@@ -572,6 +577,19 @@ fun Console(viewState: ConsoleViewState) {
                 border = 0.5.dp,
                 shape = ArtworkShape,
                 shadow = 12.dp
+            )
+
+        // Message
+        // TODO - Replace this with touch feedback
+        val message = viewState.message
+        if (message != null)
+            Label(
+                text = message,
+                modifier = Modifier
+                    .shadow(6.dp, AppTheme.shapes.xSmall, true)
+                    .background(Color.Black)
+                    .layoutId(C.ID_MESSAGE)
+                    .padding(horizontal = CP.normal, vertical = CP.medium)
             )
     }
 

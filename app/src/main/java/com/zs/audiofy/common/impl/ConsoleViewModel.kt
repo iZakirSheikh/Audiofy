@@ -39,9 +39,33 @@ class ConsoleViewModel(
     override val state: StateFlow<NowPlaying?> = remote.state
     override var provider: VideoProvider by mutableStateOf(VideoProvider(null))
     override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBILITY_VISIBLE)
-    override var message: CharSequence? by mutableStateOf(null)
+    var _message: CharSequence? by mutableStateOf(null)
     override val queue: Flow<List<MediaFile>?> = remote.queue
 
+
+    var messageJob: Job?= null
+    override var message: CharSequence?
+        get() = _message
+        set(value) {
+            // Set the value to the message property
+            _message = value
+
+            // Return if the user has explicitly set the message to null
+            // Cancel the previous job if any, to avoid conflicting updates
+            messageJob?.cancel()
+
+            // If the new message is null, no further action is needed
+            if (value == null) return
+
+            // Launch a new coroutine job to reset the message to null after a specified timeout
+            messageJob = viewModelScope.launch {
+                // Delay execution for the duration specified by DEFAULT_MESSAGE_TIME_OUT
+                delay(5_000)
+
+                // After the delay, reset the message to null
+                _message = null
+            }
+        }
 
     init {
         viewModelScope.launch {
@@ -140,6 +164,7 @@ class ConsoleViewModel(
             delay(RouteConsole.VISIBILITY_AUTO_HIDE_DELAY)
             this@ConsoleViewModel.visibility = newVisibility
         }
+
     }
 
     override fun toggleLike(uri: Uri?) {
