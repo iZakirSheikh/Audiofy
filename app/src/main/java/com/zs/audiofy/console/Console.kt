@@ -28,8 +28,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
@@ -66,10 +64,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -96,9 +94,6 @@ import com.zs.audiofy.common.compose.timer
 import com.zs.audiofy.effects.RouteAudioFx
 import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.SignalWhite
-import com.zs.compose.foundation.background
-import com.zs.compose.foundation.shadow
-import com.zs.compose.foundation.thenIf
 import com.zs.compose.theme.AppTheme
 import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.Icon
@@ -203,24 +198,7 @@ fun Console(viewState: ConsoleViewState) {
         val isVideo = state.isVideo
         Crossfade(
             targetState = background,
-            modifier = Modifier
-                .layoutId(C.ID_BACKGROUND)
-                .thenIf(isVideo && state.playing) {
-                    clickable(
-                        indication = null,
-                        interactionSource = remember(::MutableInteractionSource),
-                        onClick = {
-                            viewState.emit(
-                                newVisibility = when (visibility) {
-                                    C.VISIBILITY_VISIBLE -> C.VISIBILITY_INVISIBLE
-                                    C.VISIBILITY_INVISIBLE -> C.VISIBILITY_VISIBLE
-                                    C.VISIBILITY_INVISIBLE_LOCKED -> C.VISIBILITY_VISIBLE_LOCK
-                                    else -> C.VISIBILITY_INVISIBLE_LOCKED
-                                }
-                            )
-                        }
-                    )
-                },
+            modifier = Modifier.layoutId(C.ID_BACKGROUND),
             content = { value ->
                 when (value) {
                     BG_STYLE_ACRYLIC -> Acrylic(state.artwork, Modifier.fillMaxSize())
@@ -236,15 +214,22 @@ fun Console(viewState: ConsoleViewState) {
         // Video
         val enabled = visibility == C.VISIBILITY_VISIBLE
         if (isVideo) {
-            val provider = viewState.provider
             var scale by remember { mutableStateOf(ContentScale.Fit) }
-            VideoSurface(
-                provider = provider,
-                keepScreenOn = state.playWhenReady,
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .key(C.ID_VIDEO_SURFACE)
-                    .resize(scale, state.videoSize),
-                typeSurfaceView = AppConfig.isSurfaceViewVideoRenderingPreferred
+                    .detectPlayerGestures(viewState, {}),
+                content = {
+                    val provider = viewState.provider
+                    VideoSurface(
+                        provider = provider,
+                        keepScreenOn = state.playWhenReady,
+                        modifier = Modifier
+                            .resize(scale, state.videoSize),
+                        typeSurfaceView = AppConfig.isSurfaceViewVideoRenderingPreferred
+                    )
+                }
             )
             // Scrim
             Spacer(
@@ -577,19 +562,6 @@ fun Console(viewState: ConsoleViewState) {
                 border = 0.5.dp,
                 shape = ArtworkShape,
                 shadow = 12.dp
-            )
-
-        // Message
-        // TODO - Replace this with touch feedback
-        val message = viewState.message
-        if (message != null)
-            Label(
-                text = message,
-                modifier = Modifier
-                    .shadow(6.dp, AppTheme.shapes.xSmall, true)
-                    .background(Color.Black)
-                    .layoutId(C.ID_MESSAGE)
-                    .padding(horizontal = CP.normal, vertical = CP.medium)
             )
     }
 

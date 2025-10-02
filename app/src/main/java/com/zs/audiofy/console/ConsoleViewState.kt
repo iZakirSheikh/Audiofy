@@ -28,7 +28,6 @@ import androidx.constraintlayout.compose.Visibility
 import com.zs.audiofy.common.Route
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
-import com.zs.core.playback.Remote
 import com.zs.core.playback.Remote.TrackInfo
 import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
@@ -49,7 +48,6 @@ object RouteConsole : Route {
     const val ID_BTN_SKIP_TO_NEXT = "_skip_next"
     const val ID_SEEK_BAR = "_seek_bar"
     const val ID_VIDEO_SURFACE = "_video_surface"
-    const val ID_MESSAGE = "_message"
     const val ID_BACKGROUND = "_background"
     const val ID_SCRIM = "_scrim"
     const val ID_BTN_RESIZE_MODE = "_resize_mode"
@@ -66,7 +64,6 @@ object RouteConsole : Route {
     const val ID_BANNER_AD = "_banner_ad"
 
     const val VISIBILITY_AUTO_HIDE_DELAY = 5_000L
-    const val MESSAGE_AUTO_HIDE_DELAY = 5_000L
 
     const val VISIBILITY_INVISIBLE = 0
     const val VISIBILITY_INVISIBLE_LOCKED = 1
@@ -91,7 +88,6 @@ abstract class Constraints(val titleTextSize: Int) {
     protected val SKIP_TO_NEXT = ConstrainedLayoutReference(RouteConsole.ID_BTN_SKIP_TO_NEXT)
     protected val SEEK_BAR = ConstrainedLayoutReference(RouteConsole.ID_SEEK_BAR)
     protected val VIDEO_SURFACE = ConstrainedLayoutReference(RouteConsole.ID_VIDEO_SURFACE)
-    protected val TOAST = ConstrainedLayoutReference(RouteConsole.ID_MESSAGE)
     protected val BACKGROUND = ConstrainedLayoutReference(RouteConsole.ID_BACKGROUND)
     protected val SCRIM = ConstrainedLayoutReference(RouteConsole.ID_SCRIM)
     protected val RESIZE_MODE = ConstrainedLayoutReference(RouteConsole.ID_BTN_RESIZE_MODE)
@@ -129,7 +125,6 @@ abstract class Constraints(val titleTextSize: Int) {
         if (hideAll || !except.contains(RouteConsole.ID_BTN_PLAY_PAUSE)) hide(PLAY_PAUSE)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_SKIP_TO_NEXT)) hide(SKIP_TO_NEXT)
         if (hideAll || !except.contains(RouteConsole.ID_SEEK_BAR)) hide(SEEK_BAR)
-        if (hideAll || !except.contains(RouteConsole.ID_MESSAGE)) hide(TOAST)
         if (hideAll || !except.contains(RouteConsole.ID_SCRIM)) hide(SCRIM)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_RESIZE_MODE)) hide(RESIZE_MODE)
         if (hideAll || !except.contains(RouteConsole.ID_BTN_ROTATION_LOCK)) hide(ROTATION_LOCK)
@@ -212,16 +207,6 @@ interface ConsoleViewState: QueueViewState {
     val visibility: Int
 
     /**
-     * A message to be shown to the user for a limited time.
-     * A null value means no message is set.
-     * A non-null value is reset to null after [DEFAULT_MESSAGE_TIME_OUT] ms.
-     *
-     * @property message The message to display or null to hide it.
-     * @see DEFAULT_MESSAGE_TIME_OUT
-     */
-    var message: CharSequence?
-
-    /**
      * Emits a new visibility state for the player controls.
      *
      * @param visible An array of strings representing the IDs of the UI elements to be shown.
@@ -238,6 +223,7 @@ interface ConsoleViewState: QueueViewState {
     fun skipToPrev()
     fun togglePlay()
     fun seekTo(pct: Float)
+    fun seek(mills: Long)
 
     fun sleepAt(mills: Long)
 

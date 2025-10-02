@@ -171,6 +171,14 @@ internal class RemoteImpl(private val context: Context) : Remote {
         return true
     }
 
+    override suspend fun seekBy(increment: Long): Boolean {
+        val browser = fBrowser.await()
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) return false
+        val newMills = browser.currentPosition + increment
+        browser.seekTo(browser.currentMediaItemIndex, newMills)
+        return true
+    }
+
     override suspend fun play(playWhenReady: Boolean) {
         val browser = fBrowser.await()
         browser.playWhenReady = playWhenReady
