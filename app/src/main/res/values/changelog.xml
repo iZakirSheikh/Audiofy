@@ -307,10 +307,29 @@
 
     <!--v4.0.0-alpha06-->
     <string name="changelog_400_alpha06" translatable="false">
-         <b>What’s New <font color='olive'>(v4.0.0-alpha06)\n</font></b>
+        <b>What’s New <font color='olive'>(v4.0.0-alpha06)\n</font></b>
         <font color='grey'>
             \n<font color='maroon'><b>Note:</b> <b>Alpha</b> release. <i>Missing features/bugs expected.</i></font>
-            \n✓
-        </font>
-    </string>
+            \n✓ <b><u>Gesture Controls for Player:</u></b>
+            \n    - Swipe vertically on the <b>left</b> side of the screen to adjust <b>brightness</b>, including automatic mode.
+            \n    - Swipe vertically on the <b>right</b> side to control <b>volume</b>.
+            \n    - Feedback messages like "🔊 50%" or "Ⓐ Automatic" appear during interaction.
+            \n✓ <b><u>Double-Tap to Seek:</u></b>
+            \n    - Tap on the <b>left</b> or <b>right</b> side of the video to seek backward or forward.
+            \n    - Each tap seeks by 10 seconds, with feedback shown at the tap location.
+            \n✓ <b><u>Auto-Dismissing Toasts:</u></b>
+            \n    - Temporary messages now appear in the Console and auto-dismiss after 5 seconds.
+            \n    - Styled with shadow and padding, and positioned appropriately across layouts.
+            \n✓ <b><u>UI Polish:</u></b>
+            \n    - Refined FAB scaling animation for smoother transitions.
+            \n    - "Open Link" FAB moved into the <b>LargeTopAppBar</b> and now uses an <b>ExtendedFloatingActionButton</b>.
+            \n✓ <b><u>Library Improvements:</u></b>
+            \n    - "Recently Added" section now filters out short tracks based on <code>AppConfig.minTrackLengthSecs</code>.
+            \n✓ <b><u>Behind-the-Scenes:</u></b>
+            \n    - Refactored gesture detection and feedback drawing using <code>TextMeasurer</code> APIs.
+            \n    - Added extension properties for normalized volume and brightness access.
+            \n    - Removed deprecated toast logic from Console UI.
+    </font>
+</string>
+
 </resources>

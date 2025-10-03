@@ -220,7 +220,7 @@ private fun LibraryTopAppBar(
                             // Animate alpha from 0 (transparent) to 1 (opaque) as scaled goes from 0 to 1.
                             this.alpha = lerp(0f, 1f, scaled)
                             // Animate scale from 0.8 to 1.0 as scaled goes from 0 to 1.
-                            val scale = lerp(0.8f, 1f, scaled)
+                            val scale = lerp(0.7f, 0.9f, scaled)
                             scaleX = scale
                             scaleY = scale
                             // Translate the button slightly to create a subtle movement effect.
