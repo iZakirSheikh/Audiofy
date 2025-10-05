@@ -12,6 +12,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_alpha06</item>
         <item>@string/changelog_400_alpha05</item>
         <item>@string/changelog_400_alpha04</item>
         <item>@string/changelog_400_alpha03</item>
@@ -33,7 +34,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_alpha06</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_rc01</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -332,4 +333,11 @@
     </font>
 </string>
 
+    <!--v4.0.0-rc01-->
+    <string name="changelog_400_rc01" translatable="false">
+        <b>What’s New <font color='purple'>(v4.0.0-rc01)\n</font></b>
+        <font color='grey'>
+            \n✓
+    </font>
+    </string>
 </resources>
