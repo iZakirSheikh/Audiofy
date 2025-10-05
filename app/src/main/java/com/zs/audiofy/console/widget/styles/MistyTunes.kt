@@ -18,7 +18,7 @@
 
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
-package com.zs.audiofy.console.widget
+package com.zs.audiofy.console.widget.styles
 
 import android.text.format.DateUtils
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,13 +45,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.zs.audiofy.R
-import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.lottie
@@ -58,6 +57,7 @@ import com.zs.audiofy.common.compose.lottieAnimationPainter
 import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.console.widget.Widget
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -66,6 +66,7 @@ import com.zs.compose.theme.ContentAlpha
 import com.zs.compose.theme.FloatingActionButton
 import com.zs.compose.theme.FloatingActionButtonDefaults
 import com.zs.compose.theme.Icon
+import com.zs.compose.theme.IconButton
 import com.zs.compose.theme.LocalContentColor
 import com.zs.compose.theme.Slider
 import com.zs.compose.theme.SliderDefaults
@@ -203,17 +204,25 @@ fun MistyTunes(
                     // Placeholder for playingbars
                     Spacer(Modifier.sharedElement(RouteConsole.ID_PLAYING_INDICATOR))
                     // Like
-                    val size = Modifier.size(35.dp).scale(0.9f)
-                    LottieAnimatedButton(
-                        R.raw.lt_twitter_heart_filled_unfilled,
-                        onClick = { onRequest(Widget.REQUEST_LIKED) },
-                        animationSpec = tween(800),
-                        atEnd = state.favourite, // if fav
+                    val size = Modifier
+                        .size(35.dp)
+                        .scale(0.9f)
+//                    LottieAnimatedButton(
+//                        R.raw.lt_twitter_heart_filled_unfilled,
+//                        onClick = { onRequest(Widget.REQUEST_LIKED) },
+//                        animationSpec = tween(800),
+//                        atEnd = state.favourite, // if fav
+//                        contentDescription = null,
+//                        progressRange = 0.13f..1.0f,
+//                        scale = 3.5f,
+//                        tint = AppTheme.colors.accent,
+//                        modifier = Modifier.layoutId(RouteConsole.ID_BTN_LIKED) then size
+//                    )
+                    IconButton(
+                        icon = Icons.Outlined.Tune,
                         contentDescription = null,
-                        progressRange = 0.13f..1.0f,
-                        scale = 3.5f,
-                        tint = AppTheme.colors.accent,
-                        modifier = Modifier.layoutId(RouteConsole.ID_BTN_LIKED) then size
+                        onClick = { onRequest(Widget.REQUEST_SHOW_CONFIG) },
+                        modifier = size
                     )
                     val tint = AppTheme.colors.accent
                     // Skip to previous

@@ -39,14 +39,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.zs.audiofy.MainActivity
+import com.zs.audiofy.common.IAP_COLOR_CROFT_GOLDEN_DUST
+import com.zs.audiofy.common.IAP_COLOR_CROFT_GRADIENT_GROVES
+import com.zs.audiofy.common.IAP_COLOR_CROFT_MISTY_DREAM
+import com.zs.audiofy.common.IAP_COLOR_CROFT_ROTATING_GRADIENT
+import com.zs.audiofy.common.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_DISK_DYNAMO
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_ELONGATE_BEAT
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_IPHONE
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_SNOW_CONE
+import com.zs.audiofy.common.IAP_PLATFORM_WIDGET_TIRAMISU
 import com.zs.audiofy.common.compose.ContentPadding
 import com.zs.audiofy.common.compose.LocalNavController
 import com.zs.audiofy.common.compose.LocalSystemFacade
+import com.zs.audiofy.common.compose.preference
 import com.zs.audiofy.common.compose.scale
 import com.zs.audiofy.common.domain
 import com.zs.audiofy.console.RouteConsole
+import com.zs.audiofy.console.widget.styles.DiskDynamo
+import com.zs.audiofy.console.widget.styles.ElongatedBeat
+import com.zs.audiofy.console.widget.styles.GoldenDust
+import com.zs.audiofy.console.widget.styles.GradientGroves
+import com.zs.audiofy.console.widget.styles.Iphone
+import com.zs.audiofy.console.widget.styles.MistyDream
+import com.zs.audiofy.console.widget.styles.MistyTunes
+import com.zs.audiofy.console.widget.styles.RedVioletCake
+import com.zs.audiofy.console.widget.styles.RotatingColorGradient
+import com.zs.audiofy.console.widget.styles.SkewedDynamic
+import com.zs.audiofy.console.widget.styles.SnowCone
+import com.zs.audiofy.console.widget.styles.Tiramisu
+import com.zs.audiofy.console.widget.styles.WavyGradientDots
 import com.zs.audiofy.settings.AppConfig
+import com.zs.audiofy.settings.Settings
 import com.zs.compose.theme.LocalNavAnimatedVisibilityScope
+import com.zs.core.billing.Paymaster
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -71,10 +99,11 @@ object Widget {
     const val REQUEST_LIKED = -4f
     const val REQUEST_OPEN_CONSOLE = -5f
     const val REQUEST_CLOSE = -6f
+    const val REQUEST_SHOW_CONFIG = -7f
 
     // Represent the IDs of supported players.
     const val ID_FAB_PLAYER = "fab_player"
-    const val ID_MISTY_TUNES = "misty_tunes"
+    const val ID_CONFIG = "config"
     const val ID_PLACEHOLDER = "_place_holder"
     const val ID_FAB_VIDEO_PLAYER = "fab_video_player"
 
@@ -91,7 +120,8 @@ object Widget {
         // State to track whether the widget is expanded or not.
         var expanded by remember { mutableStateOf(false) }
         // Handler to collapse the widget when back is pressed.
-        val onDismissRequest = { expanded = false }
+        var showConfigScreen by remember { mutableStateOf(false) }
+        val onDismissRequest = { if (showConfigScreen) showConfigScreen = false else expanded = false }
         BackHandler(expanded && !isConsole, onDismissRequest)
         // Action handler
         val scope = rememberCoroutineScope()
@@ -104,6 +134,7 @@ object Widget {
                     REQUEST_CLOSE -> remote.clear()
                     REQUEST_SKIP_TO_PREVIOUS -> remote.skipToPrevious()
                     REQUEST_OPEN_CONSOLE -> navController.navigate(RouteConsole())
+                    REQUEST_SHOW_CONFIG -> showConfigScreen = !showConfigScreen // toggle config.
                     else -> remote.seekTo(code)
                 }
             }
@@ -161,23 +192,38 @@ object Widget {
             }
         )
         // Layout
+        val widget by preference(Settings.GLANCE)
         AnimatedContent(
             // choose target appropriately.
             targetState = when {
                 isConsole -> ID_PLACEHOLDER
+                showConfigScreen -> ID_CONFIG
                 state.isVideo -> ID_FAB_VIDEO_PLAYER
-                expanded -> ID_MISTY_TUNES
-                else -> ID_FAB_PLAYER
+                !expanded -> ID_FAB_PLAYER
+                else -> widget
             },
             modifier = LimitedBy then modifier,
             content = { id ->
                 // Provide the current scope for navigation animations.
                 CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                     when (id) {
+                        ID_CONFIG -> Config(state, surface, onRequest)
                         ID_PLACEHOLDER -> Spacer(FabSize)
-                        ID_MISTY_TUNES -> MistyTunes(state, surface, onRequest, clickable)
                         ID_FAB_PLAYER -> FabPlayer(state, onRequest, clickable)
                         ID_FAB_VIDEO_PLAYER -> FabVideoPlayer(state, runBlocking { remote.getViewProvider() }, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_DISK_DYNAMO -> DiskDynamo(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_ELONGATE_BEAT -> ElongatedBeat(state, onRequest, clickable)
+                        Paymaster.IAP_COLOR_CROFT_GOLDEN_DUST -> GoldenDust(state, onRequest, clickable)
+                        Paymaster.IAP_COLOR_CROFT_GRADIENT_GROVES -> GradientGroves(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_IPHONE -> MistyTunes(state, surface, onRequest, clickable)
+                        Paymaster.IAP_COLOR_CROFT_MISTY_DREAM -> MistyDream(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_RED_VIOLET_CAKE -> RedVioletCake(state, onRequest, clickable)
+                        Paymaster.IAP_COLOR_CROFT_ROTATING_GRADIENT -> RotatingColorGradient(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_SKEWED_DYNAMIC -> SkewedDynamic(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_SNOW_CONE -> SnowCone(state, onRequest, clickable)
+                        Paymaster.IAP_PLATFORM_WIDGET_TIRAMISU -> Tiramisu(state, onRequest, clickable)
+                        Paymaster.IAP_COLOR_CROFT_WAVY_GRADIENT_DOTS -> WavyGradientDots(state, onRequest, clickable)
+                        else -> Iphone(state,  onRequest, clickable)
                     }
                 }
             }
