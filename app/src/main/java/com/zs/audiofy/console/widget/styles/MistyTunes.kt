@@ -45,11 +45,13 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.zs.audiofy.R
+import com.zs.audiofy.common.compose.LottieAnimatedButton
 import com.zs.audiofy.common.compose.background
 import com.zs.audiofy.common.compose.chronometer
 import com.zs.audiofy.common.compose.lottie
@@ -58,6 +60,7 @@ import com.zs.audiofy.common.compose.marque
 import com.zs.audiofy.common.compose.shine
 import com.zs.audiofy.console.RouteConsole
 import com.zs.audiofy.console.widget.Widget
+import com.zs.audiofy.settings.AppConfig
 import com.zs.compose.foundation.background
 import com.zs.compose.foundation.textResource
 import com.zs.compose.theme.AppTheme
@@ -207,23 +210,27 @@ fun MistyTunes(
                     val size = Modifier
                         .size(35.dp)
                         .scale(0.9f)
-//                    LottieAnimatedButton(
-//                        R.raw.lt_twitter_heart_filled_unfilled,
-//                        onClick = { onRequest(Widget.REQUEST_LIKED) },
-//                        animationSpec = tween(800),
-//                        atEnd = state.favourite, // if fav
-//                        contentDescription = null,
-//                        progressRange = 0.13f..1.0f,
-//                        scale = 3.5f,
-//                        tint = AppTheme.colors.accent,
-//                        modifier = Modifier.layoutId(RouteConsole.ID_BTN_LIKED) then size
-//                    )
-                    IconButton(
-                        icon = Icons.Outlined.Tune,
-                        contentDescription = null,
-                        onClick = { onRequest(Widget.REQUEST_SHOW_CONFIG) },
-                        modifier = size
-                    )
+
+                    when {
+                        AppConfig.inAppWidgetLongPressOpenConfig -> LottieAnimatedButton(
+                            R.raw.lt_twitter_heart_filled_unfilled,
+                            onClick = { onRequest(Widget.REQUEST_LIKED) },
+                            animationSpec = tween(800),
+                            atEnd = state.favourite, // if fav
+                            contentDescription = null,
+                            progressRange = 0.13f..1.0f,
+                            scale = 3.5f,
+                            tint = AppTheme.colors.accent,
+                            modifier = Modifier.layoutId(RouteConsole.ID_BTN_LIKED) then size
+                        )
+                        else ->  IconButton(
+                            icon = Icons.Outlined.Tune,
+                            contentDescription = null,
+                            onClick = { onRequest(Widget.REQUEST_SHOW_CONFIG) },
+                            modifier = size
+                        )
+                    }
+
                     val tint = AppTheme.colors.accent
                     // Skip to previous
                     TonalIconButton(

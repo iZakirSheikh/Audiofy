@@ -46,38 +46,39 @@ object AppConfig {
     private const val TAG = "AppConfig"
 
     /** Determines if media thumbnails should be loaded from the cache. */
+    @JvmField
     var isLoadThumbnailFromCache: Boolean = false
 
     /** Get/Set strategy enable background blur. */
-    var isBackgroundBlurEnabled: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    @JvmField var isBackgroundBlurEnabled: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     /** Determines if the trash can feature for deleted media is enabled. */
-    var isTrashCanEnabled: Boolean = true
+    @JvmField var isTrashCanEnabled: Boolean = true
 
     /** Specifies the font scaling factor for the application. -1f indicates system default. */
-    var fontScale: Float = -1f
+    @JvmField var fontScale: Float = -1f
 
     /** Minimum duration in seconds for a track to be considered valid or displayed. */
-    var minTrackLengthSecs: Int = 30
+    @JvmField var minTrackLengthSecs: Int = 30
 
     /** Indicates whether to use the system's built-in audio effects. */
-    var inAppAudioEffectsEnabled: Boolean = true
+    @JvmField var inAppAudioEffectsEnabled: Boolean = true
 
     /** Multiplier for adjusting the size of items in grid layouts. */
-    var gridItemSizeMultiplier: Float = 1.0f
+    @JvmField var gridItemSizeMultiplier: Float = 1.0f
 
     /**
      * Determines FAB player long press action.
      * `true`: launch [com.zs.audiofy.console.Console].
      * `false`: launch in-app widget. Defaults to `true`.
      */
-    var fabLongPressLaunchConsole = true
+    @JvmField var fabLongPressLaunchConsole = true
 
     /**
      * Toggles between SurfaceView and TextureView for video rendering.
      * `true` enables SurfaceView, `false` enables TextureView. Defaults to `true`.
      */
-    var isSurfaceViewVideoRenderingPreferred = true
+    @JvmField var isSurfaceViewVideoRenderingPreferred = true
 
     /**
      * Controls whether files displayed in directories (e.g., playlist members, audio files,
@@ -90,7 +91,18 @@ object AppConfig {
      * When `false`, files will be displayed as a flat list without any grouping,
      * which might be preferred for smaller collections or specific user preferences.
      */
-    var isFileGroupingEnabled = true
+    @JvmField var isFileGroupingEnabled = true
+
+    /**
+     * If true, shows a launch console button in the in-app widget; otherwise, another media action is shown,
+     * and the console can only be opened from the compact (FAB) player.
+     */
+    @JvmField var showInAppWidgetOpenConsoleButton = true
+
+    /**
+     * If true, long-pressing the in-app widget opens its config instead of showing the config button.
+     */
+    @JvmField var inAppWidgetLongPressOpenConfig = false
 
 
     // Delimiters
@@ -108,6 +120,8 @@ object AppConfig {
     private const val KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE = "param8"
     private const val KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED = "param9"
     private const val KEY_FILE_GROUPING_ENABLED = "param10"
+    private const val KEY_SHOW_INAPP_WIDGET_DEDICATED_OPEN_CONSOLE_BTN = "param11"
+    private const val KEY_INAPP_WIDGET_LONG_PRESS_OPEN_CONFIG = "param12"
 
 
     /**
@@ -167,6 +181,8 @@ object AppConfig {
         records[KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE] = fabLongPressLaunchConsole
         records[KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED] = isSurfaceViewVideoRenderingPreferred
         records[KEY_FILE_GROUPING_ENABLED] = isFileGroupingEnabled
+        records[KEY_SHOW_INAPP_WIDGET_DEDICATED_OPEN_CONSOLE_BTN] = showInAppWidgetOpenConsoleButton
+        records[KEY_INAPP_WIDGET_LONG_PRESS_OPEN_CONFIG] = inAppWidgetLongPressOpenConfig
         Log.i(TAG, "stringify: $records")
         return records.toString()
     }
@@ -209,6 +225,8 @@ object AppConfig {
                 KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE -> fabLongPressLaunchConsole = value.toBoolean()
                 KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED -> isSurfaceViewVideoRenderingPreferred = value.toBoolean()
                 KEY_FILE_GROUPING_ENABLED -> isFileGroupingEnabled = value.toBoolean()
+                KEY_INAPP_WIDGET_LONG_PRESS_OPEN_CONFIG -> inAppWidgetLongPressOpenConfig = value.toBoolean()
+                KEY_SHOW_INAPP_WIDGET_DEDICATED_OPEN_CONSOLE_BTN -> showInAppWidgetOpenConsoleButton = value.toBoolean()
             }
         }
     }

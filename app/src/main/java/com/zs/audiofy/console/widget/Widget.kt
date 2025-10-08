@@ -183,7 +183,8 @@ object Widget {
                         // If in FAB mode but the preference is disabled,
                         // expand the player to show the full-screen view instead.
                         expanded = true
-
+                    // show config screen if users choice
+                    AppConfig.inAppWidgetLongPressOpenConfig -> showConfigScreen = true
                     else ->
                         // If the player is already expanded (not in FAB mode),
                         // collapse it back to FAB mode.
