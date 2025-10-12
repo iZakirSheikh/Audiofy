@@ -207,9 +207,7 @@ fun MistyTunes(
                     // Placeholder for playingbars
                     Spacer(Modifier.sharedElement(RouteConsole.ID_PLAYING_INDICATOR))
                     // Like
-                    val size = Modifier
-                        .size(35.dp)
-                        .scale(0.9f)
+                    val size = Widget.SmallIconBtn
 
                     when {
                         AppConfig.inAppWidgetLongPressOpenConfig -> LottieAnimatedButton(

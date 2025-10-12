@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
+import com.zs.audiofy.BuildConfig
 import com.zs.core.billing.Paymaster
 import com.zs.core.billing.Product
 
@@ -126,8 +127,8 @@ private val _products = arrayOf(
 )
 
 /**
-* Creates a split install request for the module with [name]
-*/
+ * Creates a split install request for the module with [name]
+ */
 inline fun SplitInstallRequest(name: String) =
     SplitInstallRequest.newBuilder().addModule(name).build()
 
@@ -168,3 +169,22 @@ val Product.dynamicModuleName
  */
 val Product.dynamicFeatureRequest
     inline get() = SplitInstallRequest(dynamicModuleName)
+
+/**
+ * @return - Indicates if the widget is free in the Play Console.
+ * Some widgets are listed for providing localized names and descriptions,
+ * but their price cannot be set to 0.
+ *
+ * **Note**: Developer need register any product for freemium
+ */
+val Product.isFreemium: Boolean
+    get() {
+        return when (id) {
+            Paymaster.IAP_PLATFORM_WIDGET_IPHONE, Paymaster.IAP_COLOR_CROFT_GRADIENT_GROVES,
+            Paymaster.IAP_ARTWORK_SHAPE_HEART, Paymaster.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
+            Paymaster.IAP_ARTWORK_SHAPE_CIRCLE, Paymaster.IAP_ARTWORK_SHAPE_CUT_CORNERED_RECT -> true
+
+            else -> false
+        }
+    }
+

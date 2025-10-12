@@ -26,6 +26,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.zs.audiofy.MainActivity
@@ -89,6 +91,8 @@ object Widget {
             .widthIn(max = 400.dp)
     val FabSize = Modifier.requiredSize(112.dp, 56.dp)
     val FabVideoSize = Modifier.requiredSize(156.dp, 88.dp)
+
+    val SmallIconBtn = Modifier.size(35.dp).scale(0.9f)
 
     // Represents some of the actions emitted by the widget.
     // These are in float, allowing us to utilize positive values (0 to 1)
