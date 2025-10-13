@@ -58,8 +58,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1034
-        versionName = "4.0.0-rc01"
+        versionCode = 1035
+        versionName = "4.0.0-rc02"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // Load secrets into BuildConfig
@@ -83,7 +83,7 @@ android {
         // Appends ".debug" to the application ID. This allows installing debug and release versions on the same device.
         // Defines a string resource specifically for the debug build.
         debug {
-          //  applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".debug"
             resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }

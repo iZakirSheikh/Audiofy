@@ -211,7 +211,7 @@ private class PlayerGestureDetectorNode(
     fun seekBy(count: Int) {
         seekByJob?.cancel()
         seekByJob = coroutineScope.launch {
-            delay(100)
+            delay(1000)
             viewState.seek(count * 1_000L)
             message = "${count * 10L}s"
         }
