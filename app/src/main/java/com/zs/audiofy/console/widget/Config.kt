@@ -238,7 +238,14 @@ fun Config(
                             onClick = {
                                 if (!unlocked)
                                     activity.initiatePurchaseFlow(key)
-                                // else show apply.
+                                else {
+                                    activity.setPreference(
+                                        Settings.GLANCE,
+                                        WIDGETS[pagerController.currentPage]
+                                    )
+                                    activity.showToast("Widget have been successfully applied.")
+                                    onRequest(Widget.REQUEST_SHOW_CONFIG)
+                                }
                             },
                             enabled = key != selected
                         )

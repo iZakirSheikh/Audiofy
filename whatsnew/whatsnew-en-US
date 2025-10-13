@@ -1,6 +1,3 @@
-* Swipe Controls: Adjust volume/brightness by swiping on player screen.
-* Double-Tap Seek: Tap left/right to rewind or skip ahead.
-* Auto Toasts: Temporary messages now auto-dismiss after 5s.
-* UI Polish: Smoother FAB animation, improved layout in Library.
-* Smarter Recents: Short tracks filtered from "Recently Added".
-* Link Button: "Open Link" now lives in the top app bar.
+* New Widget Style: Say hello to "GoldenDust," a slick new player widget with a hexagonal album art and a premium feel.
+* Widget Store: Explore, preview, and unlock new widget styles in the brand-new Widget Store, accessible from the Console.
+* Quick Widget Setup: Long-press the in-app player to open the widget customizer directly.

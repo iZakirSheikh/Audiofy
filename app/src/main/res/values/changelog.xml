@@ -337,7 +337,19 @@
     <string name="changelog_400_rc01" translatable="false">
         <b>What’s New <font color='purple'>(v4.0.0-rc01)\n</font></b>
         <font color='grey'>
-            \n✓
-    </font>
+            \n✓ <b><u>New In-App Widget Store &amp; Styles:</u></b>
+            \n    - Browse, preview, and apply different widget styles from a new configuration screen accessible from the player Console.
+            \n    - <b>New "GoldenDust" Style:</b> A premium, fully-featured widget with a gold-on-black theme, hexagonal artwork, and shimmer effects.
+            \n    - <b>Apply Functionality:</b> The "APPLY" button is now active, letting you set your favorite unlocked widget style.
+            \n    - Placeholders for upcoming styles now show a consistent "Update in Progress" message.
+            \n
+            \n✓ <b><u>New "Long-Press to Configure" Setting:</u></b>
+            \n    - A new option in Settings allows you to open the widget configuration screen by long-pressing the in-app widget.
+            \n    - When enabled, the "Tune" (configure) button on the widget is replaced with the "Like" button, giving you direct access to liking tracks.
+            \n
+            \n✓ <b><u>Under-the-Hood:</u></b>
+            \n    - Introduced a dynamic framework for loading different widget styles.
+            \n    - Updated several third-party libraries for improved performance and stability.
+        </font>
     </string>
 </resources>

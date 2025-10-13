@@ -181,4 +181,12 @@ interface SystemFacade {
     fun isFeatureInstalled(id: String): Boolean
 
     fun initiateFeatureInstall(request: SplitInstallRequest)
+
+    /**
+     * Sets a key-value pair in the data store, where the [key] represents the key to associate with the [value].
+     *
+     * @param key the key to associate with the [value]
+     * @param value the value to be stored in the data store
+     */
+    fun <S, O> setPreference(key: Key<S, O>, value: O)
 }

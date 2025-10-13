@@ -1,12 +1,12 @@
 [versions]
 agp = "8.13.0"
 kotlin = "2.2.20"
-compose = "1.9.2"
+compose = "1.9.3"
 media3 = "1.8.0"
 toolkit = "3.7.7-dev"
 material_icons = "1.7.8"
 coil = "3.3.0"
-room = "2.8.1"
+room = "2.8.2"
 glance = "1.1.1"
 
 [plugins]
@@ -14,7 +14,7 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-google-service = { id = "com.google.gms.google-services", version = "4.4.3" }
+google-service = { id = "com.google.gms.google-services", version = "4.4.4" }
 crashanlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
@@ -31,14 +31,14 @@ chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version = "1.6.10" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.11.0" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version = "1.0.1" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
-lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.9" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.6.10" }
 
 # Androidx compose
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
-androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.2" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version = "1.9.3" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version = "1.0.0" }
 androidx-constraint-layout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version = "1.1.1" }
 androidx-animation-compose = { module = "androidx.compose.animation:animation-graphics", version.ref = "compose" }
@@ -78,6 +78,8 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 mp3agic = { module = "com.mpatric:mp3agic", version = "0.9.1" }
 nextlib = { module = "io.github.anilbeesetti:nextlib-media3ext", version = "1.8.0-0.9.0" }
+
+androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version = "1.0.1" }
 
 # Compose Glance
 glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }

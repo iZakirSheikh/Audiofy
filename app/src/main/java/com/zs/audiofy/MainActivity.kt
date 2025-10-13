@@ -436,6 +436,10 @@ class MainActivity : ComponentActivity(), SystemFacade, NavDestListener {
         }.launchIn(lifecycleScope)
     }
 
+    override fun <S, O> setPreference(key: Key<S, O>, value: O) {
+        preferences[key] = value
+    }
+
     override fun initiateReviewFlow() {
         lifecycleScope.launch {
             // Get the app launch count from preferences.

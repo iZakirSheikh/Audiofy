@@ -118,4 +118,5 @@ dependencies {
     debugImplementation(libs.bundles.compose.ui.tooling)
     api(project(":core"))
     implementation(project(":feature:widget"))
+    implementation(libs.androidx.graphics.shapes)
 }
