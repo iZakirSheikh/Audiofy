@@ -28,6 +28,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -118,11 +120,18 @@ fun GoldenDust(
         contentColor = onAccent,
         // Title
         heading = {
-            Label(
-                state.title ?: stringResource(R.string.unknown),
-                modifier = Modifier.marque(Int.MAX_VALUE),
-                style = AppTheme.typography.headline3,
-                fontWeight = FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .sharedElement(RouteConsole.ID_TITLE)
+                    .clipToBounds(),
+                content = {
+                    Label(
+                        state.title ?: stringResource(R.string.unknown),
+                        modifier = Modifier.marque(Int.MAX_VALUE),
+                        style = AppTheme.typography.headline3,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             )
         },
 
@@ -131,7 +140,8 @@ fun GoldenDust(
             Label(
                 state.subtitle ?: stringResource(R.string.unknown),
                 style = AppTheme.typography.label3,
-                color = LocalContentColor.current
+                color = LocalContentColor.current,
+                modifier = Modifier.sharedElement(RouteConsole.ID_SUBTITLE),
             )
         },
 
@@ -162,7 +172,7 @@ fun GoldenDust(
                         onClick = { onRequest(Widget.REQUEST_SKIP_TO_PREVIOUS) },
                         icon = Icons.Outlined.KeyboardDoubleArrowLeft,
                         contentDescription = null,
-                        modifier = IconModifier
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_PREVIOUS) then IconModifier
                     )
 
                     // Play/Pause
@@ -170,6 +180,7 @@ fun GoldenDust(
                         backgroundColor = onAccent.copy(0.3f),
                         contentColor = LocalContentColor.current,
                         shape = PlayButtonShape,
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_PLAY_PAUSE),
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                         onClick = { onRequest(Widget.REQUEST_PLAY_TOGGLE) },
                         content = {
@@ -191,7 +202,9 @@ fun GoldenDust(
                         onClick = { onRequest(Widget.REQUEST_SKIP_TO_NEXT) },
                         icon = Icons.Outlined.KeyboardDoubleArrowRight,
                         contentDescription = null,
-                        modifier = Modifier.padding(end = CP.normal) then IconModifier
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_SKIP_TO_NEXT) then Modifier.padding(
+                            end = CP.normal
+                        ) then IconModifier
                     )
 
                     // control centre
@@ -252,8 +265,10 @@ fun GoldenDust(
                             .sharedElement(RouteConsole.ID_SEEK_BAR)
                             .weight(1f),
                         colors = SliderDefaults.colors(
+                            activeTrackColor = Accent,
                             disabledThumbColor = Accent,
-                            disabledActiveTrackColor = onAccent
+                            inactiveTrackColor = Accent,
+                            disabledActiveTrackColor = Accent
                         )
                     )
 
@@ -272,7 +287,7 @@ fun GoldenDust(
                         icon = Icons.AutoMirrored.Outlined.OpenInNew,
                         contentDescription = null,
                         onClick = { onRequest(Widget.REQUEST_OPEN_CONSOLE) },
-                        modifier = IconModifier
+                        modifier = Modifier.sharedElement(RouteConsole.ID_BTN_COLLAPSE) then IconModifier
                     )
                 }
             )
