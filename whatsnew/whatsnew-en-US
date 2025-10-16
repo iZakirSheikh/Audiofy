@@ -1,3 +1,4 @@
-* New Widget Style: Say hello to "GoldenDust," a slick new player widget with a hexagonal album art and a premium feel.
-* Widget Store: Explore, preview, and unlock new widget styles in the brand-new Widget Store, accessible from the Console.
-* Quick Widget Setup: Long-press the in-app player to open the widget customizer directly.
+* Four New Widget Styles: Meet "WavyGradientDots," "RotatingColorGradient," "SnowCone," and "ElongatedBeat"! Each style offers a unique look with dynamic animations and layouts.
+* Style Refinements: The "GoldenDust" style now features smoother transitions and more consistent colors.
+* Quick Widget Config: Long-pressing the in-app widget now always opens the configuration screen for easy customization.
+* Bug Fix: Fixed an issue where the double-tap to seek gesture was too sensitive.

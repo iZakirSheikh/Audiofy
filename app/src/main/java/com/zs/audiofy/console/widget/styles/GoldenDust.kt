@@ -265,6 +265,7 @@ fun GoldenDust(
                             .sharedElement(RouteConsole.ID_SEEK_BAR)
                             .weight(1f),
                         colors = SliderDefaults.colors(
+                            thumbColor = Accent,
                             activeTrackColor = Accent,
                             disabledThumbColor = Accent,
                             inactiveTrackColor = Accent,

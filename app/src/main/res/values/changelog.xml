@@ -358,7 +358,21 @@
     <string name="changelog_400_rc02" translatable="false">
         <b>What’s New <font color='purple'>(v4.0.0-rc02)\n</font></b>
         <font color='grey'>
-            \n✓
+            \n✓ <b><u>New Dynamic FAB Widget Styles:</u></b>
+            \n    - <b>WavyGradientDots:</b> Features a wavy Lottie animation, pentagonal artwork, and a modern centered layout.
+            \n    - <b>RotatingColorGradient:</b> Showcases a rotating gradient background, star-shaped artwork, and a full set of controls.
+            \n    - <b>SnowCone:</b> Inspired by Android 12, with a marquee title and smooth shared element transitions.
+            \n    - <b>ElongatedBeat:</b> A horizontal layout with an accent-colored background and marquee title.
+            \n
+            \n✓ <b><u>Widget Style Enhancements:</u></b>
+            \n    - <b>GoldenDust:</b> Improved transition animations and a seek bar that now correctly matches the accent color.
+            \n
+            \n✓ <b><u>Improved Player Controls &amp; Gestures:</u></b>
+            \n    - The delay for the double-tap to seek gesture has been increased, preventing accidental seeks.
+            \n    - Long-pressing the in-app widget now consistently opens the configuration screen.
+            \n
+            \n✓ <b><u>New Custom Shapes &amp; Animations:</u></b>
+            \n    - Added new underlying shapes (RoundedStar, SkewedRectangle) and Lottie animations to support the new widget designs.
         </font>
     </string>
 </resources>
