@@ -12,6 +12,7 @@
 <resources>
     <!--Changelog-->
     <string-array name="changelog" translatable="false">
+        <item>@string/changelog_400_rc02</item>
         <item>@string/changelog_400_rc01</item>
         <item>@string/changelog_400_alpha06</item>
         <item>@string/changelog_400_alpha05</item>
@@ -35,7 +36,7 @@
         <item>@string/changelog_400_dev12</item>
     </string-array>
     <!--Points to the changelog of current version.-->
-    <string name="release_notes" translatable="false">@string/changelog_400_rc02</string>
+    <string name="release_notes" translatable="false">@string/changelog_400_rc03</string>
     <!--v4.0.0-dev12-->
     <string name="changelog_400_dev12" translatable="false">
         <b>What’s New <font color='maroon'>(v4.0.0-dev12)\n</font></b>
@@ -373,6 +374,14 @@
             \n
             \n✓ <b><u>New Custom Shapes &amp; Animations:</u></b>
             \n    - Added new underlying shapes (RoundedStar, SkewedRectangle) and Lottie animations to support the new widget designs.
+        </font>
+    </string>
+
+    <!--v4.0.0-rc03-->
+    <string name="changelog_400_rc03" translatable="false">
+        <b>What’s New <font color='purple'>(v4.0.0-rc03)\n</font></b>
+        <font color='grey'>
+            \n✓
         </font>
     </string>
 </resources>
