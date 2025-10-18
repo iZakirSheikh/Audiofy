@@ -1,4 +1,7 @@
-* Four New Widget Styles: Meet "WavyGradientDots," "RotatingColorGradient," "SnowCone," and "ElongatedBeat"! Each style offers a unique look with dynamic animations and layouts.
-* Style Refinements: The "GoldenDust" style now features smoother transitions and more consistent colors.
-* Quick Widget Config: Long-pressing the in-app widget now always opens the configuration screen for easy customization.
-* Bug Fix: Fixed an issue where the double-tap to seek gesture was too sensitive.
+Introducing six new player widget styles!
+* <b>Tiramisu:</b> Inspired by Android 13's media controls.
+* <b>RedVioletCake:</b> A nod to Android 11's media notification style.
+* <b>DiskDynamo:</b> Watch the album art spin like a classic compact disk!
+* <b>MistyDream:</b> A sleek, glassmorphism-inspired design.
+* <b>SkewedDynamic & GradientGroves:</b> Two more unique styles.
+* <b>Improved Seeking:</b> The double-tap to seek gesture is now much more responsive.

@@ -381,7 +381,16 @@
     <string name="changelog_400_rc03" translatable="false">
         <b>What’s New <font color='purple'>(v4.0.0-rc03)\n</font></b>
         <font color='grey'>
-            \n✓
+            \n✓ <b><u>Six New Player Widget Styles:</u></b>
+            \n    - <b>Tiramisu:</b> Inspired by the Android 13 media notification, with a full-width album art background and centered controls.
+            \n    - <b>GradientGroves:</b> Features a vibrant gradient and a unique "double vision" artwork effect.
+            \n    - <b>RedVioletCake:</b> Based on the Android 11 media notification, with large artwork on the right and controls on the left.
+            \n    - <b>DiskDynamo:</b> Showcases a rotating CD-style album art that animates while playing.
+            \n    - <b>MistyDream:</b> A glassmorphism-style widget with a blurred background and a large, stylized chronometer.
+            \n    - <b>SkewedDynamic:</b> A dynamic design with slanted shapes for both the widget body and album art.
+            \n
+            \n✓ <b><u>Refined Gesture Control:</u></b>
+            \n    - The delay for the double-tap to seek gesture has been significantly reduced from 1000ms to 200ms, making it feel much more responsive.
         </font>
     </string>
 </resources>
