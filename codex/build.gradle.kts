@@ -4,7 +4,7 @@ plugins {
 }
 android {
     namespace = "com.prime.codex"
-    compileSdk = 34
+    compileSdk = 36
     defaultConfig {
         minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
