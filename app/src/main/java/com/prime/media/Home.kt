@@ -289,24 +289,25 @@ private fun Permission() {
     // Compose the permission state.
     // Once granted set different route like folders as start.
     // Navigate from here to there.
-    val permission = Permissions(permissions = REQUIRED_PERMISSIONS) {
-        if (!it.all { (_, state) -> state }) return@Permissions
-        controller.graph.setStartDestination(Library.route)
-        controller.navigate(Library.route) {
-            popUpTo(RoutePermission()) {
-                inclusive = true
-            }
-        }
-    }
+    val facade = LocalSystemFacade.current
+    val canQueryAllApps by preference(Settings.QUERY_ALL_PACKAGES)
+    val permission = Permissions(permissions = REQUIRED_PERMISSIONS)
     // If the permissions are not granted, show the permission screen.
     com.prime.media.common.Placeholder(
         iconResId = R.raw.lt_permission,
-        title = stringResource(R.string.permission_screen_title),
-        message = textResource(R.string.permission_screen_desc),
+        title = stringResource(if (permission.allPermissionsGranted) R.string.permission_scr_data_usage_disclosure_title else R.string.permission_screen_title),
+        message = textResource(if (permission.allPermissionsGranted) R.string.permission_scr_data_usage_disclosure_msg else R.string.permission_screen_desc),
         vertical = LocalWindowSize.current.widthRange == Range.Compact
     ) {
         OutlinedButton(
-            onClick = permission::launchMultiplePermissionRequest,
+            onClick = {
+                if (!permission.allPermissionsGranted)
+                    permission.launchMultiplePermissionRequest()
+                else {
+                    facade.setPreference(Settings.QUERY_ALL_PACKAGES, true)
+                    facade.restart(true)
+                }
+            },
             modifier = Modifier.size(width = 200.dp, height = 46.dp),
             elevation = null,
             label = stringResource(R.string.allow),
@@ -668,10 +669,11 @@ fun App(
             // Display the main content of the app using the NavGraph composable
             content = {
                 // Load start destination based on if storage permission is set or not.
-                val granted = activity.checkSelfPermissions(REQUIRED_PERMISSIONS)
+                val hasStorageAccess = activity.checkSelfPermissions(REQUIRED_PERMISSIONS)
+                val canQueryApps by preference(Settings.QUERY_ALL_PACKAGES)
                 NavHost(
                     navController = navController,
-                    startDestination = if (!granted) RoutePermission() else Library.route,
+                    startDestination = if (!hasStorageAccess || !canQueryApps) RoutePermission() else Library.route,
                     builder = navGraphBuilder,
                     modifier = Modifier.thenIf(provider != null) { backdropObserver(provider!!) }
                 )

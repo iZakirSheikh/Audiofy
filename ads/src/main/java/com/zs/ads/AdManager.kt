@@ -23,6 +23,7 @@ import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
 import com.ironsource.mediationsdk.IronSource
+import com.unity3d.mediation.LevelPlay
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -90,6 +91,9 @@ interface AdManager {
          * @param id The unique application ID for the ad SDK.
          */
         fun initialize(context: Context, id: String) {
+            // set by default to false.
+            IronSource.setConsent(false)
+            IronSource.setMetaData("do_not_sell", "true")
             IronSource.init(context, id,)
         }
     }
@@ -160,6 +164,10 @@ interface AdManager {
      *  Checks weather rewarded video ad is loaded/avaailable.
      */
     val isRewardedVideoAvailable: Boolean
+
+    fun setConsent(value: Boolean)
+
+    fun setMetaData(meta: String, value: String)
 }
 
 /**

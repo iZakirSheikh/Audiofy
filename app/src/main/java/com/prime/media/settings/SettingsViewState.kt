@@ -215,6 +215,7 @@ object Settings {
     // For intermediate versions (between Android 10 and Android 15), this setting is false
     // by default but can be toggled to enable or disable translucent system bars based
     // on user preferences.
+    val QUERY_ALL_PACKAGES = booleanPreferenceKey(PREFIX + "_query_all_packages", false)
     val TRANSPARENT_SYSTEM_BARS =
         booleanPreferenceKey(
             PREFIX + "_force_colorize",

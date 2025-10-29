@@ -102,6 +102,7 @@ internal abstract class Realm : RoomDatabase() {
                     // music player. we must allow main thread queries because currenlty I don't want
                     // do something stupid.
                     .allowMainThreadQueries()
+                    .fallbackToDestructiveMigrationOnDowngrade(true)
                     .fallbackToDestructiveMigrationFrom(0, 1, 2)
                     .addMigrations(MIGRATION_3_4)
                     .build()

@@ -357,4 +357,13 @@ internal class AdManagerImpl(
         }
         // If the delay hasn't been met, the ad won't be shown (implicitly handled)
     }
+
+
+    override fun setConsent(value: Boolean) {
+        IronSource.setConsent(value)
+    }
+
+    override fun setMetaData(meta: String, value: String) {
+        IronSource.setMetaData(meta, value)
+    }
 }

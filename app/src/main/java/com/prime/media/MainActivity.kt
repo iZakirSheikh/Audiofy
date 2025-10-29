@@ -588,6 +588,10 @@ class MainActivity :
         return splitInstallManager.installedModules.contains(id)
     }
 
+    override fun <S, O> setPreference(key: Key<S, O>, value: O) {
+        preferences[key] = value
+    }
+
     override fun initiateFeatureInstall(request: SplitInstallRequest) {
         splitInstallManager.startInstall(request)
     }
@@ -645,6 +649,12 @@ class MainActivity :
             // show what's new message on click.
             val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
             val versionCode = BuildConfig.VERSION_CODE
+
+            // Set consent (GDPR) and metadata (CCPA) based on user preference
+            val granted = preferences(Settings.QUERY_ALL_PACKAGES) // should be Boolean
+            advertiser.setConsent(granted)
+            advertiser.setMetaData("do_not_sell", if (!granted) "true" else "false")
+
             if (savedVersionCode != versionCode) {
                 preferences[KEY_APP_VERSION_CODE] = versionCode
                 showToast(
