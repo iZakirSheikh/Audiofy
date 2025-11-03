@@ -163,7 +163,7 @@ dependencies {
 
     //TODO - Updating dependencies caused the app not to compile because of some issue with
     //     internal below dependency and hence this. Remove this in next update.
-    implementation("com.google.j2objc:j2objc-annotations:3.0.0")
+    implementation("com.google.j2objc:j2objc-annotations:3.1")
 }
 
 // TODO: It appears that Material3 components may be leaking into this project, which is intended to support Material2.

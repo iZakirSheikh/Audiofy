@@ -610,11 +610,11 @@ private fun PlayButton(
         PLAY_BUTTON_STYLE_ROUNDED -> Surface(
             onClick = onClick,
             modifier = modifier,
-            shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
+            shape = RoundedCornerShape(25),
             color = Color.Transparent,
             border = BorderStroke(
                 1.dp,
-                AppTheme.colors.onBackground.copy(if (!AppTheme.colors.isLight) ContentAlpha.Indication else 1f)
+                AppTheme.colors.onBackground.copy(if (!AppTheme.colors.isLight) ContentAlpha.Indication else ContentAlpha.medium)
             ),
             content = {
                 LottieAnimation(

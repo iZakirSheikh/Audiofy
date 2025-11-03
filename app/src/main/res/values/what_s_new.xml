@@ -3,9 +3,9 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.9)</b>
         <font color='grey'>
-            \n - Added a data usage disclosure screen to comply with ad provider policies.
-            \n - We now request your consent to collect the list of installed applications.
-            \n - This information helps us launch relevant apps and provide personalized advertising.
+            \n - Explore a fresh look with our new player widget styles.
+            \n - Enjoy smoother and more responsive track seeking.
+            \n - Updated various internal libraries for improved stability and performance.
             \n - Resolved an issue where the settings icon was not visible in the paid version of the app.
             \n - Made subtle yet meaningful UI improvements.
             \n - Introduced a user-friendly swipe gesture to seamlessly adjust volume &amp; brightness, offering an intuitive and efficient control experience.

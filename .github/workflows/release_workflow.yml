@@ -5,12 +5,60 @@ on:
       - 'beta'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      max_commits:
+        description: "Release notes up to:"
+        required: false
+        default: "1"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # full git history
+
+      # Generate release notes from commit messages, restricted by 3
+      - name: Generate Release Notes
+        id: notes
+        run: |
+          # Make sure we have enough commits fetched
+          git fetch --prune --unshallow 2>/dev/null || git fetch --prune
+          # Use MAX_COMMITS from workflow input, default to 1
+          MAX_COMMITS="${{ github.event.inputs.max_commits || 1 }}"
+          echo "Using MAX_COMMITS=$MAX_COMMITS"
+          # Build the notes header first
+          notes="## What's new
+          "
+          
+          # Take the last MAX_COMMITS from the current branch only, no merges
+          commit_notes=$(git log HEAD --no-merges --first-parent -n $MAX_COMMITS \
+            --pretty=format:"- %s (%h)")
+          
+          
+          # Combine
+          notes="$notes$commit_notes"
+          
+          # If there are no commits, provide a fallback message
+          if [ -z "$notes" ]; then
+            notes="No new commits found."
+          fi
+          # Output to GitHub Actions
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$notes" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      # Cache Gradle
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Cache Gradle Dependencies
         uses: actions/cache@v3
@@ -107,16 +155,17 @@ jobs:
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
           track: production
           status: inProgress
-          userFraction: 0.90
-          changesNotSentForReview: true
+          userFraction: 0.10
+          whatsNewDirectory: ./whatsnew
+          changesNotSentForReview: false
           mappingFile: app/build/outputs/mapping/release/mapping.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.GIT_TAG }}
-          generate_release_notes: true
-          changesNotSentForReview: false
+          generate_release_notes: false
+          body: ${{ steps.notes.outputs.notes }}
           prerelease: true
           files: |
             ${{steps.signed_aab.outputs.signedReleaseFile}}
