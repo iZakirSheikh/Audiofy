@@ -25,8 +25,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -56,6 +60,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -165,6 +170,7 @@ private fun Track(
 @NonRestartableComposable
 private fun TopAppBar(
     state: PlayingQueue,
+    insets: WindowInsets,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -179,6 +185,7 @@ private fun TopAppBar(
         backgroundColor = AppTheme.colors.background(5.dp),
         contentColor = AppTheme.colors.onBackground,
         elevation = 0.dp,
+        windowInsets = insets,
         modifier = modifier,
         // Just for representational purposes.
         navigationIcon = {
@@ -243,6 +250,7 @@ private inline fun ListHeader(
 @Composable
 fun Content(
     resolver: PlayingQueue,
+    insets: WindowInsets,
     modifier: Modifier = Modifier
 ) {
     val data by resolver.queue.collectAsState(initial = null)
@@ -290,6 +298,7 @@ fun Content(
         }
     }
     // Show different screen; according to listState.
+    val density = LocalDensity.current
     Crossfade(targetState = listState, modifier = modifier, label = TAG + "_dialog_state") {
         when (it) {
             // loading
@@ -301,6 +310,8 @@ fun Content(
                 LazyColumn(
                     content = list,
                     state = lazyListState,
+                    contentPadding = insets.only(WindowInsetsSides.Bottom + WindowInsetsSides.End)
+                        .asPaddingValues(density),
                     modifier = Modifier.padding(bottom = ContentPadding.small)
                 )
                 // On First launch, navigate to the current playing item.
@@ -350,12 +361,13 @@ fun Content(
 @NonRestartableComposable
 fun PlayingQueue(
     state: PlayingQueue,
+    insets: WindowInsets,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        TopAppBar(state = state, onDismissRequest = onDismissRequest)
-        Content(resolver = state)
+        TopAppBar(state = state, insets = insets.only(WindowInsetsSides.Top + WindowInsetsSides.End), onDismissRequest = onDismissRequest, )
+        Content(resolver = state, insets)
     }
 }
 
@@ -377,6 +389,7 @@ fun PlayingQueue(
 @Composable
 inline fun PlayingQueue(
     state: PlayingQueue,
+    insets: WindowInsets,
     expanded: Boolean,
     noinline onDismissRequest: () -> Unit
 ) {
@@ -388,7 +401,7 @@ inline fun PlayingQueue(
             Surface(
                 color = AppTheme.colors.background(1.dp),
                 shape = AppTheme.shapes.compact,
-                content = { PlayingQueue(state = state, onDismissRequest = onDismissRequest) },
+                content = { PlayingQueue(state = state, insets = insets, onDismissRequest = onDismissRequest) },
                 modifier = Modifier
                     .sizeIn(maxWidth = 500.dp, maxHeight = 700.dp)
                     .padding(ContentPadding.xLarge)

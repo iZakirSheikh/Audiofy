@@ -661,7 +661,7 @@ fun App(
             background = AppTheme.colors.background,
             progress = activity.inAppTaskProgress,
             widget = {
-                if (state.hasActiveMedia) Glance(state) else Spacer(Modifier)
+                if (state.hasActiveMedia && requiresNavBar) Glance(state) else Spacer(Modifier)
             },
             // Set up the navigation bar using the NavBar composable
             navBar = {

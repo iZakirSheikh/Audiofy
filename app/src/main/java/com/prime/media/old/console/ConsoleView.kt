@@ -49,13 +49,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
@@ -190,16 +193,24 @@ import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Indication
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.MediumDurationMills
+import com.zs.core_ui.None
 import com.zs.core_ui.Range
 import com.zs.core_ui.WindowSize
 import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
+import com.zs.core_ui.sharedBounds
 import com.zs.core_ui.sharedElement
 import com.zs.core_ui.toast.Toast
 import ir.mahozad.multiplatform.wavyslider.material.WavySlider
 import kotlin.math.roundToInt
 
 private const val TAG = "ConsoleView"
+
+// Represents the shapes of content/details in different configurations.
+private val PrimaryHorizontal = RoundedCornerShape(topEndPercent = 8, bottomEndPercent = 8)
+private val PrimaryVertical = RoundedCornerShape(bottomStartPercent = 8, bottomEndPercent = 8)
+private val SecondaryVertical = RoundedCornerShape(topStartPercent = 8, topEndPercent = 8)
+private val SecondaryHorizontal = RoundedCornerShape(topStartPercent = 8, bottomStartPercent = 8)
 
 private fun SystemFacade.launchEqualizer(id: Int) {
     if (id == AudioEffect.ERROR_BAD_VALUE)
@@ -945,6 +956,7 @@ private fun Options(
     PlayingQueue(
         state = state,
         expanded = expanded == 1,
+        insets = WindowInsets.None,
         // restore the visibility back to normal.
         onDismissRequest = { expanded = 0; state.ensureAlwaysVisible(false) }
     )
@@ -1635,10 +1647,6 @@ fun Console(state: Console) {
     }
     //
     val isInTwoPaneMode = detailsOf != DETAILS_OF_NONE
-    val radius by animateIntAsState(
-        targetValue = if (isInTwoPaneMode) TWO_PANE_RADIUS_PCT else 0,
-        label = ""
-    )
     // The main content of the UI,
     // which can be moved around based on details being shown
     val content = remember {
@@ -1672,7 +1680,13 @@ fun Console(state: Console) {
                     constraints = constraints,
                     onRequest = onRequest,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(radius))
+                        .then(
+                            when  {
+                                detailsOf == DETAILS_OF_NONE -> Modifier
+                                !windowSize.isMobilePortrait -> Modifier.clip(PrimaryHorizontal)
+                                else -> Modifier.clip(PrimaryVertical)
+                            }
+                        )
                         .fillMaxSize()
                 )
             }
@@ -1729,7 +1743,8 @@ fun Console(state: Console) {
         displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(
             activity = context.findActivity()
         ),
-        modifier = Modifier.sharedElement(Constraints.ID_BACKGROUND),
+        modifier = Modifier.sharedBounds(Constraints.ID_BACKGROUND)
+            .background(Color(0xFF0E0E0F)),
         // The second pane is the details pane, which can show different content based on the
         // detailsOf value
         // Use the horizontal or vertical two pane strategy based on the orientation and the new window size
@@ -1737,16 +1752,19 @@ fun Console(state: Console) {
             if (detailsOf == DETAILS_OF_NONE)
                 return@TwoPane
             // Get the system bars insets as a padding values
-            val padding = if (windowSize.isMobilePortrait)
-                WindowInsets.navigationBars.asPaddingValues() + PaddingValues(horizontal = ContentPadding.normal)
+            val insets = if (windowSize.isMobilePortrait)
+                WindowInsets.systemBars.only(WindowInsetsSides.Bottom)
             else
-                WindowInsets.systemBars.asPaddingValues()
+                WindowInsets.systemBars.only(WindowInsetsSides.End + WindowInsetsSides.Top)
             // Use a Surface to display the playing queue
             Surface(
                 // Apply the padding to the modifier and adjust the horizontal padding based on the orientation
-                modifier = Modifier.padding(padding),
+               // modifier = Modifier.windowInsetsPadding(inset),
                 // Use the ContentShape as the shape of the surface
-                shape = RoundedCornerShape(radius),
+                shape = when  {
+                    !windowSize.isMobilePortrait -> SecondaryHorizontal
+                    else -> SecondaryVertical
+                },
                 // Use the overlay color or the background color based on the lightness of
                 // the material colors
                 color = if (AppTheme.colors.isLight)
@@ -1768,6 +1786,7 @@ fun Console(state: Console) {
                     if (detailsOf == REQUEST_SHOW_PLAYING_QUEUE)
                         PlayingQueue(
                             state = state,
+                            insets = insets,
                             onDismissRequest = { detailsOf = DETAILS_OF_NONE },
                             modifier = Modifier.fillMaxSize()
                         )

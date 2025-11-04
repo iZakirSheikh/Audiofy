@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.9)</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.11)</b>
         <font color='grey'>
-            \n - Explore a fresh look with our new player widget styles.
-            \n - Enjoy smoother and more responsive track seeking.
-            \n - Updated various internal libraries for improved stability and performance.
-            \n - Resolved an issue where the settings icon was not visible in the paid version of the app.
-            \n - Made subtle yet meaningful UI improvements.
-            \n - Introduced a user-friendly swipe gesture to seamlessly adjust volume &amp; brightness, offering an intuitive and efficient control experience.
-            \n - Positioned the controller lock feature at a more accessible and convenient location
-            \n - Introducing a variety of stunning <b>Album Art</b> styles! You can now customize your experience by selecting your favorite style from the <b>Personalize Screen</b>.
-            \n - Say goodbye to the conventional white/dark themes of the Console! <b>Audiofy</b> now features the all-new Ambient Mode, showcasing an exquisite blend of intricate blurs and vibrant color combinations for a truly captivating visual experience.
-            \n - Introduced multiple options for selecting the <b>Accent</b> Color, including manual selection and wallpaper-based choices.
+            \n - Replaced the "Albums" tab with "Videos," accessible from the bottom navigation bar and library shortcuts.
+            \n - Improved the two-pane layout with smoother animations and better handling of screen cutouts (insets).
+            \n - Enhanced immersive mode to use swipe gestures for showing system bars, improving usability.
+            \n - Refined UI styling with more rounded corners for newly added items and improved shadows in the directory browser.
+            \n - Updated internal libraries for better performance and stability.
         </font>
     </string>
 

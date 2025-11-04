@@ -1,5 +1,5 @@
-- Customize your look with new Accent Color options and stunning Album Art styles.
-- Explore fresh player widget designs.
-- Intuitively control volume & brightness with a simple swipe gesture.
-- Enjoy smoother track seeking and a more accessible controller lock.
-- Various UI/UX improvements and bug fixes for a better experience.
+- Replaced the "Albums" tab with "Videos" for easy access.
+- Improved two-pane layout with smoother animations and better screen cutout support.
+- Enhanced immersive mode: swipe to show system bars.
+- Refined UI with more rounded corners and improved shadows.
+- Updated internal libraries for better performance and stability.
