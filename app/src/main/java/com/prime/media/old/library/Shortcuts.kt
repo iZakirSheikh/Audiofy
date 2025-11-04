@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.local.RouteAlbums
 import com.prime.media.local.RouteArtists
 import com.prime.media.local.RouteGenres
 import com.prime.media.local.videos.RouteVideos
@@ -147,9 +149,9 @@ fun Shortcuts(
 
             // Shortcut for Video Library
             Shortcut(
-                onAction = { navigator.navigate(RouteVideos()) },
-                icon = Icons.Outlined.VideoLibrary,
-                label = textResource(id = R.string.videos),
+                onAction = { navigator.navigate(RouteAlbums()) },
+                icon = Icons.Outlined.Album,
+                label = textResource(id = R.string.albums),
             )
 
             // Shortcut for Favourite playlist navigation

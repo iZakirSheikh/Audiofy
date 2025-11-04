@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.prime.media
 
 import android.annotation.SuppressLint
@@ -6,9 +8,11 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.areNavigationBarsVisible
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.requiredSize
@@ -27,9 +31,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.FolderCopy
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Weekend
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -123,6 +129,7 @@ import com.primex.material2.OutlinedButton
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
 import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.NightMode
@@ -420,6 +427,18 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
 private val BottomNavShape = TopConcaveShape(radius = 20.dp)
 private val NavRailShape = EndConcaveShape(16.dp)
 
+private val NoBottomPaddingBottomNavBar = PaddingValues(
+    start = ContentPadding.normal,
+    end = ContentPadding.normal,
+    top = 24.dp
+)
+private val PaddingBottomNavBar = PaddingValues(
+    start = ContentPadding.normal,
+    end = ContentPadding.normal,
+    top = 24.dp,
+    bottom = ContentPadding.medium
+)
+
 /**
  * A composable function that represents a navigation bar, combining both rail and bottom bar elements.
  *
@@ -431,6 +450,7 @@ private val NavRailShape = EndConcaveShape(16.dp)
 @Composable
 @NonRestartableComposable
 private fun NavigationBar(
+    spacer: Boolean,
     typeRail: Boolean,
     contentColor: Color,
     navController: NavController,
@@ -479,10 +499,10 @@ private fun NavigationBar(
 
         // Albums
         NavItem(
-            label = { Label(text = textResource(R.string.albums)) },
-            icon = { Icon(imageVector = Icons.Filled.Album, contentDescription = null) },
-            checked = route == RouteAlbums(),
-            onClick = { navController.toRoute(RouteAlbums()); facade.initiateReviewFlow() },
+            label = { Label(text = textResource(R.string.videos)) },
+            icon = { Icon(imageVector = Icons.Outlined.VideoLibrary, contentDescription = null) },
+            checked = route == RouteVideos(),
+            onClick = { navController.toRoute(RouteVideos()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -525,6 +545,7 @@ private fun NavigationBar(
                 // Display routes at the top of the navRail.
                 routes()
                 // Some Space between naves and Icon.
+                if (spacer)
                 Spacer(modifier = Modifier.weight(1f))
             },
         )
@@ -534,10 +555,7 @@ private fun NavigationBar(
             contentColor = contentColor,
             backgroundColor = Color.Transparent,
             elevation = 0.dp,
-            contentPadding = PaddingValues(
-                horizontal = AppTheme.padding.normal,
-                vertical = AppTheme.padding.medium
-            ) + PaddingValues(top = 16.dp),
+            contentPadding = if (WindowInsets.areNavigationBarsVisible) NoBottomPaddingBottomNavBar else PaddingBottomNavBar,
             modifier = Modifier
                 .border(
                     0.5.dp,
@@ -557,6 +575,7 @@ private fun NavigationBar(
             content = {
                 // Ensures adequate spacing at the start of the BottomBar to accommodate pixel
                 // composable.
+                if (spacer)
                 Spacer(modifier = Modifier.requiredSize(Glance.MIN_SIZE))
                 Spacer(Modifier.weight(1f))
                 // Display routes at the contre of available space
@@ -572,7 +591,7 @@ private fun NavigationBar(
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteAlbums(), RoutePlaylists(), Library.route)
+    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteVideos(), RoutePlaylists(), Library.route)
 
 /**
  * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
@@ -633,6 +652,7 @@ fun App(
         else -> null
     }
     // The navHost
+    val state by PlaybackController.collectNowPlayingAsState()
     val content = @Composable {
         NavigationSuiteScaffold(
             vertical = portrait,
@@ -641,7 +661,6 @@ fun App(
             background = AppTheme.colors.background,
             progress = activity.inAppTaskProgress,
             widget = {
-                val state by PlaybackController.collectNowPlayingAsState()
                 if (state.hasActiveMedia) Glance(state) else Spacer(Modifier)
             },
             // Set up the navigation bar using the NavBar composable
@@ -649,6 +668,7 @@ fun App(
                 val colors = AppTheme.colors
                 val useAccent by (activity as SystemFacade).observeAsState(Settings.USE_ACCENT_IN_NAV_BAR)
                 NavigationBar(
+                    state.hasActiveMedia,
                     !portrait,
                     if (useAccent) colors.onAccent else colors.onBackground,
                     navController,

@@ -1138,7 +1138,7 @@ private fun MainContent(
     constraintSet = constraints.value,
     modifier = modifier,
     //TODO - Setting this true causes crash; Surely in future.
-    animateChanges = false
+    animateChangesSpec = null
 ) {
     // Get the current navigation controller
     val navController = LocalNavController.current
@@ -1672,7 +1672,6 @@ fun Console(state: Console) {
                     modifier = Modifier
                         .clip(RoundedCornerShape(radius))
                         .fillMaxSize()
-                        .animateContentSize()
                 )
             }
         }
