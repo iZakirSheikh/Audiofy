@@ -59,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -163,7 +164,7 @@ private fun FloatingTopAppBar(
                     .widthIn(max = 500.dp)
                     .windowInsetsPadding(insets)
                     .padding(horizontal = CP.xLarge, vertical = CP.small)
-                    .clip(FloatingTopBarShape)
+                    .shadow(8.dp, FloatingTopBarShape)
                     .border(colors.floatingTopBarBorder, FloatingTopBarShape)
                     .height(52.dp)
                     .dynamicBackdrop(

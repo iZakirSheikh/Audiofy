@@ -435,8 +435,10 @@ private fun Console.cycleResizeMode() {
  */
 // Explore implications of toggling immersive mode when the user has hidden system bars.
 // TODO: Assess potential outcomes and address any issues that may arise.
-private fun WindowInsetsControllerCompat.immersiveMode(enable: Boolean) =
+private fun WindowInsetsControllerCompat.immersiveMode(enable: Boolean) {
+    systemBarsBehavior = if (!enable) WindowInsetsControllerCompat.BEHAVIOR_DEFAULT else WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     if (enable) hide(WindowInsetsCompat.Type.systemBars()) else show(WindowInsetsCompat.Type.systemBars())
+}
 
 /**
  * Toggles the screen rotation lock for the current activity.

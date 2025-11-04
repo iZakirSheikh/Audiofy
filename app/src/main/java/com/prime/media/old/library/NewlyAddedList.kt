@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -86,6 +87,8 @@ private val ColorSaver = object : androidx.compose.runtime.saveable.Saver<Color,
     }
 }
 
+private val Shape = RoundedCornerShape(15)
+
 /**
  * Composable function to create a clickable newly added item with image, label, and play icon.
  *
@@ -104,7 +107,7 @@ private fun NewlyAddedItem(
 ) {
     Box(
         modifier = modifier
-            .shadow(ContentElevation.low, AppTheme.shapes.compact) // Light shadow
+            .shadow(ContentElevation.low, Shape) // Light shadow
             .clickable(onClick = onClick) // Enable clicking
             .size(224.dp, 132.dp), // Set minimum size
         contentAlignment = Alignment.Center, // Center content within the box
