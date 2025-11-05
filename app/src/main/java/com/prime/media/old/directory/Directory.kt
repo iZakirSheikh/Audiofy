@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -621,7 +623,7 @@ private fun <T : Any> List(
         modifier = modifier,
         horizontalArrangement = horizontalArrangement,
         verticalArrangement = verticalArrangement,
-        contentPadding = WindowInsets.contentInsets + contentPadding + WindowInsets.navigationBars.asPaddingValues()
+        contentPadding = WindowInsets.contentInsets.add(WindowInsets.navigationBars).asPaddingValues() + contentPadding
     ) {
         // used to pin the list to top.
         // such data search bar is not opened in hiding.
@@ -771,7 +773,7 @@ fun <T : Any> Directory(
                 FloatingActionButton(
                     onClick = { onAction(action) },
                     shape = RoundedCornerShape(30),
-                    modifier = Modifier.padding(WindowInsets.contentInsets),
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.contentInsets),
                     content = {
                         // the icon of the Fab
                         Icon(

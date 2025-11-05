@@ -26,6 +26,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -255,7 +256,7 @@ fun <T> Directory(
     key: ((item: T) -> Any)? = null,
     itemContent: @Composable LazyGridItemScope.(item: T) -> Unit
 ) {
-    val inAppNavBarInsets = WindowInsets.contentInsets + WindowInsets.navigationBars.asPaddingValues()
+    val inAppNavBarInsets = WindowInsets.contentInsets.add(WindowInsets.navigationBars).asPaddingValues()
     val state = GridState()
     var isSearchVisible by remember { mutableStateOf(false) }
 
@@ -292,7 +293,7 @@ fun <T> Directory(
                 verticalArrangement = GRID_ITEM_SPACING,
                 horizontalArrangement = GRID_ITEM_SPACING,
                 // Apply padding for content insets and in-app navigation bar.
-                contentPadding = Padding(horizontal = CP.normal) + inAppNavBarInsets + WindowInsets.contentInsets,
+                contentPadding = Padding(horizontal = CP.normal) + inAppNavBarInsets + WindowInsets.contentInsets.asPaddingValues(),
                 modifier = Modifier.thenIf(observer != null) { observerBackdrop(observer!!) },
                 content = {
                     // Search Node

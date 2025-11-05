@@ -107,7 +107,7 @@ private inline fun Layout(
                         .verticalScroll(rememberScrollState())
                         .navigationBarsPadding()
                         .padding(it)
-                        .padding(WindowInsets.contentInsets)
+                        .windowInsetsPadding(WindowInsets.contentInsets)
                         .fillMaxSize(),
                     content = {
                         details()
@@ -132,7 +132,7 @@ private inline fun Layout(
                             modifier = Modifier
                                 .verticalScroll(rememberScrollState())
                                 .navigationBarsPadding()
-                                .padding(WindowInsets.contentInsets)
+                                .windowInsetsPadding(WindowInsets.contentInsets)
                                 .padding(it)
                                 .fillMaxSize(),
                             content = { content() }

@@ -253,7 +253,7 @@ fun Personalize(viewState: ViewState) {
     // Define the scroll behavior for the top app bar
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     // obtain the padding of BottomNavBar/NavRail
-    val navBarPadding = WindowInsets.contentInsets
+    val navBarPadding = WindowInsets.contentInsets.asPaddingValues()
     // FixMe This doesn't work in preview mode
     //  Actual content
     val activity = LocalSystemFacade.current as? MainActivity ?: return
@@ -283,7 +283,7 @@ fun Personalize(viewState: ViewState) {
                 contentPadding = cPadding + WindowInsets.navigationBars.asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(WindowInsets.contentInsets)
+                    .windowInsetsPadding(WindowInsets.contentInsets)
             ) {
                 if (isMobilePortrait) {
                     item(

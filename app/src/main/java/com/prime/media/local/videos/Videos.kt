@@ -21,10 +21,13 @@
 package com.prime.media.local.videos
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -139,6 +142,7 @@ private fun LazyListScope.content(
 
 @Composable
 fun Videos(viewState: VideosViewState) {
+    val inAppNavBarInsets = WindowInsets.contentInsets
     TwoPane(
         topBar = {
             TopBar(
@@ -170,9 +174,9 @@ fun Videos(viewState: VideosViewState) {
             LazyColumn(
                 state = state,
                 // Apply padding for content insets and in-app navigation bar.
-                contentPadding = Padding(CP.normal) + WindowInsets.navigationBars.asPaddingValues(),
+                contentPadding = Padding(CP.normal) + (WindowInsets.navigationBars.union(inAppNavBarInsets)).asPaddingValues(),
                 modifier = Modifier
-                    .padding(WindowInsets.contentInsets)
+                    .windowInsetsPadding(WindowInsets.contentInsets)
                     .fadingEdge(state, false, 16.dp),
                 content = {
                     val values = emit(data) ?: return@LazyColumn

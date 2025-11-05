@@ -28,18 +28,17 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.None
 import com.zs.core_ui.toast.ToastHost
 import com.zs.core_ui.toast.ToastHostState
 
 private const val TAG = "NavigationSuitScaffold"
 
-private val EmptyInsets = AppTheme.emptyPadding
-
 /**
  * The content insets for the screen under current [NavigationSuitScaffold]
  */
 internal val LocalContentInsets =
-    compositionLocalOf { EmptyInsets }
+    compositionLocalOf { WindowInsets.None }
 
 /**
  * Provides the insets for the current content within the [Scaffold].
@@ -107,7 +106,7 @@ fun NavigationSuiteScaffold(
     navBar: @Composable () -> Unit,
 ) {
     val (insets, onNewInsets) =
-        remember { mutableStateOf(EmptyInsets) }
+        remember { mutableStateOf(WindowInsets.None) }
     val navBarInsets = WindowInsets.navigationBars
     Layout(
         modifier = modifier
@@ -166,7 +165,7 @@ fun NavigationSuiteScaffold(
  */
 private class VerticalMeasurePolicy(
     private val insets: WindowInsets,
-    private val onNewInsets: (PaddingValues) -> Unit
+    private val onNewInsets: (WindowInsets) -> Unit
 ) : MeasurePolicy {
     override fun MeasureScope.measure(
         measurables: List<Measurable>,
@@ -189,7 +188,7 @@ private class VerticalMeasurePolicy(
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
         // Calculate the insets for the content.
         // and report through onNewIntent
-        onNewInsets(PaddingValues(bottom = navBarPlaceable.height.toDp()))
+        onNewInsets(WindowInsets(bottom = navBarPlaceable.height.toDp()))
         return layout(width, height) {
             // Place the main content at the top, filling the space up to the navigation bar
             contentPlaceable.placeRelative(0, 0)
@@ -255,7 +254,7 @@ private class VerticalMeasurePolicy(
  */
 private class HorizontalMeasurePolicy(
     private val insets: WindowInsets,
-    private val onNewInsets: (PaddingValues) -> Unit
+    private val onNewInsets: (WindowInsets) -> Unit
 ) : MeasurePolicy {
     override fun MeasureScope.measure(
         measurables: List<Measurable>,
@@ -276,7 +275,7 @@ private class HorizontalMeasurePolicy(
         constraints = c.copy(minWidth = contentWidth, maxWidth = contentWidth)
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
         // reset new insets
-        onNewInsets(EmptyInsets)
+        onNewInsets(WindowInsets.None)
         return layout(width, height) {
             var x = 0
             var y = 0

@@ -27,6 +27,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -166,7 +167,7 @@ fun Playlists(viewState: PlaylistsViewState) {
     // Define the scroll behavior for the top app bar
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     // obtain the padding of BottomNavBar/NavRail
-    val inAppNavBarInsets = WindowInsets.contentInsets
+    val inAppNavBarInsets = WindowInsets.contentInsets.asPaddingValues()
     var highlighted: Playlist? by remember { mutableStateOf(null) }
     var showNewPlaylistDialog by remember { mutableStateOf(false) }
     val navController = LocalNavController.current
@@ -280,7 +281,7 @@ fun Playlists(viewState: PlaylistsViewState) {
                 // padding due to app bar
                 modifier = Modifier
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    .padding(WindowInsets.contentInsets),
+                    .windowInsetsPadding(WindowInsets.contentInsets),
                 content = {
                     // emit state; if not return non-null values
                     val values = emit(data) ?: return@LazyVerticalGrid

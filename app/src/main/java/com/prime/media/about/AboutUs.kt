@@ -341,7 +341,7 @@ fun AboutUs() {
             val scrollState = rememberScrollState()
             Column(
                 modifier = Modifier
-                    .padding(WindowInsets.contentInsets)
+                    .windowInsetsPadding(WindowInsets.contentInsets)
                     .fadingEdge(scrollState, false)
                     .verticalScroll(scrollState)
                     .thenIf(isMobilePortrait) { navigationBarsPadding() }
