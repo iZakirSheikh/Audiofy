@@ -28,13 +28,9 @@ import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.material.NavigationRail
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.FolderCopy
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Weekend
 import androidx.compose.material.icons.outlined.PlaylistPlay
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -47,10 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
@@ -74,7 +68,6 @@ import com.prime.media.common.SystemFacade
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
 import com.prime.media.common.dynamicBackdrop
-import com.prime.media.common.preference
 import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.ArtistsViewModel
 import com.prime.media.impl.FoldersViewModel
@@ -117,16 +110,15 @@ import com.prime.media.playlists.Playlist
 import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylist
 import com.prime.media.playlists.RoutePlaylists
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.settings.Settings
 import com.prime.media.widget.Glance
-import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.Label
 import com.primex.material2.OutlinedButton
-import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
@@ -297,7 +289,7 @@ private fun Permission() {
     // Once granted set different route like folders as start.
     // Navigate from here to there.
     val facade = LocalSystemFacade.current
-    val canQueryAllApps by preference(Settings.QUERY_ALL_PACKAGES)
+    val canQueryAllApps = AppConfig.isQueryingAppPackagesAllowed
     val permission = Permissions(permissions = REQUIRED_PERMISSIONS)
     // If the permissions are not granted, show the permission screen.
     com.prime.media.common.Placeholder(
@@ -311,7 +303,8 @@ private fun Permission() {
                 if (!permission.allPermissionsGranted)
                     permission.launchMultiplePermissionRequest()
                 else {
-                    facade.setPreference(Settings.QUERY_ALL_PACKAGES, true)
+                    AppConfig.isQueryingAppPackagesAllowed = true
+                    facade.setPreference(Settings.KEY_APP_CONFIG, AppConfig.stringify())
                     facade.restart(true)
                 }
             },
@@ -603,25 +596,6 @@ private fun WindowSize.consume(rail: Boolean) =
     if (rail) consume(width = NAV_RAIL_MIN_WIDTH) else consume(height = BOTTOM_NAV_MIN_HEIGHT)
 
 /**
- * Provides a [Density] object that reflects the user's preferred font scale.
- *
- * This extension function on [Preferences] observes the `KEY_FONT_SCALE` preference
- * and returns a modified [Density] object if the user has set a custom font scale.
- * If the font scale is set to -1 (default), the current [LocalDensity] is returned.
- *
- * @return A [Density] object with the appropriate font scale applied.
- */
-private val SystemFacade.density: Density
-    @NonRestartableComposable
-    @Composable
-    get() {
-        // Observe font scale preference and create a modified Density if necessary
-        val fontScale by observeAsState(key = Settings.FONT_SCALE)
-        val density = LocalDensity.current
-        return if (fontScale == -1f) density else Density(density.density, fontScale)
-    }
-
-/**
  * Represents the main entry to the UI
  */
 @Composable
@@ -690,7 +664,7 @@ fun App(
             content = {
                 // Load start destination based on if storage permission is set or not.
                 val hasStorageAccess = activity.checkSelfPermissions(REQUIRED_PERMISSIONS)
-                val canQueryApps by preference(Settings.QUERY_ALL_PACKAGES)
+                val canQueryApps = AppConfig.isQueryingAppPackagesAllowed
                 NavHost(
                     navController = navController,
                     startDestination = if (!hasStorageAccess || !canQueryApps) RoutePermission() else Library.route,
@@ -724,7 +698,6 @@ fun App(
                 LocalNavController provides navController,
                 LocalElevationOverlay provides null,  // Disable absolute elevation.
                 LocalSystemFacade provides (activity as SystemFacade),
-                LocalDensity provides activity.density,
                 LocalWindowSize provides if (!requiresNavBar) clazz else clazz.consume(!portrait),
                 content = content
             )
@@ -732,9 +705,8 @@ fun App(
     )
 
     // Observe the state of the IMMERSE_VIEW setting
-    val immersiveView by activity.observeAsState(Settings.IMMERSIVE_VIEW)
     val transparentSystemBars by activity.observeAsState(Settings.TRANSPARENT_SYSTEM_BARS)
-    LaunchedEffect(immersiveView, style, isDark, transparentSystemBars) {
+    LaunchedEffect( style, isDark, transparentSystemBars) {
         // Get the WindowInsetsController for managing system bars
         val window = activity.window
         val controller = WindowCompat.getInsetsController(window, window.decorView)
@@ -743,7 +715,7 @@ fun App(
         val visible = when (style.flagSystemBarVisibility) {
             WindowStyle.FLAG_SYSTEM_BARS_HIDDEN -> false  // Hide system bars
             WindowStyle.FLAG_SYSTEM_BARS_VISIBLE -> true  // Show system bars
-            else -> !immersiveView  // If not explicitly set, use the immersiveView setting
+            else -> true  // If not explicitly set, use the immersiveView setting
         }
         // Apply the visibility setting to the system bars
         if (!visible) controller.hide(WindowInsetsCompat.Type.systemBars())

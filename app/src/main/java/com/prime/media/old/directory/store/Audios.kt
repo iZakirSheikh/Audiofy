@@ -54,6 +54,7 @@ import com.prime.media.old.directory.*
 import com.prime.media.old.directory.dialogs.Playlists
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.impl.Repository
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.primex.core.*
 import com.primex.material2.*
@@ -498,7 +499,7 @@ class AudiosViewModel  (
                         )
                     }
                 // Check if trash is enabled in settings.val
-                val isTrashEnabled = preferences.value(Settings.TRASH_CAN_ENABLED)
+                val isTrashEnabled = AppConfig.isTrashCanEnabled
                 // Handle deletion differently based on Android version.
                 val result = when(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     true -> repository.delete(activity, *uris.toTypedArray(), trash = isTrashEnabled)

@@ -58,7 +58,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -73,9 +72,8 @@ import com.prime.media.common.Regular
 import com.prime.media.common.dynamicBackdrop
 import com.prime.media.common.emit
 import com.prime.media.common.fullLineSpan
-import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.settings.Settings
+import com.prime.media.settings.AppConfig
 import com.primex.core.plus
 import com.primex.core.thenIf
 import com.primex.material2.IconButton
@@ -287,7 +285,7 @@ fun <T> Directory(
             // Collect the data from the viewState, initially null representing loading state.
             // Get the grid item size multiplier from user preferences.
             val data by viewState.data.collectAsState()
-            val multiplier by preference(Settings.GRID_ITEM_SIZE_MULTIPLIER)
+            val multiplier = AppConfig.gridItemSizeMultiplier
             LazyVerticalGrid(
                 state = state,
                 columns = GridCells.Adaptive(80.dp * multiplier),

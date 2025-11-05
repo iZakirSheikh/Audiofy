@@ -1,7 +1,9 @@
 package com.prime.media
 
 
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -53,6 +55,7 @@ import com.prime.media.common.isDynamicFeature
 import com.prime.media.common.onEachItem
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
@@ -273,6 +276,26 @@ class MainActivity :
     override val isAdFreeRewarded: Boolean by derivedStateOf { adFreePeriodEndTimeMillis - System.currentTimeMillis() > 0f }
     override var style: WindowStyle by mutableStateOf(WindowStyle())
     override var inAppTaskProgress: Float by mutableFloatStateOf(Float.NaN)
+
+    override fun attachBaseContext(newBase: Context?) {
+        // Retrieve the desired font scale from application configuration.
+        val scale = AppConfig.fontScale
+        // If the scale is invalid (-1f) or the newBase context is null,
+        // fallback to the default behavior without applying any font scaling.
+        if (scale == -1f || newBase == null) {
+            super.attachBaseContext(newBase)
+            return
+        }
+        // Create a new Configuration object based on the resources of the newBase context.
+        val config = Configuration(newBase.resources.configuration)
+        // Set the fontScale property of the configuration to the desired scale.
+        config.fontScale = scale
+        // Create a new context with the modified configuration.
+        val scaledContext = newBase.createConfigurationContext(config)
+        // Call the superclass method with the new scaled context.
+        super.attachBaseContext(scaledContext)
+    }
+
 
     override fun showPlatformToast(message: String, priority: Int) =
         showAndroidToast(message, priority)
@@ -651,7 +674,7 @@ class MainActivity :
             val versionCode = BuildConfig.VERSION_CODE
 
             // Set consent (GDPR) and metadata (CCPA) based on user preference
-            val granted = preferences(Settings.QUERY_ALL_PACKAGES) // should be Boolean
+            val granted = AppConfig.isQueryingAppPackagesAllowed
             advertiser.setConsent(granted)
             advertiser.setMetaData("do_not_sell", if (!granted) "true" else "false")
 

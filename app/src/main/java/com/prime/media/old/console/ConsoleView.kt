@@ -167,6 +167,7 @@ import com.prime.media.old.core.playback.subtitle
 import com.prime.media.old.core.playback.title
 import com.prime.media.old.effects.AudioFx
 import com.prime.media.personalize.RoutePersonalize
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.DancingScriptFontFamily
 import com.prime.media.settings.Settings
 import com.primex.core.ImageBrush
@@ -605,7 +606,7 @@ private fun PlayButton(
                 LottieAnimation(
                     id = R.raw.lt_play_pause,
                     atEnd = !isPlaying,
-                    scale = 1.5f,
+                    scale = 1.3f,
                     progressRange = 0.0f..0.29f,
                     duration = Anim.MediumDurationMills,
                     easing = LinearEasing,
@@ -866,7 +867,7 @@ private fun More(
                             // Equalizer
                             val controller = LocalNavController.current
                             // FixMe: State is not required here. implement to get value without state.
-                            val useBuiltIn by preference(key = Settings.USE_IN_BUILT_AUDIO_FX)
+                            val useBuiltIn = AppConfig.inAppAudioEffectsEnabled
                             val facade = LocalSystemFacade.current
                             IconButton(
                                 imageVector = Icons.Outlined.Tune,
@@ -1469,7 +1470,7 @@ private fun MainContent(
  * @property isMobilePortrait a boolean value that indicates if the window is portrait or not
  */
 private val WindowSize.isMobilePortrait
-    get() = widthRange == Range.Compact && widthRange < heightRange
+    get() = widthRange <= Range.Medium && widthRange < heightRange
 
 /**
  * Constructs a two-pane strategy based on the window size and the gap width.

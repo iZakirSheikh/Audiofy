@@ -35,20 +35,18 @@ import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.SystemDelegate
 import com.prime.media.old.impl.TagEditorViewModel
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
-import com.primex.preferences.Preferences.Companion.invoke
 import com.primex.preferences.invoke
 import com.zs.core.db.Playlists
 import com.zs.core.db.Playlists2
-import com.zs.core.db.Playlists2.Companion.invoke
 import com.zs.core.store.MediaProvider
 import com.zs.core_ui.Anim
 import com.zs.core_ui.coil.MediaMetaDataArtFetcher
 import com.zs.core_ui.toast.ToastHostState
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -71,6 +69,14 @@ private val KoinAppModules = module {
     single {
         // Initialize Preferences
         val preferences = Preferences(get(), "Shared_Preferences")
+        // Retrieve the app configuration from preferences and update config only if not null
+        val config = preferences(Settings.KEY_APP_CONFIG)
+        if (config != null) {
+            val result = runCatching { AppConfig.update(config) }
+            if (result.isFailure) {
+                Log.e(TAG, "Error updating app config", result.exceptionOrNull())
+            }
+        }
         // Retrieve the current launch counter value, defaulting to 0 if not set
         val counter = preferences(Settings.KEY_LAUNCH_COUNTER) ?: 0
         // Increment the launch counter for cold starts
@@ -146,15 +152,14 @@ class CoilInitializer : Initializer<Unit> {
     override fun create(context: Context) {
         Log.d(TAG, "Initializer: starting Coil")
         // Get the shared preferences.
-        val preference = GlobalContext.get().get<Preferences>()
-        Log.d(TAG, "Initializer: use MediaMetaDataArtFetcher; ${preference(Settings.USE_LEGACY_ARTWORK_METHOD)}")
+        Log.d(TAG, "Initializer: use MediaMetaDataArtFetcher; ${AppConfig.isLoadThumbnailFromCache}")
         // Build the ImageLoader with the MediaMetaDataArtFetcher.Factory if the user hasn't opted for the legacy method.
         val imageLoader =
             ImageLoader(context)
                 .error(R.drawable.default_art)
                 .crossfade(Anim.DefaultDurationMillis)
                 .components {
-                    if (!preference(Settings.USE_LEGACY_ARTWORK_METHOD))
+                    if (!AppConfig.isLoadThumbnailFromCache)
                         add(MediaMetaDataArtFetcher.Factory())
                     add(ThumbnailFetcher.Factory())
                 }

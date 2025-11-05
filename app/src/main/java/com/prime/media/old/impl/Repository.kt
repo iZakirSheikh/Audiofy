@@ -12,6 +12,7 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import com.prime.media.old.common.util.toMember
 import com.prime.media.old.core.db.*
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
@@ -105,8 +106,7 @@ class Repository  (
     fun observe(uri: Uri) = combine(
         flow = resolver.observe(uri),
         flow2 = preferences[Settings.BLACKLISTED_FILES],
-        flow3 = preferences[Settings.MIN_TRACK_LENGTH_SECS]
-    ) { self, _, _ ->
+    ) { self, _ ->
         self
     }
 
@@ -203,7 +203,7 @@ class Repository  (
             return false
         }
 
-        val limit = preferences.value(Settings.MIN_TRACK_LENGTH_SECS)
+        val limit = AppConfig.minTrackLengthSecs
         // Filter out the audios that are blacklisted or shorter than the limit.
         return values.filter { audio ->
             // Convert the duration from milliseconds to seconds and compare it with the limit.

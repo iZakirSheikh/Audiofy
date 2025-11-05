@@ -20,21 +20,16 @@ import com.prime.media.R
 import com.prime.media.common.Route
 import com.prime.media.settings.Settings.BLACKLISTED_FILES
 import com.prime.media.settings.Settings.FeedbackIntent
-import com.prime.media.settings.Settings.GRID_ITEM_SIZE_MULTIPLIER
 import com.prime.media.settings.Settings.GitHubIssuesPage
 import com.prime.media.settings.Settings.GithubIntent
-import com.prime.media.settings.Settings.MIN_TRACK_LENGTH_SECS
 import com.prime.media.settings.Settings.PrivacyPolicyIntent
-import com.prime.media.settings.Settings.TRASH_CAN_ENABLED
 import com.prime.media.settings.Settings.TelegramIntent
-import com.prime.media.settings.Settings.USE_IN_BUILT_AUDIO_FX
-import com.prime.media.settings.Settings.USE_LEGACY_ARTWORK_METHOD
+import com.prime.media.settings.Settings.mapKeyToShape
 import com.primex.core.shapes.SquircleShape
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
 import com.primex.preferences.StringSaver
 import com.primex.preferences.booleanPreferenceKey
-import com.primex.preferences.floatPreferenceKey
 import com.primex.preferences.intPreferenceKey
 import com.primex.preferences.stringPreferenceKey
 import com.primex.preferences.stringSetPreferenceKey
@@ -105,6 +100,7 @@ enum class ColorizationStrategy {
     Manual, Default, Wallpaper, Artwork
 }
 
+// Defines the color saver that serializes the color
 private val ColorSaver = object : IntSaver<Color> {
     override fun restore(value: Int): Color = Color(value)
     override fun save(value: Color): Int = value.toArgb()
@@ -134,6 +130,15 @@ private val ColorSaver = object : IntSaver<Color> {
  *
  */
 object Settings {
+
+    const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
+    const val FALLBACK_GOOGLE_STORE =
+        "http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID
+    const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
+
+    val DefaultFontFamily = FontFamily.Default
+
+    // Some common intents
     val FeedbackIntent = Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.parse("mailto:helpline.prime.zs@gmail.com")
         putExtra(Intent.EXTRA_SUBJECT, "Feedback/Suggestion for Audiofy")
@@ -189,6 +194,9 @@ object Settings {
             }
         )
 
+    /**
+     *
+     */
     fun mapKeyToShape(key: String): Shape =
         when(key){
             BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT -> ArtworkShapeRoundedRect
@@ -205,7 +213,6 @@ object Settings {
             else -> error("$key is not among shapes mentioned in Settings.")
         }
 
-
     // For Android versions below 10 (API level 29), this is true by default, meaning
     // system bars are translucent and cannot be toggled.
     //
@@ -215,20 +222,12 @@ object Settings {
     // For intermediate versions (between Android 10 and Android 15), this setting is false
     // by default but can be toggled to enable or disable translucent system bars based
     // on user preferences.
-    val QUERY_ALL_PACKAGES = booleanPreferenceKey(PREFIX + "_query_all_packages", false)
+
     val TRANSPARENT_SYSTEM_BARS =
         booleanPreferenceKey(
             PREFIX + "_force_colorize",
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         )
-    val IMMERSIVE_VIEW =
-        booleanPreferenceKey(PREFIX + "_hide_status_bar", false)
-    val MIN_TRACK_LENGTH_SECS =
-        intPreferenceKey(PREFIX + "_track_duration_", 30)
-    val USE_LEGACY_ARTWORK_METHOD =
-        booleanPreferenceKey(PREFIX + "_artwork_from_ms", false)
-    val TRASH_CAN_ENABLED =
-        booleanPreferenceKey(PREFIX + "_trash_can_enabled", defaultValue = false)
     val BLACKLISTED_FILES =
         stringSetPreferenceKey(PREFIX + "_blacklisted_files")
     val GAP_LESS_PLAYBACK =
@@ -236,13 +235,6 @@ object Settings {
     val CROSS_FADE_DURATION_SECS =
         intPreferenceKey(PREFIX + "_cross_fade_tracks_durations")
 
-    //val CLOSE_WHEN_TASK_REMOVED = Playback.PREF_KEY_CLOSE_WHEN_REMOVED
-    val USE_IN_BUILT_AUDIO_FX =
-        booleanPreferenceKey(PREFIX + "_use_in_built_audio_fx", true)
-    val GRID_ITEM_SIZE_MULTIPLIER =
-        floatPreferenceKey(PREFIX + "_grid_item_size_multiplier", defaultValue = 1.0f)
-    val FONT_SCALE =
-        floatPreferenceKey(PREFIX + "_font_scale", -1f)
     val COLORIZATION_STRATEGY = intPreferenceKey(
         "${PREFIX}_colorization_strategy",
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default,
@@ -256,9 +248,6 @@ object Settings {
             }
         }
     )
-
-    val SIGNATURE =
-        stringPreferenceKey("${PREFIX}_signature")
     val ARTWORK_BORDERED =
         booleanPreferenceKey("${PREFIX}_artwork_bordered", false)
 
@@ -280,19 +269,10 @@ object Settings {
             BuildConfig.IAP_ARTWORK_SHAPE_ROUNDED_RECT,
         )
 
-    const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
-    const val FALLBACK_GOOGLE_STORE =
-        "http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID
-    const val PKG_GOOGLE_PLAY_STORE = "com.android.vending"
-
-    val DefaultFontFamily = FontFamily.Default
+    val KEY_APP_CONFIG = stringPreferenceKey("${PREFIX}_app_config")
 }
 
 @Stable
 interface SettingsViewState {
     fun <S, O> set(key: Key<S, O>, value: O)
 }
-
-
-
-
