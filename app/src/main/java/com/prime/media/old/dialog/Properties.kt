@@ -110,27 +110,29 @@ private fun Toolbar(
     )
 }
 
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun Property(
     @StringRes title: Int,
     value: CharSequence,
     noinline span: (LazyGridItemSpanScope.() -> GridItemSpan)? = null,
 ) {
-    item(key = title, contentType = "property", span = span) {
-        val name = textResource(id = title)
-        val color = LocalContentColor.current
-        Text(style = AppTheme.typography.caption,
-            color = color.copy(ContentAlpha.medium),
-            modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
-            text = buildAnnotatedString {
-                withParagraphStyle(lineHeight = 20.sp) {
-                    append(name)
-                }
-                withSpanStyle(fontSize = 16.sp, color = color) {
-                    append(value)
-                }
-            })
-    }
+   with(scope){
+       item(key = title, contentType = "property", span = span) {
+           val name = textResource(id = title)
+           val color = LocalContentColor.current
+           Text(style = AppTheme.typography.caption,
+               color = color.copy(ContentAlpha.medium),
+               modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
+               text = buildAnnotatedString {
+                   withParagraphStyle(lineHeight = 20.sp) {
+                       append(name)
+                   }
+                   withSpanStyle(fontSize = 16.sp, color = color) {
+                       append(value)
+                   }
+               })
+       }
+   }
 }
 
 private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) = { GridItemSpan(maxLineSpan) }

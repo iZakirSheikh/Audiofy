@@ -106,12 +106,12 @@ val Remote.progress
 /**
  * A short hand method to execute a suspended call.
  */
-context(ViewModel)
+context(scope: ViewModel)
 private inline fun suspended(
     context: CoroutineContext = EmptyCoroutineContext,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     noinline block: suspend CoroutineScope.() -> Unit
-) = viewModelScope.launch(context, start, block)
+) = scope.viewModelScope.launch(context, start, block)
 
 /**
  * @return: [List] of tracks of [type] that user can select.

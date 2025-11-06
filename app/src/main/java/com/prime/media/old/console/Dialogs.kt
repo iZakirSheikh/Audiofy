@@ -77,52 +77,54 @@ private fun TopBar(
 }
 
 
-context(ColumnScope)
+context(scope: ColumnScope)
 @Composable
 private inline fun Layout(
     crossinline onValueChange: (value: Long) -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
-    var value by remember { mutableFloatStateOf(10f) }
+    with(scope, {
+        val haptic = LocalHapticFeedback.current
+        var value by remember { mutableFloatStateOf(10f) }
 
-    // Label
-    Label(
-        text = stringResource(R.string.sleep_timer_dialog_minute_s, value.roundToInt()),
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(top = ContentPadding.medium),
-        style = AppTheme.typography.titleLarge,
-    )
+        // Label
+        Label(
+            text = stringResource(R.string.sleep_timer_dialog_minute_s, value.roundToInt()),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = ContentPadding.medium),
+            style = AppTheme.typography.titleLarge,
+        )
 
-    Slider(
-        value = value,
-        onValueChange = {
-            value = it
-            // make phone vibrate.
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        },
-        valueRange = 10f..100f,
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(ContentPadding.normal),
-        steps = 7
-    )
+        Slider(
+            value = value,
+            onValueChange = {
+                value = it
+                // make phone vibrate.
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            valueRange = 10f..100f,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(ContentPadding.normal),
+            steps = 7
+        )
 
-    // Buttons
-    Row(
-        horizontalArrangement = Arrangement.End,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = ContentPadding.normal)
-    ) {
-        // In case it is running; it will stop it.
-        TextButton(label = textResource(id = R.string.dismiss), onClick = { onValueChange(-2) })
+        // Buttons
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ContentPadding.normal)
+        ) {
+            // In case it is running; it will stop it.
+            TextButton(label = textResource(id = R.string.dismiss), onClick = { onValueChange(-2) })
 
-        // start the timer.
-        TextButton(
-            label = textResource(id = R.string.start),
-            onClick = { onValueChange((value.roundToInt() * 60 * 1_000L)) })
-    }
+            // start the timer.
+            TextButton(
+                label = textResource(id = R.string.start),
+                onClick = { onValueChange((value.roundToInt() * 60 * 1_000L)) })
+        }
+    })
 }
 
 @Composable

@@ -119,9 +119,10 @@ android {
         jvmTarget = "1.8"
         freeCompilerArgs = listOf(
             "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xcontext-receivers",
+            "-Xcontext-parameters",
             "-Xopt-in=com.primex.core.ExperimentalToolkitApi",
-            "-Xwhen-guards"
+            "-Xwhen-guards",
+            "-Xcontext-sensitive-resolution",
         )
     }
     buildFeatures { compose = true; buildConfig = true }

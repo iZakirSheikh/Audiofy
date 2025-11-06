@@ -156,7 +156,7 @@ private val DefaultKeyboardOptions =
         imeAction = ImeAction.Next
     )
 
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun Property(
     @StringRes title: Int,
     value: TextFieldValue,
@@ -168,156 +168,169 @@ private inline fun Property(
     enabled: Boolean = true,
     noinline span: (LazyGridItemSpanScope.() -> GridItemSpan)? = null,
 ) {
-    item(key = title, contentType = "property", span = span) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Label(text = textResource(id = title)) },
-            maxLines = maxLines,
-            readOnly = !enabled,
-            placeholder = composableOrNull(placeholder != ResourcesCompat.ID_NULL) {
-                Label(text = if (placeholder != ResourcesCompat.ID_NULL) textResource(id = placeholder) else "")
-            },
-            singleLine = maxLines == 1,
-            shape = AppTheme.shapes.compact,
-            keyboardOptions = keyboardOptions,
-            visualTransformation = visualTransformation,
-            modifier = Modifier
-                .defaultMinSize(minHeight = 64.dp)
-                .onFocusChanged {
-                    val selection =
-                        if (it.hasFocus) TextRange(0, value.text.length) else TextRange.Zero
-                    onValueChange(value.copy(selection = selection))
-                }
-        )
-    }
+   with(scope){
+       item(key = title, contentType = "property", span = span) {
+           OutlinedTextField(
+               value = value,
+               onValueChange = onValueChange,
+               label = { Label(text = textResource(id = title)) },
+               maxLines = maxLines,
+               readOnly = !enabled,
+               placeholder = composableOrNull(placeholder != ResourcesCompat.ID_NULL) {
+                   Label(text = if (placeholder != ResourcesCompat.ID_NULL) textResource(id = placeholder) else "")
+               },
+               singleLine = maxLines == 1,
+               shape = AppTheme.shapes.compact,
+               keyboardOptions = keyboardOptions,
+               visualTransformation = visualTransformation,
+               modifier = Modifier
+                   .defaultMinSize(minHeight = 64.dp)
+                   .onFocusChanged {
+                       val selection =
+                           if (it.hasFocus) TextRange(0, value.text.length) else TextRange.Zero
+                       onValueChange(value.copy(selection = selection))
+                   }
+           )
+       }
+   }
 }
 
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun Info(
     value: CharSequence
 ) {
-    item(key = "info", contentType = "Info") {
-        val color = LocalContentColor.current
-        Text(
-            style = AppTheme.typography.bodyMedium,
-            color = color,
-            modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
-            text = value
-        )
+    with(scope){
+        item(key = "info", contentType = "Info") {
+            val color = LocalContentColor.current
+            Text(
+                style = AppTheme.typography.bodyMedium,
+                color = color,
+                modifier = Modifier.padding(ContentPadding.normal, ContentPadding.medium),
+                text = value
+            )
+        }
     }
 }
 
 private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) = { GridItemSpan(maxLineSpan) }
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun Lyrics(
     value: TextFieldValue,
     noinline onValueChange: (TextFieldValue) -> Unit,
     enabled: Boolean = true,
 ) {
-    item("lyrics", fullLineSpan, "Lyrics") {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            minLines = 10,
-            maxLines = 12,
-            shape = AppTheme.shapes.compact,
-            readOnly = !enabled,
-            visualTransformation = LRCVisualTransformation,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = AppTheme.colors.background.copy(0.04f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            enabled = enabled,
-            placeholder = { Text(textResource(id = R.string.tag_editor_lyrics_placeholder)) },
-        )
-    }
+   with(scope){
+       item("lyrics", fullLineSpan, "Lyrics") {
+           TextField(
+               value = value,
+               onValueChange = onValueChange,
+               minLines = 10,
+               maxLines = 12,
+               shape = AppTheme.shapes.compact,
+               readOnly = !enabled,
+               visualTransformation = LRCVisualTransformation,
+               colors = TextFieldDefaults.textFieldColors(
+                   backgroundColor = AppTheme.colors.background.copy(0.04f),
+                   focusedIndicatorColor = Color.Transparent,
+                   unfocusedIndicatorColor = Color.Transparent
+               ),
+               enabled = enabled,
+               placeholder = { Text(textResource(id = R.string.tag_editor_lyrics_placeholder)) },
+           )
+       }
+   }
 }
 
 private val PickMediaRequest =
     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
 private val ArtworkShape = RoundedCornerShape(12)
 
-context(LazyGridScope)
+context(scope:LazyGridScope)
 private inline fun Artwork(
     image: ImageBitmap?,
     crossinline onRequestChange: (new: Uri?) -> Unit
 ) {
-    item(key = "artwork", contentType = "Artwork") {
-        val purchase by purchase(id = BuildConfig.IAP_TAG_EDITOR_PRO)
-        val facade = LocalSystemFacade.current
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
-            when {
-                it == null -> return@rememberLauncherForActivityResult // just return.
-                purchase.purchased -> onRequestChange(it)
-                else -> facade.showToast(R.string.msg_upgrade_to_pro)
-            }
-        }
-        IconButton(onClick = { launcher.launch(PickMediaRequest) }) {
-            // Backdrop image
-            Image(
-                painter = if (image != null)
-                    BitmapPainter(image) else
-                    rememberVectorPainter(
-                        image = Icons.Outlined.HideImage,
-                        tintColor = AppTheme.colors.onBackground
-                    ),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(ArtworkShape)
-                    .background(AppTheme.colors.background(0.5.dp), ArtworkShape)
-                    .aspectRatio(1.0f) // different when width > height
-                    .foreground(Brush.verticalGradient(listOf(Color.Black.copy(0.3f), Color.Black.copy(0.3f))))
-            )
-            // Representational Icon.
-            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null, tint = Color.White)
-        }
-    }
+   with(scope){
+       item(key = "artwork", contentType = "Artwork") {
+           val purchase by purchase(id = BuildConfig.IAP_TAG_EDITOR_PRO)
+           val facade = LocalSystemFacade.current
+           val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+               when {
+                   it == null -> return@rememberLauncherForActivityResult // just return.
+                   purchase.purchased -> onRequestChange(it)
+                   else -> facade.showToast(R.string.msg_upgrade_to_pro)
+               }
+           }
+           IconButton(onClick = { launcher.launch(PickMediaRequest) }) {
+               // Backdrop image
+               Image(
+                   painter = if (image != null)
+                       BitmapPainter(image) else
+                       rememberVectorPainter(
+                           image = Icons.Outlined.HideImage,
+                           tintColor = AppTheme.colors.onBackground
+                       ),
+                   contentDescription = null,
+                   contentScale = ContentScale.Crop,
+                   modifier = Modifier
+                       .clip(ArtworkShape)
+                       .background(AppTheme.colors.background(0.5.dp), ArtworkShape)
+                       .aspectRatio(1.0f) // different when width > height
+                       .foreground(Brush.verticalGradient(listOf(Color.Black.copy(0.3f), Color.Black.copy(0.3f))))
+               )
+               // Representational Icon.
+               Icon(imageVector = Icons.Outlined.Edit, contentDescription = null, tint = Color.White)
+           }
+       }
+   }
 }
 
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun BuyMe() {
-    item("buy_me", contentType = "Buy Me", span = fullLineSpan) {
-        val facade = LocalSystemFacade.current
-        ListTile(
-            overline = { Spacer(modifier = Modifier) },
-            headline = { Spacer(modifier = Modifier) },
-            footer = {
-                TextButton(
-                    label = textResource(id = R.string.tag_editor_screen_buy_now_action),
-                    onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
-            },
-            color = AppTheme.colors.background(1.dp),
-            onColor = AppTheme.colors.onBackground,
-            shape = AppTheme.shapes.compact,
-            leading = {
-                Icon(
-                    imageVector = Icons.Outlined.Shop,
-                    contentDescription = null,
-                    tint = Color.MetroGreen
-                )
-            },
-            subtitle = { Text(text = textResource(id = R.string.msg_tag_editor_buy_me_banner)) },
-        )
+    with(scope){
+        item("buy_me", contentType = "Buy Me", span = fullLineSpan) {
+            val facade = LocalSystemFacade.current
+            ListTile(
+                overline = { Spacer(modifier = Modifier) },
+                headline = { Spacer(modifier = Modifier) },
+                footer = {
+                    TextButton(
+                        label = textResource(id = R.string.tag_editor_screen_buy_now_action),
+                        onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_TAG_EDITOR_PRO) })
+                },
+                color = AppTheme.colors.background(1.dp),
+                onColor = AppTheme.colors.onBackground,
+                shape = AppTheme.shapes.compact,
+                leading = {
+                    Icon(
+                        imageVector = Icons.Outlined.Shop,
+                        contentDescription = null,
+                        tint = Color.MetroGreen
+                    )
+                },
+                subtitle = { Text(text = textResource(id = R.string.msg_tag_editor_buy_me_banner)) },
+            )
+        }
+
     }
 }
 
-context(LazyGridScope)
+context(scope: LazyGridScope)
 private inline fun Header(@StringRes id: Int) {
-    item(key = id, contentType = "Header", span = fullLineSpan) {
-        val primary = AppTheme.colors.accent
-        Label(
-            text = textResource(id = id),
-            fontWeight = FontWeight.SemiBold,
-            color = primary,
-            modifier = Modifier
-                .padding(vertical = ContentPadding.normal)
-                .fillMaxWidth()
-                .drawHorizontalDivider(color = primary)
-                .padding(bottom = ContentPadding.medium),
-        )
+    with(scope){
+        item(key = id, contentType = "Header", span = fullLineSpan) {
+            val primary = AppTheme.colors.accent
+            Label(
+                text = textResource(id = id),
+                fontWeight = FontWeight.SemiBold,
+                color = primary,
+                modifier = Modifier
+                    .padding(vertical = ContentPadding.normal)
+                    .fillMaxWidth()
+                    .drawHorizontalDivider(color = primary)
+                    .padding(bottom = ContentPadding.medium),
+            )
+        }
     }
 }
 

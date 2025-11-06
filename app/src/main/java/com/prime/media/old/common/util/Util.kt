@@ -49,11 +49,11 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val TAG = "Util"
 
-context (ViewModel) @Suppress("NOTHING_TO_INLINE")
+context (scope:ViewModel) @Suppress("NOTHING_TO_INLINE")
 @Deprecated("find new solution.")
 inline fun <T> Flow<T>.asComposeState(initial: T): State<T> {
     val state = mutableStateOf(initial)
-    onEach { state.value = it }.launchIn(viewModelScope)
+    onEach { state.value = it }.launchIn(scope.viewModelScope)
     return state
 }
 

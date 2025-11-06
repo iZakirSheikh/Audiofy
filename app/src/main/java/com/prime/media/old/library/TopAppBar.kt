@@ -202,7 +202,7 @@ fun CarousalAppBar(
     }
 }
 
-context(RowScope)
+context(scope: RowScope)
 @Suppress("NOTHING_TO_INLINE")
 @Composable
 private inline fun Actions() {

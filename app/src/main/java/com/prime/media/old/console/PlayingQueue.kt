@@ -223,27 +223,29 @@ private fun TopAppBar(
     )
 }
 
-context(LazyListScope)
+context(scope: LazyListScope)
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 @OptIn(ExperimentalFoundationApi::class)
 private inline fun ListHeader(
     @StringRes res: Int,
     key: String
 ) {
-    item(key = key, contentType = "header") {
-        Label(
-            text = stringResource(res),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = ContentPadding.normal,
-                    end = ContentPadding.normal,
-                    top = ContentPadding.large,
-                    bottom = ContentPadding.medium
-                )
-                .animateItem()
-        )
-    }
+   with(scope){
+       item(key = key, contentType = "header") {
+           Label(
+               text = stringResource(res),
+               modifier = Modifier
+                   .fillMaxWidth()
+                   .padding(
+                       start = ContentPadding.normal,
+                       end = ContentPadding.normal,
+                       top = ContentPadding.large,
+                       bottom = ContentPadding.medium
+                   )
+                   .animateItem()
+           )
+       }
+   }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
