@@ -28,12 +28,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
@@ -45,13 +42,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,9 +65,6 @@ import com.zs.core_ui.adaptive.BottomNavItem2
 import com.zs.core_ui.adaptive.NavRailItem
 import com.zs.core_ui.adaptive.NavigationItemDefaults
 import com.zs.core_ui.lottieAnimationPainter
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import androidx.compose.foundation.rememberScrollState as ScrollState
 import com.primex.core.textResource as stringResource
@@ -270,4 +266,40 @@ inline fun NavItem(
 ) = when (typeRail) {
     true -> NavRailItem(onClick, icon, label, modifier, checked, colors = colors)
     else -> BottomNavItem2(checked, onClick, icon, label, modifier.padding(horizontal = 4.dp),  colors = colors)
+}
+
+
+private val MASK_TOP_EDGE = listOf(Color.Black, Color.Transparent)
+private val MASK_BOTTOM_EDGE = listOf(Color.Transparent, Color.Black)
+/**
+ * Applies a fading edge effect to content.
+ *
+ * Creates a gradient that fades the content to transparency at the edges.
+ *
+ * @param colors Gradient colors, e.g., `listOf(backgroundColor, Color.Transparent)`. Horizontal if `vertical` is `false`.
+ * @param length Fade length from the edge.
+ * @param vertical `true` for top/bottom fade, `false` for left/right. Defaults to `true`.
+ * @return A [Modifier] with the fading edge effect.
+ */
+// TODO - Add logic to make fading edge apply/exclude content padding in real one.
+fun Modifier.fadingEdge2(
+    length: Dp = 10.dp,
+    vertical: Boolean = true,
+) = graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).drawWithContent {
+    drawContent()
+    drawRect(
+        Brush.verticalGradient(
+            MASK_TOP_EDGE, endY = length.toPx(), startY = 0f
+        ), blendMode = BlendMode.DstOut, size = size.copy(height = length.toPx())
+    )
+    drawRect(
+        brush = Brush.verticalGradient(
+            colors = MASK_BOTTOM_EDGE,
+            startY = size.height - length.toPx(),
+            endY = size.height
+        ),
+        //  topLeft = Offset(0f, size.height - length.toPx()),
+        // size = size.copy(height = length.toPx()),
+        blendMode = BlendMode.DstOut
+    )
 }

@@ -80,12 +80,6 @@ object AppConfig {
     @JvmField var fabLongPressLaunchConsole = true
 
     /**
-     * Toggles between SurfaceView and TextureView for video rendering.
-     * `true` enables SurfaceView, `false` enables TextureView. Defaults to `true`.
-     */
-    @JvmField var isSurfaceViewVideoRenderingPreferred = true
-
-    /**
      * Controls whether files displayed in directories (e.g., playlist members, audio files,
      * video files, artist-specific files) are grouped.
      *
@@ -185,7 +179,6 @@ object AppConfig {
         records[KEY_USE_SYSTEM_AUDIO_FX] = inAppAudioEffectsEnabled
         records[KEY_GRID_ITEM_SIZE_MULTIPLIER] = gridItemSizeMultiplier
         records[KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE] = fabLongPressLaunchConsole
-        records[KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED] = isSurfaceViewVideoRenderingPreferred
         records[KEY_FILE_GROUPING_ENABLED] = isFileGroupingEnabled
         records[KEY_SHOW_INAPP_WIDGET_DEDICATED_OPEN_CONSOLE_BTN] = showInAppWidgetOpenConsoleButton
         records[KEY_INAPP_WIDGET_LONG_PRESS_OPEN_CONFIG] = inAppWidgetLongPressOpenConfig
@@ -230,7 +223,6 @@ object AppConfig {
                 KEY_USE_SYSTEM_AUDIO_FX -> inAppAudioEffectsEnabled = value.toBoolean()
                 KEY_GRID_ITEM_SIZE_MULTIPLIER -> gridItemSizeMultiplier = value.toFloat()
                 KEY_FAB_LONG_PRESS_LAUNCH_CONSOLE -> fabLongPressLaunchConsole = value.toBoolean()
-                KEY_SURFACE_VIEW_VIDEO_RENDERING_PREFERRED -> isSurfaceViewVideoRenderingPreferred = value.toBoolean()
                 KEY_FILE_GROUPING_ENABLED -> isFileGroupingEnabled = value.toBoolean()
                 KEY_INAPP_WIDGET_LONG_PRESS_OPEN_CONFIG -> inAppWidgetLongPressOpenConfig = value.toBoolean()
                 KEY_SHOW_INAPP_WIDGET_DEDICATED_OPEN_CONSOLE_BTN -> showInAppWidgetOpenConsoleButton = value.toBoolean()

@@ -338,7 +338,7 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     // Settings
     composable(RouteSettings) {
         val viewModel = koinViewModel<SettingsViewModel>()
-        Settings(viewModel)
+        RouteSettings(viewModel)
     }
     // Albums
     composable(RouteAlbums) {

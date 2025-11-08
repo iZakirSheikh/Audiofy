@@ -1,3 +1,20 @@
+/*  Copyright (c) 2025 Zakir Sheikh
+*
+*  Created by Zakir Sheikh on $today.date.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*   https://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*/
+
 package com.prime.media.settings
 
 import android.content.Intent
@@ -18,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.Route
+import com.prime.media.common.SystemFacade
 import com.prime.media.settings.Settings.BLACKLISTED_FILES
 import com.prime.media.settings.Settings.FeedbackIntent
 import com.prime.media.settings.Settings.GitHubIssuesPage
@@ -91,8 +109,6 @@ val FontFamily.Companion.RobotoFontFamily get() = com.prime.media.settings.Robot
 val DancingScriptFontFamily = FontFamily("Dancing Script")
 val FontFamily.Companion.DancingScriptFontFamily get() = com.prime.media.settings.DancingScriptFontFamily
 
-object RouteSettings : Route
-
 /**
  * Represents the available strategies for extracting a source color accent to construct a theme.
  */
@@ -130,7 +146,6 @@ private val ColorSaver = object : IntSaver<Color> {
  *
  */
 object Settings {
-
     const val GOOGLE_STORE = "market://details?id=" + BuildConfig.APPLICATION_ID
     const val FALLBACK_GOOGLE_STORE =
         "http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID
@@ -274,5 +289,26 @@ object Settings {
 
 @Stable
 interface SettingsViewState {
+
+    val save: Boolean
+
+    var trashCanEnabled: Boolean
+    var preferCachedThumbnails: Boolean
+    var enabledBackgroundBlur: Boolean
+    var fontScale: Float
+    var minTrackLengthSecs: Int
+    var inAppAudioEffectsEnabled: Boolean
+    var gridItemSizeMultiplier: Float
+    var fabLongPressLaunchConsole: Boolean
+    var isFileGroupingEnabled: Boolean
+
+    /**
+     * Commits [AppConfig] to memory.
+     */
+    fun commit(facade: SystemFacade)
+
+    fun discard()
+
+    /** Sets the value of the given [key] to [value]. */
     fun <S, O> set(key: Key<S, O>, value: O)
 }

@@ -402,4 +402,11 @@
     \n       • Personalized advertising through trusted ad networks
     \nYour data <b>security</b> and <b>privacy</b> are our top priorities. Thank you for your support!
     </string>
+    <string name="msg_settings_upgrade_unlocked">You\’ve already unlocked this feature.</string>
+    <string name="pref_accent_nav"><b>Color NavBar</b>
+        <font color="grey">\nUse the accent color in the navigation bar.</font>
+    </string>
+    <string name="playback">Playback</string>
+    <string name="pref_fab_player_tap_behaviour"><b>FAB Player Tap\n</b><font color="grey" size="14">Tap the <b><i>FAB</i></b> Player to open <i>Console</i>.</font>
+    </string>
 </resources>
