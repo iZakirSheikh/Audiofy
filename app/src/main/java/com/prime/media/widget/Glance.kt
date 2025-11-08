@@ -19,12 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.os.BuildCompat
 import com.prime.media.BuildConfig
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
 import com.prime.media.old.console.Constraints
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.ContentPadding
@@ -176,12 +176,39 @@ fun Glance(
             // Scale animation on click.
             indication = scale(),
             // Toggle expanded state on click.
-            onClick = { expanded = !expanded },
+            onClick = {
+                val isFab = !expanded
+                when {
+                    // If currently viewing a video, toggle playback (play/pause).
+                    isFab && AppConfig.fabLongPressLaunchConsole -> expanded = true
+                    // If in FAB mode and the "long-press FAB opens console" setting is enabled,
+                    // expand the player to show the console.
+                    isFab && !AppConfig.fabLongPressLaunchConsole ->
+                        navController.navigate(Console.direction())
+                    // If in FAB mode but the "long-press FAB opens console" setting is disabled,
+                    // navigate directly to the console screen without expanding.
+                    else -> expanded = false
+                }
+            },
             // Navigate to console on long click if not expanded, otherwise collapse.
             onLongClick = {
-                if (!expanded)
-                    navController.navigate(Console.direction())
-                else expanded = false
+                val isFab = !expanded
+                // Determine if the player is currently in FAB (mini) mode.
+                // If not expanded, it's considered a FAB player.
+
+                when {
+                    isFab && AppConfig.fabLongPressLaunchConsole ->
+                        // If in FAB mode AND the user preference "long-press FAB opens console" is enabled,
+                        // navigate to the console screen.
+                        navController.navigate(Console.direction())
+
+                    isFab && !AppConfig.fabLongPressLaunchConsole ->
+                        // If in FAB mode but the preference is disabled,
+                        // expand the player to show the full-screen view instead.
+                        expanded = true
+                    // show config screen always
+                    else -> /*showConfigScreen = true*/ "dfd"
+                }
             }
         )
 

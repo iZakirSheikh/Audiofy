@@ -622,7 +622,7 @@ fun App(
     val portrait = clazz.widthRange < Range.Medium
     // Create only backdrop provider for android 12 onwards
     val provider: HazeState? = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> backdropProvider()
+        AppConfig.isBackgroundBlurEnabled -> backdropProvider()
         else -> null
     }
     // The navHost

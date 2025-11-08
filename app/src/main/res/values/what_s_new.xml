@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.11)</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.12)</b>
         <font color='grey'>
-            \n - Replaced the "Albums" tab with "Videos," accessible from the bottom navigation bar and library shortcuts.
-            \n - Improved the two-pane layout with smoother animations and better handling of screen cutouts (insets).
-            \n - Enhanced immersive mode to use swipe gestures for showing system bars, improving usability.
-            \n - Refined UI styling with more rounded corners for newly added items and improved shadows in the directory browser.
-            \n - Updated internal libraries for better performance and stability.
+            \n - Added a new experimental "Acrylic Blur" effect for a modern, semi-transparent UI. You can enable it in Settings.
+            \n - Tapping the mini-player (Floating Action Button) now expands it, while a long press takes you to the console. This behavior can be toggled in settings.
+            \n - Significantly improved app startup speed and overall performance by centralizing how settings are loaded.
+            \n - Improved handling of screen padding and system cutouts (notches/insets) for a more consistent look.
+            \n - Adopted the latest Kotlin features and updated internal libraries for better stability.
         </font>
     </string>
 

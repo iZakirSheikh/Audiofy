@@ -59,6 +59,7 @@ import com.prime.media.common.fadingEdge2
 import com.prime.media.common.rememberHazeState
 import com.primex.core.plus
 import com.primex.core.textResource
+import com.primex.core.thenIf
 import com.primex.material2.Text
 import com.primex.material2.appbar.TopAppBarDefaults
 import com.zs.core_ui.AppTheme
@@ -100,7 +101,7 @@ object RouteSettings : Route {
         }
         // obtain the padding of BottomNavBar/NavRail
         val inAppNavBarInsets = WindowInsets.contentInsets
-        val surface = rememberHazeState()
+        val surface = if (AppConfig.isBackgroundBlurEnabled) rememberHazeState() else null
         val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val colors = AppTheme.colors
 
@@ -146,7 +147,8 @@ object RouteSettings : Route {
                             contentDescription = null,
                             onClick = { facade.launch(Settings.GitHubIssuesPage) },
                         )
-                    }
+                    },
+                    backdropProvider = surface
                 )
             },
             // this will not be called when in single pane mode
@@ -196,13 +198,13 @@ object RouteSettings : Route {
                     // In immersive mode, add horizontal padding to prevent settings from touching the screen edges.
                     // Immersive layouts typically have a bottom app bar, so extra padding improves aesthetics.
                     // Non-immersive layouts only need vertical padding.
-                    contentPadding = Padding(horizontal = CP.large, CP.normal) +
+                    contentPadding = Padding(horizontal = CP.large, CP.large) +
                             (WindowInsets.contentInsets.union(WindowInsets.systemBars)
                                 .union(inAppNavBarInsets).only(
                                     WIS.Vertical
                                 )).asPaddingValues(),
                     modifier = Modifier
-                        .hazeSource(surface)
+                        .thenIf(surface != null){hazeSource(surface!!)}
                         .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                         .fadingEdge2(length = 56.dp),
                     content = {

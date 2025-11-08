@@ -262,7 +262,7 @@ fun <T> Directory(
 
     // Properties
     val observer = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> BackdropObserver()
+        AppConfig.isBackgroundBlurEnabled -> BackdropObserver()
         else -> null
     }
     // content

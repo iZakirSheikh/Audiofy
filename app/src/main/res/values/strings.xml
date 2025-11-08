@@ -409,4 +409,9 @@
     <string name="playback">Playback</string>
     <string name="pref_fab_player_tap_behaviour"><b>FAB Player Tap\n</b><font color="grey" size="14">Tap the <b><i>FAB</i></b> Player to open <i>Console</i>.</font>
     </string>
+    <string name="pref_acrylic_effect"><b>Acrylic Blur <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
+         <font color="grey" size="14">
+            \nEnable a Windows 11-style acrylic blur effect for the background. This feature is experimental and may impact performance.
+        </font>
+    </string>
 </resources>

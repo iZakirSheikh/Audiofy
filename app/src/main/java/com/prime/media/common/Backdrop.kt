@@ -40,6 +40,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 
 private const val TAG = "Backdrop"
 
@@ -48,7 +49,6 @@ private const val TAG = "Backdrop"
  */
 @Composable
 @NonRestartableComposable
-@RequiresApi(Build.VERSION_CODES.S)
 fun rememberHazeState() = remember(::HazeState)
 
 /**
@@ -174,6 +174,6 @@ fun Modifier.dynamicBackdrop(
     fallbackAccent: Color,
 ) = when (state) {
     null -> mist(fallbackContainerColor, fallbackAccent)
-    else -> hazeChild(state, style, { blurEnabled = true })
+    else -> hazeEffect(state, style, { blurEnabled = true })
 }
 
