@@ -82,7 +82,7 @@ fun Sponsor(modifier: Modifier = Modifier) {
         leading = {
             Surface(
                 color = AppTheme.colors.background(4.dp),
-                shape = AppTheme.shapes.large,
+                shape = AppTheme.shapes.compact,
                 modifier = Modifier.size(64.dp),
                 content = {
                     Icon(
@@ -128,7 +128,7 @@ fun Sponsor(modifier: Modifier = Modifier) {
                         else -> com.primex.material2.Button(
                             "Unlock Ad-free",
                             icon = painterResource(R.drawable.ic_remove_ads),
-                            onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_BUY_ME_COFFEE) },
+                            onClick = { facade.initiatePurchaseFlow(BuildConfig.IAP_NO_ADS) },
                             shape = AppTheme.shapes.compact,
                             elevation = null
                         )

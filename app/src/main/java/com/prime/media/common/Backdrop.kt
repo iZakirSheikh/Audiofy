@@ -21,14 +21,17 @@ package com.prime.media.common
 import android.graphics.BlurMaskFilter
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -36,6 +39,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.primex.core.ImageBrush
 import com.primex.core.visualEffect
+import com.zs.core_ui.Colors
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -50,6 +54,33 @@ private const val TAG = "Backdrop"
 @Composable
 @NonRestartableComposable
 fun rememberHazeState() = remember(::HazeState)
+
+/**
+ * Adds a subtle shine effect to components, particularly [Acrylic] ones,
+ * mimicking the gleaming edge of glass.
+ *
+ * This property defines a [BorderStroke] that uses a vertical gradient.
+ * The gradient's colors are determined by whether the current theme is light or dark.
+ * - In a light theme, it transitions from the `background` color to a slightly darker,
+ *   semi-transparent version of the `background`.
+ * - In a dark theme, it transitions from a semi-transparent gray to an even more
+ *   transparent gray.
+ *
+ * This creates a visual highlight, suggesting a light source reflecting off the edge
+ * of the component.
+ */
+val Colors.shine
+    @Composable @ReadOnlyComposable
+    get() = BorderStroke(
+        0.5.dp,
+        Brush.verticalGradient(
+            listOf(
+                if (isLight) background else Color.Gray.copy(0.24f),
+                if (isLight) background.copy(0.3f) else Color.Gray.copy(0.075f),
+            )
+        )
+    )
+
 
 /**
  * Constructs a regular style for light Theme.

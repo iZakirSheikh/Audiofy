@@ -48,32 +48,6 @@ import com.primex.material2.appbar.TopAppBarDefaults
 import com.primex.material2.appbar.TopAppBarScrollBehavior
 import com.primex.material2.appbar.TopAppBarStyle
 
-@Stable
-private fun TopAppBarStyle.contentColor(fraction: Float): Color {
-    return androidx.compose.ui.graphics.lerp(
-        contentColor,
-        scrolledContentColor,
-        FastOutLinearInEasing.transform(fraction)
-    )
-}
-
-@Stable
-private fun TopAppBarStyle.titleTextStyle(fraction: Float): TextStyle {
-    return androidx.compose.ui.text.lerp(
-        titleTextStyle,
-        scrolledTitleTextStyle,
-        FastOutLinearInEasing.transform(fraction)
-    )
-}
-
-@Stable
-private fun TopAppBarStyle.containerColor(fraction: Float): Color {
-    return androidx.compose.ui.graphics.lerp(
-        containerColor,
-        scrolledContainerColor,
-        FastOutLinearInEasing.transform(fraction)
-    )
-}
 
 @Composable
 fun ScenicAppBar(

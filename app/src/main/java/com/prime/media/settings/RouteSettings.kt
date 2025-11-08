@@ -47,12 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.prime.media.R
-import com.prime.media.common.FloatingTopAppBar
+import com.prime.media.common.FloatingLargeTopAppBar
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.common.fadingEdge2
@@ -70,6 +67,7 @@ import com.zs.core_ui.adaptive.HorizontalTwoPaneStrategy
 import com.zs.core_ui.adaptive.SinglePaneStrategy
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.contentInsets
+import com.zs.core_ui.sharedBounds
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import androidx.compose.foundation.layout.WindowInsetsSides as WIS
@@ -114,7 +112,7 @@ object RouteSettings : Route {
         TwoPane(
             strategy = strategy,
             topBar = {
-                FloatingTopAppBar(
+                FloatingLargeTopAppBar(
                     title = {
                         Text(
                             text = textResource(R.string.settings),
@@ -124,8 +122,8 @@ object RouteSettings : Route {
                            // overflow = TextOverflow.Ellipsis
                         )
                     },
-                   // scrollBehavior = topAppBarScrollBehavior,
-                    windowInsets = WindowInsets.systemBars.only(WIS.Top),
+                    scrollBehavior = topAppBarScrollBehavior,
+                    insets = WindowInsets.systemBars.only(WIS.Top),
                     navigationIcon = {
                         Icon(
                             Icons.Default.Settings,
@@ -148,7 +146,7 @@ object RouteSettings : Route {
                             onClick = { facade.launch(Settings.GitHubIssuesPage) },
                         )
                     },
-                    backdropProvider = surface
+                    backdrop = surface,
                 )
             },
             // this will not be called when in single pane mode
@@ -184,6 +182,7 @@ object RouteSettings : Route {
                 val facade = LocalSystemFacade.current
                 FloatingActionButton(
                     onClick = { viewState.commit(facade) },
+                    shape = AppTheme.shapes.compact,
                     modifier = Modifier.windowInsetsPadding(inAppNavBarInsets.union(WindowInsets.navigationBars)),
                     content = {
                         Icon(Icons.Outlined.Save, contentDescription = null)

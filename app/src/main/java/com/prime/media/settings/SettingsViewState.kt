@@ -43,6 +43,16 @@ import com.prime.media.settings.Settings.GithubIntent
 import com.prime.media.settings.Settings.PrivacyPolicyIntent
 import com.prime.media.settings.Settings.TelegramIntent
 import com.prime.media.settings.Settings.mapKeyToShape
+import com.primex.core.Amber
+import com.primex.core.BlackOlive
+import com.primex.core.BlueLilac
+import com.primex.core.ClaretViolet
+import com.primex.core.MetroGreen
+import com.primex.core.MetroGreen2
+import com.primex.core.OliveYellow
+import com.primex.core.RedViolet
+import com.primex.core.SepiaBrown
+import com.primex.core.SkyBlue
 import com.primex.core.shapes.SquircleShape
 import com.primex.preferences.IntSaver
 import com.primex.preferences.Key
@@ -196,8 +206,8 @@ object Settings {
     private val ArtworkShapeScopedRect = NotchedCornerShape(30.dp)
     private val ArtworkShapeSquircle = SquircleShape(0.7f)
 
-    val LightAccentColor = Color(0xFF514700)
-    val DarkAccentColor = Color(0xFFD8A25E)
+    val LightAccentColor = Color.ClaretViolet
+    val DarkAccentColor = Color.OliveYellow
 
     val NIGHT_MODE =
         stringPreferenceKey(
@@ -275,7 +285,7 @@ object Settings {
         stringPreferenceKey("${PREFIX}_glance", BuildConfig.IAP_PLATFORM_WIDGET_IPHONE)
     val KEY_LAUNCH_COUNTER =
         intPreferenceKey("Audiofy_launch_counter")
-    val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", false)
+    val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
 
     /** @see mapKeyToShape */
     val ARTWORK_SHAPE_KEY =
