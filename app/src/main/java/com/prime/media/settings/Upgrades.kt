@@ -106,7 +106,7 @@ private fun Upgrade(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = CP.medium),
-                    style = AppTheme.typography.headlineMedium,
+                    style = AppTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily.OutfitFontFamily,
                     maxLines = 1,
@@ -204,7 +204,7 @@ fun Upgrades(modifier: Modifier = Modifier) {
                         return@Upgrade
                     }
                     // Otherwise (product is purchased or not a dynamic feature that needs installation), do nothing
-                    facade.showToast(R.string.msg_settings_upgrade_unlocked)
+                    facade.showPlatformToast(R.string.msg_settings_upgrade_unlocked)
                 }
             )
         }

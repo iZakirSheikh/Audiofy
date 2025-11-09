@@ -72,6 +72,7 @@ import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.ColorLens
@@ -154,6 +155,7 @@ import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.brightness
 import com.prime.media.common.preference
+import com.prime.media.common.shine
 import com.prime.media.common.volume
 import com.prime.media.old.common.AnimatedIconButton
 import com.prime.media.old.common.Artwork
@@ -196,6 +198,7 @@ import com.zs.core_ui.LocalWindowSize
 import com.zs.core_ui.MediumDurationMills
 import com.zs.core_ui.None
 import com.zs.core_ui.Range
+import com.zs.core_ui.TonalIconButton
 import com.zs.core_ui.WindowSize
 import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
@@ -1361,23 +1364,12 @@ private fun MainContent(
         )
 
         // Close Button
-        OutlinedButton2(
+        TonalIconButton(
+            icon = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
             onClick = onNavigateBack,
-            modifier = Modifier
-                .scale(0.8f)
-                .layoutId(Constraints.ID_CLOSE_BTN),
-            colors = ButtonDefaults.outlinedButtonColors(
-                backgroundColor = Color.Transparent,
-                accent
-            ),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            shape = RoundedCornerShape_24,
-            content = {
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = "Collapse"
-                )
-            },
+            border = AppTheme.colors.shine,
+            contentDescription = null,
+            modifier = Modifier.layoutId(Constraints.ID_CLOSE_BTN)
         )
 
         // Artwork

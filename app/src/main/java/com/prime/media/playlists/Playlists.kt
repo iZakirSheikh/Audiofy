@@ -219,6 +219,31 @@ fun Playlists(viewState: PlaylistsViewState) {
             }
         )
     }
+
+    // NewPlaylist
+    if (showNewPlaylistDialog)
+        NewPlaylistDialog (
+            highlighted,
+            onConfirm = { newPlaylist ->
+                // Callback function executed when the user confirms the new/updated playlist
+                val isUpdate =
+                    highlighted != null // Determine if we're updating an existing playlist
+                highlighted = null // Reset the highlighted playlist after confirmation
+                if (newPlaylist == null) {
+                    // If the newPlaylist is null (user canceled), hide the secondary pane and return
+                    showNewPlaylistDialog = false
+                    return@NewPlaylistDialog
+                }
+                // If it's an update, call viewState.update(); otherwise, call viewState.create()
+                when {
+                    isUpdate -> viewState.update(newPlaylist)
+                    else -> viewState.create(newPlaylist)
+                }
+                // Hide the secondary pane after creating or updating the playlist
+                showNewPlaylistDialog = false
+            },
+        )
+
     // Actual Content
     TwoPane(
         spacing = CP.normal,
@@ -233,41 +258,6 @@ fun Playlists(viewState: PlaylistsViewState) {
             )
         },
         modifier = Modifier.animateContentSize(),
-        dialog = composableOrNull(showNewPlaylistDialog) {
-            Box(
-                modifier = Modifier
-                    .clickable(null, null){ showNewPlaylistDialog = false }
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .animateContentSize()
-                    .fillMaxSize(),
-                contentAlignment = clazz.dialogAlignment,
-                content = {
-                    NewPlaylist(
-                        highlighted,
-                        onConfirm = { newPlaylist ->
-                            // Callback function executed when the user confirms the new/updated playlist
-                            val isUpdate =
-                                highlighted != null // Determine if we're updating an existing playlist
-                            highlighted = null // Reset the highlighted playlist after confirmation
-                            if (newPlaylist == null) {
-                                // If the newPlaylist is null (user canceled), hide the secondary pane and return
-                                showNewPlaylistDialog = false
-                                return@NewPlaylist
-                            }
-                            // If it's an update, call viewState.update(); otherwise, call viewState.create()
-                            when {
-                                isUpdate -> viewState.update(newPlaylist)
-                                else -> viewState.create(newPlaylist)
-                            }
-                            // Hide the secondary pane after creating or updating the playlist
-                            showNewPlaylistDialog = false
-                        },
-                        modifier = Modifier.safeContentPadding()
-                            .widthIn(max=360.dp)
-                    )
-                }
-            )
-        },
         primary = {
             val data by viewState.data.collectAsState(null)
             LazyVerticalGrid(
