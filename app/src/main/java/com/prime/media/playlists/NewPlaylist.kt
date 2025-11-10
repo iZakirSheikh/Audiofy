@@ -94,7 +94,7 @@ fun NewPlaylistDialog(
         title = {
             Text(
                 textResource(R.string.scr_new_playlists_title),
-                fontWeight = FontWeight.Light,
+                style = AppTheme.typography.titleMedium,
                 lineHeight = 20.sp,
                 maxLines = 2
             )

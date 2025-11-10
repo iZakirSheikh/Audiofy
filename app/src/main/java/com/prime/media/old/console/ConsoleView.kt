@@ -575,7 +575,7 @@ private fun PlayButton(
         // The tint in this case is derived from the LocalContentColor.
         PLAY_BUTTON_STYLE_SIMPLE ->
             IconButton(
-                modifier = modifier.scale(1.25f),
+                modifier = modifier,
                 onClick = onClick,
                 painter = lottieAnimationPainter(
                     R.raw.lt_play_pause,
@@ -976,19 +976,21 @@ private fun Options(
     PlaybackSpeed(
         expanded = expanded == 2,
         value = state.playbackSpeed,
-        onValueChange = {
-            if (it != -1f)
+        onRequestChange = {
             // If the value is -1f, it means a dismiss request
-                state.playbackSpeed = it
-            state.ensureAlwaysVisible(false)
-            expanded = 0
+            if (it == -1f) {
+                state.ensureAlwaysVisible(false)
+                expanded = 0
+                return@PlaybackSpeed
+            }
+            state.playbackSpeed = it
         }
     )
 
     // Sleep Timer.
     SleepTimer(
         expanded = expanded == 3,
-        onValueChange = {
+        onRequestChange = {
             if (it != -2L)
                 state.sleepAfterMills = it
             expanded = 0
@@ -1674,7 +1676,7 @@ fun Console(state: Console) {
                     onRequest = onRequest,
                     modifier = Modifier
                         .then(
-                            when  {
+                            when {
                                 detailsOf == DETAILS_OF_NONE -> Modifier
                                 !windowSize.isMobilePortrait -> Modifier.clip(PrimaryHorizontal)
                                 else -> Modifier.clip(PrimaryVertical)
@@ -1736,7 +1738,8 @@ fun Console(state: Console) {
         displayFeatures = if (isInInspectionMode || !isInTwoPaneMode) emptyList() else calculateDisplayFeatures(
             activity = context.findActivity()
         ),
-        modifier = Modifier.sharedBounds(Constraints.ID_BACKGROUND)
+        modifier = Modifier
+            .sharedBounds(Constraints.ID_BACKGROUND)
             .background(Color(0xFF0E0E0F)),
         // The second pane is the details pane, which can show different content based on the
         // detailsOf value

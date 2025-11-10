@@ -77,7 +77,7 @@ private val Colors.shine
     )
 
 private val ItemSpace = Arrangement.spacedBy(8.dp)
-private val AlertDialogShape = RoundedCornerShape(10)
+private val AlertDialogShape = RoundedCornerShape(22.dp)
 
 /**
  * A composable function that displays a Dialog if the `expanded` parameter is true.

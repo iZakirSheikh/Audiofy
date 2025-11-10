@@ -414,4 +414,5 @@
             \nEnable a Windows 11-style acrylic blur effect for the background. This feature is experimental and may impact performance.
         </font>
     </string>
+    <string name="presets">Presets</string>
 </resources>

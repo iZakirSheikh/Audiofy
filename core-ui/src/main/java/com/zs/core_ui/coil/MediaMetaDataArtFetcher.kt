@@ -34,6 +34,7 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.request.Options
 import coil.size.Dimension
+import kotlin.coroutines.cancellation.CancellationException
 
 private const val TAG = "MediaMetaDataArtFetcher"
 
@@ -118,7 +119,7 @@ class MediaMetaDataArtFetcher(
         return MediaMetadataRetriever().use { retriever ->
             retriever.setDataSource(data)
             // fallback to default if null
-            val bytes = retriever.embeddedPicture ?: return null
+            val bytes = retriever.embeddedPicture ?: throw CancellationException("No embedded artwork found")
             var isSampled: Boolean
             val bitmap = BitmapFactory.Options().let {
                 // Set inJustDecodeBounds to true to determine the image dimensions without loading it.

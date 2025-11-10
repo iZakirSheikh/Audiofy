@@ -182,7 +182,7 @@ object RouteSettings : Route {
                 val facade = LocalSystemFacade.current
                 FloatingActionButton(
                     onClick = { viewState.commit(facade) },
-                    shape = AppTheme.shapes.compact,
+                    shape = RoundedCornerShape(25),
                     modifier = Modifier.windowInsetsPadding(inAppNavBarInsets.union(WindowInsets.navigationBars)),
                     content = {
                         Icon(Icons.Outlined.Save, contentDescription = null)
