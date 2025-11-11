@@ -1,5 +1,5 @@
-- New experimental "Acrylic Blur" effect for a modern, semi-transparent UI (enable in Settings).
-- Tap the mini-player to expand, long-press for console (toggle in Settings).
-- Significantly improved startup speed and overall performance.
-- Better handling of screen padding and system cutouts (notches/insets).
-- Updated internal libraries and adopted latest Kotlin features for improved stability.
+- Modernized "Playback Speed", "Sleep Timer", and "New Playlist" dialogs with an edge-to-edge design.
+- The "Playback Speed" dialog now includes a precise slider (0.25x-8.0x), step buttons, and presets for quick adjustments.
+- Refined various UI elements like buttons and corner radius's for a softer, more consistent look.
+- Improved artwork fetching logic to prevent incorrect caching of missing embedded art.
+- Enabled Gradle configuration cache to improve build performance.

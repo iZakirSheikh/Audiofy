@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.8.12)</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New (v3.9.0)</b>
         <font color='grey'>
-            \n - Added a new experimental "Acrylic Blur" effect for a modern, semi-transparent UI. You can enable it in Settings.
-            \n - Tapping the mini-player (Floating Action Button) now expands it, while a long press takes you to the console. This behavior can be toggled in settings.
-            \n - Significantly improved app startup speed and overall performance by centralizing how settings are loaded.
-            \n - Improved handling of screen padding and system cutouts (notches/insets) for a more consistent look.
-            \n - Adopted the latest Kotlin features and updated internal libraries for better stability.
+            \n - Revamped "Playback Speed", "Sleep Timer", and "New Playlist" dialogs with a modern, edge-to-edge design.
+            \n - The new "Playback Speed" dialog features a precise slider (0.25x to 8.0x), increase/decrease buttons, and quick-select presets.
+            \n - Introduced new UI components like `TonalIconButton` for better visual affordance.
+            \n - Refined various UI elements, including button styles and dialog corner radiuses, for a softer, more consistent look.
+            \n - Improved artwork fetching logic to prevent incorrect caching of missing embedded art.
+            \n - Enabled Gradle configuration cache to improve build performance.
         </font>
     </string>
 
