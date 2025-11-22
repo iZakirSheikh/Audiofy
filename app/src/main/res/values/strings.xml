@@ -337,9 +337,9 @@
         \nAdjust the space each item takes up in the grid layout.
           </font>
     </string>
-    <string name="pref_colorization_strategy"><b>Auto Colorize <sup><font color='#ae1c27' size='10'><b>Beta</b></font></sup></b>
+    <string name="pref_colorization_strategy"><b>Accent Color</b>
          <font color="grey" size="14">
-        \nDynamically generate a theme based on the colors of the currently playing media artwork.
+        \nSelect your preferred accent colorization strategy, such as manual, dynamic, artwork, or default.
           </font>
     </string>
     <string name="pref_privacy_policy"><b>Privacy Policy</b>
@@ -351,7 +351,7 @@
     <!-- Appends any number formatted to int; denotes no. of seconds. -->
     <string name="postfix_s_d">%1$ds</string>
     <string name="system">System</string>
-    <string name="postfix_x_f">%.1fx</string>
+    <string name="postfix_x_f">%.2fx</string>
     <string name="version">Version</string>
     <string name="version_info_s">Version: %1$s</string>
     <string name="join_the_beta">Join the Beta</string>

@@ -21,6 +21,7 @@
 package com.prime.media.personalize
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -37,7 +38,9 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
@@ -266,7 +269,6 @@ fun Personalize(viewState: ViewState) {
     TwoPane(
         spacing = hPadding,
         strategy = strategy,
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 behaviour = topAppBarScrollBehavior,
@@ -282,6 +284,7 @@ fun Personalize(viewState: ViewState) {
                 verticalArrangement = ComponentSpacing,
                 contentPadding = cPadding + WindowInsets.navigationBars.asPaddingValues(),
                 modifier = Modifier
+                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.contentInsets)
             ) {
@@ -339,6 +342,14 @@ fun Personalize(viewState: ViewState) {
             if (isMobilePortrait) return@TwoPane
             Column (
                 content = {
+                    Header(
+                        textResource(R.string.fine_tuning),
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                    Tweaks(viewState, modifier = Modifier.fillMaxWidth())
 
                     Header(
                         textResource(R.string.personalize_scr_artwork_style),
@@ -356,19 +367,13 @@ fun Personalize(viewState: ViewState) {
                         modifier = Modifier.padding(top = CP.medium)
                     )
 
-                    Header(
-                        textResource(R.string.fine_tuning),
-                        drawDivider = true,
-                        color = AppTheme.colors.accent,
-                        style = AppTheme.typography.bodyMedium,
-                        contentPadding = HeaderPadding
-                    )
-                    Tweaks(viewState, modifier = Modifier.fillMaxWidth())
+
 
                 },
                 modifier = Modifier
                     .widthIn(max = SecondaryPaneMaxWidth)
                     .systemBarsPadding()
+                    .verticalScroll(rememberScrollState())
             )
         }
     )

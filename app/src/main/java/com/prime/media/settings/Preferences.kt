@@ -19,11 +19,19 @@
 package com.prime.media.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Deck
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
@@ -34,8 +42,13 @@ import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
@@ -44,11 +57,15 @@ import com.primex.core.textArrayResource
 import com.primex.core.textResource
 import com.primex.material2.DropDownPreference
 import com.primex.material2.Label
+import com.primex.material2.Preference
 import com.primex.material2.SliderPreference
 import com.primex.material2.SwitchPreference
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ColorPickerDialog
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.Header
 import com.zs.core_ui.NightMode
+import com.zs.core_ui.ToggleButton
 import kotlin.math.roundToInt
 import com.prime.media.settings.RouteSettings as RS
 
@@ -163,18 +180,82 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
         )
     }
 
-    // Colorization Strategy
+    // Accent Colorization Strategy
     item(contentType = CONTENT_TYPE_PREF) {
-        val colorizationStrategy by preference(Settings.COLORIZATION_STRATEGY)
-        SwitchPreference(
-            checked = colorizationStrategy == ColorizationStrategy.Wallpaper,
-            text = textResource(R.string.pref_colorization_strategy),
-            onCheckedChange = { should: Boolean ->
-                val strategy =
-                    if (should) ColorizationStrategy.Wallpaper else ColorizationStrategy.Default
-                viewState.set(Settings.COLORIZATION_STRATEGY, strategy)
+        Preference(
+            textResource(R.string.pref_colorization_strategy),
+            widget = {
+                val accent = AppTheme.colors.accent
+                androidx.compose.foundation.Canvas(Modifier.size(45.dp)) {
+                    drawCircle(
+                        accent
+                    )
+                }
             },
             icon = Icons.Default.ColorLens,
+            footer = {
+                Row(
+                    modifier = Modifier.padding(top = ContentPadding.normal, start = 40.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(ContentPadding.medium)
+                ) {
+
+                    var expanded by remember { mutableStateOf(false) }
+                    val isLightTheme = AppTheme.colors.isLight
+                    ColorPickerDialog(
+                        expanded,
+                        AppTheme.colors.accent,
+                        onColorPicked = { pickedColor ->
+                            val key = if (isLightTheme) Settings.COLOR_ACCENT_LIGHT else Settings.COLOR_ACCENT_DARK
+                            if (pickedColor.isSpecified)
+                                viewState.set(key, pickedColor)
+                            expanded = false
+                        }
+                    )
+
+                    // Manual
+                    val current by preference(Settings.COLORIZATION_STRATEGY)
+                    ToggleButton(
+                        selected = current == ColorizationStrategy.Manual,
+                        onClick = {
+                            if (current == ColorizationStrategy.Manual)
+                                expanded = true
+                            // TODO - Allow only users to use this strategy if they have paid version.
+                            viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Manual)
+                        },
+                        label = textResource(R.string.manual),
+                        icon = Icons.Default.ColorLens,
+                    )
+
+                    // Default
+                    ToggleButton(
+                        selected = current == ColorizationStrategy.Default,
+                        onClick = {  viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Default) },
+                        label = textResource(R.string.defult),
+                        icon = Icons.Default.Deck,
+                    )
+
+                    // Wallpaper
+                    ToggleButton(
+                        selected = current == ColorizationStrategy.Wallpaper,
+                        onClick = {
+                            viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Wallpaper)
+                        },
+                        label = textResource(R.string.dynamic),
+                        icon = Icons.Default.Devices,
+                    )
+
+                    // Artwork
+                    ToggleButton(
+                        selected = current == ColorizationStrategy.Artwork,
+                        onClick = {  viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Artwork) },
+                        label = textResource(R.string.album_art),
+                        icon = Icons.Default.Image
+                    )
+
+                    Spacer(Modifier.weight(1f))
+                }
+            },
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
         )
     }
@@ -185,20 +266,20 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
         SliderPreference(
             value = viewState.fontScale,
             text = textResource(R.string.pref_font_scale),
-            valueRange = 0.7f..2f,
-            steps = 12,   // steps=(max−min)stepSize−1/ (2.0 - 0.7) / 0.1 - 1 =  12 steps
+            valueRange = 0.75f..1.5f,
+            steps = 14,   // steps=(max−min)stepSize−1/ (1.5 - 0.8) / 0.05 - 1 =  12 steps
             icon = Icons.Outlined.FormatSize,
             preview = {
                 Label(
-                    text = if (it < 0.76f) textResource(R.string.system) else textResource(
-                        R.string.postfix_x_f,
-                        it
-                    ),
+                    text = if (it <= 0.75f)
+                        textResource(R.string.system)
+                    else
+                        textResource(R.string.postfix_x_f, it),
                     fontWeight = FontWeight.Bold
                 )
             },
             onRequestChange = { value: Float ->
-                val newValue = if (value < 0.76f) -1f else value
+                val newValue = if (value <= 0.75f) -1f else value
                 viewState.fontScale = newValue
             },
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
@@ -211,8 +292,8 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
         SliderPreference(
             value = viewState.gridItemSizeMultiplier,
             text = textResource(R.string.pref_grid_item_size_multiplier),
-            valueRange = 0.6f..2f,
-            steps = 13, // (2.0 - 0.7) / 0.1 = 13 steps
+            valueRange = 0.8f..1.6f,
+            steps = 15, // (2.0 - 0.7) / 0.1 = 13 steps
             icon = Icons.Outlined.Dashboard,
             preview = {
                 Label(
