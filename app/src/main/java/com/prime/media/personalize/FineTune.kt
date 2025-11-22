@@ -25,8 +25,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -76,7 +79,7 @@ private val Keys = arrayOf(
     BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT
 )
 
-private val MAX_WIDTH = 120.dp
+private val MAX_WIDTH = 90.dp
 
 @Composable
 fun ArtworkShapeRow(
@@ -110,7 +113,7 @@ fun ArtworkShapeRow(
                 key = { it },
                 itemContent = { key ->
                     Column(
-                        modifier = Modifier.widthIn(max = MAX_WIDTH),
+                        modifier = Modifier.width(MAX_WIDTH),
                         content = {
                             val shape = Settings.mapKeyToShape(key)
                             AsyncImage(
@@ -118,7 +121,7 @@ fun ArtworkShapeRow(
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(MAX_WIDTH)
+                                    .aspectRatio(1f)
                                     .border(1.dp, LocalContentColor.current, shape)
                                     .shadow(ContentElevation.medium, shape)
                                     .visualEffect(ImageBrush.NoiseBrush, 0.5f, true)

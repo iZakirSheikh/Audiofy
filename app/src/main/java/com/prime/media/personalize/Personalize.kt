@@ -22,6 +22,7 @@ package com.prime.media.personalize
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -259,6 +262,7 @@ fun Personalize(viewState: ViewState) {
         activity.paymaster.details.map { it.associateBy { it.id } }
     }.collectAsState(emptyMap())
     // The Actual Content
+    val state by PlaybackController.collectNowPlayingAsState()
     TwoPane(
         spacing = hPadding,
         strategy = strategy,
@@ -273,7 +277,6 @@ fun Personalize(viewState: ViewState) {
         primary = {
             // The selected Widget
             val selected by preference(Settings.GLANCE)
-            val state by PlaybackController.collectNowPlayingAsState()
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = ComponentSpacing,
@@ -283,36 +286,38 @@ fun Personalize(viewState: ViewState) {
                     .windowInsetsPadding(WindowInsets.contentInsets)
             ) {
                 // Tweaks
-                item() {
-                    Header(
-                        stringResource(R.string.fine_tuning),
-                        drawDivider = true,
-                        color = AppTheme.colors.accent,
-                        style = AppTheme.typography.bodyMedium,
-                        contentPadding = HeaderPadding
-                    )
-                }
-                item() { Tweaks(viewState, modifier = Modifier.fillMaxWidth()) }
+                if (isMobilePortrait) {
+                    item() {
+                        Header(
+                            stringResource(R.string.fine_tuning),
+                            drawDivider = true,
+                            color = AppTheme.colors.accent,
+                            style = AppTheme.typography.bodyMedium,
+                            contentPadding = HeaderPadding
+                        )
+                    }
+                    item() { Tweaks(viewState, modifier = Modifier.fillMaxWidth()) }
 
-                // Artwork Shapes
-                item() {
-                    Header(
-                        textResource(R.string.personalize_scr_artwork_style),
-                        drawDivider = true,
-                        color = AppTheme.colors.accent,
-                        style = AppTheme.typography.bodyMedium,
-                        contentPadding = HeaderPadding
-                    )
-                }
-                item {
-                    val selected by preference(Settings.ARTWORK_SHAPE_KEY)
-                    ArtworkShapeRow(
-                        state.artwork,
-                        selected,
-                        data,
-                        onRequestApply = viewState::setArtworkShapeKey,
-                        modifier = Modifier.padding(top = CP.medium)
-                    )
+                    // Artwork Shapes
+                    item() {
+                        Header(
+                            textResource(R.string.personalize_scr_artwork_style),
+                            drawDivider = true,
+                            color = AppTheme.colors.accent,
+                            style = AppTheme.typography.bodyMedium,
+                            contentPadding = HeaderPadding
+                        )
+                    }
+                    item {
+                        val selected by preference(Settings.ARTWORK_SHAPE_KEY)
+                        ArtworkShapeRow(
+                            state.artwork,
+                            selected,
+                            data,
+                            onRequestApply = viewState::setArtworkShapeKey,
+                            modifier = Modifier.padding(top = CP.medium)
+                        )
+                    }
                 }
 
                 // Widgets
@@ -329,6 +334,42 @@ fun Personalize(viewState: ViewState) {
                 // emit widgets
                 widgets(state, selected, data, onRequestApply = viewState::setInAppWidget)
             }
+        },
+        secondary = {
+            if (isMobilePortrait) return@TwoPane
+            Column (
+                content = {
+
+                    Header(
+                        textResource(R.string.personalize_scr_artwork_style),
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                    val selected by preference(Settings.ARTWORK_SHAPE_KEY)
+                    ArtworkShapeRow(
+                        state.artwork,
+                        selected,
+                        data,
+                        onRequestApply = viewState::setArtworkShapeKey,
+                        modifier = Modifier.padding(top = CP.medium)
+                    )
+
+                    Header(
+                        textResource(R.string.fine_tuning),
+                        drawDivider = true,
+                        color = AppTheme.colors.accent,
+                        style = AppTheme.typography.bodyMedium,
+                        contentPadding = HeaderPadding
+                    )
+                    Tweaks(viewState, modifier = Modifier.fillMaxWidth())
+
+                },
+                modifier = Modifier
+                    .widthIn(max = SecondaryPaneMaxWidth)
+                    .systemBarsPadding()
+            )
         }
     )
 }
