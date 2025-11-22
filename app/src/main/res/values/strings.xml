@@ -415,4 +415,10 @@
         </font>
     </string>
     <string name="presets">Presets</string>
+    <string name="msg_promotion_one_player_app"><b>🚀 New App Alert!</b>
+        <font color='grey'>\nSay hello to <b>One Player</b> — the next evolution of <b>Audiofy</b>.
+            Enjoy a powerful, all‑in‑one offline media player that\’s more robust, compact, and feature‑rich.
+        </font>
+</string>
+
 </resources>

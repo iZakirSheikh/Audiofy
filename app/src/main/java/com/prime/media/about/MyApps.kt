@@ -51,6 +51,11 @@ private typealias App = Triple<String, String, String>
 
 private val MyAppList = listOf(
     App(
+        "One Player",
+        "https://lh3.googleusercontent.com/FSYnTtWc0vdQPgLq2bMv9IMyKy45EKR4AI0Y-90hCuNhfzwfy1SEXAoPuZhijl9JoMIqKK1ipa8ZzJUdFsqeY8k",
+        "com.googol.android.apps.oneplayer"
+    ),
+    App(
         "Unit Converter",
         "https://play-lh.googleusercontent.com/TtUj94noX7g5B6Vs84A2PpVSCreYWVye5mHz32mSMHXCojT0xxDRtXBwXbc1q42AaA=s256-rw",
         "com.prime.toolz2"
