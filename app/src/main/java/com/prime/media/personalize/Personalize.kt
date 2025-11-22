@@ -22,7 +22,6 @@ package com.prime.media.personalize
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,8 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -285,34 +282,6 @@ fun Personalize(viewState: ViewState) {
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.contentInsets)
             ) {
-                if (isMobilePortrait) {
-                    item(
-                        contentType = "header",
-                        content = {
-                            Header(
-                                stringResource(R.string.upgrades),
-                                drawDivider = true,
-                                color = AppTheme.colors.accent,
-                                style = AppTheme.typography.bodyMedium,
-                                contentPadding = HeaderPadding
-                            )
-                        }
-                    )
-                    item("upgrades", content = { Upgrades(data) })
-                }
-
-                // Colorization Strategy
-                item() {
-                    Header(
-                        stringResource(R.string.accent_color),
-                        drawDivider = true,
-                        color = AppTheme.colors.accent,
-                        style = AppTheme.typography.bodyMedium,
-                        contentPadding = HeaderPadding
-                    )
-                }
-                item() { ColorizationStrategyRow(viewState) }
-
                 // Tweaks
                 item() {
                     Header(
@@ -360,24 +329,6 @@ fun Personalize(viewState: ViewState) {
                 // emit widgets
                 widgets(state, selected, data, onRequestApply = viewState::setInAppWidget)
             }
-        },
-        secondary = {
-            if (isMobilePortrait) return@TwoPane
-            Column(
-                content = {
-                    Header(
-                        textResource(R.string.upgrades),
-                        drawDivider = true,
-                        color = AppTheme.colors.accent,
-                        style = AppTheme.typography.bodyMedium,
-                        contentPadding = HeaderPadding
-                    )
-                    Upgrades(data)
-                },
-                modifier = Modifier
-                    .widthIn(max = SecondaryPaneMaxWidth)
-                    .systemBarsPadding()
-            )
         }
     )
 }

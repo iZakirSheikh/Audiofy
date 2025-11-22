@@ -14,9 +14,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Switch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BorderStyle
-import androidx.compose.material.icons.outlined.ColorLens
-import androidx.compose.material.icons.outlined.RadioButtonChecked
-import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Shower
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,12 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.common.preference
 import com.prime.media.settings.Settings
-import com.primex.core.textResource
-import com.primex.material2.DropDownMenuItem
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
-import com.primex.core.rememberVectorPainter as Painter
 
 
 private val SPACE = Arrangement.spacedBy(ContentPadding.medium)
@@ -48,15 +42,7 @@ fun Tweaks(
         verticalArrangement = SPACE,
         horizontalArrangement = SPACE,
         content = {
-            val colorNavBar by preference(Settings.USE_ACCENT_IN_NAV_BAR)
-            Tweak(
-                colorNavBar,
-                stringResource(R.string.personalize_scr_navbar_accent_color),
-                icon = Icons.Outlined.ColorLens,
-                onClick = { state[Settings.USE_ACCENT_IN_NAV_BAR] = !colorNavBar }
-            )
-
-            val elevatedArtwork by preference(Settings.ARTWORK_ELEVATED)
+           val elevatedArtwork by preference(Settings.ARTWORK_ELEVATED)
             Tweak(
                 elevatedArtwork,
                 stringResource(R.string.personalize_scr_elevated_artwork),

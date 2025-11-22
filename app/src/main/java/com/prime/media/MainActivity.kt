@@ -337,14 +337,7 @@ class MainActivity :
             Log.e("AppRestart", "Unable to restart: Launch intent is null")
             return
         }
-        // restart just the current activity
-        if (!global) {
-            // Restart just the current activity
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-            finish()  // Finish the current activity to ensure it is restarted
-            return
-        }
+
         // Get the main component for the restart task
         val componentName = intent.component
         if (componentName == null) {
@@ -355,7 +348,8 @@ class MainActivity :
         val mainIntent = Intent.makeRestartActivityTask(componentName)
         startActivity(mainIntent)
         // Terminate the current process to complete the restart
-        Runtime.getRuntime().exit(0)
+        if (global) Runtime.getRuntime().exit(0)
+        finish()
     }
 
     @Composable
