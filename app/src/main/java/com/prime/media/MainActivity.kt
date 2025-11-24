@@ -13,7 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Downloading
-import androidx.compose.material.icons.outlined.Whatshot
+import androidx.compose.material.icons.outlined.GetApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
@@ -57,6 +57,7 @@ import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
+import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.getText2
@@ -163,15 +164,13 @@ private val IAPs = arrayOf(
     BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT
 )
 
-/**
- * The number of messages available to be displayed to the user.
- *
- * Each number from 0 until [MESSAGE_COUNT] represents a unique message ID. This can be used
- * to randomly select a message after a fresh start (or a multiple of 3 fresh starts)
- * and display an indefinite message to the user, such as prompting them to purchase
- * a feature like an ad-free experience.
- */
-private const val MESSAGE_COUNT = 6
+// The maximum number of distinct promotional messages to display to the user.
+private const val MAX_PROMO_MESSAGES = 1
+
+// The number of app launches to skip between showing consecutive promotional messages.
+// After each promotional message is shown, the app will skip this many launches before
+// potentially showing another promotional message.
+private const val PROMO_SKIP_LAUNCHES = 3
 
 class MainActivity :
     ComponentActivity(),
@@ -613,6 +612,36 @@ class MainActivity :
         splitInstallManager.startInstall(request)
     }
 
+    private fun showPromoToast(index: Int, delay: Long = 5_000) {
+        // This function is designed to display promotional messages identified by index.
+        // - An index of 0 indicates the "What's New" message.
+        // - An index of 1 is used to promote the media player.
+        // If a message cannot be displayed for any reason, the index is incremented by 1 until the
+        // maximum index is reached.
+        lifecycleScope.launch {
+            if (delay > 0) delay(delay) // delay at least some
+            when(index){
+                // What's new
+                0 -> toastHostState.showToast(
+                    resources.getText2(R.string.what_s_new_latest),
+                    priority = Toast.PRIORITY_CRITICAL
+                )
+                // One player
+                1 -> {
+                    val result = toastHostState.showToast(
+                        message = resources.getText2(R.string.msg_promotion_one_player_app),
+                        icon = Icons.Outlined.GetApp,
+                        priority = Toast.PRIORITY_CRITICAL,
+                        action = resources.getText2(R.string.get),
+                        accent = Color.Amber
+                    )
+                    if (result == Toast.ACTION_PERFORMED)
+                        launchAppStore("com.googol.android.apps.oneplayer")
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The app has started from scratch if savedInstanceState is null.
@@ -662,23 +691,50 @@ class MainActivity :
                 if (response == Toast.ACTION_PERFORMED)
                     initiateFeatureInstall(details.dynamicFeatureRequest)
             }.launchIn(lifecycleScope)
-            // Display promotional messages on every third cold start
-            // show what's new message on click.
-            val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
-            val versionCode = BuildConfig.VERSION_CODE
+            // Promote media player on every 5th launch
+            // TODO - properly handle promotional content.
+            lifecycleScope.launch {
+                // Set consent (GDPR) and metadata (CCPA) based on user preference
+                val granted = AppConfig.isQueryingAppPackagesAllowed
+                advertiser.setConsent(granted)
+                advertiser.setMetaData("do_not_sell", if (!granted) "true" else "false")
 
-            // Set consent (GDPR) and metadata (CCPA) based on user preference
-            val granted = AppConfig.isQueryingAppPackagesAllowed
-            advertiser.setConsent(granted)
-            advertiser.setMetaData("do_not_sell", if (!granted) "true" else "false")
+                // Show "What's New" message if the app version has changed
+                val versionCode = BuildConfig.VERSION_CODE
+                val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
+                if (savedVersionCode != versionCode) {
+                    preferences[KEY_APP_VERSION_CODE] = versionCode
+                    showPromoToast(0) // What's new
+                    return@launch
+                }
 
-            if (savedVersionCode != versionCode) {
-                preferences[KEY_APP_VERSION_CODE] = versionCode
-                showToast(
-                    R.string.what_s_new_toast,
-                    priority = Toast.PRIORITY_HIGH,
-                    icon = Icons.Outlined.Whatshot
+                // Promotional messages are displayed only after the app has been launched
+                // more than 5 times (MIN_LAUNCHES_BEFORE_REVIEW).
+                // This ensures that users have had a chance to familiarize themselves with the app
+                // before being presented with these messages.
+                // An index of 0 is reserved for the "What's New" message and is handled separately.
+                // Promotional messages start with index 1.
+                // The index is calculated using the formula: (counter % MAX_PROMO_MESSAGES).coerceAtLeast(1).
+                // Each message is skipped by PROMO_SKIP_LAUNCHES number of launches.
+                val counter = preferences(Settings.KEY_LAUNCH_COUNTER) ?: 0
+                if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
+                    return@launch
+                val newCounter = counter - MIN_LAUNCHES_BEFORE_REVIEW
+                val interval = PROMO_SKIP_LAUNCHES + 1
+                // This line calculates which promotional message to show from a rotating set.
+                Log.d(
+                    TAG,
+                    "Promo(counter=$counter," +
+                            " interval=$interval," +
+                            " newCounter=$newCounter," +
+                            " skip = ${newCounter % interval}," +
+                            " index = ${(newCounter / interval) % MAX_PROMO_MESSAGES + 1} ) "
                 )
+                if (newCounter % interval == 0) {
+                    val index = (newCounter / interval) % MAX_PROMO_MESSAGES + 1
+                    Log.d(TAG, "onCreate: $index")
+                    showPromoToast(index)
+                }
             }
         }
         // Set up the window

@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
@@ -413,6 +414,7 @@ private fun ColorSwatch(
 /*The space between the component of screen*/
 private val ItemSpacing = Arrangement.spacedBy(8.dp)
 private val hItemPadding = PaddingValues(horizontal = 12.dp)
+private val DialogShape = RoundedCornerShape(8)
 
 @Composable
 fun ColorPickerDialog(
@@ -424,6 +426,7 @@ fun ColorPickerDialog(
         expanded,
         onDismissRequest = { onColorPicked(Color.Unspecified) },
         properties = DialogProperties,
+        shape = DialogShape,
         content = {
             Column {
                 TopAppBar(

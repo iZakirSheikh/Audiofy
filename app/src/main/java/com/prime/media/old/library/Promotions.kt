@@ -37,7 +37,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.HotelClass
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.ShopTwo
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.runtime.Composable
@@ -269,48 +268,6 @@ private fun GetApp(
 }
 
 @Composable
-@NonRestartableComposable
-private fun OnePlayer(
-    expanded: Boolean = false,
-    onValueChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val facade = LocalSystemFacade.current
-    val pkg = "com.googol.android.apps.oneplayer"
-    // Check if the Gallery app is already installed
-    val ctx = LocalContext.current
-    val isInstalled = remember(pkg) {
-        /*com.primex.core.runCatching(TAG) {
-            ctx.packageManager.getPackageInfo(pkg, 0)
-        } != null*/
-        false
-    }
-    if (isInstalled) return
-    Promotion(
-        expanded,
-        onValueChange,
-        message = stringResource(id = R.string.msg_promotion_one_player_app),
-        icon = Icons.Outlined.NewReleases,
-        modifier = modifier,
-        accent = Color.AzureBlue,
-        action = {
-            com.primex.material2.Button(
-                label = stringResource(id = R.string.dive_in),
-                onClick = { facade.launchAppStore(pkg) },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Amber.copy(0.12f)
-                ),
-                shape = AppTheme.shapes.compact,
-                elevation = null,
-                modifier = Modifier.scale(0.9f),
-                border = BorderStroke(Dp.Hairline, Color.Amber.copy(0.24f))
-            )
-        }
-    )
-}
-
-
-@Composable
 private fun HelpTranslate(
     expanded: Boolean = false,
     onValueChange: (Boolean) -> Unit,
@@ -389,7 +346,7 @@ private fun InAppPurchase(
     )
 }
 
-private const val PROMOTIONS_COUNT = 9
+private const val PROMOTIONS_COUNT = 8
 
 /**
  * Displays a series of promotional items, cycling through them with delays.
@@ -420,11 +377,10 @@ fun Promotions(
                 1 -> InAppPurchase(BuildConfig.IAP_CODEX, expanded, onValueChange)
                 2 -> InAppPurchase(BuildConfig.IAP_TAG_EDITOR_PRO, expanded, onValueChange)
                 3 -> InAppPurchase(BuildConfig.IAP_WIDGETS_PLATFORM, expanded, onValueChange)
-                4 -> OnePlayer(expanded, onValueChange)
+                4 -> GetApp(expanded, onValueChange)
                 5 -> JoinUs(expanded, onValueChange)
-                6 -> GetApp(expanded, onValueChange)
-                7 -> HelpTranslate(expanded, onValueChange)
-                8 -> RateUs(expanded, onValueChange)
+                6 -> HelpTranslate(expanded, onValueChange)
+                7 -> RateUs(expanded, onValueChange)
             }
         },
     )
