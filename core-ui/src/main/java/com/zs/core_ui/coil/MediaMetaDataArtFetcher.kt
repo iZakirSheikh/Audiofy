@@ -119,7 +119,7 @@ class MediaMetaDataArtFetcher(
         return MediaMetadataRetriever().use { retriever ->
             retriever.setDataSource(data)
             // fallback to default if null
-            val bytes = retriever.embeddedPicture ?: throw CancellationException("No embedded artwork found")
+            val bytes = retriever.embeddedPicture ?: throw IllegalStateException("No artwork found")
             var isSampled: Boolean
             val bitmap = BitmapFactory.Options().let {
                 // Set inJustDecodeBounds to true to determine the image dimensions without loading it.

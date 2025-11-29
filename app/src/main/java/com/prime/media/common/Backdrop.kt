@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalHazeApi::class)
+
 package com.prime.media.common
 
 import android.graphics.BlurMaskFilter
@@ -40,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import com.primex.core.ImageBrush
 import com.primex.core.visualEffect
 import com.zs.core_ui.Colors
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.HazeEffectScope
+import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -205,6 +210,11 @@ fun Modifier.dynamicBackdrop(
     fallbackAccent: Color,
 ) = when (state) {
     null -> mist(fallbackContainerColor, fallbackAccent)
-    else -> hazeEffect(state, style, { blurEnabled = true })
+    else -> hazeEffect(state, style, HazeSettings)
 }
 
+val HazeSettings: (HazeEffectScope.() -> Unit) = { blurEnabled = true;
+    // Adjust input scale for Android versions below 12 for better visuals.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+        inputScale = HazeInputScale.Fixed(0.25f)
+}

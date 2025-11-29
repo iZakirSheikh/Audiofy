@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -170,7 +171,7 @@ private const val MAX_PROMO_MESSAGES = 1
 // The number of app launches to skip between showing consecutive promotional messages.
 // After each promotional message is shown, the app will skip this many launches before
 // potentially showing another promotional message.
-private const val PROMO_SKIP_LAUNCHES = 3
+private const val PROMO_SKIP_LAUNCHES = 0
 
 class MainActivity :
     ComponentActivity(),
@@ -628,6 +629,10 @@ class MainActivity :
                 )
                 // One player
                 1 -> {
+                    val pkg = "com.googol.android.apps.oneplayer"
+                    val info = runCatching(TAG, { packageManager.getPackageInfo(pkg, 0) })
+                    if (info != null)
+                        return@launch
                     val result = toastHostState.showToast(
                         message = resources.getText2(R.string.msg_promotion_one_player_app),
                         icon = Icons.Outlined.GetApp,
@@ -636,7 +641,7 @@ class MainActivity :
                         accent = Color.Amber
                     )
                     if (result == Toast.ACTION_PERFORMED)
-                        launchAppStore("com.googol.android.apps.oneplayer")
+                        launchAppStore(pkg)
                 }
             }
         }

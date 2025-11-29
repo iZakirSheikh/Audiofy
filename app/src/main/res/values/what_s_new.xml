@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.1</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.3</b>
         <font color='grey'>
+            \n - Improved the acrylic blur effect for a more refined look on older Android versions.
+            \n - Made the splash screen fully immersive.
             \n - Enhanced the "Personalize" screen with a two-pane layout for an improved experience on large screens and in landscape mode.
             \n - Introduced "One Player," our new app and the successor to Audiofy.
             \n - Removed the "Upgrades" section from the app.

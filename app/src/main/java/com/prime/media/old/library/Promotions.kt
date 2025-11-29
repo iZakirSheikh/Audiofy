@@ -238,9 +238,9 @@ private fun GetApp(
     // Check if the Gallery app is already installed
     val ctx = LocalContext.current
     val isInstalled = remember(pkg) {
-        /*com.primex.core.runCatching(TAG) {
+        com.primex.core.runCatching(TAG) {
             ctx.packageManager.getPackageInfo(pkg, 0)
-        } != null*/
+        } != null
         false
     }
     if (isInstalled) return
