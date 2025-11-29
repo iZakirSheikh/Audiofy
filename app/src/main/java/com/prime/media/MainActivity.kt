@@ -630,8 +630,11 @@ class MainActivity :
                 // One player
                 1 -> {
                     val pkg = "com.googol.android.apps.oneplayer"
-                    val info = runCatching(TAG, { packageManager.getPackageInfo(pkg, 0) })
-                    if (info != null)
+                    // check if already installed. if yes return
+                    val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)
+                        runCatching(TAG, { packageManager.getPackageInfo(pkg, 0) }) != null
+                    else true
+                    if (isInstalled)
                         return@launch
                     val result = toastHostState.showToast(
                         message = resources.getText2(R.string.msg_promotion_one_player_app),

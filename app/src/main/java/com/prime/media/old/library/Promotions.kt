@@ -64,6 +64,7 @@ import com.prime.media.common.observeProductInfoAsState
 import com.prime.media.common.preference
 import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
+import com.prime.media.settings.AppConfig
 import com.prime.media.settings.Settings
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
@@ -238,10 +239,13 @@ private fun GetApp(
     // Check if the Gallery app is already installed
     val ctx = LocalContext.current
     val isInstalled = remember(pkg) {
-        com.primex.core.runCatching(TAG) {
+        if (!AppConfig.isQueryingAppPackagesAllowed)
+            return@remember false
+        val info = com.primex.core.runCatching(TAG) {
             ctx.packageManager.getPackageInfo(pkg, 0)
-        } != null
-        false
+        }
+        // not installed if info is null
+        info != null
     }
     if (isInstalled) return
     Promotion(
