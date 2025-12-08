@@ -171,7 +171,7 @@ private const val MAX_PROMO_MESSAGES = 1
 // The number of app launches to skip between showing consecutive promotional messages.
 // After each promotional message is shown, the app will skip this many launches before
 // potentially showing another promotional message.
-private const val PROMO_SKIP_LAUNCHES = 0
+private const val PROMO_SKIP_LAUNCHES = 1
 
 class MainActivity :
     ComponentActivity(),

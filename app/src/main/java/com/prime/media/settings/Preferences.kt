@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Deck
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.outlined.AppBlocking
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.FormatSize
@@ -52,7 +53,10 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.preference
+import com.prime.media.old.common.LocalNavController
+import com.prime.media.permission.RoutePermission
 import com.primex.core.textArrayResource
 import com.primex.core.textResource
 import com.primex.material2.DropDownPreference

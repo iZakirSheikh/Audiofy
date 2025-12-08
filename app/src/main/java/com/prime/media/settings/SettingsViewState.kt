@@ -17,6 +17,7 @@
 
 package com.prime.media.settings
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -295,6 +296,32 @@ object Settings {
         )
 
     val KEY_APP_CONFIG = stringPreferenceKey("${PREFIX}_app_config")
+
+    /**
+     * List of permissions required to run the app.
+     *
+     * This list is constructed based on the device's Android version to ensure
+     * compatibility with scoped storage and legacy storage access.
+     */
+    @SuppressLint("BuildListAdds")
+    val REQUIRED_PERMISSIONS = buildList {
+        // For Android Tiramisu (33) and above, use media permissions for scoped storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
+            this += android.Manifest.permission.READ_MEDIA_VIDEO
+            this += android.Manifest.permission.READ_MEDIA_AUDIO
+        }
+        // For Android Upside Down Cake (34) and above, add permission for user-selected visual media
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            this += android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+        // For Android versions below Tiramisu 10(29), request WRITE_EXTERNAL_STORAGE for
+        // legacy storage access
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+            this += android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+            this += android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+    }
 }
 
 @Stable

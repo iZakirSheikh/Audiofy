@@ -16,12 +16,9 @@ import androidx.compose.foundation.layout.areNavigationBarsVisible
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
@@ -44,7 +41,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
@@ -57,13 +53,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.about.AboutUs
 import com.prime.media.about.RouteAboutUs
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.NavItem
 import com.prime.media.common.Regular
-import com.prime.media.common.Route
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.composable
@@ -104,6 +98,8 @@ import com.prime.media.old.impl.FeedbackViewModel
 import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.TagEditorViewModel
 import com.prime.media.old.library.Library
+import com.prime.media.permission.Permission
+import com.prime.media.permission.RoutePermission
 import com.prime.media.personalize.Personalize
 import com.prime.media.personalize.RoutePersonalize
 import com.prime.media.playlists.Playlist
@@ -118,7 +114,6 @@ import com.prime.media.widget.Glance
 import com.primex.core.textResource
 import com.primex.core.thenIf
 import com.primex.material2.Label
-import com.primex.material2.OutlinedButton
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
@@ -153,7 +148,6 @@ import org.koin.androidx.compose.koinViewModel
 import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient as HorizontalGradient
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient as VerticalGradient
 import androidx.navigation.compose.currentBackStackEntryAsState as current
-import com.google.accompanist.permissions.rememberMultiplePermissionsState as Permissions
 import com.prime.media.common.rememberHazeState as backdropProvider
 import dev.chrisbanes.haze.haze as backdropObserver
 
@@ -248,75 +242,8 @@ private fun NavController.toRoute(route: String) {
     }
 }
 
-/**
- * List of permissions required to run the app.
- *
- * This list is constructed based on the device's Android version to ensure
- * compatibility with scoped storage and legacy storage access.
- */
-@SuppressLint("BuildListAdds")
-private val REQUIRED_PERMISSIONS = buildList {
-    // For Android Tiramisu (33) and above, use media permissions for scoped storage
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        this += android.Manifest.permission.ACCESS_MEDIA_LOCATION
-        this += android.Manifest.permission.READ_MEDIA_VIDEO
-        this += android.Manifest.permission.READ_MEDIA_AUDIO
-    }
-    // For Android Upside Down Cake (34) and above, add permission for user-selected visual media
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        this += android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
-    // For Android versions below Tiramisu 10(29), request WRITE_EXTERNAL_STORAGE for
-    // legacy storage access
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
-        this += android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-        this += android.Manifest.permission.READ_EXTERNAL_STORAGE
-    }
-}
 
-private object RoutePermission : Route
 
-/**
- * Represents the permission screen
- * @see REQUIRED_PERMISSIONS
- * @see RoutePermission
- */
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-private fun Permission() {
-    val controller = LocalNavController.current
-    // Compose the permission state.
-    // Once granted set different route like folders as start.
-    // Navigate from here to there.
-    val facade = LocalSystemFacade.current
-    val canQueryAllApps = AppConfig.isQueryingAppPackagesAllowed
-    val permission = Permissions(permissions = REQUIRED_PERMISSIONS)
-    // If the permissions are not granted, show the permission screen.
-    com.prime.media.common.Placeholder(
-        iconResId = R.raw.lt_permission,
-        title = stringResource(if (permission.allPermissionsGranted) R.string.permission_scr_data_usage_disclosure_title else R.string.permission_screen_title),
-        message = textResource(if (permission.allPermissionsGranted) R.string.permission_scr_data_usage_disclosure_msg else R.string.permission_screen_desc),
-        vertical = LocalWindowSize.current.widthRange == Range.Compact
-    ) {
-        OutlinedButton(
-            onClick = {
-                if (!permission.allPermissionsGranted)
-                    permission.launchMultiplePermissionRequest()
-                else {
-                    AppConfig.isQueryingAppPackagesAllowed = true
-                    facade.setPreference(Settings.KEY_APP_CONFIG, AppConfig.stringify())
-                    facade.restart(true)
-                }
-            },
-            modifier = Modifier.size(width = 200.dp, height = 46.dp),
-            elevation = null,
-            label = stringResource(R.string.allow),
-            border = ButtonDefaults.outlinedBorder,
-            shape = CircleShape,
-            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent)
-        )
-    }
-}
 
 /**
  *  The navigation graph for the app.
@@ -663,11 +590,10 @@ fun App(
             // Display the main content of the app using the NavGraph composable
             content = {
                 // Load start destination based on if storage permission is set or not.
-                val hasStorageAccess = activity.checkSelfPermissions(REQUIRED_PERMISSIONS)
-                val canQueryApps = AppConfig.isQueryingAppPackagesAllowed
+                val hasStorageAccess = activity.checkSelfPermissions(Settings.REQUIRED_PERMISSIONS)
                 NavHost(
                     navController = navController,
-                    startDestination = if (!hasStorageAccess || !canQueryApps) RoutePermission() else Library.route,
+                    startDestination = if (!hasStorageAccess) RoutePermission() else Library.route,
                     builder = navGraphBuilder,
                     modifier = Modifier.thenIf(provider != null) { backdropObserver(provider!!) }
                 )

@@ -31,11 +31,16 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AppBlocking
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.old.common.LocalNavController
+import com.prime.media.permission.DataUsageDisclosureDialog
+import com.prime.media.permission.RoutePermission
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.ListTile
@@ -54,11 +62,11 @@ import com.zs.core_ui.ContentPadding as CP
 context(_: RouteSettings, scope: ColumnScope)
 @Composable
 fun AboutUs() {
-    with(scope){
+    with(scope) {
         // The app version and check for updates.
         val facade = LocalSystemFacade.current
         ListTile(
-            headline = {Label(textResource(R.string.version), fontWeight = FontWeight.Bold)},
+            headline = { Label(textResource(R.string.version), fontWeight = FontWeight.Bold) },
             subtitle = {
                 Label(
                     textResource(R.string.version_info_s, BuildConfig.VERSION_NAME)
@@ -97,6 +105,20 @@ fun AboutUs() {
                 .clickable { facade.launch(Settings.PrivacyPolicyIntent) },
         )
 
+        // App Access
+        val navController = LocalNavController.current
+        var expanded by remember { mutableStateOf(false) }
+        if (expanded)
+            DataUsageDisclosureDialog({ expanded = false })
+        Preference(
+            text = textResource(R.string.permission_scr_data_usage_disclosure_title),
+            icon = Icons.Outlined.AppBlocking,
+            modifier = Modifier
+                .clip(AppTheme.shapes.medium)
+                .clickable { expanded = true },
+        )
+
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,7 +129,7 @@ fun AboutUs() {
                 backgroundColor = AppTheme.colors.background(1.dp),
                 contentColor = AppTheme.colors.accent
             )
-            Chip (
+            Chip(
                 content = { Label(textResource(R.string.rate_us)) },
                 leadingIcon = { Icon(Icons.Outlined.Star, null) },
                 onClick = facade::launchAppStore,

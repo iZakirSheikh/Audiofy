@@ -396,11 +396,11 @@
     <string name="personalize_scr_navbar_accent_color">Navbar Accent Color</string>
     <string name="personalize_scr_elevated_artwork">Elevated Artwork</string>
     <string name="personalize_scr_artwork_border">Artwork Border</string>
-    <string name="permission_scr_data_usage_disclosure_title">App Access</string>
-    <string name="permission_scr_data_usage_disclosure_msg"><b><i>Audiofy</i></b> may collect and access your list of installed applications to enable:
-    \n       • Launching relevant apps directly from within <b>Audiofy</b>
-    \n       • Personalized advertising through trusted ad networks
-    \nYour data <b>security</b> and <b>privacy</b> are our top priorities. Thank you for your support!
+    <string name="permission_scr_data_usage_disclosure_title"><b>Data Usage Disclosure\n</b><font color="grey" size="14">Confirm your choice</font></string>
+    <string name="permission_scr_data_usage_disclosure_msg"><b><i>Audiofy</i></b> collects and accesses your list of installed applications to enable the following features:
+        \n\n     1.  Launching relevant apps directly from within <b>Audiofy</b>
+        \n       2.  Providing personalized advertising by sharing app usage data with trusted ad networks
+    \n\nThis data is collected only after you grant consent and is used solely for the purposes described above.
     </string>
     <string name="msg_settings_upgrade_unlocked">You\’ve already unlocked this feature.</string>
     <string name="pref_accent_nav"><b>Color NavBar</b>

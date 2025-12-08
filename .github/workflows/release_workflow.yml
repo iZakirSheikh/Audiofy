@@ -153,7 +153,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.prime.player
           releaseFiles: ${{steps.signed_aab.outputs.signedReleaseFile}}
-          track: internal
+          track: production
 #          status: inProgress
 #          userFraction: 0.10
           whatsNewDirectory: ./whatsnew
