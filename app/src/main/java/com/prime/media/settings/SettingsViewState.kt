@@ -286,7 +286,7 @@ object Settings {
         stringPreferenceKey("${PREFIX}_glance", BuildConfig.IAP_PLATFORM_WIDGET_IPHONE)
     val KEY_LAUNCH_COUNTER =
         intPreferenceKey("Audiofy_launch_counter")
-    val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+    val USE_ACCENT_IN_NAV_BAR = booleanPreferenceKey("use_accent_in_nav_bar", true)
 
     /** @see mapKeyToShape */
     val ARTWORK_SHAPE_KEY =

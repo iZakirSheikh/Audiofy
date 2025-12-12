@@ -112,7 +112,7 @@ private val SPEED_RANGE = 0.25f..8.0f
 private const val REQUEST_DISMISS = -1.0f
 
 private val PLAYBACK_SPEED_PRESETS =
-    arrayOf(0.25f, 0.5f, 0.75f, 0.8f, 0.9f, 0.95f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f)
+    floatArrayOf(0.9f, 0.95f, 1.0f, 1.25f, 2.0f, 3.0f)
 
 /**
  * Represents the playback speed dialog.

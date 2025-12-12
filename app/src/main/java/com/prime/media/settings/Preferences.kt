@@ -222,8 +222,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     ToggleButton(
                         selected = current == ColorizationStrategy.Manual,
                         onClick = {
-                            if (current == ColorizationStrategy.Manual)
-                                expanded = true
+                            expanded = true
                             // TODO - Allow only users to use this strategy if they have paid version.
                             viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Manual)
                         },

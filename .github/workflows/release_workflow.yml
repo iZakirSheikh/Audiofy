@@ -1,4 +1,4 @@
-name: Automated Release Workflow
+name: CI/CD Pipeline
 on:
   push:
     branches: # Change this to master once everything is setup.

@@ -124,7 +124,7 @@ fun Recents(
     LazyRow(
         horizontalArrangement = NormalRecentItemArrangement,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fadingEdge2(20.dp, false),
+        modifier = modifier/*.fadingEdge2(20.dp, false)*/,
         contentPadding = contentPadding,
         content = {
             val values = emit(false, recents) ?: return@LazyRow item { Spacer(Modifier) }

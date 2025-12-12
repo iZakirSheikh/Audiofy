@@ -203,7 +203,7 @@ fun Latest(
     LazyRow (
         horizontalArrangement = LargeListItemArrangement,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fadingEdge2(20.dp, false),
+        modifier = modifier/*.fadingEdge2(20.dp, false)*/,
         contentPadding = contentPadding,
         content = {
             // Ensure first item is visible by adding a spacer at the front

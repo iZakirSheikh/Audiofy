@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.4</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.5</b>
         <font color='grey'>
+            \n - Modernize Library and removed Feedback screen
             \n - Improved the acrylic blur effect for a more refined look on older Android versions.
             \n - Made the splash screen fully immersive.
             \n - Enhanced the "Personalize" screen with a two-pane layout for an improved experience on large screens and in landscape mode.
