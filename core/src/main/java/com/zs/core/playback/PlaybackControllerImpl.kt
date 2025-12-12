@@ -20,9 +20,12 @@ package com.zs.core.playback
 
 import android.content.ComponentName
 import android.content.Context
+import android.net.Uri
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.await
+import com.zs.core.playback.PlaybackController.Companion.INDEX_UNSET
+import com.zs.core.playback.PlaybackController.Companion.TIME_UNSET
 
 private const val TAG = "PlaybackControllerImpl"
 
@@ -52,12 +55,12 @@ internal class PlaybackControllerImpl(
         }
 
 
-    override suspend fun setMediaFiles(values: List<MediaFile>): Int {
+    override suspend fun setMediaFiles(values: List<MediaFile>, index: Int , position: Long): Int {
         val browser = fBrowser.await()
         // make sure the items are distinct.
         val list = values.distinctBy { it.mediaUri }
         // set the media items; this will automatically clear the old ones.
-        browser.setMediaItems(list.map { it.value })
+        browser.setMediaItems(list.map { it.value }, index, position)
         // return how many have been added to the list.
         return list.size
     }
@@ -73,8 +76,19 @@ internal class PlaybackControllerImpl(
         browser.clearMediaItems()
     }
 
-    override suspend fun connect(){
+    override suspend fun indexOf(uri: Uri): Int {
         val browser = fBrowser.await()
-        /*TODO: Do nothing*/
+        repeat(browser.mediaItemCount) { pos ->
+            val item = browser.getMediaItemAt(pos)
+            if (item.requestMetadata.mediaUri == uri) return pos
+        }
+        return INDEX_UNSET
+    }
+
+    override suspend fun seekTo(index: Int, mills: Long): Boolean {
+        val browser = fBrowser.await()
+        if (index == INDEX_UNSET && mills == TIME_UNSET) return false
+        browser.seekTo(index, mills)
+        return true
     }
 }

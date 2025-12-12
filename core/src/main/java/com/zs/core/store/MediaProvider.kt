@@ -85,7 +85,7 @@ interface MediaProvider {
         const val COLUMN_RESOLUTION = MediaStore.Video.VideoColumns.RESOLUTION
         const val COLUMN_ORIENTATION = MediaStore.Video.VideoColumns.ORIENTATION
 
-        internal fun buildAlbumArtUri(id: Long) = ContentUris.withAppendedId(sArtworkUri, id)
+        fun buildAlbumArtUri(id: Long) = ContentUris.withAppendedId(sArtworkUri, id)
         val EXTERNAL_CONTENT_URI = MediaStore.Files.getContentUri("external")
     }
 

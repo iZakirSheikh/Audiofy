@@ -41,7 +41,7 @@ private const val TAG = "PlaylistsViewModel"
 class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsViewState {
     override val data: Flow<List<Playlist>> = playlists.observe()
     override fun create(value: Playlist) {
-        launch {
+        tryLaunch {
             // Validate the playlist name using the predefined regex.
             // If the name is invalid, throw an exception with a descriptive message.
             if (!VALID_NAME_REGEX.matches(value.name))
@@ -59,7 +59,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
     }
 
     override fun delete(playlist: Playlist) {
-        launch {
+        tryLaunch {
             val name = playlist.name
             // Display a confirmation toast to the user before deleting the playlist.
             // The toast includes the playlist name and a "Delete" action button.
@@ -71,7 +71,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
                 accent = Color.RedViolet,
                 priority = Toast.PRIORITY_HIGH
             )
-            if (result != Toast.ACTION_PERFORMED) return@launch
+            if (result != Toast.ACTION_PERFORMED) return@tryLaunch
             // Attempt to delete the playlist from the data source (e.g., database).
             // Check if the deletion was successful (assuming delete() returns 1 for success).
             // If the deletion fails, throw an exception with a descriptive message.
@@ -84,7 +84,7 @@ class PlaylistsViewModel(val playlists: Playlists) : KoinViewModel(), PlaylistsV
     }
 
     override fun update(playlist: Playlist) {
-        launch {
+        tryLaunch {
             val name = playlist.name
             // Validate the playlist name using the predefined regex.
             // If the name is invalid, throw an exception with a descriptive message.

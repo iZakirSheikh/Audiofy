@@ -1,13 +1,13 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright (c)  2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 07-07-2024.
+ * Created by sheik on 12 of Dec 2025
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at:
  *
- *   https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,41 +16,39 @@
  * limitations under the License.
  */
 
-package com.prime.media.old.library
+package com.prime.media.library
+
 
 import android.net.Uri
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.twotone.LocalPlay
-import androidx.compose.material.icons.twotone.PlayCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable as savable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -62,20 +60,23 @@ import androidx.core.graphics.drawable.toBitmap
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.prime.media.R
-import com.zs.core_ui.Anim
-import com.zs.core_ui.ContentElevation
-import com.zs.core_ui.ContentPadding
-import com.prime.media.old.core.db.albumUri
+import com.prime.media.common.emit
+import com.prime.media.common.fadingEdge2
 import com.primex.core.ImageBrush
 import com.primex.core.SignalWhite
-import com.primex.core.UmbraGrey
 import com.primex.core.foreground
 import com.primex.core.visualEffect
 import com.primex.material2.Label
+import com.zs.core.store.Audio
+import com.zs.core.store.MediaProvider
+import com.zs.core_ui.Anim
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentElevation
+import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.WallpaperAccentColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.saveable.rememberSaveable as savable
 
 private val ColorSaver = object : androidx.compose.runtime.saveable.Saver<Color, Int> {
     override fun restore(value: Int): Color? {
@@ -189,37 +190,37 @@ private fun NewlyAddedItem(
 
 private val LargeListItemArrangement = Arrangement.spacedBy(16.dp)
 
-/**
- * A Composable function that displays a list of newly added items.
- *
- * @param state The state of the library.
- * @param modifier The modifier to be applied to the list.
- * @param contentPadding The padding to be applied to the list.
- */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewlyAddedList(
-    state: Library,
+context(_: RouteLibrary)
+fun Latest(
+    viewState: LibraryViewState,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     // Collect newly added items from the Library state
-    val audios by state.newlyAdded.collectAsState()
+    val audios by viewState.newlyAdded.collectAsState()
     // Display the list with loading, empty, and content states
-    StatefulLazyList(
-        items = audios,
-        key = { it.id },
-        modifier = modifier,
+    LazyRow (
         horizontalArrangement = LargeListItemArrangement,
-        contentPadding = contentPadding
-    ) { item ->
-        // Create newly added item with parallax-adjusted image alignment
-        NewlyAddedItem(
-            label = item.name,
-            onClick = { state.onClickRecentAddedFile(item.id) },
-            imageUri = item.albumUri,
-            modifier = Modifier.animateItem(),
-        )
-    }
-}
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fadingEdge2(20.dp, false),
+        contentPadding = contentPadding,
+        content = {
+            // Ensure first item is visible by adding a spacer at the front
+            item(contentType = "library_list_spacer") {
+                Spacer(modifier = Modifier)
+            }
 
+            val data = emit(false, audios) ?: return@LazyRow
+            items(data, key = Audio::id) { item ->
+                // Create newly added item with parallax-adjusted image alignment
+                NewlyAddedItem(
+                    label = item.name,
+                    onClick = { viewState.onClickRecentAddedFile(item.id) },
+                    imageUri = MediaProvider.buildAlbumArtUri(item.albumId),
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        }
+    )
+}

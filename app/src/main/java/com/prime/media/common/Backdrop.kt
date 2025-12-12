@@ -194,6 +194,8 @@ private fun Modifier.mist(containerColor: Color, accent: Color) =
         // FIXME - Enabling this causes crash in android 9 on startup.
       //  .visualEffect(ImageBrush.NoiseBrush, 0.3f)
 
+
+
 /**
  * Adds a dynamic backdrop to the Modifier based on the provided HazeState.
  *

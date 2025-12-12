@@ -125,7 +125,7 @@ abstract class KoinViewModel : ScopeViewModel() {
      *              Defaults to [CoroutineStart.DEFAULT].
      * @param block The suspend function to execute within the coroutine.
      */
-    inline fun launch(
+    inline fun tryLaunch(
         context: CoroutineContext = EmptyCoroutineContext,
         start: CoroutineStart = CoroutineStart.DEFAULT,
         crossinline block: suspend CoroutineScope.() -> Unit

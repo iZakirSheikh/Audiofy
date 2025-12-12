@@ -1,13 +1,13 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright (c)  2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 07-07-2024.
+ * Created by sheik on 12 of Dec 2025
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at:
  *
- *   https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,12 @@
  * limitations under the License.
  */
 
-package com.prime.media.old.library
+package com.prime.media.library
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,7 +32,6 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,7 +44,6 @@ import com.prime.media.R
 import com.prime.media.local.RouteAlbums
 import com.prime.media.local.RouteArtists
 import com.prime.media.local.RouteGenres
-import com.prime.media.local.videos.RouteVideos
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.store.Audios
@@ -79,7 +76,7 @@ private fun Shortcut(
             .clip(FolderShape) // Shape the shortcut like a folder
             // .background(colors.primary.copy(0.035f), FolderShape)
             .border(1.dp, accent.copy(0.4f), FolderShape) // Light border
-          //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
+            //  .background(colors.backgroundColorAtElevation(0.4.dp), FolderShape)
             .clickable(
                 null,
                 ripple(true, color = AppTheme.colors.accent), // Ripple effect on click
@@ -110,12 +107,10 @@ private fun Shortcut(
 
 private val NormalRecentItemArrangement = Arrangement.spacedBy(8.dp)
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun Shortcuts(
-    modifier: Modifier = Modifier,
-) {
-    // FlowRow to arrange shortcuts horizontally with spacing
+context(_: RouteLibrary)
+fun Shortcuts(modifier: Modifier = Modifier) {
+// FlowRow to arrange shortcuts horizontally with spacing
     FlowRow(
         modifier = modifier/*.scaledLayout(1.3f)*/,
         horizontalArrangement = NormalRecentItemArrangement,

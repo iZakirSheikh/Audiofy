@@ -23,8 +23,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import kotlinx.coroutines.channels.awaitClose
@@ -40,7 +42,7 @@ interface PlaybackController {
      * @param values The list of [MediaItem]s to be set in the queue.
      * @return The number of items successfully added to the queue.
      */
-    suspend fun setMediaFiles(values: List<MediaFile>): Int
+    suspend fun setMediaFiles(values: List<MediaFile>, index: Int = 0, position: Long = 0): Int
 
     /**
      * Starts playing the underlying service.
@@ -55,10 +57,30 @@ interface PlaybackController {
      */
     suspend fun clear()
 
-    /** Ensures that controller is connected with service. */
-    suspend fun connect()
+    /** Returns the index of [MediaFile] represented by the [uri] or [Remote.INDEX_UNSET] */
+    suspend fun indexOf(uri: Uri): Int
+    /** Skips to [index] in queue and seeks to [mills]; returns `true` if successful. */
+    suspend fun seekTo(index: Int = INDEX_UNSET, mills: Long = TIME_UNSET): Boolean
 
     companion object {
+
+        const val POSITION_UNSET = C.POSITION_UNSET
+        const val TIME_UNSET = C.TIME_UNSET
+        const val INDEX_UNSET = C.INDEX_UNSET
+        const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
+        const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
+        const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
+        // State
+        const val PLAYER_STATE_IDLE = Player.STATE_IDLE
+        const val PLAYER_STATE_BUFFERING = Player.STATE_BUFFERING
+        const val PLAYER_STATE_READY = Player.STATE_READY
+        const val PLAYER_STATE_ENDED = Player.STATE_ENDED
+        // track types
+        const val TRACK_TYPE_TEXT = C.TRACK_TYPE_TEXT
+        const val TRACK_TYPE_AUDIO = C.TRACK_TYPE_AUDIO
+        const val TRACK_TYPE_VIDEO = C.TRACK_TYPE_VIDEO
+
+        val PLAYLIST_RECENT = Playback.PLAYLIST_RECENT
 
         private const val TAG = "PlaybackController"
 
@@ -77,6 +99,7 @@ interface PlaybackController {
          * @param context The context to register the receiver in.
          * @return A Flow that emits NowPlaying objects.
          */
+        @Deprecated("This fun will be replaced by contrete impl. in actual impentation in PLaybackController.")
         fun observe(context: Context) = callbackFlow<NowPlaying> {
             // Create a BroadcastReceiver to listen for NowPlaying events
             val receiver = object : BroadcastReceiver() {

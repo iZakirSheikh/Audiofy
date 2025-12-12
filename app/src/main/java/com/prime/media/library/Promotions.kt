@@ -1,13 +1,13 @@
 /*
- * Copyright 2024 Zakir Sheikh
+ * Copyright (c)  2025 Zakir Sheikh
  *
- * Created by Zakir Sheikh on 23-11-2024.
+ * Created by sheik on 12th of Dec 2025
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at:
  *
- *   https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,8 @@
  * limitations under the License.
  */
 
-package com.prime.media.old.library
+package com.prime.media.library
+
 
 import android.util.Log
 import androidx.compose.animation.animateContentSize
@@ -81,6 +82,7 @@ import com.zs.core_ui.shimmer.shimmer
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import com.primex.core.textResource as stringResource
 import com.zs.core_ui.ContentPadding as CP
+
 
 private const val TAG = "Promotions"
 
@@ -361,9 +363,8 @@ private const val PROMOTIONS_COUNT = 8
  * @param modifier Modifier used to adjust the layout or appearance of the promotions.
  */
 @Composable
-fun Promotions(
-    modifier: Modifier = Modifier
-) {
+context(_: RouteLibrary)
+fun Promotions(modifier: Modifier = Modifier) {
     // current: Index of the currently displayed promotion item.
     // Starts with ID_NONE to indicate no promotion is initially shown.
     val count by preference(Settings.KEY_LAUNCH_COUNTER)

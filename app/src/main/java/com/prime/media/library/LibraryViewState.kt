@@ -1,28 +1,35 @@
-package com.prime.media.old.library
+/*
+ * Copyright (c)  2025 Zakir Sheikh
+ *
+ * Created by sheik on 12 of Dec 2025
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import android.content.Context
-import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LibraryMusic
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.prime.media.old.core.db.Audio
-import com.primex.core.Text
+package com.prime.media.library
+
+import androidx.compose.runtime.Stable
 import com.zs.core.db.Playlist
-import kotlinx.coroutines.flow.Flow
+import com.zs.core.store.Audio
 import kotlinx.coroutines.flow.StateFlow
 
-interface Library {
-
-    companion object {
-        val route: String get() = "route_library"
-        fun direction() = route
-    }
-
+@Stable
+interface LibraryViewState {
     /**
      * The recently played tracks.
      */
     val recent: StateFlow<List<Playlist.Track>?>
-    val carousel: StateFlow<Long?>
+    val carousel: StateFlow<Long>
     val newlyAdded: StateFlow<List<Audio>?>
 
     /**
@@ -50,4 +57,14 @@ interface Library {
      * @param id The unique identifier of the recently added history item.
      */
     fun onClickRecentAddedFile(id: Long)
+
+    /**
+     * Callback method invoked when the user requests the removal of a recent item.
+     *
+     * This function initiates the process of removing a specified item from the list
+     * of recently played or accessed media.
+     *
+     * @param uri The URI of the recent item to be removed.
+     */
+    fun onRequestRemoveRecentItem(uri: String)
 }

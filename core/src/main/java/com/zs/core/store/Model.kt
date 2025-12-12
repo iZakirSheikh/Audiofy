@@ -106,6 +106,10 @@ data class Audio(
     val albumArtist: String,
 ) : File {
 
+    val uri
+        get() = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+    val artworkUri get() = MediaProvider.buildAlbumArtUri(albumId)
+
     internal constructor(cursor: Cursor) : this(
         id = cursor.getLong(0),
         name = cursor.getString(1) ?: MediaProvider.UNKNOWN_STRING,

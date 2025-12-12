@@ -42,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -66,10 +65,12 @@ import com.prime.media.impl.AlbumsViewModel
 import com.prime.media.impl.ArtistsViewModel
 import com.prime.media.impl.FoldersViewModel
 import com.prime.media.impl.GenresViewModel
+import com.prime.media.impl.LibraryViewModel
 import com.prime.media.impl.PlaylistViewModel
 import com.prime.media.impl.PlaylistsViewModel
 import com.prime.media.impl.SettingsViewModel
 import com.prime.media.impl.VideosViewModel
+import com.prime.media.library.RouteLibrary
 import com.prime.media.local.Albums
 import com.prime.media.local.Artists
 import com.prime.media.local.Folders
@@ -90,14 +91,9 @@ import com.prime.media.old.directory.store.Audios
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.effects.AudioFx
-import com.prime.media.old.feedback.Feedback
-import com.prime.media.old.feedback.RouteFeedback
 import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
-import com.prime.media.old.impl.FeedbackViewModel
-import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.TagEditorViewModel
-import com.prime.media.old.library.Library
 import com.prime.media.permission.Permission
 import com.prime.media.permission.RoutePermission
 import com.prime.media.personalize.Personalize
@@ -258,9 +254,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Permission()
     }
     // Library
-    composable(Library.route) {
+    composable(RouteLibrary) {
         val viewModel = koinViewModel<LibraryViewModel>()
-        Library(viewModel)
+        RouteLibrary(viewModel)
     }
     // Settings
     composable(RouteSettings) {
@@ -318,14 +314,6 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
             Console(state = viewModel)
         }
-    }
-    // Feedback
-    dialog(
-        RouteFeedback.route,
-        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        val viewModel = koinViewModel<FeedbackViewModel>()
-        Feedback(viewModel)
     }
     // ControlCentre
     composable(RoutePersonalize) {
@@ -402,8 +390,8 @@ private fun NavigationBar(
         NavItem(
             label = { Label(text = textResource(R.string.home)) },
             icon = { Icon(imageVector = Icons.Filled.Weekend, contentDescription = null) },
-            checked = route == Library.route,
-            onClick = { navController.toRoute(Library.direction()); facade.initiateReviewFlow() },
+            checked = route == RouteLibrary(),
+            onClick = { navController.toRoute(RouteLibrary()); facade.initiateReviewFlow() },
             typeRail = typeRail,
             colors = colors
         )
@@ -511,7 +499,7 @@ private fun NavigationBar(
  * For other domains, the navigation bar will be hidden.
  */
 private val DOMAINS_REQUIRING_NAV_BAR =
-    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteVideos(), RoutePlaylists(), Library.route)
+    arrayOf(/*RouteSettings(),*/ RouteFolders(), RouteVideos(), RoutePlaylists(), RouteLibrary())
 
 /**
  * Adjusts the [WindowSize] by consuming either the navigation rail width or the bottom navigation height.
@@ -593,7 +581,7 @@ fun App(
                 val hasStorageAccess = activity.checkSelfPermissions(Settings.REQUIRED_PERMISSIONS)
                 NavHost(
                     navController = navController,
-                    startDestination = if (!hasStorageAccess) RoutePermission() else Library.route,
+                    startDestination = if (!hasStorageAccess) RoutePermission() else RouteLibrary(),
                     builder = navGraphBuilder,
                     modifier = Modifier.thenIf(provider != null) { backdropObserver(provider!!) }
                 )

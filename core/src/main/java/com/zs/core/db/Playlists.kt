@@ -137,4 +137,8 @@ interface Playlists {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM tbl_playlist_members WHERE playlist_id = :id AND (:query IS NULL OR title LIKE '%' || :query || '%') ORDER BY play_order ASC ")
     fun observe(id: Long, query: String? = null): Flow<List<Track>>
+
+    /** Removes item from playlist*/
+    @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID AND uri IN (:keys)")
+    suspend fun remove(playlistID: Long, vararg keys: String): Int
 }

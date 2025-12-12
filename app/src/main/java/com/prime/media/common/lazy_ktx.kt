@@ -18,12 +18,22 @@
 
 package com.prime.media.common
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.material.Icon
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.primex.material2.Label
+import com.zs.core_ui.ContentPadding
+import com.zs.core_ui.lottieAnimationPainter
 
 private const val TAG = "lazy-ktx"
 
@@ -146,6 +156,61 @@ fun <T> LazyListScope.emit(
             },
             contentType = "data_empty_placeholder"
         )
+    }
+    // return if non-empty else return null
+    return data?.takeIf { it.isNotEmpty() }
+}
+
+inline fun <T> LazyListScope.emit(vertical: Boolean, data: List<T>?): List<T>? {
+    when {
+        // null means loading
+        data == null && vertical -> item(contentType = "loading_vertical", key = "placeholder_loading_list") {
+            Placeholder(
+                title = stringResource(R.string.loading),
+                iconResId = R.raw.lt_loading_bubbles,
+                modifier = Modifier.fillMaxSize().animateItem()
+            )
+        }
+        data == null -> item(contentType = "loading", key = "placeholder_loading_list") {
+            Row(
+                modifier = Modifier.sizeIn(minWidth = 320.dp, maxWidth = 360.dp, maxHeight = 56.dp).animateItem(),
+                horizontalArrangement = Arrangement.spacedBy(ContentPadding.normal, alignment = Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    Icon(
+                        painter = lottieAnimationPainter(R.raw.loading_hand),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                    )
+
+                    Label(stringResource(R.string.loading))
+                }
+            )
+        }
+        data.isEmpty() && vertical -> item(contentType = "empty_vertical", key = "placeholder_empty_list"){
+            Placeholder(
+                title = stringResource(R.string.empty),
+                iconResId = R.raw.lt_empty_box,
+                modifier = Modifier.fillMaxSize().animateItem()
+            )
+        }
+        data.isEmpty() -> item(contentType = "empty", key = "placeholder_empty_list") {
+            Row(
+                modifier = Modifier.sizeIn(minWidth = 320.dp, maxWidth = 360.dp, maxHeight = 56.dp).animateItem(),
+                horizontalArrangement = Arrangement.spacedBy(ContentPadding.normal, alignment = Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    Icon(
+                        painter = lottieAnimationPainter(R.raw.lt_empty_box),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+
+                    Label(stringResource(R.string.empty))
+                }
+            )
+        }
     }
     // return if non-empty else return null
     return data?.takeIf { it.isNotEmpty() }

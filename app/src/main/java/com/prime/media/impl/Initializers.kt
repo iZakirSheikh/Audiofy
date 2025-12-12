@@ -29,8 +29,6 @@ import com.prime.media.old.directory.playlists.MembersViewModel
 import com.prime.media.old.directory.store.AudiosViewModel
 import com.prime.media.old.impl.AudioFxViewModel
 import com.prime.media.old.impl.ConsoleViewModel
-import com.prime.media.old.impl.FeedbackViewModel
-import com.prime.media.old.impl.LibraryViewModel
 import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.SystemDelegate
@@ -104,8 +102,7 @@ private val KoinAppModules = module {
     viewModelOf(::ArtistsViewModel)
     viewModelOf( ::FoldersViewModel )
     viewModel { AudioFxViewModel(get()) }
-    viewModel { FeedbackViewModel(get()) }
-    viewModel() { LibraryViewModel(get(), get(), get()) }
+    viewModelOf(::LibraryViewModel)
     viewModel() { PersonalizeViewModel() }
     viewModel() { ConsoleViewModel(get(), get(), get()) }
     viewModel { (h: Handle) -> TagEditorViewModel(h, get(), get(), get()) }
@@ -113,7 +110,6 @@ private val KoinAppModules = module {
     viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
     viewModelOf(::AlbumsViewModel)
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
-
 }
 
 /**
@@ -180,4 +176,3 @@ class AdNetworkInitializer : Initializer<Unit> {
     }
     override fun dependencies(): List<Class<out Initializer<*>?>?> = emptyList()
 }
-

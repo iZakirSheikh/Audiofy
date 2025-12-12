@@ -20,6 +20,9 @@ package com.zs.core.util
 
 import android.media.MediaMetadataRetriever
 import android.util.Log
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -60,3 +63,28 @@ val MediaMetadataRetriever.latLong: DoubleArray?
             doubleArrayOf(lat, lon)
         } else null
     }
+
+/**
+ * Returns a flow that mirrors the original flow, but debounces emissions after the first one.
+ *
+ * The first emission from the original flow is emitted immediately. Subsequent emissions
+ * are debounced by the specified [delayMillis].
+ *
+ * @param delayMillis The duration in milliseconds to debounce subsequent emissions.
+ * @return A flow that debounces emissions after the first one.
+ *
+ * @see [debounce]
+ */
+@FlowPreview
+fun <T> Flow<T>.debounceAfterFirst(delayMillis: Long): Flow<T> {
+    var firstEmission = true
+    return this
+        .debounce {
+            if (firstEmission) {
+                firstEmission = false
+                0L
+            } else {
+                delayMillis
+            }
+        }
+}

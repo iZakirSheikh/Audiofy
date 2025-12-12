@@ -26,6 +26,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -33,6 +34,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.SessionResult
 import com.zs.core.db.Playlist
+import com.zs.core.store.Audio
 import com.zs.core.db.Playlists2 as Playlists
 
 /**
@@ -198,3 +200,32 @@ suspend fun Playlists.save(items: List<MediaItem>) {
     val members = items.map { Member(it, id, order++) }
     insert(members)
 }
+
+/**
+ * Converts a [Playlist.Track] to a [MediaFile].
+ *
+ * This function takes a [Playlist.Track] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, title, subtitle, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Playlist.Track].
+ *
+ * @return A [MediaFile] representation of the [Playlist.Track].
+ */
+fun Playlist.Track.toMediaFile() = MediaFile(
+    Uri.parse(uri),
+    title = title,
+    subtitle = subtitle,
+    artwork?.toUri(),
+    mimeType
+)
+
+/**
+ * Converts an [Audio] object to a [MediaFile].
+ *
+ * This function takes an [Audio] object and transforms it into a [MediaFile] object.
+ * The [MediaFile] will have its URI, name, artist, artwork URI, and MIME type
+ * populated from the corresponding fields of the [Audio] object.
+ *
+ * @return A [MediaFile] representation of the [Audio] object.
+ */
+fun Audio.toMediaFile() =
+    MediaFile(uri, name, artist, artworkUri, mimeType)

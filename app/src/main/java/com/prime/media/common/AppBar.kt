@@ -66,6 +66,7 @@ import dev.chrisbanes.haze.HazeStyle
 
 private const val FLTAB_COLLAPSED_HORIZONTAL_PADDING = 30f
 
+
 /** @see largeAppBarStyle  */
 @Composable
 fun AppBarDefaults.floatingLargeAppBarStyle(
@@ -272,3 +273,123 @@ fun FloatingLargeTopAppBar(
         )
     }
 )
+
+/**
+ * A large top app bar that adapts between immersive (end-to-end) and floating modes,
+ * adjusting background elevation, padding, and insets accordingly.
+ *
+ * - In immersive mode, the app bar spans the full width and uses the default large style.
+ * - In floating mode, it applies width constraints, shadows, and a floating style.
+ *
+ * @param immersive Whether the app bar is immersive (full-width) or floating.
+ * @param title The title composable.
+ * @param modifier Optional modifier for the app bar container.
+ * @param navigationIcon The navigation icon composable.
+ * @param actions Composable actions placed at the end of the app bar.
+ * @param behavior Scroll behavior to control collapsing.
+ * @param style The top app bar style (automatically derived from [immersive] by default).
+ * @param insets Insets to apply to the app bar; overridden when immersive is false.
+ * @param background Background composable rendered at the lowest z-index inside the app bar.
+ */
+@Composable
+fun AdaptiveLargeTopAppBar(
+    immersive: Boolean,
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    navigationIcon: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    behavior: TopAppBarScrollBehavior,
+    style: TopAppBarStyle = if (immersive) TopAppBarDefaults.largeAppBarStyle() else AppBarDefaults.floatingLargeAppBarStyle(),
+    insets: WindowInsets = AppBarDefaults.topAppBarWindowInsets,
+    background: @Composable TopAppBarScope.() -> Unit = {
+        val colors = AppTheme.colors
+        // when end-to-end
+        if (immersive)
+            Spacer(
+                modifier = Modifier
+                    .background(style.containerColor(1 - fraction))
+                    .fillMaxSize()
+            )
+        // when floating
+        else Spacer(
+            modifier = Modifier
+                .shadow(lerp(12.dp, 0.dp, fraction / .05f), AppBarDefaults.floatingTopBarShape)
+                .thenIf(fraction == 0f) {
+                    border(
+                        0.1.dp,
+                        colors.background(30.dp),
+                        AppBarDefaults.floatingTopBarShape
+                    )
+                }
+                .background(style.containerColor(1 - fraction))
+                .fillMaxSize()
+        )
+    }
+) {
+    // TODO - Expose fraction through behaviour; instead of relying here on state.
+    var hPadding by rememberSaveable { mutableFloatStateOf(0f) }
+    CollapsableTopBarLayout(
+        height = style.height,
+        maxHeight = style.maxHeight,
+        insets = if (immersive) insets else WindowInsets.None,
+        modifier = modifier.thenIf(!immersive) {
+            widthIn(max =FLOATING_TOP_APP_BAR_MAX_WIDTH)
+                .windowInsetsPadding(insets)
+                .padding(horizontal = hPadding.dp)
+        },
+        scrollBehavior = behavior
+    ) {
+        require(style.height < style.maxHeight) {
+            "LargeTopAppBar maxHeight (${style.maxHeight}) must be greater than height (${style.height})"
+        }
+        // update hPadding
+        hPadding = if (!immersive)
+            com.primex.core.lerp(FLTAB_COLLAPSED_HORIZONTAL_PADDING, 0f, fraction)
+        else
+            0f
+        val appBarContentColor = style.contentColor(1 - fraction)
+        val textStyle = style.titleTextStyle(fraction)
+        CompositionLocalProvider(LocalContentColor provides appBarContentColor) {
+            ProvideTextStyle(textStyle) {
+                // Background; zIndex determines which is stacked where.
+                // so this will be at the bottom.
+                Box(
+                    modifier = Modifier.layoutId(TopAppBarDefaults.LayoutIdBackground).fillMaxSize(),
+                    content = { background() },
+                    propagateMinConstraints = true
+                )
+                // Defines the navIcon and actions first;
+                // make sure that title is always last; because if it is not; a new list of
+                // measurables will be created; which will make sure it is at the last.
+                Box(
+                    Modifier
+                        .layoutId(TopAppBarDefaults.LayoutIdNavIcon)
+                        .padding(start = TopAppBarDefaults.TopAppBarHorizontalPadding),
+                    content = { navigationIcon() }
+                )
+
+                // Actions
+                Box(
+                    Modifier
+                        .layoutId(TopAppBarDefaults.LayoutIdAction)
+                        .padding(end = TopAppBarDefaults.TopAppBarHorizontalPadding),
+                    content = {
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                            content = actions
+                        )
+                    }
+                )
+
+                // Title
+                Box(
+                    Modifier
+                        .layoutId(TopAppBarDefaults.LayoutIdCollapsable_title)
+                        .padding(horizontal = TopAppBarDefaults.TopAppBarHorizontalPadding),
+                    content = { title() }
+                )
+            }
+        }
+    }
+}
