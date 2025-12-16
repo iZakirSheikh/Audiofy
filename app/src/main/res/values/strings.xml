@@ -421,5 +421,7 @@
         </font>
 </string>
     <string name="get">Get</string>
+    <string name="pref_enable_splash_anim_wait"><b>App Intro</b> (Android 12+)\n<font color="grey" size="14"><b>Waits (<i> Max 1500ms</i>)</b> for the splash animation to fully finish before continuing.</font></string>
+
 
 </resources>

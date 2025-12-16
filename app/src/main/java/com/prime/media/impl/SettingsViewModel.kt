@@ -46,6 +46,8 @@ class SettingsViewModel() : KoinViewModel(), SettingsViewState {
     override var gridItemSizeMultiplier: Float by mutableFloatStateOf(AppConfig.gridItemSizeMultiplier)
     override var fabLongPressLaunchConsole: Boolean by mutableStateOf(AppConfig.fabLongPressLaunchConsole)
     override var isFileGroupingEnabled: Boolean by mutableStateOf(AppConfig.isFileGroupingEnabled)
+    override var isSplashAnimWaitEnabled: Boolean by mutableStateOf(AppConfig.isSplashAnimWaitEnabled)
+
 
     override val save: Boolean by derivedStateOf {
         trashCanEnabled != AppConfig.isTrashCanEnabled ||
@@ -56,7 +58,8 @@ class SettingsViewModel() : KoinViewModel(), SettingsViewState {
                 inAppAudioEffectsEnabled != AppConfig.inAppAudioEffectsEnabled ||
                 gridItemSizeMultiplier != AppConfig.gridItemSizeMultiplier ||
                 fabLongPressLaunchConsole != AppConfig.fabLongPressLaunchConsole ||
-                isFileGroupingEnabled != AppConfig.isFileGroupingEnabled
+                isFileGroupingEnabled != AppConfig.isFileGroupingEnabled ||
+                isSplashAnimWaitEnabled != AppConfig.isSplashAnimWaitEnabled
     }
 
     override fun commit(facade: SystemFacade) {
@@ -74,6 +77,7 @@ class SettingsViewModel() : KoinViewModel(), SettingsViewState {
             AppConfig.gridItemSizeMultiplier = gridItemSizeMultiplier
             AppConfig.fabLongPressLaunchConsole = fabLongPressLaunchConsole
             AppConfig.isFileGroupingEnabled = isFileGroupingEnabled
+            AppConfig.isSplashAnimWaitEnabled = isSplashAnimWaitEnabled
 
             // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
             // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
@@ -109,6 +113,7 @@ class SettingsViewModel() : KoinViewModel(), SettingsViewState {
                 trashCanEnabled = AppConfig.isTrashCanEnabled
                 fabLongPressLaunchConsole = AppConfig.fabLongPressLaunchConsole
                 isFileGroupingEnabled = AppConfig.isFileGroupingEnabled
+                isSplashAnimWaitEnabled = AppConfig.isSplashAnimWaitEnabled
             }
         }
     }

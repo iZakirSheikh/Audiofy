@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.5</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.10.0</b>
         <font color='grey'>
             \n - New <b>App icon</b> and <b>Brand</b> image
             \n - New Splash screen icon.
+            \n - New animated splash icon and setting toggle that waits for animation to finish loading.
             \n - Modernize Library and removed Feedback screen
             \n - Improved the acrylic blur effect for a more refined look on older Android versions.
             \n - Made the splash screen fully immersive.
@@ -12,7 +13,6 @@
             \n - Introduced "One Player," our new app and the successor to Audiofy.
             \n - Removed the "Upgrades" section from the app.
             \n - Streamlined the UI by relocating the "Accent Color in Navigation Bar" option to Settings.
-            \n - Refined the splash screen with an updated background color for a more polished launch.
         </font>
     </string>
 

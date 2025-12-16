@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
@@ -659,6 +661,22 @@ class MainActivity :
         // Set up the splash screen
         initSplashScreen()
         if (isColdStart) {
+            // Wait for Splash Anim
+            if (AppConfig.isSplashAnimWaitEnabled){
+                val uptimeMillis = SystemClock.uptimeMillis()
+                val content = findViewById<View>(android.R.id.content)
+                val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener{
+                    override fun onPreDraw(): Boolean {
+                        // wait for splash screen animation to finish.
+                        val finished = SystemClock.uptimeMillis() - uptimeMillis >= 1500 // maxDuration.
+                        Log.d(TAG, "onPreDraw: $finished")
+                        if (finished)
+                            content.viewTreeObserver.removeOnPreDrawListener(this )
+                        return finished
+                    }
+                }
+                content.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
+            }
             // check for updates
             initiateUpdateFlow()
             // Handle pending intents after a brief delay to ensure UI readiness

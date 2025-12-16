@@ -338,6 +338,7 @@ interface SettingsViewState {
     var gridItemSizeMultiplier: Float
     var fabLongPressLaunchConsole: Boolean
     var isFileGroupingEnabled: Boolean
+    var isSplashAnimWaitEnabled: Boolean
 
     /**
      * Commits [AppConfig] to memory.
