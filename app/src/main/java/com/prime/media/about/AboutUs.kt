@@ -214,9 +214,9 @@ private fun GetToKnowUs(
     },
     leading = {
         Surface(
-            color = AppTheme.colors.background(2.dp),
-            shape = AvatarShape,
-            modifier = Modifier.size(64.dp)
+            color = Color.Black,
+            shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
+            modifier = Modifier.size(50.dp),
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),

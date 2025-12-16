@@ -81,9 +81,9 @@ fun Sponsor(modifier: Modifier = Modifier) {
         // app icon
         leading = {
             Surface(
-                color = AppTheme.colors.background(4.dp),
-                shape = AppTheme.shapes.compact,
-                modifier = Modifier.size(64.dp),
+                color = Color.Black,
+                shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
+                modifier = Modifier.size(50.dp),
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),

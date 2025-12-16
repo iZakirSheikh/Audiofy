@@ -34,9 +34,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.common.Artwork
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.settings.Settings
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 
@@ -89,7 +91,7 @@ private fun App(
         Artwork(
             data = value.second,
             modifier = Modifier
-                .shadow(4.dp, RoundedCornerShape(24), true)
+                .shadow(4.dp, Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE), true)
                 .size(60.dp)
         )
 
