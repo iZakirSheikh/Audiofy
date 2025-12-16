@@ -3,7 +3,7 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.9.5</b>
         <font color='grey'>
-            \n - New App icon.
+            \n - New <b>App icon</b> and <b>Brand</b> image
             \n - Modernize Library and removed Feedback screen
             \n - Improved the acrylic blur effect for a more refined look on older Android versions.
             \n - Made the splash screen fully immersive.
