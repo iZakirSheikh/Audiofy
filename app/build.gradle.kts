@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationDefaultConfig
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
@@ -6,6 +7,23 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.service)
     alias(libs.plugins.crashanlytics)
+}
+
+//
+kotlin {
+    compilerOptions {
+        // Target JVM bytecode version (was "11" string, now typed enum)
+        jvmTarget = JvmTarget.JVM_17
+
+        // Add experimental/advanced compiler flags
+        freeCompilerArgs.addAll(
+            "-Xopt-in=kotlin.RequiresOptIn",
+            "-Xcontext-parameters",
+            "-Xopt-in=com.primex.core.ExperimentalToolkitApi",
+            "-Xwhen-guards",
+            "-Xcontext-sensitive-resolution",
+        )
+    }
 }
 
 /**
@@ -112,19 +130,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = listOf(
-            "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xcontext-parameters",
-            "-Xopt-in=com.primex.core.ExperimentalToolkitApi",
-            "-Xwhen-guards",
-            "-Xcontext-sensitive-resolution",
-        )
-    }
+
     buildFeatures { compose = true; buildConfig = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
     dynamicFeatures += setOf(":codex")

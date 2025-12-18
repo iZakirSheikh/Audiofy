@@ -1,7 +1,17 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+}
+
+//
+kotlin {
+    compilerOptions {
+        // Target JVM bytecode version (was "11" string, now typed enum)
+        jvmTarget = JvmTarget.JVM_17
+    }
 }
 
 android {
@@ -25,10 +35,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "11" }
     buildFeatures { compose = true }
 }
 
