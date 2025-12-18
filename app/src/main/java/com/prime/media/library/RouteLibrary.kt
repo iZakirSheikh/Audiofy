@@ -88,7 +88,7 @@ import com.prime.media.common.floatingTopBarShape
 import com.prime.media.common.rememberHazeState
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.personalize.RoutePersonalize
-import com.prime.media.settings.AppConfig
+import com.prime.media.common.AppConfig
 import com.prime.media.settings.RouteSettings
 import com.primex.core.ImageBrush
 import com.primex.core.lerp

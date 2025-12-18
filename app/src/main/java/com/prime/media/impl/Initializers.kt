@@ -33,8 +33,8 @@ import com.prime.media.old.impl.Remote
 import com.prime.media.old.impl.Repository
 import com.prime.media.old.impl.SystemDelegate
 import com.prime.media.old.impl.TagEditorViewModel
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.primex.preferences.Preferences
 import com.primex.preferences.invoke
 import com.zs.core.db.Playlists
@@ -68,7 +68,7 @@ private val KoinAppModules = module {
         // Initialize Preferences
         val preferences = Preferences(get(), "Shared_Preferences")
         // Retrieve the app configuration from preferences and update config only if not null
-        val config = preferences(Settings.KEY_APP_CONFIG)
+        val config = preferences(Registry.KEY_APP_CONFIG)
         if (config != null) {
             val result = runCatching { AppConfig.update(config) }
             if (result.isFailure) {
@@ -76,10 +76,10 @@ private val KoinAppModules = module {
             }
         }
         // Retrieve the current launch counter value, defaulting to 0 if not set
-        val counter = preferences(Settings.KEY_LAUNCH_COUNTER) ?: 0
+        val counter = preferences(Registry.KEY_LAUNCH_COUNTER) ?: 0
         // Increment the launch counter for cold starts
-        preferences[Settings.KEY_LAUNCH_COUNTER] = counter + 1
-        Log.d(TAG, "Cold start counter: ${preferences(Settings.KEY_LAUNCH_COUNTER)}")
+        preferences[Registry.KEY_LAUNCH_COUNTER] = counter + 1
+        Log.d(TAG, "Cold start counter: ${preferences(Registry.KEY_LAUNCH_COUNTER)}")
         // Return the preferences instance
         preferences
     }

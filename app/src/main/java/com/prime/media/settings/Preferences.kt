@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.Deck
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.outlined.AppBlocking
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.FormatSize
@@ -49,15 +48,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.ColorizationStrategy
+import com.prime.media.common.Registry
 import com.prime.media.common.preference
-import com.prime.media.old.common.LocalNavController
-import com.prime.media.permission.RoutePermission
 import com.primex.core.textArrayResource
 import com.primex.core.textResource
 import com.primex.material2.DropDownPreference
@@ -146,14 +143,14 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
     // Night Mode Strategy
     // The strategy to use for night mode.
     item(contentType = CONTENT_TYPE_PREF) {
-        val strategy by preference(Settings.NIGHT_MODE)
+        val strategy by preference(Registry.NIGHT_MODE)
         val entries = textArrayResource(R.array.pref_night_mode_entries)
         DropDownPreference(
             text = textResource(R.string.pref_app_theme_s, entries[strategy.ordinal]),
             value = strategy,
             icon = Icons.Default.LightMode,
             entries = entries,
-            onRequestChange = { viewState.set(Settings.NIGHT_MODE, it) },
+            onRequestChange = { viewState.set(Registry.NIGHT_MODE, it) },
             values = NightMode.values(),
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.TopTileShape)
         )
@@ -174,12 +171,12 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
 
     // Accent nav
     item(contentType = CONTENT_TYPE_PREF) {
-        val use by preference(Settings.USE_ACCENT_IN_NAV_BAR)
+        val use by preference(Registry.USE_ACCENT_IN_NAV_BAR)
         SwitchPreference(
             checked = use,
             text = textResource(R.string.pref_accent_nav),
             onCheckedChange = { should: Boolean ->
-                viewState.set(Settings.USE_ACCENT_IN_NAV_BAR, should)
+                viewState.set(Registry.USE_ACCENT_IN_NAV_BAR, should)
             },
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.CentreTileShape)
         )
@@ -224,7 +221,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                         expanded,
                         AppTheme.colors.accent,
                         onColorPicked = { pickedColor ->
-                            val key = if (isLightTheme) Settings.COLOR_ACCENT_LIGHT else Settings.COLOR_ACCENT_DARK
+                            val key = if (isLightTheme) Registry.COLOR_ACCENT_LIGHT else Registry.COLOR_ACCENT_DARK
                             if (pickedColor.isSpecified)
                                 viewState.set(key, pickedColor)
                             expanded = false
@@ -232,13 +229,13 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     )
 
                     // Manual
-                    val current by preference(Settings.COLORIZATION_STRATEGY)
+                    val current by preference(Registry.COLORIZATION_STRATEGY)
                     ToggleButton(
                         selected = current == ColorizationStrategy.Manual,
                         onClick = {
                             expanded = true
                             // TODO - Allow only users to use this strategy if they have paid version.
-                            viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Manual)
+                            viewState.set(Registry.COLORIZATION_STRATEGY, ColorizationStrategy.Manual)
                         },
                         label = textResource(R.string.manual),
                         icon = Icons.Default.ColorLens,
@@ -247,7 +244,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     // Default
                     ToggleButton(
                         selected = current == ColorizationStrategy.Default,
-                        onClick = {  viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Default) },
+                        onClick = {  viewState.set(Registry.COLORIZATION_STRATEGY, ColorizationStrategy.Default) },
                         label = textResource(R.string.defult),
                         icon = Icons.Default.Deck,
                     )
@@ -256,7 +253,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     ToggleButton(
                         selected = current == ColorizationStrategy.Wallpaper,
                         onClick = {
-                            viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Wallpaper)
+                            viewState.set(Registry.COLORIZATION_STRATEGY, ColorizationStrategy.Wallpaper)
                         },
                         label = textResource(R.string.dynamic),
                         icon = Icons.Default.Devices,
@@ -265,7 +262,7 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
                     // Artwork
                     ToggleButton(
                         selected = current == ColorizationStrategy.Artwork,
-                        onClick = {  viewState.set(Settings.COLORIZATION_STRATEGY, ColorizationStrategy.Artwork) },
+                        onClick = {  viewState.set(Registry.COLORIZATION_STRATEGY, ColorizationStrategy.Artwork) },
                         label = textResource(R.string.album_art),
                         icon = Icons.Default.Image
                     )
@@ -328,12 +325,12 @@ fun LazyListScope.preferences(viewState: SettingsViewState) {
     // Translucent System Bars
     // Whether System Bars are rendered as translucent or Transparent.
     item(contentType = CONTENT_TYPE_PREF) {
-        val translucentSystemBars by preference(Settings.TRANSPARENT_SYSTEM_BARS)
+        val translucentSystemBars by preference(Registry.TRANSPARENT_SYSTEM_BARS)
         SwitchPreference(
             checked = translucentSystemBars,
             text = textResource(R.string.pref_translucent_system_bars),
             onCheckedChange = { should: Boolean ->
-                viewState.set(Settings.TRANSPARENT_SYSTEM_BARS, should)
+                viewState.set(Registry.TRANSPARENT_SYSTEM_BARS, should)
             },
             modifier = Modifier.background(AppTheme.colors.background(1.dp), RS.BottomTileShape)
         )

@@ -24,8 +24,8 @@ import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
 import com.prime.media.old.console.Constraints
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
@@ -225,7 +225,7 @@ fun Glance(
             // Provide the current scope for navigation animations.
             CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                 // Get the user's preference for the Glance widget.
-                val widget by preference(Settings.GLANCE)
+                val widget by preference(Registry.GLANCE)
                 when (value) {
                     // Show mini player if not expanded.
                     false -> MiniLayout(state, modifier = clickable)

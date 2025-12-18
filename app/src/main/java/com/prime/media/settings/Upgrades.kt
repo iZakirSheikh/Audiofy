@@ -50,6 +50,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.MainActivity
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.Registry
 import com.prime.media.common.dynamicFeatureRequest
 import com.prime.media.common.dynamicModuleName
 import com.prime.media.common.ellipsize
@@ -108,7 +109,7 @@ private fun Upgrade(
                         .padding(top = CP.medium),
                     style = AppTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
-                    fontFamily = FontFamily.OutfitFontFamily,
+                    fontFamily = Registry.OutfitFontFamily,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

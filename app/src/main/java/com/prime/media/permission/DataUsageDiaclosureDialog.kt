@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.primex.core.textResource
 import com.primex.material2.Button
 import com.primex.material2.IconButton
@@ -60,12 +60,12 @@ fun DataUsageDisclosureDialog(onDismissRequest: () -> Unit) {
             ) {
                 OutlinedButton("Decline", onClick = {
                     AppConfig.isQueryingAppPackagesAllowed = false
-                    facade.setPreference(Settings.KEY_APP_CONFIG, AppConfig.stringify())
+                    facade.setPreference(Registry.KEY_APP_CONFIG, AppConfig.stringify())
                     facade.restart(true)
                 })
                 Button("I Agree", onClick = {
                     AppConfig.isQueryingAppPackagesAllowed = true
-                    facade.setPreference(Settings.KEY_APP_CONFIG, AppConfig.stringify())
+                    facade.setPreference(Registry.KEY_APP_CONFIG, AppConfig.stringify())
                     facade.restart(true)
                 })
             }

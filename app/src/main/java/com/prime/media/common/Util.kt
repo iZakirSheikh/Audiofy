@@ -32,17 +32,22 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.media3.common.C
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
+import com.prime.media.common.Registry.provider
 import com.prime.media.common.menu.Action
 import com.primex.core.withSpanStyle
 import com.zs.core.paymaster.ProductInfo
@@ -342,3 +347,24 @@ var SystemFacade.brightness: Float
             attr.screenBrightness = value.coerceIn(0f, 1f)
         window.attributes = attr
     }
+
+/**
+ * Creates a [FontFamily] from the given Google Font name.
+ *
+ * @param name The name of theGoogle Font to use.
+ * @return A [FontFamily] object
+ */
+@Stable
+fun FontFamily(name: String): FontFamily {
+    // Create a GoogleFont object from the given name.
+    val font = GoogleFont(name)
+    // Create a FontFamily object with four different font weights.
+    return FontFamily(
+        Font(fontProvider = Registry.provider, googleFont = font, weight = FontWeight.Light),
+        Font(fontProvider = Registry.provider, googleFont = font, weight = FontWeight.Medium),
+        Font(fontProvider = Registry.provider, googleFont = font, weight = FontWeight.Normal),
+        Font(fontProvider = Registry.provider, googleFont = font, weight = FontWeight.Bold),
+    )
+}
+
+val FontFamily.Companion.DancingScriptFontFamily get() = Registry.DancingScriptFontFamily

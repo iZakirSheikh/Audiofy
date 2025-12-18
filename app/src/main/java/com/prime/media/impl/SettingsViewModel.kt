@@ -29,8 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.prime.media.R
 import com.prime.media.common.SystemFacade
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.prime.media.settings.SettingsViewState
 import com.primex.preferences.Key
 import com.zs.core_ui.toast.Toast
@@ -82,7 +82,7 @@ class SettingsViewModel() : KoinViewModel(), SettingsViewState {
             // [PERSISTENCE] Serialize and save the updated AppConfig to preferences
             // The `stringify()` method likely converts the AppConfig object into a JSON or similar string format
             // for storage. `preferences` is an abstraction over SharedPreferences or DataStore.
-            preferences[Settings.KEY_APP_CONFIG] = AppConfig.stringify()
+            preferences[Registry.KEY_APP_CONFIG] = AppConfig.stringify()
             // trigger save
             val enabled = trashCanEnabled
             trashCanEnabled = !enabled

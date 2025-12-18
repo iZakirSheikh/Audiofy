@@ -68,8 +68,8 @@ import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.settings.DancingScriptFontFamily
-import com.prime.media.settings.Settings
+import com.prime.media.common.DancingScriptFontFamily
+import com.prime.media.common.Registry
 import com.primex.core.fadingEdge
 import com.primex.core.shapes.SquircleShape
 import com.primex.core.textResource
@@ -165,22 +165,22 @@ private fun TopAppBar(
             // Feedback
             IconButton(
                 imageVector = Icons.Outlined.AlternateEmail,
-                onClick = { facade.launch(Settings.FeedbackIntent) },
+                onClick = { facade.launch(Registry.FeedbackIntent) },
             )
             // Star on Github
             IconButton(
                 imageVector = Icons.Outlined.DataObject,
-                onClick = { facade.launch(Settings.GithubIntent) },
+                onClick = { facade.launch(Registry.GithubIntent) },
             )
             // Report Bugs on Github.
             IconButton(
                 imageVector = Icons.Outlined.BugReport,
-                onClick = { facade.launch(Settings.GitHubIssuesPage) },
+                onClick = { facade.launch(Registry.GitHubIssuesPage) },
             )
             // Join our telegram channel
             IconButton(
                 imageVector = Icons.Outlined.Textsms,
-                onClick = { facade.launch(Settings.TelegramIntent) },
+                onClick = { facade.launch(Registry.TelegramIntent) },
             )
         }
     )
@@ -215,7 +215,7 @@ private fun GetToKnowUs(
     leading = {
         Surface(
             color = Color.Black,
-            shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
+            shape = Registry.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
             modifier = Modifier.size(50.dp),
         ) {
             Icon(

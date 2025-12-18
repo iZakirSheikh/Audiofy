@@ -65,8 +65,8 @@ import com.prime.media.common.observeProductInfoAsState
 import com.prime.media.common.preference
 import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
 import com.primex.core.MetroGreen
@@ -216,7 +216,7 @@ private fun JoinUs(
         action = {
             com.primex.material2.Button(
                 label = stringResource(id = R.string.telegram),
-                onClick = { facade.launch(Settings.TelegramIntent) },
+                onClick = { facade.launch(Registry.TelegramIntent) },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.SkyBlue.copy(0.12f)
                 ),
@@ -290,7 +290,7 @@ private fun HelpTranslate(
         action = {
             com.primex.material2.Button(
                 label = stringResource(id = R.string.translate),
-                onClick = { facade.launch(Settings.TranslateIntent) },
+                onClick = { facade.launch(Registry.TranslateIntent) },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.SkyBlue.copy(0.12f)
                 ),
@@ -367,7 +367,7 @@ context(_: RouteLibrary)
 fun Promotions(modifier: Modifier = Modifier) {
     // current: Index of the currently displayed promotion item.
     // Starts with ID_NONE to indicate no promotion is initially shown.
-    val count by preference(Settings.KEY_LAUNCH_COUNTER)
+    val count by preference(Registry.KEY_LAUNCH_COUNTER)
     // expanded: State variable to track if a promotion item is expanded (details shown).
     // onValueChange: Callback to update the expanded state.
     val (expanded, onValueChange) = remember { mutableStateOf(false) }

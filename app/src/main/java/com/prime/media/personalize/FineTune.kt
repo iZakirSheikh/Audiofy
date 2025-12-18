@@ -26,11 +26,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -45,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.prime.media.BuildConfig
@@ -53,8 +49,7 @@ import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.isFreemium
 import com.prime.media.common.purchase
-import com.prime.media.old.console.Constraints
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry
 import com.primex.core.ImageBrush
 import com.primex.core.fadingEdge
 import com.primex.core.visualEffect
@@ -115,7 +110,7 @@ fun ArtworkShapeRow(
                     Column(
                         modifier = Modifier.width(MAX_WIDTH),
                         content = {
-                            val shape = Settings.mapKeyToShape(key)
+                            val shape = Registry.mapKeyToShape(key)
                             AsyncImage(
                                 artwork,
                                 contentDescription = null,

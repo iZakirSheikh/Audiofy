@@ -74,7 +74,7 @@ import com.prime.media.common.dynamicBackdrop
 import com.prime.media.common.emit
 import com.prime.media.common.fullLineSpan
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.settings.AppConfig
+import com.prime.media.common.AppConfig
 import com.primex.core.plus
 import com.primex.core.thenIf
 import com.primex.material2.IconButton

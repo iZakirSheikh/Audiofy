@@ -12,8 +12,8 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.WorkerThread
 import com.prime.media.old.common.util.toMember
 import com.prime.media.old.core.db.*
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.primex.preferences.Preferences
 import com.primex.preferences.value
 import com.zs.core.db.Playlist
@@ -105,7 +105,7 @@ class Repository  (
     // FixMe: Move the logic of black list to MediaStore.
     fun observe(uri: Uri) = combine(
         flow = resolver.observe(uri),
-        flow2 = preferences[Settings.BLACKLISTED_FILES],
+        flow2 = preferences[Registry.BLACKLISTED_FILES],
     ) { self, _ ->
         self
     }
@@ -187,7 +187,7 @@ class Repository  (
      * @return The list of audios that satisfy the filtering criteria.
      */
     private suspend fun filter(values: List<Audio>): List<Audio> {
-        val excludePaths = preferences.value(Settings.BLACKLISTED_FILES)
+        val excludePaths = preferences.value(Registry.BLACKLISTED_FILES)
 
         // A helper function that checks if a given path is blacklisted or not.
         fun isExcluded(path: String): Boolean {
@@ -395,7 +395,7 @@ class Repository  (
         filter: String? = null,
         ascending: Boolean = true,
     ) = resolver.getFolders(filter, ascending).let { folders ->
-        val excludePaths = preferences.value(Settings.BLACKLISTED_FILES)
+        val excludePaths = preferences.value(Registry.BLACKLISTED_FILES)
         fun isExcluded(path: String): Boolean {
             // If the excludePaths list is null, return false.
             if (excludePaths == null) return false

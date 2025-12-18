@@ -49,9 +49,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.common.AppConfig
 import com.prime.media.common.FloatingLargeTopAppBar
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
+import com.prime.media.common.Registry
 import com.prime.media.common.fadingEdge2
 import com.prime.media.common.rememberHazeState
 import com.primex.core.plus
@@ -67,7 +69,6 @@ import com.zs.core_ui.adaptive.HorizontalTwoPaneStrategy
 import com.zs.core_ui.adaptive.SinglePaneStrategy
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.contentInsets
-import com.zs.core_ui.sharedBounds
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import androidx.compose.foundation.layout.WindowInsetsSides as WIS
@@ -137,13 +138,13 @@ object RouteSettings : Route {
                         com.primex.material2.IconButton (
                             imageVector = Icons.Outlined.Textsms,
                             contentDescription = null,
-                            onClick = { facade.launch(Settings.TelegramIntent) },
+                            onClick = { facade.launch(Registry.TelegramIntent) },
                         )
                         // Report Bugs on Github.
                         com.primex.material2.IconButton(
                             imageVector = Icons.Outlined.BugReport,
                             contentDescription = null,
-                            onClick = { facade.launch(Settings.GitHubIssuesPage) },
+                            onClick = { facade.launch(Registry.GitHubIssuesPage) },
                         )
                     },
                     backdrop = surface,

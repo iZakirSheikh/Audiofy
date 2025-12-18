@@ -12,7 +12,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry
 import com.primex.core.textResource
 import com.primex.material2.OutlinedButton
 import com.zs.core_ui.LocalWindowSize
@@ -30,7 +30,7 @@ object RoutePermission : Route
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Permission() {
-    val permission = Permissions(permissions = Settings.REQUIRED_PERMISSIONS)
+    val permission = Permissions(permissions = Registry.REQUIRED_PERMISSIONS)
     val (width, _) = LocalWindowSize.current
     com.prime.media.common.Placeholder(
         iconResId = R.raw.lt_permission,

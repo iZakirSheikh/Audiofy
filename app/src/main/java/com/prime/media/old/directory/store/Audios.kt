@@ -43,7 +43,6 @@ import com.prime.media.old.common.util.PathUtils
 import com.prime.media.old.common.util.addDistinct
 import com.prime.media.old.common.util.share
 import com.prime.media.old.common.util.toMember
-import com.prime.media.old.core.*
 import com.prime.media.old.core.db.Audio
 import com.prime.media.old.core.db.albumUri
 import com.prime.media.old.core.db.key
@@ -54,12 +53,10 @@ import com.prime.media.old.directory.*
 import com.prime.media.old.directory.dialogs.Playlists
 import com.prime.media.old.editor.TagEditor
 import com.prime.media.old.impl.Repository
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
 import com.primex.core.*
 import com.primex.material2.*
 import com.primex.preferences.Preferences
-import com.primex.preferences.value
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.toast.Toast

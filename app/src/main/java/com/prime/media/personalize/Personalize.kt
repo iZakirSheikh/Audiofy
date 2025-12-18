@@ -21,7 +21,6 @@
 package com.prime.media.personalize
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -69,8 +68,8 @@ import com.prime.media.common.ScenicAppBar
 import com.prime.media.common.collectNowPlayingAsState
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.settings.ColorizationStrategy
-import com.prime.media.settings.Settings
+import com.prime.media.common.ColorizationStrategy
+import com.prime.media.common.Registry
 import com.primex.core.plus
 import com.primex.core.textResource
 import com.primex.core.thenIf
@@ -188,21 +187,21 @@ private fun ColorizationStrategyRow(
             AppTheme.colors.accent,
             onColorPicked = { pickedColor ->
                 if (pickedColor.isSpecified)
-                    viewState[if (isLightTheme) Settings.COLOR_ACCENT_LIGHT else Settings.COLOR_ACCENT_DARK] =
+                    viewState[if (isLightTheme) Registry.COLOR_ACCENT_LIGHT else Registry.COLOR_ACCENT_DARK] =
                         pickedColor
                 expanded = false
             }
         )
 
         // Manual
-        val current by preference(Settings.COLORIZATION_STRATEGY)
+        val current by preference(Registry.COLORIZATION_STRATEGY)
         ToggleButton(
             selected = current == ColorizationStrategy.Manual,
             onClick = {
                 if (current == ColorizationStrategy.Manual)
                     expanded = true
                 // TODO - Allow only users to use this strategy if they have paid version.
-                viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Manual;
+                viewState[Registry.COLORIZATION_STRATEGY] = ColorizationStrategy.Manual;
             },
             label = textResource(R.string.manual),
             icon = Icons.Default.ColorLens,
@@ -211,7 +210,7 @@ private fun ColorizationStrategyRow(
         // Default
         ToggleButton(
             selected = current == ColorizationStrategy.Default,
-            onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Default },
+            onClick = { viewState[Registry.COLORIZATION_STRATEGY] = ColorizationStrategy.Default },
             label = textResource(R.string.defult),
             icon = Icons.Default.Deck,
         )
@@ -219,7 +218,7 @@ private fun ColorizationStrategyRow(
         ToggleButton(
             selected = current == ColorizationStrategy.Wallpaper,
             onClick = {
-                viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Wallpaper
+                viewState[Registry.COLORIZATION_STRATEGY] = ColorizationStrategy.Wallpaper
             },
             label = textResource(R.string.dynamic),
             icon = Icons.Default.Devices,
@@ -227,7 +226,7 @@ private fun ColorizationStrategyRow(
 
         ToggleButton(
             selected = current == ColorizationStrategy.Artwork,
-            onClick = { viewState[Settings.COLORIZATION_STRATEGY] = ColorizationStrategy.Artwork },
+            onClick = { viewState[Registry.COLORIZATION_STRATEGY] = ColorizationStrategy.Artwork },
             label = textResource(R.string.album_art),
             icon = Icons.Default.Image
         )
@@ -278,7 +277,7 @@ fun Personalize(viewState: ViewState) {
         },
         primary = {
             // The selected Widget
-            val selected by preference(Settings.GLANCE)
+            val selected by preference(Registry.GLANCE)
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = ComponentSpacing,
@@ -312,7 +311,7 @@ fun Personalize(viewState: ViewState) {
                         )
                     }
                     item {
-                        val selected by preference(Settings.ARTWORK_SHAPE_KEY)
+                        val selected by preference(Registry.ARTWORK_SHAPE_KEY)
                         ArtworkShapeRow(
                             state.artwork,
                             selected,
@@ -358,7 +357,7 @@ fun Personalize(viewState: ViewState) {
                         style = AppTheme.typography.bodyMedium,
                         contentPadding = HeaderPadding
                     )
-                    val selected by preference(Settings.ARTWORK_SHAPE_KEY)
+                    val selected by preference(Registry.ARTWORK_SHAPE_KEY)
                     ArtworkShapeRow(
                         state.artwork,
                         selected,

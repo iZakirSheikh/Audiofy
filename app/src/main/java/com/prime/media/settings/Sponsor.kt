@@ -42,7 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
+import com.prime.media.common.DancingScriptFontFamily
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.Registry
 import com.prime.media.common.purchase
 import com.primex.core.textResource
 import com.primex.material2.ListTile
@@ -82,7 +84,7 @@ fun Sponsor(modifier: Modifier = Modifier) {
         leading = {
             Surface(
                 color = Color.Black,
-                shape = Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
+                shape = Registry.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE),
                 modifier = Modifier.size(50.dp),
                 content = {
                     Icon(

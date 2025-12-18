@@ -102,10 +102,10 @@ import com.prime.media.playlists.Playlist
 import com.prime.media.playlists.Playlists
 import com.prime.media.playlists.RoutePlaylist
 import com.prime.media.playlists.RoutePlaylists
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.ColorizationStrategy
+import com.prime.media.common.AppConfig
+import com.prime.media.common.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry
 import com.prime.media.widget.Glance
 import com.primex.core.textResource
 import com.primex.core.thenIf
@@ -167,15 +167,15 @@ private fun resolveAccentColor(
     isDark: Boolean
 ): State<Color> {
     // Default accent color based on the current theme
-    val default = if (isDark) Settings.DarkAccentColor else Settings.LightAccentColor
+    val default = if (isDark) Registry.DarkAccentColor else Registry.LightAccentColor
     // Get the activity context for accessing resources and services
     val activity = LocalView.current.context as MainActivity
     // Get the colorization strategy preference
-    val strategy by activity.observeAsState(Settings.COLORIZATION_STRATEGY)
+    val strategy by activity.observeAsState(Registry.COLORIZATION_STRATEGY)
     // Observe the accent color based on the colorization strategy
     if (strategy == ColorizationStrategy.Manual) {
         val state =
-            activity.observeAsState(if (isDark) Settings.COLOR_ACCENT_DARK else Settings.COLOR_ACCENT_LIGHT)
+            activity.observeAsState(if (isDark) Registry.COLOR_ACCENT_DARK else Registry.COLOR_ACCENT_LIGHT)
         Log.d(TAG, "resolveAccentColor: ${state.value}")
         return state
     }
@@ -555,7 +555,7 @@ fun App(
             // Set up the navigation bar using the NavBar composable
             navBar = {
                 val colors = AppTheme.colors
-                val useAccent by (activity as SystemFacade).observeAsState(Settings.USE_ACCENT_IN_NAV_BAR)
+                val useAccent by (activity as SystemFacade).observeAsState(Registry.USE_ACCENT_IN_NAV_BAR)
                 NavigationBar(
                     state.hasActiveMedia,
                     !portrait,
@@ -578,7 +578,7 @@ fun App(
             // Display the main content of the app using the NavGraph composable
             content = {
                 // Load start destination based on if storage permission is set or not.
-                val hasStorageAccess = activity.checkSelfPermissions(Settings.REQUIRED_PERMISSIONS)
+                val hasStorageAccess = activity.checkSelfPermissions(Registry.REQUIRED_PERMISSIONS)
                 NavHost(
                     navController = navController,
                     startDestination = if (!hasStorageAccess) RoutePermission() else RouteLibrary(),
@@ -591,7 +591,7 @@ fun App(
     // Observe the theme changes
     // and update content accordingly.
     val isDark = run {
-        val mode by activity.observeAsState(key = Settings.NIGHT_MODE)
+        val mode by activity.observeAsState(key = Registry.NIGHT_MODE)
         when (mode) {
             NightMode.YES -> true
             NightMode.NO -> false
@@ -604,7 +604,7 @@ fun App(
     // Provide the navController and window size class to child composable.
     AppTheme(
         isLight = !isDark,
-        fontFamily = Settings.DefaultFontFamily,
+        fontFamily = Registry.DefaultFontFamily,
         accent = accent,
         content = {
             // Provide the navController, newWindowClass through LocalComposition.
@@ -619,7 +619,7 @@ fun App(
     )
 
     // Observe the state of the IMMERSE_VIEW setting
-    val transparentSystemBars by activity.observeAsState(Settings.TRANSPARENT_SYSTEM_BARS)
+    val transparentSystemBars by activity.observeAsState(Registry.TRANSPARENT_SYSTEM_BARS)
     LaunchedEffect( style, isDark, transparentSystemBars) {
         // Get the WindowInsetsController for managing system bars
         val window = activity.window

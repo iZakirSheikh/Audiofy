@@ -36,31 +36,24 @@ import androidx.annotation.IntDef
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -73,7 +66,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ClosedCaption
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.FitScreen
@@ -106,7 +98,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -169,22 +160,20 @@ import com.prime.media.old.core.playback.subtitle
 import com.prime.media.old.core.playback.title
 import com.prime.media.old.effects.AudioFx
 import com.prime.media.personalize.RoutePersonalize
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.DancingScriptFontFamily
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.DancingScriptFontFamily
+import com.prime.media.common.Registry
 import com.primex.core.ImageBrush
 import com.primex.core.OrientRed
 import com.primex.core.SignalWhite
 import com.primex.core.findActivity
 import com.primex.core.foreground
-import com.primex.core.plus
 import com.primex.core.thenIf
 import com.primex.core.visualEffect
 import com.primex.material2.Divider
 import com.primex.material2.DropDownMenuItem
 import com.primex.material2.IconButton
 import com.primex.material2.Label
-import com.primex.material2.OutlinedButton2
 import com.primex.material2.menu.DropDownMenu2
 import com.primex.material2.neumorphic.NeumorphicButton
 import com.primex.material2.neumorphic.NeumorphicButtonDefaults
@@ -1376,10 +1365,10 @@ private fun MainContent(
 
         // Artwork
         // TODO - Support different shapes, animation, effects, etc.
-        val bordered by preference(Settings.ARTWORK_BORDERED)
-        val elevated by preference(Settings.ARTWORK_ELEVATED)
-        val shapeKey by preference(Settings.ARTWORK_SHAPE_KEY)
-        val artworkShape = Settings.mapKeyToShape(shapeKey)
+        val bordered by preference(Registry.ARTWORK_BORDERED)
+        val elevated by preference(Registry.ARTWORK_ELEVATED)
+        val shapeKey by preference(Registry.ARTWORK_SHAPE_KEY)
+        val artworkShape = Registry.mapKeyToShape(shapeKey)
         Artwork(
             data = state.artworkUri,
             modifier = Modifier

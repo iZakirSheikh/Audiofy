@@ -9,7 +9,7 @@ import androidx.compose.material.icons.outlined.Error
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.prime.media.library.LibraryViewState
-import com.prime.media.settings.AppConfig
+import com.prime.media.common.AppConfig
 import com.primex.core.Rose
 import com.zs.core.db.Playlist
 import com.zs.core.db.Playlists

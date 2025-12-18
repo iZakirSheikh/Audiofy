@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
 import com.prime.media.common.preference
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
@@ -42,20 +42,20 @@ fun Tweaks(
         verticalArrangement = SPACE,
         horizontalArrangement = SPACE,
         content = {
-           val elevatedArtwork by preference(Settings.ARTWORK_ELEVATED)
+           val elevatedArtwork by preference(Registry.ARTWORK_ELEVATED)
             Tweak(
                 elevatedArtwork,
                 stringResource(R.string.personalize_scr_elevated_artwork),
                 icon = Icons.Outlined.Shower,
-                onClick = { state[Settings.ARTWORK_ELEVATED] = !elevatedArtwork }
+                onClick = { state[Registry.ARTWORK_ELEVATED] = !elevatedArtwork }
             )
 
-            val borderedArtwork by preference(Settings.ARTWORK_BORDERED)
+            val borderedArtwork by preference(Registry.ARTWORK_BORDERED)
             Tweak(
                 borderedArtwork,
                 stringResource(R.string.personalize_scr_artwork_border),
                 icon = Icons.Outlined.BorderStyle,
-                onClick = { state[Settings.ARTWORK_BORDERED] = !borderedArtwork}
+                onClick = { state[Registry.ARTWORK_BORDERED] = !borderedArtwork}
             )
         }
     )

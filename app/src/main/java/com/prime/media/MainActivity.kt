@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -58,8 +57,8 @@ import com.prime.media.common.isDynamicFeature
 import com.prime.media.common.onEachItem
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
-import com.prime.media.settings.AppConfig
-import com.prime.media.settings.Settings
+import com.prime.media.common.AppConfig
+import com.prime.media.common.Registry
 import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
@@ -425,7 +424,7 @@ class MainActivity :
     override fun initiateReviewFlow() {
         lifecycleScope.launch {
             // Get the app launch count from preferences.
-            val count = preferences.value(Settings.KEY_LAUNCH_COUNTER) ?: 0
+            val count = preferences.value(Registry.KEY_LAUNCH_COUNTER) ?: 0
             // Check if the minimum launch count has been reached.
             if (count < MIN_LAUNCHES_BEFORE_REVIEW)
                 return@launch
@@ -742,7 +741,7 @@ class MainActivity :
                 // Promotional messages start with index 1.
                 // The index is calculated using the formula: (counter % MAX_PROMO_MESSAGES).coerceAtLeast(1).
                 // Each message is skipped by PROMO_SKIP_LAUNCHES number of launches.
-                val counter = preferences(Settings.KEY_LAUNCH_COUNTER) ?: 0
+                val counter = preferences(Registry.KEY_LAUNCH_COUNTER) ?: 0
                 if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
                     return@launch
                 val newCounter = counter - MIN_LAUNCHES_BEFORE_REVIEW

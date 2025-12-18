@@ -22,11 +22,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +36,7 @@ import com.prime.media.BuildConfig
 import com.zs.core_ui.ContentPadding
 import com.prime.media.old.common.Artwork
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry as Re
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
 
@@ -91,7 +89,7 @@ private fun App(
         Artwork(
             data = value.second,
             modifier = Modifier
-                .shadow(4.dp, Settings.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE), true)
+                .shadow(4.dp, Re.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE), true)
                 .size(60.dp)
         )
 

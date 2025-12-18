@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.StrictMode
-import android.text.format.DateUtils.*
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
@@ -30,7 +29,7 @@ import com.prime.media.old.core.db.Audio
 import com.prime.media.old.core.db.albumUri
 import com.prime.media.old.core.db.uri
 import com.prime.media.old.core.playback.MediaItem
-import com.prime.media.settings.Settings
+import com.prime.media.common.Registry
 import com.primex.core.runCatching
 import com.zs.core.db.Playlist
 import kotlinx.coroutines.CancellableContinuation
@@ -220,15 +219,15 @@ inline fun <T> MutableList<T>.addDistinct(value: T): Boolean {
 @Deprecated("Use the method from SystemFacade.")
 fun Context.launchPlayStore() {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Settings.GOOGLE_STORE)).apply {
-            setPackage(Settings.PKG_GOOGLE_PLAY_STORE)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Registry.GOOGLE_STORE)).apply {
+            setPackage(Registry.PKG_GOOGLE_PLAY_STORE)
             addFlags(
                 Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
             )
         }
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Settings.FALLBACK_GOOGLE_STORE)))
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Registry.FALLBACK_GOOGLE_STORE)))
     }
 }
 

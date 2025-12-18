@@ -48,9 +48,9 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.Registry
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.permission.DataUsageDisclosureDialog
-import com.prime.media.permission.RoutePermission
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.primex.material2.ListTile
@@ -88,7 +88,7 @@ fun AboutUs() {
                             onClick = { facade.initiateUpdateFlow(true) })
                         TextButton(
                             textResource(R.string.join_the_beta),
-                            onClick = { facade.launch(Settings.JoinBetaIntent) },
+                            onClick = { facade.launch(Registry.JoinBetaIntent) },
                             enabled = false
                         )
                     }
@@ -102,7 +102,7 @@ fun AboutUs() {
             icon = Icons.Outlined.PrivacyTip,
             modifier = Modifier
                 .clip(AppTheme.shapes.medium)
-                .clickable { facade.launch(Settings.PrivacyPolicyIntent) },
+                .clickable { facade.launch(Registry.PrivacyPolicyIntent) },
         )
 
         // App Access
@@ -140,7 +140,7 @@ fun AboutUs() {
             Chip(
                 content = { Label(textResource(R.string.share_app_label)) },
                 leadingIcon = { Icon(Icons.Outlined.Share, null) },
-                onClick = { facade.launch(Settings.ShareAppIntent) },
+                onClick = { facade.launch(Registry.ShareAppIntent) },
                 colors = colors,
                 shape = AppTheme.shapes.small
             )
