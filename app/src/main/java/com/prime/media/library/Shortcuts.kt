@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
+import com.prime.media.common.LocalSystemFacade
 import com.prime.media.local.RouteAlbums
 import com.prime.media.local.RouteArtists
 import com.prime.media.local.RouteGenres
@@ -117,41 +118,41 @@ fun Shortcuts(modifier: Modifier = Modifier) {
         verticalArrangement = NormalRecentItemArrangement,
         content = {
             val navigator = LocalNavController.current
-
+            val facade = LocalSystemFacade.current
             // Removed commented-out "Folders" shortcut for now
             // Add it back when implemented or provide an explanation
 
             // Shortcut for Genres navigation
             Shortcut(
-                onAction = { navigator.navigate(RouteGenres()) },
+                onAction = { facade.showPromoToast(); navigator.navigate(RouteGenres());  },
                 icon = Icons.Outlined.Grain,
                 label = textResource(id = R.string.genres),
             )
 
             // Shortcut for Audios navigation
             Shortcut(
-                onAction = { navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
+                onAction = { facade.showPromoToast(); navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
                 icon = Icons.Outlined.GraphicEq,
                 label = textResource(id = R.string.audios),
             )
 
             // Shortcut for Artists navigation
             Shortcut(
-                onAction = { navigator.navigate(RouteArtists()) },
+                onAction = { facade.showPromoToast(); navigator.navigate(RouteArtists()) },
                 icon = Icons.Outlined.Person,
                 label = textResource(id = R.string.artists),
             )
 
             // Shortcut for Video Library
             Shortcut(
-                onAction = { navigator.navigate(RouteAlbums()) },
+                onAction = { facade.showPromoToast(); navigator.navigate(RouteAlbums()) },
                 icon = Icons.Outlined.Album,
                 label = textResource(id = R.string.albums),
             )
 
             // Shortcut for Favourite playlist navigation
             Shortcut(
-                onAction = { navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
+                onAction = { facade.showPromoToast(); navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                 icon = Icons.Outlined.FavoriteBorder,
                 label = textResource(id = R.string.favourite),
             )

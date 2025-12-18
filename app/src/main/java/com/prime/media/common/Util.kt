@@ -26,6 +26,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -47,6 +48,7 @@ import androidx.media3.common.C
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.prime.media.BuildConfig
+import com.prime.media.R
 import com.prime.media.common.Registry.provider
 import com.prime.media.common.menu.Action
 import com.primex.core.withSpanStyle
@@ -186,6 +188,14 @@ val ProductInfo.isPurchasable: Boolean
             else -> true
         }
     }
+
+val ProductInfo.action
+    @StringRes
+    get() = when (id) {
+        BuildConfig.IAP_BUY_ME_COFFEE -> R.string.sponsor
+        else -> R.string.unlock
+    }
+
 
 private val fullLineSpan: (LazyGridItemSpanScope.() -> GridItemSpan) = { GridItemSpan(maxLineSpan) }
 val LazyGridScope.fullLineSpan

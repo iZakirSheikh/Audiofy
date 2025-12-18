@@ -247,6 +247,26 @@ interface SystemFacade {
      * @param value the value to be stored in the data store
      */
     fun <S, O> setPreference(key: Key<S, O>, value: O)
+
+    /**
+     * Displays a promotional toast message to the user.
+     *
+     * The promo toast serves as a lightweight, non-intrusive tip or reminder
+     * highlighting various aspects of the app, such as:
+     * - Helpful usage tips to improve the user experience
+     * - Unlockable in-app features that encourage deeper engagement
+     * - Newly released features or updates worth exploring
+     * - Occasional promotional content or announcements
+     *
+     * This method selects a random message from the available pool to keep
+     * the experience fresh and engaging. It is intended for casual,
+     * user-facing communication rather than critical alerts.
+     *
+     * Usage:
+     * Call this function whenever you want to surface a quick,
+     * contextual promo without disrupting the user’s workflow.
+     */
+    fun showPromoToast()
 }
 
 /**

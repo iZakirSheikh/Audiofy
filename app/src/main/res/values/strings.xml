@@ -415,13 +415,11 @@
         </font>
     </string>
     <string name="presets">Presets</string>
-    <string name="msg_promotion_one_player_app"><b>🚀 New App Alert!</b>
-        <font color='grey'>\nSay hello to <b>One Player</b> — the next evolution of <b>Audiofy</b>.
-            Enjoy a powerful, all‑in‑one offline media player that\’s more robust, compact, and feature‑rich.
-        </font>
-</string>
     <string name="get">Get</string>
     <string name="pref_enable_splash_anim_wait"><b>App Intro</b> (Android 12+)\n<font color="grey" size="14"><b>Waits (<i> Max 1500ms</i>)</b> for the splash animation to fully finish before continuing.</font></string>
-
-
+    <string name="msg_promotion_new_app_s"><b>🌟 Discover Something New!</b>
+        <font color='grey'>\nSay hello to <b>%s</b>, designed by <b>Googol Apps</b>.
+            Experience a sleek, modern app built to delight and empower you.
+        </font>
+    </string>
 </resources>

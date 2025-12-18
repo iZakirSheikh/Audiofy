@@ -33,12 +33,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
-import com.zs.core_ui.ContentPadding
-import com.prime.media.old.common.Artwork
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.common.Registry as Re
+import com.prime.media.old.common.Artwork
 import com.primex.material2.Label
 import com.zs.core_ui.AppTheme
+import com.zs.core_ui.ContentPadding
+import com.prime.media.common.Registry as Re
 
 /**
  * Represents an app with its title, image URL, and Play Store URL.
@@ -48,29 +48,6 @@ import com.zs.core_ui.AppTheme
  * @property third The URL of the app's Play Store page.
  */
 private typealias App = Triple<String, String, String>
-
-private val MyAppList = listOf(
-    App(
-        "One Player",
-        "https://lh3.googleusercontent.com/FSYnTtWc0vdQPgLq2bMv9IMyKy45EKR4AI0Y-90hCuNhfzwfy1SEXAoPuZhijl9JoMIqKK1ipa8ZzJUdFsqeY8k",
-        "com.googol.android.apps.oneplayer"
-    ),
-    App(
-        "Unit Converter",
-        "https://play-lh.googleusercontent.com/TtUj94noX7g5B6Vs84A2PpVSCreYWVye5mHz32mSMHXCojT0xxDRtXBwXbc1q42AaA=s256-rw",
-        "com.prime.toolz2"
-    ),
-    App(
-        "Scientific Calculator",
-        "https://play-lh.googleusercontent.com/ZK1RCWbqO5faf4Z1diQM6HtoaGbmM5dYudYY5yXXP1yZawHrElerat7ix0slYzAxHZRq=s256-rw",
-        "com.prime.calculator.paid"
-    ),
-    App(
-        "Gallery - Photos & Videos",
-        "https://play-lh.googleusercontent.com/HlADK_i_qZoBn_4GNdjgCDt3Ah-h1ZbL_jUy1j_kDUo9Hvoq3AiUPI_ZxZXY95ftl7hu=w240-h480-rw",
-        "com.googol.android.apps.photos"
-    )
-)
 
 @Composable
 private fun App(
@@ -117,7 +94,7 @@ fun MyApps(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val facade = LocalSystemFacade.current
-        MyAppList.forEach { app ->
+        Re.featuredApps.forEach { app ->
             App(
                 value = app,
                 onClick = { facade.launchAppStore(app.third) }

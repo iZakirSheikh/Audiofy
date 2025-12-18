@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Downloading
 import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.HotelClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
@@ -48,18 +49,21 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
+import com.prime.media.common.AppConfig
 import com.prime.media.common.MediaFile
+import com.prime.media.common.Registry
 import com.prime.media.common.SystemFacade
+import com.prime.media.common.action
 import com.prime.media.common.domain
 import com.prime.media.common.dynamicFeatureRequest
 import com.prime.media.common.dynamicModuleName
 import com.prime.media.common.isDynamicFeature
+import com.prime.media.common.isFreemium
+import com.prime.media.common.isPurchasable
 import com.prime.media.common.onEachItem
+import com.prime.media.common.richDesc
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
-import com.prime.media.common.AppConfig
-import com.prime.media.common.Registry
-import com.primex.core.Amber
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
 import com.primex.core.getText2
@@ -91,6 +95,7 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 import com.zs.core_ui.showPlatformToast as showAndroidToast
@@ -614,39 +619,138 @@ class MainActivity :
         splitInstallManager.startInstall(request)
     }
 
-    private fun showPromoToast(index: Int, delay: Long = 5_000) {
-        // This function is designed to display promotional messages identified by index.
-        // - An index of 0 indicates the "What's New" message.
-        // - An index of 1 is used to promote the media player.
-        // If a message cannot be displayed for any reason, the index is incremented by 1 until the
-        // maximum index is reached.
+    // Timestamp (ms since epoch) of when the last promo was shown.
+    // Initialized to -1L meaning "no promo has been shown yet".
+    var lastPromoTimestampMs: Long = -1L
+    // Tracks how many times promo logic has been invoked.
+    // Initialized to -1 meaning "not yet initialized".
+    // Each increment advances both the promo sequence and category.
+    // Category is derived as: promoInvocationCount % 3
+    //   0 → In-app purchase promos (range 0..999)
+    //   1 → Featured app promos (range 1000..1999)
+    //   2 → Tip of the day promos (range 2000..2999)
+    var promoInvocationCount: Int = -1
+    override fun showPromoToast() {
+        val now = System.currentTimeMillis()
+
+        // Prevent showing promos too frequently:
+        // If a promo was shown before AND less than 10 minutes have passed since then,
+        // exit early without showing a new promo.
+        if (lastPromoTimestampMs != -1L &&
+            now - lastPromoTimestampMs < 10.minutes.inWholeMilliseconds
+        ) return
+
+        // Update the timestamp to mark that a promo is being shown now.
+        lastPromoTimestampMs = now
+
         lifecycleScope.launch {
-            if (delay > 0) delay(delay) // delay at least some
-            when(index){
-                // What's new
-                0 -> toastHostState.showToast(
-                    resources.getText2(R.string.what_s_new_latest),
-                    priority = Toast.PRIORITY_CRITICAL
-                )
-                // One player
-                1 -> {
-                    val pkg = "com.googol.android.apps.oneplayer"
-                    // check if already installed. if yes return
-                    val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)
-                        runCatching(TAG, { packageManager.getPackageInfo(pkg, 0) }) != null
-                    else true
-                    if (isInstalled)
-                        return@launch
+            // Initialize promo counter from preferences if not yet set.
+            if (promoInvocationCount == -1)
+                promoInvocationCount = preferences(Registry.KEY_LAUNCH_COUNTER) ?: 0
+
+            // Determine promo category and index.
+            //
+            // Formula:
+            //   index = (category * 1000) + promoInvocationCount
+            //
+            // Breakdown:
+            //   • category = promoInvocationCount % 3
+            //       - 0 → In-app purchase promos
+            //       - 1 → Featured app promos
+            //       - 2 → Tip of the day promos
+            //
+            //   • promoInvocationCount → app launch counter, used to vary the specific item
+            //                             within a category (ensures rotation and avoids repeats).
+            val category = promoInvocationCount % 3
+            val index = (category * 1000) + promoInvocationCount
+            runCatching(TAG) {
+                // Delegate to the main promo toast logic with the computed index.
+                showPromoToast(index)
+            }
+        }
+    }
+
+    /**
+     * Displays a promotional toast based on the given [index].
+     *
+     * - `-1` → "What's New" message.
+     * - `0..999` → In-app purchase promotions (skips purchased/unavailable/freemium items).
+     * - `1000..1999` → Featured apps promotion (skips already installed apps).
+     *
+     * @param index Position determining which promo to show.
+     * @param delay Optional delay before showing the toast (ms).
+     */
+    private suspend fun showPromoToast(index: Int, delay: Long = 0) {
+        if (delay > 0) delay(delay)
+        // Case 0 → Show "What's New" toast
+        if (index == -1) {
+            showToast(
+                resources.getText2(R.string.what_s_new_latest),
+                priority = Toast.PRIORITY_CRITICAL
+            )
+            return
+        }
+        var currentIndex = index
+        var attempts = 0
+        while (attempts++ < 30) {
+            when (currentIndex) {
+                // Case → In-app purchase promotions
+                in 0..999 -> {
+                    val id = IAPs[currentIndex % IAPs.size]
+                    // Retrieve purchase info; if missing, skip to next promo
+                    val (info, purchase) = paymaster[id] ?: run {
+                        currentIndex++   // skip to next promo
+                        continue
+                    }
+
+                    // Skip if purchased, not purchasable, or freemium
+                    if (purchase.purchased || !info.isPurchasable || !info.isFreemium) {
+                        currentIndex++
+                        continue
+                    }
+                    // Show toast with item description and action
                     val result = toastHostState.showToast(
-                        message = resources.getText2(R.string.msg_promotion_one_player_app),
+                        info.richDesc,
+                        getText(info.action),
+                        priority = Toast.PRIORITY_CRITICAL,
+                        icon = Icons.Outlined.HotelClass
+                    )
+
+                    if (result == Toast.ACTION_PERFORMED) {
+                        initiatePurchaseFlow(id)
+                    }
+                    return
+
+                }
+                // Case → Featured apps promotions
+                in 1000..1999 -> {
+                    val apps = Registry.featuredApps
+                    val (name, _, pkg) = apps[currentIndex % apps.size]
+
+                    // Check if app is already installed
+                    val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)
+                        runCatching(TAG) { packageManager.getPackageInfo(pkg, 0) } != null
+                    else true
+                    // Skip to next promo if app is installed
+                    if (isInstalled) {
+                        currentIndex++
+                        continue
+                    }
+                    // Show toast promoting new app
+                    val result = toastHostState.showToast(
+                        message = resources.getText2(R.string.msg_promotion_new_app_s, name),
                         icon = Icons.Outlined.GetApp,
                         priority = Toast.PRIORITY_CRITICAL,
                         action = resources.getText2(R.string.get),
-                        accent = Color.Amber
                     )
+
                     if (result == Toast.ACTION_PERFORMED)
                         launchAppStore(pkg)
+                    return
                 }
+                // Case → Tip of the day (stub)
+                // Fallback → Not implemented beyond defined ranges
+                else -> TODO("Not implemented beyond this.")
             }
         }
     }
@@ -661,16 +765,17 @@ class MainActivity :
         initSplashScreen()
         if (isColdStart) {
             // Wait for Splash Anim
-            if (AppConfig.isSplashAnimWaitEnabled){
+            if (AppConfig.isSplashAnimWaitEnabled) {
                 val uptimeMillis = SystemClock.uptimeMillis()
                 val content = findViewById<View>(android.R.id.content)
-                val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener{
+                val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener {
                     override fun onPreDraw(): Boolean {
                         // wait for splash screen animation to finish.
-                        val finished = SystemClock.uptimeMillis() - uptimeMillis >= 1500 // maxDuration.
+                        val finished =
+                            SystemClock.uptimeMillis() - uptimeMillis >= 1500 // maxDuration.
                         Log.d(TAG, "onPreDraw: $finished")
                         if (finished)
-                            content.viewTreeObserver.removeOnPreDrawListener(this )
+                            content.viewTreeObserver.removeOnPreDrawListener(this)
                         return finished
                     }
                 }
@@ -729,7 +834,7 @@ class MainActivity :
                 val savedVersionCode = preferences(KEY_APP_VERSION_CODE)
                 if (savedVersionCode != versionCode) {
                     preferences[KEY_APP_VERSION_CODE] = versionCode
-                    showPromoToast(0) // What's new
+                    showPromoToast(-1, 10_000) // What's new
                     return@launch
                 }
 

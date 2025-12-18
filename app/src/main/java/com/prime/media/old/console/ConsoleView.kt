@@ -671,7 +671,7 @@ private inline fun Controls(
     val facade = LocalSystemFacade.current
     LottieAnimButton(
         id = R.raw.lt_shuffle_on_off,
-        onClick = { state.toggleShuffle(); facade.initiateReviewFlow(); },
+        onClick = { state.toggleShuffle(); facade.showPromoToast(); },
         atEnd = !shuffle,
         progressRange = 0f..0.8f,
         scale = 1.5f
@@ -680,7 +680,7 @@ private inline fun Controls(
     var enabled = !state.isFirst
     val onColor = LocalContentColor.current
     IconButton(
-        onClick = { state.skipToPrev(); facade.initiateReviewFlow() },
+        onClick = { state.skipToPrev();  facade.showPromoToast(); },
         painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowLeft),
         contentDescription = null,
         enabled = enabled,
@@ -689,7 +689,7 @@ private inline fun Controls(
 
     // play_button
     PlayButton(
-        onClick = { state.togglePlay(); facade.initiateReviewFlow() },
+        onClick = { state.togglePlay();  facade.showPromoToast(); },
         isPlaying = state.isPlaying,
         modifier = Modifier
             .padding(horizontal = ContentPadding.medium)
@@ -700,7 +700,7 @@ private inline fun Controls(
     // Skip to Next
     enabled = !state.isLast
     IconButton(
-        onClick = { state.skipToNext(); facade.initiateReviewFlow() },
+        onClick = { state.skipToNext();  facade.showPromoToast(); },
         painter = rememberVectorPainter(image = Icons.Outlined.KeyboardDoubleArrowRight),
         contentDescription = null,
         enabled = enabled,
@@ -711,7 +711,7 @@ private inline fun Controls(
     val mode = state.repeatMode
     AnimatedIconButton(
         id = R.drawable.avd_repeat_more_one_all,
-        onClick = { state.cycleRepeatMode(); facade.initiateReviewFlow(); },
+        onClick = { state.cycleRepeatMode();  facade.showPromoToast(); },
         atEnd = mode == Player.REPEAT_MODE_ALL,
         tint = onColor.copy(if (mode == Player.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
     )
@@ -788,6 +788,7 @@ private fun More(
         modifier = modifier,
         content = {
             val onColor = LocalContentColor.current
+            val facade = LocalSystemFacade.current
             // The icon of this item.
             Icon(
                 imageVector = Icons.Outlined.MoreHoriz,
@@ -810,13 +811,13 @@ private fun More(
                 content = {
                     DropDownMenuItem(
                         title = "Auto",
-                        onClick = { state.currAudioTrack = null; expanded = 1 }
+                        onClick = { facade.showPromoToast(); state.currAudioTrack = null; expanded = 1;   }
                     )
                     // Others
                     state.audios.forEach { track ->
                         DropDownMenuItem(
                             title = track.name,
-                            onClick = { state.currAudioTrack = track; expanded = 1 })
+                            onClick = { facade.showPromoToast(); state.currAudioTrack = track; expanded = 1;   })
                     }
                 }
             )
@@ -835,13 +836,13 @@ private fun More(
                 content = {
                     DropDownMenuItem(
                         title = "Off",
-                        onClick = { state.currSubtitleTrack = null; expanded = 1 }
+                        onClick = {  facade.showPromoToast(); state.currSubtitleTrack = null; expanded = 1;  }
                     )
                     // Others
                     state.subtiles.forEach { track ->
                         DropDownMenuItem(
                             title = track.name,
-                            onClick = { state.currSubtitleTrack = track; expanded = 1 })
+                            onClick = { facade.showPromoToast(); state.currSubtitleTrack = track; expanded = 1;   })
                     }
                 }
             )
@@ -868,6 +869,7 @@ private fun More(
                                         controller.navigate(AudioFx.route)
                                     else
                                         facade.launchEqualizer(state.audioSessionId)
+                                    facade.showPromoToast();
                                     expanded = 0
                                 }
                             )
@@ -875,7 +877,7 @@ private fun More(
                             // Control Centre
                             IconButton(
                                 imageVector = Icons.Outlined.ColorLens,
-                                onClick = { controller.navigate(RoutePersonalize()); expanded = 0 }
+                                onClick = { facade.showPromoToast();  controller.navigate(RoutePersonalize()); expanded = 0;  }
                             )
                         }
                     )
@@ -886,7 +888,7 @@ private fun More(
                     DropDownMenuItem(
                         title = "Audio",
                         subtitle = state.currAudioTrack?.name ?: "Auto",
-                        onClick = { expanded = 2 },
+                        onClick = { facade.showPromoToast(); expanded = 2;   },
                         icon = rememberVectorPainter(image = Icons.Outlined.Speaker),
                         enabled = isVideo
                     )
@@ -895,7 +897,7 @@ private fun More(
                     DropDownMenuItem(
                         title = "Subtitle",
                         subtitle = state.currSubtitleTrack?.name ?: "Off",
-                        onClick = { expanded = 3 },
+                        onClick = {  facade.showPromoToast(); expanded = 3;  },
                         icon = rememberVectorPainter(Icons.Outlined.ClosedCaption),
                         enabled = isVideo
                     )
@@ -945,6 +947,7 @@ private fun Options(
 
     // Represents the current component that is in expanded state.
     var expanded by remember { mutableIntStateOf(0) }
+    val facade = LocalSystemFacade.current
     // show playing queue
     PlayingQueue(
         state = state,
@@ -958,7 +961,7 @@ private fun Options(
     if (state.isVideo)
         IconButton(
             imageVector = Icons.Outlined.Lock,
-            onClick = { onRequest(REQUEST_TOOGLE_LOCK) },
+            onClick = { facade.showPromoToast(); onRequest(REQUEST_TOOGLE_LOCK);  },
         )
 
     // Speed Controller.
@@ -970,6 +973,7 @@ private fun Options(
             if (it == -1f) {
                 state.ensureAlwaysVisible(false)
                 expanded = 0
+                facade.showPromoToast();
                 return@PlaybackSpeed
             }
             state.playbackSpeed = it
@@ -983,6 +987,7 @@ private fun Options(
             if (it != -2L)
                 state.sleepAfterMills = it
             expanded = 0
+            facade.showPromoToast();
             state.ensureAlwaysVisible(false)
         }
     )
@@ -995,20 +1000,21 @@ private fun Options(
             // check if parent might handle the request of showing the dialog.
             if (onRequest(REQUEST_SHOW_PLAYING_QUEUE))
                 return@IconButton
+            facade.showPromoToast();
             expanded = 1; state.ensureAlwaysVisible(true)
         },
     )
 
     // Speed Controller.
     IconButton(
-        onClick = { expanded = 2; state.ensureAlwaysVisible(true) },
+        onClick = {  facade.showPromoToast(); expanded = 2; state.ensureAlwaysVisible(true);  },
         painter = rememberVectorPainter(image = Icons.Outlined.Speed),
         tint = LocalContentColor.current
     )
 
     // SleepAfter.
     IconButton(
-        onClick = { expanded = 3; state.ensureAlwaysVisible(true) },
+        onClick = {  facade.showPromoToast(); expanded = 3; state.ensureAlwaysVisible(true); },
         content = {
             val mills = state.sleepAfterMills
             Crossfade(targetState = mills != -1L, label = "SleepAfter CrossFade") { show ->
@@ -1032,10 +1038,9 @@ private fun Options(
 
     // Favourite
     val favourite = state.favourite
-    val facade = LocalSystemFacade.current
     LottieAnimButton(
         id = R.raw.lt_twitter_heart_filled_unfilled,
-        onClick = { state.toggleFav(); facade.initiateReviewFlow() },
+        onClick = { state.toggleFav(); facade.initiateReviewFlow();  },
         scale = 3.5f,
         progressRange = 0.13f..0.95f,
         duration = 800,

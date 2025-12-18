@@ -84,55 +84,87 @@ import com.zs.core_ui.shape.NotchedCornerShape
 import com.zs.core_ui.shape.RoundedPolygonShape
 import com.zs.core_ui.shape.RoundedStarShape
 import com.zs.core_ui.shape.SkewedRoundedRectangleShape
+import kotlin.Triple
 
 /**
  * ##### Registry
  *
- * This object centralizes constants, reusable intents, font providers, artwork shapes,
- * accent colors, and preference keys used throughout the Audiofy app.
+ * Centralized object that holds constants, reusable intents, font providers,
+ * artwork shapes, accent colors, and preference keys used throughout the Audiofy app.
  *
- * @property GOOGLE_STORE Play Store deep link for the app.
- * @property FALLBACK_GOOGLE_STORE Fallback HTTP Play Store link for the app.
- * @property PKG_GOOGLE_PLAY_STORE Package name of Google Play Store.
+ * ---
+ * ### Play Store
+ * @property GOOGLE_STORE            Play Store deep link for the app.
+ * @property FALLBACK_GOOGLE_STORE   Fallback HTTP Play Store link for the app.
+ * @property PKG_GOOGLE_PLAY_STORE   Package name of Google Play Store.
  *
- * @property provider Google Fonts provider configuration.
- * @property OutfitFontFamily Font family for "Outfit".
- * @property RobotoFontFamily Font family for "Roboto".
- * @property DancingScriptFontFamily Font family for "Dancing Script".
- * @property DefaultFontFamily Default system font family.
+ * ---
+ * ### Fonts
+ * @property provider                 Google Fonts provider configuration.
+ * @property OutfitFontFamily         Font family for "Outfit".
+ * @property RobotoFontFamily         Font family for "Roboto".
+ * @property DancingScriptFontFamily  Font family for "Dancing Script".
+ * @property DefaultFontFamily        Default system font family.
  *
+ * ---
+ * ### Persistence
  * @property ColorSaver Saver for persisting and restoring [Color] values in preferences.
  *
- * @property FeedbackIntent Intent to send feedback via email.
- * @property PrivacyPolicyIntent Intent to view the privacy policy document.
- * @property GitHubIssuesPage Intent to view the GitHub issues page.
- * @property TelegramIntent Intent to open the Telegram support channel.
- * @property GithubIntent Intent to view the GitHub repository.
- * @property JoinBetaIntent Intent to join the Play Store beta program.
- * @property ShareAppIntent Intent to share the app link.
- * @property TranslateIntent Intent to open the Crowdin translation project.
+ * ---
+ * ### Intents
+ * @property FeedbackIntent       Intent to send feedback via email.
+ * @property PrivacyPolicyIntent  Intent to view the privacy policy document.
+ * @property GitHubIssuesPage     Intent to view the GitHub issues page.
+ * @property TelegramIntent       Intent to open the Telegram support channel.
+ * @property GithubIntent         Intent to view the GitHub repository.
+ * @property JoinBetaIntent       Intent to join the Play Store beta program.
+ * @property ShareAppIntent       Intent to share the app link.
+ * @property TranslateIntent      Intent to open the Crowdin translation project.
  *
+ * ---
+ * ### Accent Colors
  * @property LightAccentColor Default light accent color.
- * @property DarkAccentColor Default dark accent color.
+ * @property DarkAccentColor  Default dark accent color.
  *
- * @property NIGHT_MODE Preference key for night mode setting.
- * @property TRANSPARENT_SYSTEM_BARS Preference key for system bar translucency behavior.
- * @property BLACKLISTED_FILES Preference key for excluded files/folders from media scanning.
- * @property GAP_LESS_PLAYBACK Preference key for enabling gapless playback.
- * @property CROSS_FADE_DURATION_SECS Preference key for crossfade duration between tracks.
- * @property COLORIZATION_STRATEGY Preference key for artwork colorization strategy.
- * @property ARTWORK_BORDERED Preference key for enabling artwork borders.
- * @property ARTWORK_ELEVATED Preference key for enabling artwork elevation.
- * @property COLOR_ACCENT_LIGHT Preference key for light accent color.
- * @property COLOR_ACCENT_DARK Preference key for dark accent color.
- * @property GLANCE Preference key for widget platform style.
- * @property KEY_LAUNCH_COUNTER Preference key for tracking app launches.
- * @property USE_ACCENT_IN_NAV_BAR Preference key for accent color usage in navigation bar.
- * @property ARTWORK_SHAPE_KEY Preference key for selected artwork shape.
- * @property KEY_APP_CONFIG Preference key for app configuration.
+ * ---
+ * ### Preferences
+ * @property NIGHT_MODE                 Preference key for night mode setting.
+ * @property TRANSPARENT_SYSTEM_BARS    Preference key for system bar translucency behavior.
+ * @property BLACKLISTED_FILES          Preference key for excluded files/folders from media scanning.
+ * @property GAP_LESS_PLAYBACK          Preference key for enabling gapless playback.
+ * @property CROSS_FADE_DURATION_SECS   Preference key for crossfade duration between tracks.
+ * @property COLORIZATION_STRATEGY      Preference key for artwork colorization strategy.
+ * @property ARTWORK_BORDERED           Preference key for enabling artwork borders.
+ * @property ARTWORK_ELEVATED           Preference key for enabling artwork elevation.
+ * @property COLOR_ACCENT_LIGHT         Preference key for light accent color.
+ * @property COLOR_ACCENT_DARK          Preference key for dark accent color.
+ * @property GLANCE                     Preference key for widget platform style.
+ * @property KEY_LAUNCH_COUNTER         Preference key for tracking app launches.
+ * @property USE_ACCENT_IN_NAV_BAR      Preference key for accent color usage in navigation bar.
+ * @property ARTWORK_SHAPE_KEY          Preference key for selected artwork shape.
+ * @property KEY_APP_CONFIG             Preference key for app configuration.
  *
- * Functions:
- * @see mapKeyToShape Maps stored shape keys to their corresponding [Shape] instances.
+ * ---
+ * ### Featured Apps
+ * @property featuredApps A curated list of featured apps published by the developer.
+ * Each entry is represented as a [Triple] containing:
+ * 1. **App name** – the human‑readable title of the app.
+ * 2. **Icon URL** – a direct link to the app’s promotional image or icon.
+ * 3. **Package name** – the unique identifier used on the Play Store.
+ *
+ * This list can be used to showcase other apps inside the UI,
+ * for cross‑promotion, or to provide quick navigation links.
+ *
+ * Example usage:
+ * ```
+ * featuredApps.forEach { (name, iconUrl, packageName) ->
+ *     // Display app card with name, icon, and launch intent
+ * }
+ * ```
+ *
+ * ---
+ * ### Functions
+ * // Add function documentation here
  */
 object Registry {
     // --- Store links and package identifiers ---
@@ -189,6 +221,36 @@ object Registry {
         data = Uri.parse("https://crowdin.com/project/audiofy")
     }
 
+    // --- Featured apps ---
+    val featuredApps = listOf(
+        // 🎵 Media player app
+        Triple(
+            "One Player", // App name
+            "https://lh3.googleusercontent.com/FSYnTtWc0vdQPgLq2bMv9IMyKy45EKR4AI0Y-90hCuNhfzwfy1SEXAoPuZhijl9JoMIqKK1ipa8ZzJUdFsqeY8k", // Icon URL
+            "com.googol.android.apps.oneplayer" // Package name
+        ),
+
+        // 🔢 Utility app for conversions
+        Triple(
+            "Unit Converter",
+            "https://play-lh.googleusercontent.com/TtUj94noX7g5B6Vs84A2PpVSCreYWVye5mHz32mSMHXCojT0xxDRtXBwXbc1q42AaA=s256-rw",
+            "com.prime.toolz2"
+        ),
+
+        // 🧮 Advanced calculator
+        Triple(
+            "Scientific Calculator",
+            "https://play-lh.googleusercontent.com/ZK1RCWbqO5faf4Z1diQM6HtoaGbmM5dYudYY5yXXP1yZawHrElerat7ix0slYzAxHZRq=s256-rw",
+            "com.prime.calculator.paid"
+        ),
+
+        // 🖼️ Gallery app for photos & videos
+        Triple(
+            "Gallery - Photos & Videos",
+            "https://play-lh.googleusercontent.com/HlADK_i_qZoBn_4GNdjgCDt3Ah-h1ZbL_jUy1j_kDUo9Hvoq3AiUPI_ZxZXY95ftl7hu=w240-h480-rw",
+            "com.googol.android.apps.photos"
+        )
+    )
     // --- Artwork shapes ---
     // Shapes used for artwork customization in UI
     private val ArtworkShapeRoundedRect = RoundedCornerShape(15)

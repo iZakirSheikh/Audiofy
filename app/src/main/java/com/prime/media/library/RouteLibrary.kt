@@ -65,7 +65,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +77,7 @@ import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.about.RouteAboutUs
 import com.prime.media.common.AdaptiveLargeTopAppBar
+import com.prime.media.common.AppConfig
 import com.prime.media.common.Banner
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Regular
@@ -88,7 +88,6 @@ import com.prime.media.common.floatingTopBarShape
 import com.prime.media.common.rememberHazeState
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.personalize.RoutePersonalize
-import com.prime.media.common.AppConfig
 import com.prime.media.settings.RouteSettings
 import com.primex.core.ImageBrush
 import com.primex.core.lerp
@@ -138,6 +137,7 @@ object RouteLibrary : Route {
     ) {
         val navController = LocalNavController.current
         val colors = AppTheme.colors
+        val facade = LocalSystemFacade.current
         AdaptiveLargeTopAppBar(
             immersive = immersive,
             behavior = behavior,
@@ -151,13 +151,10 @@ object RouteLibrary : Route {
             insets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
             actions = {
                 val contentColor = LocalContentColor.current
-                // Support
-                val ctx = LocalContext.current
-
                 // Settings
                 IconButton(
                     imageVector = Icons.Outlined.Settings,
-                    onClick = { navController.navigate(RouteSettings()) },
+                    onClick = { facade.showPromoToast(); navController.navigate(RouteSettings()) },
                     modifier = Modifier,
                     tint = contentColor
                 )
@@ -202,7 +199,7 @@ object RouteLibrary : Route {
             navigationIcon = {
                 IconButton(
                     Icons.Default.Info,
-                    onClick = { navController.navigate(RouteAboutUs()) },
+                    onClick = { facade.showPromoToast(); navController.navigate(RouteAboutUs()) },
                     contentDescription = null
                 )
             },

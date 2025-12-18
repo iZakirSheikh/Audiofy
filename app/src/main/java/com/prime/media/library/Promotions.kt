@@ -67,6 +67,7 @@ import com.prime.media.common.purchase
 import com.prime.media.common.richDesc
 import com.prime.media.common.AppConfig
 import com.prime.media.common.Registry
+import com.prime.media.common.action
 import com.primex.core.Amber
 import com.primex.core.AzureBlue
 import com.primex.core.MetroGreen
@@ -303,11 +304,7 @@ private fun HelpTranslate(
     )
 }
 
-private val ProductInfo.action
-    get() = when (id) {
-        BuildConfig.IAP_BUY_ME_COFFEE -> R.string.sponsor
-        else -> R.string.unlock
-    }
+
 
 @Composable
 private fun InAppPurchase(
