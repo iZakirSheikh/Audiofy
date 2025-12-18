@@ -3,6 +3,7 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.10.0</b>
         <font color='grey'>
+            \n - Added TV Channel icon and TV Banner as well.
             \n - New <b>App icon</b> and <b>Brand</b> image
             \n - New Splash screen icon.
             \n - New animated splash icon and setting toggle that waits for animation to finish loading.
