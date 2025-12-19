@@ -124,35 +124,35 @@ fun Shortcuts(modifier: Modifier = Modifier) {
 
             // Shortcut for Genres navigation
             Shortcut(
-                onAction = { facade.showPromoToast(); navigator.navigate(RouteGenres());  },
+                onAction = { facade.initiateReviewFlow(); navigator.navigate(RouteGenres());  },
                 icon = Icons.Outlined.Grain,
                 label = textResource(id = R.string.genres),
             )
 
             // Shortcut for Audios navigation
             Shortcut(
-                onAction = { facade.showPromoToast(); navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
+                onAction = { facade.initiateReviewFlow(); navigator.navigate(Audios.direction(Audios.GET_EVERY)) },
                 icon = Icons.Outlined.GraphicEq,
                 label = textResource(id = R.string.audios),
             )
 
             // Shortcut for Artists navigation
             Shortcut(
-                onAction = { facade.showPromoToast(); navigator.navigate(RouteArtists()) },
+                onAction = { facade.initiateReviewFlow(); navigator.navigate(RouteArtists()) },
                 icon = Icons.Outlined.Person,
                 label = textResource(id = R.string.artists),
             )
 
             // Shortcut for Video Library
             Shortcut(
-                onAction = { facade.showPromoToast(); navigator.navigate(RouteAlbums()) },
+                onAction = { facade.initiateReviewFlow(); navigator.navigate(RouteAlbums()) },
                 icon = Icons.Outlined.Album,
                 label = textResource(id = R.string.albums),
             )
 
             // Shortcut for Favourite playlist navigation
             Shortcut(
-                onAction = { facade.showPromoToast(); navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
+                onAction = { facade.initiateReviewFlow(); navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                 icon = Icons.Outlined.FavoriteBorder,
                 label = textResource(id = R.string.favourite),
             )

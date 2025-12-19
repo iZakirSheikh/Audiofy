@@ -387,4 +387,17 @@ object Registry {
             this += Manifest.permission.READ_EXTERNAL_STORAGE
         }
     }
+
+
+    /**
+     * The list of in-App Purchasable that need to be showcased for purchases.
+     */
+    val FEATURED_IAPs = arrayOf(
+        BuildConfig.IAP_NO_ADS,
+        BuildConfig.IAP_TAG_EDITOR_PRO,
+        BuildConfig.IAP_BUY_ME_COFFEE,
+        BuildConfig.IAP_CODEX,
+        BuildConfig.IAP_WIDGETS_PLATFORM,
+        BuildConfig.IAP_COLOR_CROFT_WIDGET_BUNDLE,
+    )
 }

@@ -154,7 +154,7 @@ object RouteLibrary : Route {
                 // Settings
                 IconButton(
                     imageVector = Icons.Outlined.Settings,
-                    onClick = { facade.showPromoToast(); navController.navigate(RouteSettings()) },
+                    onClick = { facade.initiateReviewFlow(); navController.navigate(RouteSettings()) },
                     modifier = Modifier,
                     tint = contentColor
                 )
@@ -199,7 +199,7 @@ object RouteLibrary : Route {
             navigationIcon = {
                 IconButton(
                     Icons.Default.Info,
-                    onClick = { facade.showPromoToast(); navController.navigate(RouteAboutUs()) },
+                    onClick = { facade.initiateReviewFlow(); navController.navigate(RouteAboutUs()) },
                     contentDescription = null
                 )
             },

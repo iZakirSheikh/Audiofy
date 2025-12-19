@@ -95,7 +95,7 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 import com.zs.core_ui.showPlatformToast as showAndroidToast
@@ -171,13 +171,10 @@ private val IAPs = arrayOf(
     BuildConfig.IAP_ARTWORK_SHAPE_SKEWED_RECT
 )
 
-// The maximum number of distinct promotional messages to display to the user.
-private const val MAX_PROMO_MESSAGES = 1
-
 // The number of app launches to skip between showing consecutive promotional messages.
 // After each promotional message is shown, the app will skip this many launches before
 // potentially showing another promotional message.
-private const val PROMO_SKIP_LAUNCHES = 1
+private const val PROMO_SKIP_LAUNCHES = 2
 
 class MainActivity :
     ComponentActivity(),
@@ -619,56 +616,7 @@ class MainActivity :
         splitInstallManager.startInstall(request)
     }
 
-    // Timestamp (ms since epoch) of when the last promo was shown.
-    // Initialized to -1L meaning "no promo has been shown yet".
-    var lastPromoTimestampMs: Long = -1L
-    // Tracks how many times promo logic has been invoked.
-    // Initialized to -1 meaning "not yet initialized".
-    // Each increment advances both the promo sequence and category.
-    // Category is derived as: promoInvocationCount % 3
-    //   0 → In-app purchase promos (range 0..999)
-    //   1 → Featured app promos (range 1000..1999)
-    //   2 → Tip of the day promos (range 2000..2999)
-    var promoInvocationCount: Int = -1
-    override fun showPromoToast() {
-        val now = System.currentTimeMillis()
-
-        // Prevent showing promos too frequently:
-        // If a promo was shown before AND less than 10 minutes have passed since then,
-        // exit early without showing a new promo.
-        if (lastPromoTimestampMs != -1L &&
-            now - lastPromoTimestampMs < 10.minutes.inWholeMilliseconds
-        ) return
-
-        // Update the timestamp to mark that a promo is being shown now.
-        lastPromoTimestampMs = now
-
-        lifecycleScope.launch {
-            // Initialize promo counter from preferences if not yet set.
-            if (promoInvocationCount == -1)
-                promoInvocationCount = preferences(Registry.KEY_LAUNCH_COUNTER) ?: 0
-
-            // Determine promo category and index.
-            //
-            // Formula:
-            //   index = (category * 1000) + promoInvocationCount
-            //
-            // Breakdown:
-            //   • category = promoInvocationCount % 3
-            //       - 0 → In-app purchase promos
-            //       - 1 → Featured app promos
-            //       - 2 → Tip of the day promos
-            //
-            //   • promoInvocationCount → app launch counter, used to vary the specific item
-            //                             within a category (ensures rotation and avoids repeats).
-            val category = promoInvocationCount % 3
-            val index = (category * 1000) + promoInvocationCount
-            runCatching(TAG) {
-                // Delegate to the main promo toast logic with the computed index.
-                showPromoToast(index)
-            }
-        }
-    }
+    private fun showPromoToast(){}
 
     /**
      * Displays a promotional toast based on the given [index].
@@ -696,7 +644,9 @@ class MainActivity :
             when (currentIndex) {
                 // Case → In-app purchase promotions
                 in 0..999 -> {
-                    val id = IAPs[currentIndex % IAPs.size]
+                    val ids = Registry.FEATURED_IAPs
+                    val id = ids[currentIndex % ids.size]
+                    Log.d(TAG, "showPromoToast: IAP: $id")
                     // Retrieve purchase info; if missing, skip to next promo
                     val (info, purchase) = paymaster[id] ?: run {
                         currentIndex++   // skip to next promo
@@ -731,6 +681,7 @@ class MainActivity :
                     val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)
                         runCatching(TAG) { packageManager.getPackageInfo(pkg, 0) } != null
                     else true
+                    Log.d(TAG, "showPromoToast: App: $name  isInstalled: $isInstalled")
                     // Skip to next promo if app is installed
                     if (isInstalled) {
                         currentIndex++
@@ -750,7 +701,10 @@ class MainActivity :
                 }
                 // Case → Tip of the day (stub)
                 // Fallback → Not implemented beyond defined ranges
-                else -> TODO("Not implemented beyond this.")
+                else -> {
+                    Log.d(TAG, "showPromoToast NotImplemented: $index")
+                    return
+                }
             }
         }
     }
@@ -780,6 +734,7 @@ class MainActivity :
                 }
                 content.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
             }
+
             // check for updates
             initiateUpdateFlow()
             // Handle pending intents after a brief delay to ensure UI readiness
@@ -836,34 +791,35 @@ class MainActivity :
                     showPromoToast(-1, 10_000) // What's new
                     return@launch
                 }
-
                 // Promotional messages are displayed only after the app has been launched
                 // more than 5 times (MIN_LAUNCHES_BEFORE_REVIEW).
                 // This ensures that users have had a chance to familiarize themselves with the app
                 // before being presented with these messages.
-                // An index of 0 is reserved for the "What's New" message and is handled separately.
-                // Promotional messages start with index 1.
-                // The index is calculated using the formula: (counter % MAX_PROMO_MESSAGES).coerceAtLeast(1).
-                // Each message is skipped by PROMO_SKIP_LAUNCHES number of launches.
                 val counter = preferences(Registry.KEY_LAUNCH_COUNTER) ?: 0
                 if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
                     return@launch
-                val newCounter = counter - MIN_LAUNCHES_BEFORE_REVIEW
+                val newCounter = counter - /*MIN_LAUNCHES_BEFORE_REVIEW*/ 2 /*skips*/
                 val interval = PROMO_SKIP_LAUNCHES + 1
-                // This line calculates which promotional message to show from a rotating set.
-                Log.d(
-                    TAG,
-                    "Promo(counter=$counter," +
-                            " interval=$interval," +
-                            " newCounter=$newCounter," +
-                            " skip = ${newCounter % interval}," +
-                            " index = ${(newCounter / interval) % MAX_PROMO_MESSAGES + 1} ) "
-                )
-                if (newCounter % interval == 0) {
-                    val index = (newCounter / interval) % MAX_PROMO_MESSAGES + 1
-                    Log.d(TAG, "onCreate: $index")
-                    showPromoToast(index)
+                if (/*newCounter % interval == 0*/ true) {
+                    // Determine promo category and index.
+                    //
+                    // Formula:
+                    //   index = (category * 1000) + promoInvocationCount
+                    //
+                    // Breakdown:
+                    //   • category = promoInvocationCount % 3
+                    //       - 0 → In-app purchase promos
+                    //       - 1 → Featured app promos
+                    //       - 2 → Tip of the day promos
+                    //
+                    //   • promoInvocationCount → app launch counter, used to vary the specific item
+                    //                             within a category (ensures rotation and avoids repeats).
+                    val category = counter % 2
+                    val index = (category * 1000) + counter
+                    Log.d(TAG, "onCreate: category: $category index: $index")
+                    showPromoToast(index, 5_000)
                 }
+
             }
         }
         // Set up the window
