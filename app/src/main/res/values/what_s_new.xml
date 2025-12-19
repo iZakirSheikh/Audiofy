@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.10.0</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.10.1</b>
         <font color='grey'>
+            \n - Fixed issue with splash wait delay.
             \n - Added TV channel icon and TV banner.
             \n - Introduced a new TV <b>app icon</b> and <b>Brand image</b>.
             \n - Updated splash screen icon.

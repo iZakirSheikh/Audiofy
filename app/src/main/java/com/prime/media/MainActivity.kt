@@ -765,17 +765,16 @@ class MainActivity :
         initSplashScreen()
         if (isColdStart) {
             // Wait for Splash Anim
-            if (AppConfig.isSplashAnimWaitEnabled) {
+            if (AppConfig.isSplashAnimWaitEnabled){
                 val uptimeMillis = SystemClock.uptimeMillis()
                 val content = findViewById<View>(android.R.id.content)
-                val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener {
+                val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener{
                     override fun onPreDraw(): Boolean {
                         // wait for splash screen animation to finish.
-                        val finished =
-                            SystemClock.uptimeMillis() - uptimeMillis >= 1500 // maxDuration.
+                        val finished = SystemClock.uptimeMillis() - uptimeMillis >= 1500 // maxDuration.
                         Log.d(TAG, "onPreDraw: $finished")
                         if (finished)
-                            content.viewTreeObserver.removeOnPreDrawListener(this)
+                            content.viewTreeObserver.removeOnPreDrawListener(this )
                         return finished
                     }
                 }
