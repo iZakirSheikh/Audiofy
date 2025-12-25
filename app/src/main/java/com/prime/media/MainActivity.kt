@@ -657,7 +657,7 @@ class MainActivity :
                     }
 
                     // Skip if purchased, not purchasable, or freemium
-                    if (purchase.purchased || !info.isPurchasable || !info.isFreemium) {
+                    if (purchase.purchased || !info.isPurchasable || info.isFreemium) {
                         currentIndex++
                         continue
                     }
@@ -820,7 +820,7 @@ class MainActivity :
                     val category = counter % 2
                     val index = (category * 1000) + counter % 1000
                     Log.d(TAG, "onCreate: category: $category index: $index")
-                    showPromoToast(index, 10_000)
+                    showPromoToast(index, 5_000)
                 }
 
             }
