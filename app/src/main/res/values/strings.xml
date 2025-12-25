@@ -417,9 +417,5 @@
     <string name="presets">Presets</string>
     <string name="get">Get</string>
     <string name="pref_enable_splash_anim_wait"><b>App Intro</b> (Android 12+)\n<font color="grey" size="14"><b>Waits (<i> Max 1500ms</i>)</b> for the splash animation to fully finish before continuing.</font></string>
-    <string name="msg_promotion_new_app_s"><b>🌟 Discover Something New!</b>
-        <font color='grey'>\nSay hello to <b>%s</b>, designed by <b>Googol Apps</b>.
-            Experience a sleek, modern app built to delight and empower you.
-        </font>
-    </string>
+    <string name="msg_promotion_new_app_s"><b>✨ More from Googol Apps!</b><font color='grey'>\nIntroducing <b>%s</b> from <b>Googol Apps</b>. Fast, modern, and packed with features you’ll love. </font></string>
 </resources>

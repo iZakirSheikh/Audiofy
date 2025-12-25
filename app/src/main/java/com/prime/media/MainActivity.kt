@@ -4,6 +4,7 @@ package com.prime.media
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -616,7 +617,9 @@ class MainActivity :
         splitInstallManager.startInstall(request)
     }
 
-    private fun showPromoToast(){}
+    override fun showPromoToast(code: Int) {
+        lifecycleScope.launch { showPromoToast(code, 0) }
+    }
 
     /**
      * Displays a promotional toast based on the given [index].
@@ -719,7 +722,7 @@ class MainActivity :
         initSplashScreen()
         if (isColdStart) {
             // Wait for Splash Anim
-            if (AppConfig.isSplashAnimWaitEnabled){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && AppConfig.isSplashAnimWaitEnabled){
                 val uptimeMillis = SystemClock.uptimeMillis()
                 val content = findViewById<View>(android.R.id.content)
                 val onPreDrawListener = object : ViewTreeObserver.OnPreDrawListener{
@@ -815,9 +818,9 @@ class MainActivity :
                     //   • promoInvocationCount → app launch counter, used to vary the specific item
                     //                             within a category (ensures rotation and avoids repeats).
                     val category = counter % 2
-                    val index = (category * 1000) + counter
+                    val index = (category * 1000) + counter % 1000
                     Log.d(TAG, "onCreate: category: $category index: $index")
-                    showPromoToast(index, 5_000)
+                    showPromoToast(index, 10_000)
                 }
 
             }

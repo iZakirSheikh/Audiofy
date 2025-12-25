@@ -247,6 +247,8 @@ interface SystemFacade {
      * @param value the value to be stored in the data store
      */
     fun <S, O> setPreference(key: Key<S, O>, value: O)
+
+    fun showPromoToast(code: Int)
 }
 
 /**

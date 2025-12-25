@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
+import com.prime.media.common.App
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.old.common.Artwork
 import com.primex.material2.Label
@@ -40,45 +41,8 @@ import com.zs.core_ui.AppTheme
 import com.zs.core_ui.ContentPadding
 import com.prime.media.common.Registry as Re
 
-/**
- * Represents an app with its title, image URL, and Play Store URL.
- *
- * @property first The title of theapp.
- * @property second The URL of the app's image.
- * @property third The URL of the app's Play Store page.
- */
-private typealias App = Triple<String, String, String>
 
-@Composable
-private fun App(
-    value: App,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(AppTheme.shapes.compact)
-            .clickable(onClick = onClick)
-            .padding(ContentPadding.medium),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Artwork(
-            data = value.second,
-            modifier = Modifier
-                .shadow(4.dp, Re.mapKeyToShape(BuildConfig.IAP_ARTWORK_SHAPE_SQUIRCLE), true)
-                .size(60.dp)
-        )
 
-        Label(
-            text = value.first,
-            maxLines = 2,
-            textAlign = TextAlign.Center,
-            style = AppTheme.typography.caption,
-            modifier = Modifier.width(56.dp)
-        )
-    }
-}
 
 
 /**

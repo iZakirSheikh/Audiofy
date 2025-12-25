@@ -64,6 +64,15 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 /**
+ * Represents an app with its title, image URL, and Play Store URL.
+ *
+ * @property first The title of theapp.
+ * @property second The URL of the app's image.
+ * @property third The URL of the app's Play Store page.
+ */
+typealias App = Triple<String, String, String>
+
+/**
  * Creates a split install request for the module with [name]
  */
 inline fun SplitInstallRequest(name: String) =
