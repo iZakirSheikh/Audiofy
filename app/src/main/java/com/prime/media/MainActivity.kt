@@ -678,7 +678,8 @@ class MainActivity :
                 // Case → Featured apps promotions
                 in 1000..1999 -> {
                     val apps = Registry.featuredApps
-                    val (name, _, pkg) = apps[currentIndex % apps.size]
+                    // we only promote audiofy here.
+                    val (name, _, pkg) = apps[/*currentIndex % apps.size*/0]
 
                     // Check if app is already installed
                     val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)

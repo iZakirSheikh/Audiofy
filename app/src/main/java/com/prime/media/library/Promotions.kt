@@ -27,6 +27,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -80,6 +81,7 @@ import com.zs.core.paymaster.purchased
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.scale
 import com.zs.core_ui.shimmer.shimmer
+import com.zs.core_ui.toast.Toast
 import androidx.compose.foundation.layout.PaddingValues as Padding
 import com.primex.core.textResource as stringResource
 import com.zs.core_ui.ContentPadding as CP
@@ -108,6 +110,7 @@ private fun Promotion(
         else -> remember(message) { movableContentOf(action) }
     }
     // Real Content
+    val facade = LocalSystemFacade.current
     ListTile(
         trailing = composableOrNull(!expanded) { movableAction?.invoke() },
         footer = composableOrNull(expanded) { movableAction?.invoke() },
@@ -163,7 +166,16 @@ private fun Promotion(
                 animationSpec = SHIMMER_ANIM_SPEC
             )
             .scale(0.92f)
-            .toggleable(expanded, null, indication = scale(), onValueChange = onValueChange)
+            .combinedClickable(
+                null,
+                indication = scale(),
+                onClick = {
+                    onValueChange(!expanded)
+                },
+                onLongClick = {
+                    facade.showToast(message, icon = icon, accent = accent, priority = Toast.PRIORITY_CRITICAL)
+                }
+            )
             .animateContentSize()
     )
 }
@@ -238,7 +250,7 @@ private fun GetApp(
     modifier: Modifier = Modifier
 ) {
     val facade = LocalSystemFacade.current
-    val pkg = "com.googol.android.apps.photos"
+    val (_, icon, pkg) = Registry.featuredApps[0]
     // Check if the Gallery app is already installed
     val ctx = LocalContext.current
     val isInstalled = remember(pkg) {
@@ -254,13 +266,13 @@ private fun GetApp(
     Promotion(
         expanded,
         onValueChange,
-        message = stringResource(id = R.string.msg_promotion_gallery_app),
+        message = stringResource(id = R.string.msg_promotion_one_player),
         icon = Icons.Outlined.HotelClass,
         modifier = modifier,
         accent = Color.Amber,
         action = {
             com.primex.material2.Button(
-                label = stringResource(id = R.string.dive_in),
+                label = stringResource(id = R.string.get),
                 onClick = { facade.launchAppStore(pkg) },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.Amber.copy(0.12f)
@@ -303,7 +315,6 @@ private fun HelpTranslate(
         }
     )
 }
-
 
 
 @Composable

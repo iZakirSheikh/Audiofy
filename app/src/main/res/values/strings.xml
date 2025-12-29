@@ -385,7 +385,7 @@
     </font>
     </string>
     <string name="translate">Translate</string>
-    <string name="scr_personalize_unlock_all_s">%s<font color ='grey' size = "10">\nUnlock All</font></string>
+    <string name="scr_personalize_unlock_all_s">%s<font color='grey' size="10">\nUnlock All</font></string>
     <string name="accent_color">Accent Color</string>
     <string name="report">Report</string>
     <string name="personalize_scr_artwork_style">Artwork Style</string>
@@ -418,4 +418,18 @@
     <string name="get">Get</string>
     <string name="pref_enable_splash_anim_wait"><b>App Intro</b> (Android 12+)\n<font color="grey" size="14"><b>Waits (<i> Max 1500ms</i>)</b> for the splash animation to fully finish before continuing.</font></string>
     <string name="msg_promotion_new_app_s"><b>✨ More from Googol Apps!</b><font color='grey'>\nIntroducing <b>%s</b> from <b>Googol Apps</b>. Fast, modern, and packed with features you’ll love. </font></string>
+    <string name="msg_promotion_one_player"><b>One Player - Beta</b>
+        <font color='grey'>\nWe\’re excited to launch <font color='red'>One Player</font>, the upgrade to <i>Audiofy</i>.
+            \n<b>Why new?</b>
+                \n• Audiofy\’s code grew heavy, slowing new features.
+                \n• Branding caused confusion.
+                \n• <i>One Player</i> is lighter, faster, future‑ready.
+            \n\n<b>Migration:</b> Keep both apps for now. Promo codes will let you move without losing purchases.
+            \n<b>Future: </b>New editions like <i>Plus</i> and <i>Premium</i>, up to <b>30x more battery‑friendly</b>.
+            \n\nThanks for your support — download now and enjoy the journey!
+            \n<i><b>— Team Audiofy</b></i>
+        </font>
+    </string>
+
+
 </resources>

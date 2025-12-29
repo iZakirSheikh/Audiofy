@@ -18,13 +18,11 @@
 
 package com.prime.media.library
 
-import android.app.Activity
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
@@ -36,10 +34,6 @@ import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,24 +41,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.prime.media.R
-import com.prime.media.common.App
-import com.prime.media.common.AppConfig
 import com.prime.media.common.LocalSystemFacade
-import com.prime.media.common.Registry
-import com.prime.media.common.preference
 import com.prime.media.local.RouteAlbums
 import com.prime.media.local.RouteArtists
 import com.prime.media.local.RouteGenres
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.directory.playlists.Members
 import com.prime.media.old.directory.store.Audios
-import com.primex.core.runCatching
 import com.primex.core.textResource
 import com.primex.material2.Label
 import com.zs.core.playback.Playback
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.shape.FolderShape
-import kotlinx.coroutines.launch
 
 /**
  * Composable function to create a clickable shortcut with an icon and label.
@@ -167,29 +155,6 @@ fun Shortcuts(modifier: Modifier = Modifier) {
                 onAction = { facade.initiateReviewFlow(); navigator.navigate(Members.direction(Playback.PLAYLIST_FAVOURITE)) },
                 icon = Icons.Outlined.FavoriteBorder,
                 label = textResource(id = R.string.favourite),
-            )
-
-            // Featured App -  OnePlayer
-            // Check if app is already installed
-            val app = Registry.featuredApps[0]
-            val isInstalled = if (AppConfig.isQueryingAppPackagesAllowed)
-                runCatching("shortcuts") { (facade as Activity).packageManager.getPackageInfo(app.third, 0) } != null
-            else false
-
-            if (isInstalled)
-                return@FlowRow
-
-            val counter by preference(Registry.KEY_LAUNCH_COUNTER)
-
-
-            if ((counter ?: 0) % 3 != 0)
-                return@FlowRow
-
-            App(
-                value = app,
-                onClick = {
-                    facade.showPromoToast(1000 + 0 /*category + index*/)
-                }
             )
         }
     )
