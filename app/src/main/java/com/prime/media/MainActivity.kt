@@ -175,7 +175,7 @@ private val IAPs = arrayOf(
 // The number of app launches to skip between showing consecutive promotional messages.
 // After each promotional message is shown, the app will skip this many launches before
 // potentially showing another promotional message.
-private const val PROMO_SKIP_LAUNCHES = 2
+private const val PROMO_SKIP_LAUNCHES = 3
 
 class MainActivity :
     ComponentActivity(),
@@ -803,8 +803,8 @@ class MainActivity :
                 if (counter < MIN_LAUNCHES_BEFORE_REVIEW)
                     return@launch
                 val newCounter = counter - /*MIN_LAUNCHES_BEFORE_REVIEW*/ 2 /*skips*/
-                val interval = PROMO_SKIP_LAUNCHES + 1
-                if (/*newCounter % interval == 0*/ true) {
+                val interval = PROMO_SKIP_LAUNCHES
+                if (newCounter % interval == 0) {
                     // Determine promo category and index.
                     //
                     // Formula:
