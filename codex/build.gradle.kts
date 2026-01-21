@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.dynamic.feature)
-    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 //

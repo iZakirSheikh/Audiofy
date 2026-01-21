@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.service)
     alias(libs.plugins.crashanlytics)
@@ -102,8 +101,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 36
-        versionCode = 1054
-        versionName = "3.10.5"
+        versionCode = 1055
+        versionName = "3.11.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.
@@ -125,7 +124,7 @@ android {
         debug {
             // makes it possible to install both release and debug versions in same device.
             applicationIdSuffix = ".debug"
-            resValue("string", "launcher_label", "Debug")
+            // resValue("string", "launcher_label", "Debug")
             versionNameSuffix = "-debug"
         }
     }
