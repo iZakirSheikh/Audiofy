@@ -109,6 +109,7 @@ private val KoinAppModules = module {
     viewModelOf(::PlaylistViewModel)
     viewModel { (h: Handle) -> PlaylistsViewModel(get()) }
     viewModelOf(::AlbumsViewModel)
+    viewModelOf(::ConsoleViewModel2)
     viewModel { (h: Handle) -> AudiosViewModel(h, get(), get(), get(), get()) }
 }
 

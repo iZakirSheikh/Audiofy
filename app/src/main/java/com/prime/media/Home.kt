@@ -106,6 +106,8 @@ import com.prime.media.common.AppConfig
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.common.Registry
+import com.prime.media.console.RouteConsole2
+import com.prime.media.impl.ConsoleViewModel2
 import com.prime.media.widget.Glance
 import com.primex.core.textResource
 import com.primex.core.thenIf
@@ -238,9 +240,6 @@ private fun NavController.toRoute(route: String) {
     }
 }
 
-
-
-
 /**
  *  The navigation graph for the app.
  */
@@ -329,6 +328,11 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
     composable(RouteVideos) {
         val viewModel = koinViewModel<VideosViewModel>()
         Videos(viewState = viewModel)
+    }
+    // New Console
+    composable(RouteConsole2){
+        val viewState = koinViewModel<ConsoleViewModel2>()
+        RouteConsole2(viewState)
     }
 }
 

@@ -21,11 +21,29 @@ package com.zs.core.playback
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import androidx.media3.common.C
+import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.await
 import com.zs.core.playback.PlaybackController.Companion.INDEX_UNSET
 import com.zs.core.playback.PlaybackController.Companion.TIME_UNSET
+import com.zs.core.util.debounceAfterFirst
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 
 private const val TAG = "PlaybackControllerImpl"
 
@@ -90,5 +108,180 @@ internal class PlaybackControllerImpl(
         if (index == INDEX_UNSET && mills == TIME_UNSET) return false
         browser.seekTo(index, mills)
         return true
+    }
+
+    suspend fun getRemainingSleepTime(): Long {
+        val browser = fBrowser.await()
+        val result = browser[PlaybackController.SCHEDULE_SLEEP_TIME]
+        // Get the scheduled time from the result or use the uninitialized value
+        return result.extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
+    }
+
+    override suspend fun getNowPlaying(): NowPlaying2? {
+        // If the events are not null and do not contain any of the relevant state update events,
+        // then there's no need to update the NowPlaying state, so we return early.
+        // if (events != null && !events.containsAny(*Remote.STATE_UPDATE_EVENTS)) return@transform
+        // Await the MediaBrowser instance.
+        val provider = fBrowser.await()
+        // Get the current media item from the provider.
+        val current = provider.currentMediaItem
+        // If there's no current media item, emit null (or the previous state will be retained by stateIn)
+        // and return early.
+        if (current == null)
+            return null
+        // Emit the newly created NowPlaying state.
+        return NowPlaying2(
+            title = current.title?.toString(),
+            subtitle = current.subtitle?.toString(),
+            artwork = current.artworkUri,
+            speed = provider.playbackParameters.speed,
+            shuffle = provider.shuffleModeEnabled,
+            duration = if (provider.playbackState == PlaybackController.PLAYER_STATE_IDLE) PlaybackController.TIME_UNSET else provider.contentDuration,
+            position = provider.contentPosition,
+            // Check if the current media item is in the "favourites" playlist.
+            favourite = false,
+            playWhenReady = provider.playWhenReady,
+            mimeType = current.mimeType,
+            state = provider.playbackState,
+            repeatMode = provider.repeatMode,
+            error = null,
+            videoSize = VideoSize(provider.videoSize),
+            data = current.mediaUri,
+            // Determine the presence of next and previous items.
+            // 2: both next and previous exist
+            // -1: only previous exists
+            // 1: only next exists
+            // 0: neither next nor previous exist
+            neighbours = when {
+                provider.hasNextMediaItem() && provider.hasPreviousMediaItem() -> 2
+                provider.hasPreviousMediaItem() -> -1
+                provider.hasNextMediaItem() -> 1
+                else -> 0
+            },
+            sleepAt = getRemainingSleepTime()
+        )
+    }
+
+    private val autostopPolicy =
+        SharingStarted.WhileSubscribed(5_000, 5_000)
+
+    // This flow emits Player.Events from the MediaBrowser.
+    // It's designed to ensure only one listener is registered with the MediaBrowser,
+    // even if multiple clients collect this flow.
+    // The `autostopSharing` (5 seconds) helps preserve the listener during brief disconnections/reconnections,
+    // preventing unnecessary unregistering and reregistering.
+    private val events = callbackFlow {
+        // init browser
+        val browser = fBrowser.await()
+        val observer = object : Player.Listener {
+            override fun onEvents(player: Player, events: Player.Events) {
+                trySend(events)
+            }
+        }
+        // register
+        send(null)
+        browser.addListener(observer)
+        // un-register on cancel
+        awaitClose {
+            Log.d(TAG, "state: un-registering")
+            browser.removeListener(observer)
+        }
+    }
+    @OptIn(DelicateCoroutinesApi::class)
+    private val remoteScope: CoroutineScope = GlobalScope
+    override val state: StateFlow<NowPlaying2?> = events
+        .filter { it == null || it.containsAny(*PlaybackController.STATE_UPDATE_EVENTS) }
+        .debounceAfterFirst(200)
+        .map { getNowPlaying() }
+        .flowOn(Dispatchers.Main)
+        .stateIn(remoteScope, autostopPolicy, null)
+
+
+    override val queue: Flow<List<MediaFile>?> = events
+        .filter {
+            // Check if the received events are relevant for a queue update.
+            // If `events` is null (initial emission from callbackFlow) or if it doesn't contain
+            // `Player.EVENT_TIMELINE_CHANGED`, it means the queue hasn't changed,
+            // so we don't need to re-fetch and emit it.
+            it == null ||
+                    it.contains(Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED) ||
+                    it.contains(Player.EVENT_TIMELINE_CHANGED)
+        }
+        .debounceAfterFirst(200)
+        .transform {
+            // Await the MediaBrowser instance to ensure it's connected and ready.
+            val provider = fBrowser.await()
+            // Retrieve the current queue from the provider and map each item to a MediaFile object.
+            val list = provider.getChildren(Playback.ROOT_QUEUE, 0, Int.MAX_VALUE, null).await().value
+            // Emit the updated list of MediaFile objects.
+            emit(list?.map(::MediaFile))
+        }
+
+    override suspend fun getPlaybackState(): Int {
+        val browser = fBrowser.await()
+        return  browser.playbackState
+    }
+
+    override suspend fun shuffle(shuffle: Boolean) {
+        val browser = fBrowser.await()
+        browser.shuffleModeEnabled = shuffle
+    }
+
+    override suspend fun togglePlay() {
+        val browser = fBrowser.await()
+        if (browser.isPlaying) browser.pause()
+        else {
+            play(true)
+        }
+    }
+
+    override suspend fun skipToNext() {
+        val browser = fBrowser.await()
+        browser.seekToNextMediaItem()
+    }
+
+    override suspend fun skipToPrevious() {
+        val browser = fBrowser.await()
+        browser.seekToPreviousMediaItem()
+    }
+
+    override suspend fun cycleRepeatMode(): Int {
+        val browser = fBrowser.await()
+        val current = browser.repeatMode
+        val new = when (current) {
+            PlaybackController.REPEAT_MODE_OFF -> PlaybackController.REPEAT_MODE_ONE
+            PlaybackController.REPEAT_MODE_ONE -> PlaybackController.REPEAT_MODE_ALL
+            else -> PlaybackController.REPEAT_MODE_OFF
+        }
+        browser.repeatMode = new
+        return new
+    }
+
+    override suspend fun remove(uri: Uri): Boolean {
+        // obtain the corresponding index from the key
+        val index = indexOf(uri)
+        // return false since we don't have the index.
+        // this might be because the item is already removed.
+        if (index == C.INDEX_UNSET)
+            return false
+        // remove the item
+        val browser = fBrowser.await()
+        val isCurrentIndex = browser.currentMediaItemIndex == index
+        if (isCurrentIndex)
+            browser.seekToNextMediaItem()
+        browser.removeMediaItem(index)
+        return true
+    }
+
+    override suspend fun setPlaybackSpeed(value: Float): Boolean {
+        val browser = fBrowser.await() // Await the MediaBrowser instance.
+        browser.playbackParameters =
+            browser.playbackParameters.withSpeed(value) // Set the new playback speed.
+        return browser.playbackParameters.speed == value // Verify if the speed was set correctly.
+    }
+
+    override suspend fun getPlaybackSpeed(): Float {
+        val browser = fBrowser.await()
+        return browser.playbackParameters.speed
     }
 }

@@ -16,24 +16,34 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.zs.core.playback
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
+import androidx.annotation.CheckResult
+import androidx.annotation.FloatRange
 import androidx.core.content.ContextCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.SessionCommand
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 
-interface PlaybackController {
 
+interface PlaybackController {
     /**
      * Clears the existing [queue] and replaces it with a new queue containing the specified [values].
      * Note: The queue must only contain unique [MediaItem.mediaUri] values to ensure uniqueness.
@@ -62,14 +72,52 @@ interface PlaybackController {
     /** Skips to [index] in queue and seeks to [mills]; returns `true` if successful. */
     suspend fun seekTo(index: Int = INDEX_UNSET, mills: Long = TIME_UNSET): Boolean
 
-    companion object {
+    val state: StateFlow<NowPlaying2?>
+    val queue: Flow<List<MediaFile>?>
 
+    /**
+     * Retrieves the current [NowPlaying] information.
+     *
+     * @return The [NowPlaying] object representing the currently playing media, or `null` if no media is playing.
+     */
+    suspend fun getNowPlaying(): NowPlaying2?
+
+    suspend fun togglePlay()
+    suspend fun shuffle(shuffle: Boolean)
+    suspend fun skipToNext()
+    suspend fun skipToPrevious()
+    suspend fun cycleRepeatMode(): Int
+    suspend fun remove(uri: Uri): Boolean
+    /**
+     * Sets the playback speed of the media.
+     */
+    suspend fun setPlaybackSpeed(@FloatRange(from = 0.0, fromInclusive = false) value: Float): Boolean
+    @CheckResult
+    suspend fun getPlaybackSpeed(): Float
+
+    /**
+     * Retrieves the current playback state of the player.
+     *
+     * @return The current state, which can be one of [Remote.PLAYER_STATE_IDLE],
+     *         [Remote.PLAYER_STATE_BUFFERING], [Remote.PLAYER_STATE_READY], or
+     *         [Remote.PLAYER_STATE_ENDED].
+     * @see Player.getPlaybackState
+     */
+    suspend fun getPlaybackState(): Int
+
+
+    companion object {
+        //
+        @SuppressLint("UnsafeOptInUsageError")
         const val POSITION_UNSET = C.POSITION_UNSET
         const val TIME_UNSET = C.TIME_UNSET
         const val INDEX_UNSET = C.INDEX_UNSET
+
+        // RepeatModes
         const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
         const val REPEAT_MODE_ALL = Player.REPEAT_MODE_ALL
         const val REPEAT_MODE_OFF = Player.REPEAT_MODE_OFF
+
         // State
         const val PLAYER_STATE_IDLE = Player.STATE_IDLE
         const val PLAYER_STATE_BUFFERING = Player.STATE_BUFFERING
@@ -81,6 +129,22 @@ interface PlaybackController {
         const val TRACK_TYPE_VIDEO = C.TRACK_TYPE_VIDEO
 
         val PLAYLIST_RECENT = Playback.PLAYLIST_RECENT
+
+        // commands
+        internal val SCHEDULE_SLEEP_TIME = SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY)
+
+        // Represents all the update events that trigger state change.
+        internal val STATE_UPDATE_EVENTS = intArrayOf(
+            Player.EVENT_TIMELINE_CHANGED,
+            Player.EVENT_PLAYBACK_STATE_CHANGED,
+            Player.EVENT_REPEAT_MODE_CHANGED,
+            Player.EVENT_IS_PLAYING_CHANGED,
+            Player.EVENT_IS_LOADING_CHANGED,
+            Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+            Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
+            Player.EVENT_MEDIA_ITEM_TRANSITION,
+            Player.EVENT_VIDEO_SIZE_CHANGED
+        )
 
         private const val TAG = "PlaybackController"
 
