@@ -106,7 +106,7 @@ import com.prime.media.common.AppConfig
 import com.prime.media.common.ColorizationStrategy
 import com.prime.media.settings.RouteSettings
 import com.prime.media.common.Registry
-import com.prime.media.console.RouteConsole2
+import com.prime.media.console.RouteConsole
 import com.prime.media.impl.ConsoleViewModel2
 import com.prime.media.widget.Glance
 import com.primex.core.textResource
@@ -330,9 +330,9 @@ private val navGraphBuilder: NavGraphBuilder.() -> Unit = {
         Videos(viewState = viewModel)
     }
     // New Console
-    composable(RouteConsole2){
+    composable(RouteConsole){
         val viewState = koinViewModel<ConsoleViewModel2>()
-        RouteConsole2(viewState)
+        RouteConsole(viewState)
     }
 }
 

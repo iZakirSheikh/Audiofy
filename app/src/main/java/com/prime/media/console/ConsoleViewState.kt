@@ -83,7 +83,7 @@ interface QueueViewState {
 @Stable
 interface ConsoleViewState: QueueViewState {
 
-   // val cues: Flow<String?>
+    // val cues: Flow<String?>
 
     @setparam:FloatRange(from = 0.25, to = 5.0)
     var playbackSpeed: Float
@@ -91,10 +91,10 @@ interface ConsoleViewState: QueueViewState {
     /**
      * Represents the visibility state of the UI controls on the console screen.
      * It can take one of the following values:
-     * - [RouteConsole2.VISIBILITY_INVISIBLE]: All controls are hidden.
-     * - [RouteConsole2.VISIBILITY_VISIBLE]: All controls are visible.
-     * - [RouteConsole2.VISIBILITY_VISIBLE_LOCKED]: Controls are visible and locked, preventing auto-hide.
-     * - [RouteConsole2.VISIBILITY_VISIBLE_SEEK]: Controls are visible, typically during a seek operation.
+     * - [RouteConsole.VISIBILITY_INVISIBLE]: All controls are hidden.
+     * - [RouteConsole.VISIBILITY_VISIBLE]: All controls are visible.
+     * - [RouteConsole.VISIBILITY_VISIBLE_LOCKED]: Controls are visible and locked, preventing auto-hide.
+     * - [RouteConsole.VISIBILITY_VISIBLE_SEEK]: Controls are visible, typically during a seek operation.
      */
     val visibility: Int
 

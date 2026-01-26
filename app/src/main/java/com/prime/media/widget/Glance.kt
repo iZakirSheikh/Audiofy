@@ -22,11 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.prime.media.BuildConfig
 import com.prime.media.common.preference
 import com.prime.media.old.common.LocalNavController
-import com.prime.media.old.console.Console
 import com.prime.media.old.console.Constraints
 import com.prime.media.common.AppConfig
 import com.prime.media.common.Registry
-import com.prime.media.console.RouteConsole2
+import com.prime.media.console.RouteConsole
 import com.zs.core.playback.NowPlaying
 import com.zs.core_ui.ContentPadding
 import com.zs.core_ui.LocalNavAnimatedVisibilityScope
@@ -185,7 +184,7 @@ fun Glance(
                     // If in FAB mode and the "long-press FAB opens console" setting is enabled,
                     // expand the player to show the console.
                     isFab && !AppConfig.fabLongPressLaunchConsole ->
-                        navController.navigate(/*Console.direction()*/ RouteConsole2())
+                        navController.navigate(/*Console.direction()*/ RouteConsole())
                     // If in FAB mode but the "long-press FAB opens console" setting is disabled,
                     // navigate directly to the console screen without expanding.
                     else -> expanded = false
@@ -201,7 +200,7 @@ fun Glance(
                     isFab && AppConfig.fabLongPressLaunchConsole ->
                         // If in FAB mode AND the user preference "long-press FAB opens console" is enabled,
                         // navigate to the console screen.
-                        navController.navigate(/*Console.direction()*/ RouteConsole2())
+                        navController.navigate(/*Console.direction()*/ RouteConsole())
 
                     isFab && !AppConfig.fabLongPressLaunchConsole ->
                         // If in FAB mode but the preference is disabled,

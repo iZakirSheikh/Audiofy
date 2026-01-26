@@ -26,6 +26,9 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -285,3 +288,47 @@ internal suspend inline operator fun MediaBrowser.set(command: SessionCommand, a
  */
 internal suspend inline operator fun MediaBrowser.get(command: SessionCommand) =
     sendCustomCommand(command, Bundle.EMPTY).await()
+
+/**
+ * Lightweight wrapper around a [Player] to manage video surfaces.
+ *
+ * Provides safe checks ([isEmpty], [canSetVideoSurface]) and helper
+ * methods to attach or clear [SurfaceView] / [TextureView] as video surfaces.
+ */
+@JvmInline
+value class VideoProvider(val value: Any? = null) {
+
+    /** `true` if no player is attached. */
+    val isEmpty: Boolean
+        get() = value == null
+
+    /** `true` if the player supports [Player.COMMAND_SET_VIDEO_SURFACE]. */
+    val canSetVideoSurface: Boolean
+        get() = (value as? Player)?.isCommandAvailable(Player.COMMAND_SET_VIDEO_SURFACE) == true
+
+    /**
+     * Attaches the given [view] as a video surface.
+     *
+     * @throws IllegalArgumentException if the view is not [SurfaceView] or [TextureView].
+     */
+    fun setVideoSurfaceView(view: View) {
+        when (view) {
+            is SurfaceView -> (value as? Player)?.setVideoSurfaceView(view)
+            is TextureView -> (value as? Player)?.setVideoTextureView(view)
+            else -> throw IllegalArgumentException("Invalid view type $view")
+        }
+    }
+
+    /**
+     * Clears the given [view] from being used as a video surface.
+     *
+     * @throws IllegalArgumentException if the view is not [SurfaceView] or [TextureView].
+     */
+    fun clearVideoSurfaceView(view: View) {
+        when (view) {
+            is SurfaceView -> (value as? Player)?.clearVideoSurfaceView(view)
+            is TextureView -> (value as? Player)?.clearVideoTextureView(view)
+            else -> throw IllegalArgumentException("Invalid view type $view")
+        }
+    }
+}

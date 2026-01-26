@@ -124,11 +124,9 @@ internal class PlaybackControllerImpl(
         // Await the MediaBrowser instance.
         val provider = fBrowser.await()
         // Get the current media item from the provider.
-        val current = provider.currentMediaItem
+        val current = provider.currentMediaItem ?: return null
         // If there's no current media item, emit null (or the previous state will be retained by stateIn)
         // and return early.
-        if (current == null)
-            return null
         // Emit the newly created NowPlaying state.
         return NowPlaying2(
             title = current.title?.toString(),
@@ -284,4 +282,6 @@ internal class PlaybackControllerImpl(
         val browser = fBrowser.await()
         return browser.playbackParameters.speed
     }
+
+    override suspend fun getVideoView(): VideoProvider = VideoProvider(fBrowser.await())
 }

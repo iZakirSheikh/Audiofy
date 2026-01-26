@@ -35,13 +35,11 @@ import androidx.core.content.ContextCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
-
 
 interface PlaybackController {
     /**
@@ -69,6 +67,7 @@ interface PlaybackController {
 
     /** Returns the index of [MediaFile] represented by the [uri] or [Remote.INDEX_UNSET] */
     suspend fun indexOf(uri: Uri): Int
+
     /** Skips to [index] in queue and seeks to [mills]; returns `true` if successful. */
     suspend fun seekTo(index: Int = INDEX_UNSET, mills: Long = TIME_UNSET): Boolean
 
@@ -88,10 +87,17 @@ interface PlaybackController {
     suspend fun skipToPrevious()
     suspend fun cycleRepeatMode(): Int
     suspend fun remove(uri: Uri): Boolean
+
     /**
      * Sets the playback speed of the media.
      */
-    suspend fun setPlaybackSpeed(@FloatRange(from = 0.0, fromInclusive = false) value: Float): Boolean
+    suspend fun setPlaybackSpeed(
+        @FloatRange(
+            from = 0.0,
+            fromInclusive = false
+        ) value: Float
+    ): Boolean
+
     @CheckResult
     suspend fun getPlaybackSpeed(): Float
 
@@ -105,6 +111,7 @@ interface PlaybackController {
      */
     suspend fun getPlaybackState(): Int
 
+    suspend fun getVideoView(): VideoProvider
 
     companion object {
         //
@@ -123,6 +130,7 @@ interface PlaybackController {
         const val PLAYER_STATE_BUFFERING = Player.STATE_BUFFERING
         const val PLAYER_STATE_READY = Player.STATE_READY
         const val PLAYER_STATE_ENDED = Player.STATE_ENDED
+
         // track types
         const val TRACK_TYPE_TEXT = C.TRACK_TYPE_TEXT
         const val TRACK_TYPE_AUDIO = C.TRACK_TYPE_AUDIO
@@ -131,7 +139,8 @@ interface PlaybackController {
         val PLAYLIST_RECENT = Playback.PLAYLIST_RECENT
 
         // commands
-        internal val SCHEDULE_SLEEP_TIME = SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY)
+        internal val SCHEDULE_SLEEP_TIME =
+            SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY)
 
         // Represents all the update events that trigger state change.
         internal val STATE_UPDATE_EVENTS = intArrayOf(
