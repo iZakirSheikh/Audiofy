@@ -23,11 +23,11 @@ package com.prime.media.console
 
 import android.app.Activity
 import android.net.Uri
-import androidx.annotation.FloatRange
 import androidx.compose.runtime.Stable
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.NowPlaying2
+import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -83,9 +83,7 @@ interface QueueViewState {
 @Stable
 interface ConsoleViewState: QueueViewState {
 
-    // val cues: Flow<String?>
-
-    @setparam:FloatRange(from = 0.25, to = 5.0)
+    val cues: Flow<String?>
     var playbackSpeed: Float
 
     /**
@@ -119,10 +117,10 @@ interface ConsoleViewState: QueueViewState {
 
     fun sleepAt(mills: Long)
 
-    //fun getVideoProvider(): VideoProvider
-    // suspend fun getAvailableTracks(type: Int): List<TrackInfo>
-    // suspend fun getCheckedTrack(type: Int): TrackInfo?
-    // fun setCheckedTrack(type: Int, info: TrackInfo?)
+    fun getVideoProvider(): VideoProvider
+    //suspend fun getAvailableTracks(type: Int): List<TrackInfo>
+    //suspend fun getCheckedTrack(type: Int): TrackInfo?
+    //fun setCheckedTrack(type: Int, info: TrackInfo?)
 
     suspend fun getPlaybackState(): Int
     suspend fun getBufferedPct(): Float

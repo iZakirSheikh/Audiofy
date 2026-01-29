@@ -27,6 +27,10 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.util.Log
+import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.foundation.BorderStroke
@@ -36,15 +40,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.LongState
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -52,6 +66,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -61,6 +76,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.prime.media.BuildConfig
 import com.prime.media.R
@@ -71,12 +87,18 @@ import com.primex.core.thenIf
 import com.primex.core.visualEffect
 import com.primex.material2.Label
 import com.primex.material2.Text
+import com.zs.core.playback.VideoProvider
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Indication
 import com.zs.core_ui.lottieAnimationPainter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import com.prime.media.console.RouteConsole as RC
 
-context(_:RC)
+private const val TAG = "Delegates"
+
+context(_: RC)
 val WindowInsets.toDpRect: DpRect
     @Composable
     inline get() {
@@ -171,7 +193,7 @@ private fun OutlinedPlayButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.size(60.dp),
-        shape = AppTheme.shapes.small,
+        shape = RoundedCornerShape(25),
         color = Color.Transparent,
         border = BorderStroke(
             1.dp,
@@ -220,7 +242,7 @@ private fun SimplePlayButton(
  */
 @Composable
 @NonRestartableComposable
-context(_:RC)
+context(_: RC)
 fun PlayButton(
     onClick: () -> Unit,
     isPlaying: Boolean,
@@ -228,7 +250,7 @@ fun PlayButton(
     enabled: Boolean = true,
     style: Int = RC.PLAY_BTN_STYLE_SIMPLE
 ) {
-    when(style) {
+    when (style) {
         RC.PLAY_BTN_STYLE_OUTLINED -> OutlinedPlayButton(onClick, isPlaying, modifier, enabled)
         else -> SimplePlayButton(onClick, isPlaying, modifier, enabled)
     }
@@ -255,7 +277,7 @@ fun SystemFacade.launchEqualizer(id: Int) {
 @NonRestartableComposable
 context(_: RC)
 fun Background(
-    artwork: Uri?= null,
+    artwork: Uri? = null,
     style: Int = RC.BG_STYLE_AUTO,
     modifier: Modifier = Modifier
 ) {
@@ -292,6 +314,7 @@ fun ExtraInfo(
 
 
 private val CUE_TEXT_SHADOW = Shadow(offset = Offset(5f, 5f), blurRadius = 8.0f)
+
 @Composable
 context(_: RC)
 fun Cue(
@@ -310,4 +333,140 @@ fun Cue(
         ),
         textAlign = TextAlign.Center
     )
+}
+
+
+/**
+ * A Composable that hosts a [SurfaceView] and attaches it to the given [VideoProvider].
+ *
+ * This Composable ensures that the [SurfaceView] is correctly bound to the player's video output,
+ * while also managing reattachment if a different [VideoProvider] is passed on recomposition.
+ *
+ * ### Key behaviors:
+ * - Creates and manages a [SurfaceView] inside Compose using [AndroidView].
+ * - Keeps the screen awake during playback if [keepScreenOn] is `true`.
+ * - Handles safe switching: detaches the [SurfaceView] from an old [VideoProvider] before attaching it to a new one.
+ * - Automatically clears the video surface when the [SurfaceView] is released (e.g., disposed).
+ *
+ * @param provider The [VideoProvider] representing the player instance that will receive the video surface.
+ * @param modifier [Modifier] for layout adjustments (e.g., size, padding).
+ * @param keepScreenOn Whether to keep the device screen awake while this surface is active.
+ */
+@Composable
+fun VideoSurface(
+    provider: VideoProvider,
+    modifier: Modifier = Modifier,
+    typeSurfaceView: Boolean = true,
+    keepScreenOn: Boolean = false
+) {
+    var view by remember { mutableStateOf<View?>(null) }
+
+    AndroidView(
+        modifier = modifier,
+        // Factory: creates a new SurfaceView when this Composable first enters the composition.
+        factory = { if (typeSurfaceView) SurfaceView(it) else TextureView(it) },
+        onReset = {},
+        update = {
+            Log.d(TAG, "VideoSurface: updating")
+            // Prevents the screen from turning off during video playback.
+            it.keepScreenOn = keepScreenOn
+            view = it
+        },
+    )
+
+    view?.let { view ->
+        LaunchedEffect(view, provider.value) {
+            val attached = VideoProvider(view.tag)
+
+            if (provider.isEmpty) {
+                // Handle null provider safely
+                withContext(Dispatchers.Main) {
+                    if (attached.canSetVideoSurface)
+                        attached.clearVideoSurfaceView(view)
+                    view.tag = null
+                }
+                return@LaunchedEffect
+            }
+
+            if (attached.value != provider.value) {
+                if (attached.canSetVideoSurface)
+                    attached.clearVideoSurfaceView(view)
+
+                if (provider.canSetVideoSurface) {
+                    provider.setVideoSurfaceView(view)
+                    view.tag = provider.value
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TimeBar(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: () -> Unit,
+    modifier: Modifier = Modifier,
+    accent: Color = AppTheme.colors.accent,
+    enabled: Boolean = true,
+    style: Int = RC.TIME_BAR_STYLE_REGULAR
+) {
+    when {
+        value.isNaN() -> LinearProgressIndicator(
+            modifier = modifier,
+            color = accent,
+            strokeCap = StrokeCap.Round,
+        )
+
+        style == RC.TIME_BAR_STYLE_REGULAR -> Slider(
+            value,
+            onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
+            modifier = modifier,
+            enabled = enabled,
+            colors = SliderDefaults.colors(activeTrackColor = accent, thumbColor = accent)
+        )
+
+        style == RC.TIME_BAR_STYLE_WAVY -> ir.mahozad.multiplatform.wavyslider.material.WavySlider(
+            value = value,
+            onValueChange = onValueChange,
+            onValueChangeFinished = onValueChangeFinished,
+            modifier = modifier,
+            // idp because 0 dp is not supported.
+            waveLength = 20.dp,
+            waveHeight = 7.dp,
+            incremental = true,
+            colors = SliderDefaults.colors(activeTrackColor = accent, thumbColor = accent)
+        )
+    }
+
+}
+
+/**
+ * A simple countdown timer Composable.
+ *
+ * This Composable takes an initial duration in milliseconds and provides a [LongState]
+ * that represents the remaining time. The timer counts down every second.
+ *
+ * The timer will stop when the remaining time reaches zero or less.
+ * If the initial `mills` value changes, the timer will restart with the new duration.
+ *
+ * @param mills The initial duration for the timer in milliseconds.
+ * @return A [LongState] holding the current remaining time in milliseconds.
+ *         This state will be updated every second as the timer counts down.
+ */
+@Composable
+inline fun timer(mills: Long): LongState {
+    // Remember the state of the timer. Initialize with the provided `mills`.
+    val state = remember { mutableLongStateOf(mills) }
+    // Launch a side-effect that depends on `mills`.
+    // If `mills` changes, the existing coroutine is cancelled and a new one starts.
+    LaunchedEffect(mills) {
+        // Loop as long as there is time remaining.
+        while (state.longValue > 0) {
+            delay(1000) // Wait for 1 second.
+            state.longValue -= 1000 // Decrement the remaining time by 1000 milliseconds.
+        }
+    }
+    return state // Return the state object that holds the current time.
 }

@@ -1,45 +1,38 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+package com.prime.media.console
+
 /*
- * Copyright (c)  2026 Zakir Sheikh
+ * Copyright 2025 Zakir Sheikh
  *
- * Created by sheik on 26 of Jan 2026
+ * Created by Zakir Sheikh on 13-05-2025.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at:
+ * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *   https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Last Modified by sheik on 26 of Jan 2026
- *
  */
 
-package com.prime.media.console
-
 import android.annotation.SuppressLint
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.NonRestartableComposable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layoutId
-import com.zs.core.playback.NowPlaying2
 import android.app.Activity
 import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -47,20 +40,47 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CropFree
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FitScreen
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Queue
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.outlined.ScreenLockRotation
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timer10
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
@@ -69,28 +89,42 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.google.accompanist.adaptive.HorizontalTwoPaneStrategy
 import com.prime.media.R
+import com.prime.media.common.AppConfig
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.Route
 import com.prime.media.common.collectAsState
+import com.prime.media.common.resize
+import com.prime.media.common.shine
 import com.prime.media.old.common.LocalNavController
+import com.prime.media.old.common.marque
+import com.prime.media.old.effects.AudioFx
 import com.primex.core.SignalWhite
+import com.primex.material2.DropDownMenuItem
+import com.primex.material2.Label
+import com.primex.material2.menu.DropDownMenu
 import com.zs.core.playback.NowPlaying
+import com.zs.core.playback.NowPlaying2
 import com.zs.core.playback.PlaybackController
 import com.zs.core_ui.AppTheme
-import com.zs.core_ui.ContentPadding as CP
 import com.zs.core_ui.LocalWindowSize
+import com.zs.core_ui.LottieAnimatedButton
+import com.zs.core_ui.LottieAnimatedIcon
 import com.zs.core_ui.Range
+import com.zs.core_ui.TonalIconButton
 import com.zs.core_ui.WindowSize
 import com.zs.core_ui.WindowStyle
 import com.zs.core_ui.adaptive.HorizontalTwoPaneStrategy
 import com.zs.core_ui.adaptive.SinglePaneStrategy
 import com.zs.core_ui.adaptive.TwoPane
 import com.zs.core_ui.adaptive.VerticalTwoPaneStrategy
-import kotlinx.coroutines.delay
+import com.zs.core_ui.ContentPadding as CP
 
-object RouteConsole: Route {
+object RouteConsole : Route {
+
+    //
+    private const val TAG = "Console"
+
     // Component IDs
     const val ID_PLAYING_INDICATOR = "_playing_indicator"
     const val ID_BTN_COLLAPSE = "_btn_collapse"
@@ -142,8 +176,6 @@ object RouteConsole: Route {
     private const val SHOW_MEDIA_CONFIG = 5
 
 
-    private const val TAG = "Console"
-
     /** Represents [NowPlaying] default state in [Console] */
     private val NonePlaying = NowPlaying2(null, null)
     private val COLOR_BACKGROUND = Color(0xFF0E0E0F)
@@ -181,6 +213,10 @@ object RouteConsole: Route {
     // playbutton styles
     const val PLAY_BTN_STYLE_SIMPLE = 0
     const val PLAY_BTN_STYLE_OUTLINED = 1
+
+    // Seekbar style
+    const val TIME_BAR_STYLE_REGULAR = 0
+    const val TIME_BAR_STYLE_WAVY = 1
 
     @SuppressLint("UnusedBoxWithConstraintsScope")
     @Composable
@@ -226,9 +262,378 @@ object RouteConsole: Route {
         var titleTextSize by remember { mutableIntStateOf(16) }
         // TODO - Maybe allow users to set background using pref.
         val background = if (state.isVideo) BG_STYLE_DARK else BG_STYLE_AUTO_ACRYLIC
-        val controller: @Composable () -> Unit = {
+        // Controller
+        val content: @Composable () -> Unit = {
+            // Background
+            val isVideo = state.isVideo
+            Background(
+                artwork = state.artwork,
+                style = background,
+                modifier = Modifier.layoutId(ID_BACKGROUND),
+            )
 
+            // Video
+            val enabled = visibility >= VISIBLE
+            val onColor = LocalContentColor.current
+            if (isVideo) {
+                var scale by remember { mutableStateOf(ContentScale.Fit) }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .key(ID_VIDEO_SURFACE)
+                    /*.handlePlayerGestures(viewState)*/,
+                    content = {
+                        VideoSurface(
+                            provider = viewState.getVideoProvider(),
+                            keepScreenOn = state.playWhenReady,
+                            modifier = Modifier
+                                .resize(scale, state.videoSize),
+                            // typeSurfaceView = AppConfig.isSurfaceViewVideoRenderingPreferred
+                        )
+                    }
+                )
+
+                // Cues
+                val cues by viewState.cues.collectAsState(null)
+                /*val cManager = remember {
+                    facade.getDeviceService<CaptioningManager>(Context.CAPTIONING_SERVICE)
+                }*/
+                Cue(
+                    provider = { cues ?: "" },
+                    modifier = Modifier.layoutId(ID_CUES),
+                    color = Color.White,
+                )
+
+                // Scrim
+                Spacer(
+                    modifier = Modifier
+                        .layoutId(ID_SCRIM)
+                        .background(SCRIM_STYLE)
+                )
+                // Resize Mode
+                com.primex.material2.IconButton(
+                    imageVector = if (scale == ContentScale.Fit) Icons.Outlined.CropFree else Icons.Outlined.FitScreen,
+                    contentDescription = null,
+                    onClick = {
+                        scale =
+                            if (scale == ContentScale.Fit) ContentScale.Crop else ContentScale.Fit
+                    },
+                    modifier = Modifier.layoutId(ID_BTN_RESIZE_MODE),
+                    enabled = enabled
+                )
+                // Lock
+                com.primex.material2.IconButton(
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = null,
+                    onClick = { viewState.emit(if (visibility == VISIBLE_LOCKED_LOCK) VISIBLE else VISIBLE_LOCKED_LOCK) },
+                    modifier = Modifier.layoutId(ID_BTN_LOCK),
+                    enabled = visibility >= VISIBLE_LOCKED_LOCK
+                )
+            }
+
+            // Collapse
+            val accent = if (isVideo) onColor else AppTheme.colors.accent
+            TonalIconButton(
+                icon = Icons.Outlined.KeyboardArrowDown,
+                onClick = onNavigateBack,
+                enabled = enabled,
+                border = AppTheme.colors.shine,
+                contentDescription = null,
+                modifier = Modifier.key(ID_BTN_COLLAPSE)
+            )
+
+            // Playing bars.
+            LottieAnimatedIcon(
+                R.raw.playback_indicator,
+                isPlaying = state.playing,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = CP.xSmall)
+                    .key(ID_PLAYING_INDICATOR),
+                tint = accent
+            )
+
+            // Title
+            Box(
+                modifier = Modifier
+                    .key(ID_TITLE)
+                    .clipToBounds(),
+                content = {
+                    Label(
+                        text = state.title ?: stringResource(id = R.string.unknown),
+                        fontSize = titleTextSize.sp,// Maybe Animate
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.marque(Int.MAX_VALUE)
+                    )
+                }
+            )
+
+            // Subtitle
+            Label(
+                text = state.subtitle ?: "",
+                style = AppTheme.typography.caption2,
+                modifier = Modifier.key(ID_SUBTITLE),
+                color = onColor.copy(ContentAlpha.medium)
+            )
+
+            // Extra-info
+            val chronometer = state.chronometer
+            ExtraInfo(
+                color = onColor.copy(ContentAlpha.medium),
+                modifier = Modifier.key(ID_EXTRA_INFO),
+                provider = {
+                    buildString {
+                        val elapsed = chronometer.elapsed
+                        val fPos =
+                            if (elapsed == Long.MIN_VALUE) "N/A" else DateUtils.formatElapsedTime(
+                                elapsed / 1000
+                            )
+                        val duration = state.duration
+                        val fDuration =
+                            if (duration == PlaybackController.TIME_UNSET) "N/A" else DateUtils.formatElapsedTime(
+                                duration / 1000
+                            )
+                        append(
+                            "$fPos / $fDuration (${state.speed}x)"
+                        )
+                    }
+                }
+            )
+
+            TimeBar(
+                value = chronometer.progress(state.duration),
+                onValueChange = {
+                    if (isVideo) viewState.emit(VISIBLE_SEEK)
+                    val mills = (it * state.duration).toLong()
+                    chronometer.raw = mills
+                },
+                onValueChangeFinished = {
+                    if (isVideo) viewState.emit(VISIBLE_NONE)
+                    val progress = chronometer.elapsed / state.duration.toFloat()
+                    viewState.seekTo(progress)
+                },
+                modifier = Modifier.key(ID_SEEK_BAR),
+                enabled = state.duration > 0 && visibility >= VISIBLE_SEEK && state.state != PlaybackController.PLAYER_STATE_IDLE,
+                //buffering = state.state == Remote.PLAYER_STATE_BUFFERING,
+                accent = accent,
+                style = if (isVideo) TIME_BAR_STYLE_REGULAR else TIME_BAR_STYLE_WAVY
+            )
+
+            // Shuffle
+            LottieAnimatedButton(
+                id = R.raw.lt_shuffle_on_off,
+                onClick = { viewState.shuffle(!state.shuffle) },
+                atEnd = state.shuffle,
+                progressRange = 0f..0.8f,
+                scale = 1.5f,
+                contentDescription = null,
+                tint = if (state.shuffle) accent else onColor.copy(ContentAlpha.disabled),
+                modifier = Modifier.key(ID_SHUFFLE),
+                enabled = enabled
+            )
+
+            // Skip to next
+            com.primex.material2.IconButton(
+                onClick = viewState::skipToNext,
+                imageVector = Icons.Outlined.KeyboardDoubleArrowRight,
+                contentDescription = null,
+                enabled = enabled && state.isNextAvailable, // add- logic
+                modifier = Modifier.key(ID_BTN_SKIP_TO_NEXT)
+            )
+
+            // Skip to Prev
+            com.primex.material2.IconButton(
+                onClick = viewState::skipToPrev,
+                imageVector = Icons.Outlined.KeyboardDoubleArrowLeft,
+                contentDescription = null,
+                enabled = enabled && state.isPrevAvailable,
+                modifier = Modifier.key(ID_BTN_SKIP_PREVIOUS)
+            )
+
+            // Repeat Mode
+            IconButton(
+                onClick = viewState::cycleRepeatMode,
+                content = {
+                    val mode = state.repeatMode
+                    Icon(
+                        painter = rememberAnimatedVectorPainter(
+                            AnimatedImageVector.animatedVectorResource(R.drawable.avd_repeat_more_one_all),
+                            mode == PlaybackController.REPEAT_MODE_ALL
+                        ),
+                        contentDescription = null,
+                        tint = onColor.copy(if (mode == PlaybackController.REPEAT_MODE_OFF) ContentAlpha.disabled else ContentAlpha.high)
+                    )
+                },
+                modifier = Modifier.key(ID_BTN_REPEAT_MODE),
+                enabled = enabled
+            )
+
+            // Play Button
+            PlayButton(
+                onClick = viewState::togglePlay,
+                isPlaying = state.playing,
+                style = if (isVideo) PLAY_BTN_STYLE_SIMPLE else PLAY_BTN_STYLE_OUTLINED,
+                enabled = enabled,
+                modifier = Modifier.key(ID_BTN_PLAY_PAUSE)
+            )
+
+            // Rotation
+            com.primex.material2.IconButton(
+                imageVector = Icons.Outlined.ScreenLockRotation,
+                contentDescription = null,
+                onClick = { (facade as Activity).toggleRotationLock() },
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_ROTATION_LOCK)
+            )
+
+            // Queue
+            com.primex.material2.IconButton(
+                imageVector = Icons.Outlined.Queue,
+                contentDescription = null,
+                onClick = { showQueue = !showQueue },
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_QUEUE)
+            )
+
+            // Favourite
+            LottieAnimatedButton(
+                R.raw.lt_twitter_heart_filled_unfilled,
+                onClick = viewState::toggleLike,
+                //animationSpec = tween(800),
+                atEnd = state.favourite, // if fav
+                contentDescription = null,
+                progressRange = 0.13f..1.0f,
+                scale = 3.5f,
+                tint = accent,
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_LIKED)
+            )
+
+            // Speed
+            com.primex.material2.IconButton(
+                imageVector = Icons.Outlined.Speed,
+                contentDescription = null,
+                onClick = { showViewOf = SHOW_SPEED },
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_PLAYBACK_SPEED)
+            )
+
+            // Timer
+            IconButton(
+                onClick = {
+                    if (state.sleepAt != PlaybackController.TIME_UNSET)
+                        viewState.sleepAt(PlaybackController.TIME_UNSET)
+                    else showViewOf = SHOW_TIMER
+                },
+                modifier = Modifier.layoutId(ID_BTN_SLEEP_TIMER),
+                content = {
+                    if (state.sleepAt == PlaybackController.TIME_UNSET)
+                        return@IconButton Icon(
+                            imageVector = Icons.Outlined.Timer10,
+                            contentDescription = null
+                        )
+                    val remaining /*by timer(state.sleepAt)*/ = 0
+                    Label(
+                        text = DateUtils.formatElapsedTime(remaining / 1000L),
+                        style = AppTheme.typography.caption2,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.accent
+                    )
+                }
+            )
+
+            // Equalizer
+            com.primex.material2.IconButton(
+                imageVector = Icons.Outlined.Tune,
+                contentDescription = null,
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_EQUALIZER),
+                onClick = {
+                    if (!AppConfig.inAppAudioEffectsEnabled)
+                        facade.launchEqualizer(0)
+                    else
+                        navController.navigate(AudioFx.direction())
+                },
+            )
+
+            // Info
+            com.primex.material2.IconButton(
+                imageVector = Icons.Outlined.Info,
+                contentDescription = null,
+                onClick = {},
+                enabled = enabled,
+                modifier = Modifier.layoutId(ID_BTN_MEDIA_INFO)
+            )
+
+            // More
+            IconButton(
+                onClick = { showViewOf = SHOW_MORE },
+                modifier = Modifier.layoutId(ID_BTN_MORE),
+                content = {
+                    //
+                    Icon(imageVector = Icons.Outlined.MoreHoriz, contentDescription = null)
+
+                    // Menu
+                    if (showViewOf == SHOW_MEDIA_CONFIG)
+                        MediaConfigDialog(viewState) {
+                            showViewOf = SHOW_NONE
+                        }
+
+                    DropDownMenu(
+                        expanded = showViewOf == SHOW_MORE,
+                        modifier = Modifier.widthIn(max = 200.dp),
+                        shape = AppTheme.shapes.small,
+                        onDismissRequest = { showViewOf = SHOW_NONE },
+                        content = {
+                            Column() {
+                                // Remove
+                                DropDownMenuItem(
+                                    stringResource(id = R.string.remove),
+                                    icon = rememberVectorPainter(Icons.Outlined.RemoveCircleOutline),
+                                    onClick = {
+                                        val key = state.data
+                                        if (key != null)
+                                            viewState.remove(key)
+                                        showViewOf = SHOW_NONE
+                                    }
+                                )
+
+                                // Delete
+                                DropDownMenuItem(
+                                    stringResource(id = R.string.delete),
+                                    icon = rememberVectorPainter(Icons.Outlined.Delete),
+                                    onClick = {
+                                        val key = state.data
+                                        if (key != null)
+                                            viewState.delete(key, facade as Activity)
+                                        showViewOf = SHOW_NONE
+                                    }
+                                )
+
+                                // Media Config
+                                DropDownMenuItem(
+                                    title = "Media Config.",
+                                    icon = rememberVectorPainter(Icons.Outlined.Tune),
+                                    onClick = {
+                                        showViewOf = SHOW_MEDIA_CONFIG
+                                    }
+                                )
+                            }
+                        }
+                    )
+                }
+            )
+
+            if (!state.isVideo)
+                Artwork(
+                    uri = state.artwork,
+                    modifier = Modifier.key(ID_ARTWORK),
+                    border = 0.5.dp,
+                    shape = ArtworkShape,
+                    shadow = 12.dp
+                )
         }
+
         // Layout
         // Compute Two pane strategy
         val clazz = LocalWindowSize.current
@@ -263,6 +668,7 @@ object RouteConsole: Route {
                         strategy is VerticalTwoPaneStrategy -> insets.only(WindowInsetsSides.Top).toDpRect
                         else -> insets.toDpRect
                     }
+
                     // Compute constraints
                     val isVideo = state.isVideo
                     // compute key
@@ -324,6 +730,7 @@ object RouteConsole: Route {
                         titleTextSize = c.titleTextSize
                         return@remember c
                     }
+
                     val onColor = when (background) {
                         BG_STYLE_DARK -> Color.SignalWhite
                         else -> AppTheme.colors.onBackground
@@ -332,7 +739,7 @@ object RouteConsole: Route {
                         ConstraintLayout(
                             constraints.constraints,
                             animateChangesSpec = DefaultAnimSpecs,
-                            content = controller,
+                            content = content,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .animateContentSize()
@@ -351,7 +758,6 @@ object RouteConsole: Route {
                 }
             }
         )
-
         // Update system bars style.
         SideEffect {
             facade.style = when (background) {
@@ -366,12 +772,10 @@ object RouteConsole: Route {
                     showViewOf = SHOW_NONE
                     return@PlaybackSpeed
                 }
-                val fValue =
-                    (facade as Activity).getString(R.string.playback_speed_dialog_x_f, newValue)
+                val fValue = (facade as Activity).getString(R.string.playback_speed_dialog_x_f, newValue)
                 facade.showToast(fValue)
                 viewState.playbackSpeed = newValue
             }
-
             SHOW_TIMER -> SleepTimer(true) { mills ->
                 if (mills == -1L) {
                     showViewOf = SHOW_NONE

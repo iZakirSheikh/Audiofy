@@ -24,22 +24,25 @@ package com.prime.media.impl
 import android.app.Activity
 import android.net.Uri
 import com.prime.media.console.ConsoleViewState
+import com.prime.media.console.RouteConsole
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying2
 import com.zs.core.playback.PlaybackController
+import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 
 class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), ConsoleViewState {
     override fun clear() {
         TODO("Not yet implemented")
     }
 
+    override val cues: Flow<String?> = emptyFlow()
     override var playbackSpeed: Float
-        get() = TODO("Not yet implemented")
+        get() = 1.0f
         set(value) {}
-    override val visibility: Int
-        get() = TODO("Not yet implemented")
+    override val visibility: Int = RouteConsole.VISIBLE_ALWAYS
 
     override fun emit(newVisibility: Int, delayed: Boolean) {
         TODO("Not yet implemented")
@@ -66,6 +69,10 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     }
 
     override fun sleepAt(mills: Long) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getVideoProvider(): VideoProvider {
         TODO("Not yet implemented")
     }
 

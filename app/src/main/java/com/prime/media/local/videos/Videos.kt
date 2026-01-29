@@ -165,7 +165,7 @@ fun Videos(viewState: VideosViewState) {
                     VideosViewState.ACTION_SHARE -> viewState.share(context.findActivity(), video)
                     null -> {
                         viewState.play(video)
-                        navController.navigate(Console.route)
+                        navController.navigate(RouteVideos())
                     }
 
                     else -> TODO("$action not implemented!!")

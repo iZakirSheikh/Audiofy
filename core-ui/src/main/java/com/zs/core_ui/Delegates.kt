@@ -22,6 +22,7 @@ package com.zs.core_ui
 
 import androidx.annotation.RawRes
 import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -32,12 +33,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextStyle
@@ -110,20 +114,23 @@ fun lottieAnimationPainter(
 fun lottieAnimationPainter(
     @RawRes id: Int,
     speed: Float = 1f,
+    isPlaying: Boolean = true,
+    dynamicProperties: LottieDynamicProperties? = null,
     repeatMode: RepeatMode = RepeatMode.Restart,
     iterations: Int = Int.MAX_VALUE,
-    dynamicProperties: LottieDynamicProperties? = null
 ): Painter {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(id))
     val progress by animateLottieCompositionAsState(
         composition = composition,
         iterations = iterations,
         speed = speed,
+        isPlaying = isPlaying,
         reverseOnRepeat = repeatMode == RepeatMode.Reverse,
     )
     return rememberLottiePainter(
         composition = composition,
         progress = progress,
+
         dynamicProperties = dynamicProperties
     )
 }
@@ -182,6 +189,92 @@ inline fun LottieAnimatedIcon(
     )
 }
 
+@Composable
+inline fun LottieAnimatedIcon(
+    @RawRes id: Int,
+    isPlaying: Boolean,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    scale: Float = 1f,
+    //progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    tint: Color = Color.Unspecified,
+    repeatMode: RepeatMode = RepeatMode.Restart,
+    iterations: Int = Int.MAX_VALUE,
+    // animationSpec: AnimationSpec<Float>? = null,
+) {
+    Icon(
+        painter = lottieAnimationPainter(
+            id = id,
+            isPlaying = isPlaying,
+            // progressRange = progressRange,
+            // animationSpec = animationSpec,
+            repeatMode = repeatMode,
+            iterations = iterations
+        ),
+        tint = tint,
+        contentDescription = contentDescription,
+        modifier = modifier
+            .size(24.dp)
+            .scale(scale),
+    )
+}
+
+
+@Composable
+inline fun LottieAnimatedButton(
+    @RawRes id: Int,
+    noinline onClick: () -> Unit,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    atEnd: Boolean = false,
+    scale: Float = 1f,
+    progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    tint: Color = Color.Unspecified,
+    easing: Easing = FastOutSlowInEasing,
+    enabled: Boolean = true,
+) {
+    IconButton (onClick = onClick, modifier = modifier, enabled = enabled) {
+        Icon(
+            painter = lottieAnimationPainter(
+                id = id,
+                atEnd = atEnd,
+                progressRange = progressRange,
+                easing = easing
+            ),
+            tint = tint,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(24.dp).scale(scale),
+        )
+    }
+}
+
+@Composable
+inline fun LottieTonalButton(
+    @RawRes id: Int,
+    noinline onClick: () -> Unit,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    atEnd: Boolean = false,
+    scale: Float = 1f,
+    progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    tint: Color = Color.Unspecified,
+    easing: Easing = FastOutSlowInEasing,
+    enabled: Boolean = true,
+) {
+    TonalIconButton(onClick = onClick, modifier = modifier, enabled = enabled, tint) {
+        Icon(
+            painter = lottieAnimationPainter(
+                id = id,
+                atEnd = atEnd,
+                progressRange = progressRange,
+                easing = easing
+            ),
+            tint = tint,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(24.dp).scale(scale),
+        )
+    }
+}
 
 /**
  * Creates a header with an optional action.
