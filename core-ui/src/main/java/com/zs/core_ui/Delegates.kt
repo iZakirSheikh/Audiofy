@@ -228,6 +228,7 @@ inline fun LottieAnimatedButton(
     modifier: Modifier = Modifier,
     atEnd: Boolean = false,
     scale: Float = 1f,
+    duration: Int = -1,
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     tint: Color = Color.Unspecified,
     easing: Easing = FastOutSlowInEasing,
@@ -239,7 +240,8 @@ inline fun LottieAnimatedButton(
                 id = id,
                 atEnd = atEnd,
                 progressRange = progressRange,
-                easing = easing
+                easing = easing,
+                duration = duration
             ),
             tint = tint,
             contentDescription = contentDescription,

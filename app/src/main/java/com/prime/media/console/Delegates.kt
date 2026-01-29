@@ -204,9 +204,10 @@ private fun OutlinedPlayButton(
             Icon(
                 painter = lottieAnimationPainter(
                     id = R.raw.lt_play_pause,
-                    atEnd = isPlaying,
+                    atEnd = !isPlaying,
                     progressRange = 0.0f..0.29f,
-                    easing = LinearEasing
+                    easing = LinearEasing,
+                    duration = 300
                 ),
                 modifier = Modifier.lottie(1.5f),
                 contentDescription = null
@@ -226,9 +227,10 @@ private fun SimplePlayButton(
         Icon(
             painter = lottieAnimationPainter(
                 id = R.raw.lt_play_pause,
-                atEnd = isPlaying,
+                atEnd = !isPlaying,
                 progressRange = 0.0f..0.29f,
-                easing = LinearEasing
+                easing = LinearEasing,
+                duration = 300
             ),
             modifier = Modifier.lottie(1.5f),
             contentDescription = null
@@ -419,8 +421,8 @@ fun TimeBar(
         )
 
         style == RC.TIME_BAR_STYLE_REGULAR -> Slider(
-            value,
-            onValueChange,
+            value = value,
+            onValueChange = onValueChange,
             onValueChangeFinished = onValueChangeFinished,
             modifier = modifier,
             enabled = enabled,

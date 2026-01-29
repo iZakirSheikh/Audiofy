@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.withContext
 
 private const val TAG = "PlaybackControllerImpl"
 
@@ -284,4 +285,34 @@ internal class PlaybackControllerImpl(
     }
 
     override suspend fun getVideoView(): VideoProvider = VideoProvider(fBrowser.await())
+
+    override suspend fun seekTo(pct: Float) {
+        val browser = fBrowser.await()
+        val duration = browser.duration
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || duration == TIME_UNSET) return
+        withContext(Dispatchers.Main) {
+            browser.seekTo((duration * pct).toLong())
+        }
+    }
+
+    override suspend fun seekBy(increment: Long): Boolean {
+        val browser = fBrowser.await()
+        if (!browser.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) return false
+        val newMills = browser.currentPosition + increment
+        browser.seekTo(browser.currentMediaItemIndex, newMills)
+        return true
+    }
+
+    override suspend fun skipTo(uri: Uri): Boolean {
+        // obtain the corresponding index from the key
+        val index = indexOf(uri)
+        // return false since we don't have the index.
+        // this might be because the item is already removed.
+        if (index == C.INDEX_UNSET)
+            return false
+        // remove the item
+        val browser = fBrowser.await()
+        browser.seekTo(index, C.TIME_UNSET)
+        return true
+    }
 }

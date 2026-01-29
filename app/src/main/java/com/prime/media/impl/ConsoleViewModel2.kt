@@ -23,91 +23,166 @@ package com.prime.media.impl
 
 import android.app.Activity
 import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewModelScope
+import com.prime.media.R
 import com.prime.media.console.ConsoleViewState
 import com.prime.media.console.RouteConsole
+import com.primex.core.OrientRed
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying2
 import com.zs.core.playback.PlaybackController
 import com.zs.core.playback.VideoProvider
+import com.zs.core_ui.toast.Toast
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), ConsoleViewState {
-    override fun clear() {
-        TODO("Not yet implemented")
-    }
-
+    override val state: StateFlow<NowPlaying2?> = controller.state
+    override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBLE_ALWAYS)
+    override val queue: Flow<List<MediaFile>?> = controller.queue
     override val cues: Flow<String?> = emptyFlow()
-    override var playbackSpeed: Float
-        get() = 1.0f
-        set(value) {}
-    override val visibility: Int = RouteConsole.VISIBLE_ALWAYS
 
-    override fun emit(newVisibility: Int, delayed: Boolean) {
-        TODO("Not yet implemented")
+    override var playbackSpeed: Float
+        get() = runBlocking { controller.getPlaybackSpeed() }
+        set(value) {
+            viewModelScope.launch {
+                val updated = controller.setPlaybackSpeed(value)
+                if (!updated)
+                    showPlatformToast(R.string.msg_unknown_error)
+            }
+        }
+
+    override fun getVideoProvider(): VideoProvider {
+        return runBlocking { controller.getVideoView() }
     }
 
     override fun skipToNext() {
-        TODO("Not yet implemented")
+        tryLaunch {
+            controller.skipToNext()
+        }
     }
 
     override fun skipToPrev() {
-        TODO("Not yet implemented")
+        tryLaunch {
+            controller.skipToPrevious()
+        }
     }
 
     override fun togglePlay() {
-        TODO("Not yet implemented")
+        tryLaunch {
+            controller.togglePlay()
+        }
     }
 
     override fun seekTo(pct: Float) {
-        TODO("Not yet implemented")
-    }
-
-    override fun seekBy(mills: Long) {
-        TODO("Not yet implemented")
+        tryLaunch {
+            controller.seekTo(pct)
+        }
     }
 
     override fun sleepAt(mills: Long) {
-        TODO("Not yet implemented")
+        /* viewModelScope.launch {
+             if (!remote.isPlaying()) {
+                 return@launch showPlatformToast(Res.string.msg_sleep_timer_playback_inactive)
+             }
+
+             remote.setSleepTimer(mills)
+             if (mills == Remote.TIME_UNSET) {
+                 showPlatformToast(Res.string.msg_sleep_timer_turned_off)
+             } else {
+                 val endTime = System.currentTimeMillis() + mills
+                 val text = DateUtils.getRelativeTimeSpanString(
+                     endTime,
+                     System.currentTimeMillis(),
+                     DateUtils.MINUTE_IN_MILLIS,
+                     DateUtils.FORMAT_ABBREV_RELATIVE
+                 )
+                 val fMessage =
+                     context.getString(Res.string.msg_sleep_timer_set_playback_stops_s, text)
+                 showPlatformToast(fMessage)
+             }
+         }*/
     }
 
-    override fun getVideoProvider(): VideoProvider {
-        TODO("Not yet implemented")
+    override fun shuffle(enable: Boolean) {
+        tryLaunch {
+            controller.shuffle(enable)
+           // showPlatformToast(if (enable) R.string.shuffle else R.string.shuffle)
+        }
     }
 
-    override suspend fun getPlaybackState(): Int {
-        TODO("Not yet implemented")
+    override fun cycleRepeatMode() {
+        tryLaunch {
+            val new = controller.cycleRepeatMode()
+            /*val msg = when (new) {
+                PlaybackController.REPEAT_MODE_OFF -> R.string.msg_repeat_mode_off
+                PlaybackController.REPEAT_MODE_ONE -> R.string.msg_repeat_mode_one
+                else -> R.string.msg_repeat_mode_all
+            }
+            showPlatformToast(msg)*/
+        }
     }
 
-    override suspend fun getBufferedPct(): Float {
-        TODO("Not yet implemented")
+    override fun clear() {
+        viewModelScope.launch {
+            val permission = showToast(
+                R.string.msg_clearing_playing_queue,
+                R.string.remove,
+                icon = Icons.Outlined.RemoveCircleOutline,
+                accent = Color.OrientRed
+            )
+            if (permission == Toast.ACTION_PERFORMED)
+                controller.clear()
+        }
     }
 
-    override val state: StateFlow<NowPlaying2?> = controller.state
-    override val queue: Flow<List<MediaFile>?> = controller.queue
-
-    override fun skipTo(key: Uri) {
-        TODO("Not yet implemented")
-    }
-
-    override fun remove(key: Uri) {
-        TODO("Not yet implemented")
-    }
-
-    override fun delete(key: Uri, resolver: Activity) {
-        TODO("Not yet implemented")
+    var autohideJob: Job? = null
+    override fun emit(newVisibility: Int, delayed: Boolean) {
+        autohideJob?.cancel()
+        if (!delayed) {
+            this@ConsoleViewModel2.visibility = newVisibility
+            return
+        }
+        autohideJob = viewModelScope.launch {
+            delay(RouteConsole.VISIBILITY_AUTO_HIDE_DELAY)
+            this@ConsoleViewModel2.visibility = newVisibility
+        }
     }
 
     override fun toggleLike(uri: Uri?) {
         TODO("Not yet implemented")
     }
 
-    override fun cycleRepeatMode() {
+    override fun remove(key: Uri) {
+        viewModelScope.launch {
+            controller.remove(key)
+        }
+    }
+
+    override fun delete(key: Uri, resolver: Activity) {
         TODO("Not yet implemented")
     }
 
-    override fun shuffle(enable: Boolean) {
-        TODO("Not yet implemented")
+    override fun skipTo(key: Uri) {
+        viewModelScope.launch {
+            controller.skipTo(key)
+        }
+    }
+
+    override fun seekBy(mills: Long) {
+        tryLaunch {
+            controller.seekBy(mills)
+        }
     }
 }

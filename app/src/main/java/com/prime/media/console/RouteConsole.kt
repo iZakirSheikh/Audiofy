@@ -22,6 +22,7 @@ package com.prime.media.console
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.format.DateUtils
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
@@ -75,6 +76,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
@@ -281,7 +283,7 @@ object RouteConsole : Route {
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .key(ID_VIDEO_SURFACE)
-                    /*.handlePlayerGestures(viewState)*/,
+                        .handlePlayerGestures(viewState),
                     content = {
                         VideoSurface(
                             provider = viewState.getVideoProvider(),
@@ -406,11 +408,13 @@ object RouteConsole : Route {
                     if (isVideo) viewState.emit(VISIBLE_SEEK)
                     val mills = (it * state.duration).toLong()
                     chronometer.raw = mills
+                    Log.d(TAG, "invoke: onValueChange: $it")
                 },
                 onValueChangeFinished = {
                     if (isVideo) viewState.emit(VISIBLE_NONE)
                     val progress = chronometer.elapsed / state.duration.toFloat()
                     viewState.seekTo(progress)
+                    Log.d(TAG, "invoke: onValueChangeFinidhed: $progress")
                 },
                 modifier = Modifier.key(ID_SEEK_BAR),
                 enabled = state.duration > 0 && visibility >= VISIBLE_SEEK && state.state != PlaybackController.PLAYER_STATE_IDLE,
@@ -561,8 +565,10 @@ object RouteConsole : Route {
                 imageVector = Icons.Outlined.Info,
                 contentDescription = null,
                 onClick = {},
-                enabled = enabled,
-                modifier = Modifier.layoutId(ID_BTN_MEDIA_INFO)
+                enabled = /*enabled*/ false,
+                modifier = Modifier
+                    .layoutId(ID_BTN_MEDIA_INFO)
+                    .alpha(0f)
             )
 
             // More
@@ -582,7 +588,7 @@ object RouteConsole : Route {
                     DropDownMenu(
                         expanded = showViewOf == SHOW_MORE,
                         modifier = Modifier.widthIn(max = 200.dp),
-                        shape = AppTheme.shapes.small,
+                        shape = AppTheme.shapes.compact,
                         onDismissRequest = { showViewOf = SHOW_NONE },
                         content = {
                             Column() {
@@ -594,18 +600,6 @@ object RouteConsole : Route {
                                         val key = state.data
                                         if (key != null)
                                             viewState.remove(key)
-                                        showViewOf = SHOW_NONE
-                                    }
-                                )
-
-                                // Delete
-                                DropDownMenuItem(
-                                    stringResource(id = R.string.delete),
-                                    icon = rememberVectorPainter(Icons.Outlined.Delete),
-                                    onClick = {
-                                        val key = state.data
-                                        if (key != null)
-                                            viewState.delete(key, facade as Activity)
                                         showViewOf = SHOW_NONE
                                     }
                                 )

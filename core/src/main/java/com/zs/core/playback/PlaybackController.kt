@@ -87,6 +87,7 @@ interface PlaybackController {
     suspend fun skipToPrevious()
     suspend fun cycleRepeatMode(): Int
     suspend fun remove(uri: Uri): Boolean
+    suspend fun skipTo(uri: Uri): Boolean
 
     /**
      * Sets the playback speed of the media.
@@ -112,6 +113,9 @@ interface PlaybackController {
     suspend fun getPlaybackState(): Int
 
     suspend fun getVideoView(): VideoProvider
+    suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
+    suspend fun seekBy(increment: Long): Boolean
+
 
     companion object {
         //
