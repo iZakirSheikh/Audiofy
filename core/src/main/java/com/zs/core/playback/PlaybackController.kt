@@ -88,6 +88,7 @@ interface PlaybackController {
     suspend fun cycleRepeatMode(): Int
     suspend fun remove(uri: Uri): Boolean
     suspend fun skipTo(uri: Uri): Boolean
+    suspend fun isPlaying(): Boolean
 
     /**
      * Sets the playback speed of the media.
@@ -116,6 +117,15 @@ interface PlaybackController {
     suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
     suspend fun seekBy(increment: Long): Boolean
 
+    /**
+     *  A function that sets the sleep timer for the media player
+     *
+     *  The sleep timer is a feature that allows the user to set a time in the future when the
+     *  playback should be paused or slept.
+     *  @param mills The time in milliseconds when playback is scheduled to be paused. If the value is
+     *  [SLEEP_TIME_UNSET], the sleep timer is disabled or removed.
+     */
+    suspend fun setSleepAtMs(mills: Long)
 
     companion object {
         //
@@ -123,6 +133,8 @@ interface PlaybackController {
         const val POSITION_UNSET = C.POSITION_UNSET
         const val TIME_UNSET = C.TIME_UNSET
         const val INDEX_UNSET = C.INDEX_UNSET
+        const val SLEEP_TIME_UNSET = Playback.UNINITIALIZED_SLEEP_TIME_MILLIS
+
 
         // RepeatModes
         const val REPEAT_MODE_ONE = Player.REPEAT_MODE_ONE
@@ -145,6 +157,8 @@ interface PlaybackController {
         // commands
         internal val SCHEDULE_SLEEP_TIME =
             SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY)
+
+
 
         // Represents all the update events that trigger state change.
         internal val STATE_UPDATE_EVENTS = intArrayOf(

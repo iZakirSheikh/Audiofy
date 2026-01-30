@@ -21,13 +21,16 @@ package com.zs.core.playback
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
+import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.zs.core.await
 import com.zs.core.playback.PlaybackController.Companion.INDEX_UNSET
+import com.zs.core.playback.PlaybackController.Companion.SCHEDULE_SLEEP_TIME
 import com.zs.core.playback.PlaybackController.Companion.TIME_UNSET
 import com.zs.core.util.debounceAfterFirst
 import kotlinx.coroutines.CoroutineScope
@@ -314,5 +317,19 @@ internal class PlaybackControllerImpl(
         val browser = fBrowser.await()
         browser.seekTo(index, C.TIME_UNSET)
         return true
+    }
+
+    override suspend fun setSleepAtMs(mills: Long) {
+        // Get the media browser object from a deferred value
+        val browser = fBrowser.await()
+        // Send a custom command to the media browser with an empty bundle as arguments
+        browser[SCHEDULE_SLEEP_TIME] = bundleOf(
+            Playback.EXTRA_SCHEDULED_TIME_MILLS to mills
+        )
+    }
+
+    override suspend fun isPlaying(): Boolean {
+        val browser = fBrowser.await()
+        return browser.playWhenReady
     }
 }

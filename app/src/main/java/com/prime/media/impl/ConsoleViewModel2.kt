@@ -23,6 +23,7 @@ package com.prime.media.impl
 
 import android.app.Activity
 import android.net.Uri
+import android.text.format.DateUtils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.runtime.getValue
@@ -92,27 +93,26 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     }
 
     override fun sleepAt(mills: Long) {
-        /* viewModelScope.launch {
-             if (!remote.isPlaying()) {
-                 return@launch showPlatformToast(Res.string.msg_sleep_timer_playback_inactive)
-             }
-
-             remote.setSleepTimer(mills)
-             if (mills == Remote.TIME_UNSET) {
-                 showPlatformToast(Res.string.msg_sleep_timer_turned_off)
-             } else {
-                 val endTime = System.currentTimeMillis() + mills
-                 val text = DateUtils.getRelativeTimeSpanString(
-                     endTime,
-                     System.currentTimeMillis(),
-                     DateUtils.MINUTE_IN_MILLIS,
-                     DateUtils.FORMAT_ABBREV_RELATIVE
-                 )
-                 val fMessage =
-                     context.getString(Res.string.msg_sleep_timer_set_playback_stops_s, text)
-                 showPlatformToast(fMessage)
-             }
-         }*/
+       tryLaunch {
+           if (!controller.isPlaying()) {
+               return@tryLaunch showPlatformToast("Timer only avaible when media is playing.")
+           }
+           controller.setSleepAtMs(mills)
+           if (mills == PlaybackController.SLEEP_TIME_UNSET) {
+               showPlatformToast("Cleared sleep timer!")
+           } else {
+               val endTime = System.currentTimeMillis() + mills
+               val text = DateUtils.getRelativeTimeSpanString(
+                   endTime,
+                   System.currentTimeMillis(),
+                   DateUtils.MINUTE_IN_MILLIS,
+                   DateUtils.FORMAT_ABBREV_RELATIVE
+               )
+               val fMessage = String.format("Timer set — playback stops %1s", text)
+                   //context.getString(Res.string.msg_sleep_timer_set_playback_stops_s, text)
+               showPlatformToast(fMessage)
+           }
+       }
     }
 
     override fun shuffle(enable: Boolean) {

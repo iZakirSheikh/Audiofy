@@ -525,18 +525,18 @@ object RouteConsole : Route {
             // Timer
             IconButton(
                 onClick = {
-                    if (state.sleepAt != PlaybackController.TIME_UNSET)
-                        viewState.sleepAt(PlaybackController.TIME_UNSET)
+                    if (state.sleepAt != PlaybackController.SLEEP_TIME_UNSET)
+                        viewState.sleepAt(PlaybackController.SLEEP_TIME_UNSET)
                     else showViewOf = SHOW_TIMER
                 },
                 modifier = Modifier.layoutId(ID_BTN_SLEEP_TIMER),
                 content = {
-                    if (state.sleepAt == PlaybackController.TIME_UNSET)
+                    if (state.sleepAt == PlaybackController.SLEEP_TIME_UNSET)
                         return@IconButton Icon(
                             imageVector = Icons.Outlined.Timer10,
                             contentDescription = null
                         )
-                    val remaining /*by timer(state.sleepAt)*/ = 0
+                    val remaining by timer(state.sleepAt)
                     Label(
                         text = DateUtils.formatElapsedTime(remaining / 1000L),
                         style = AppTheme.typography.caption2,
@@ -767,7 +767,7 @@ object RouteConsole : Route {
                     return@PlaybackSpeed
                 }
                 val fValue = (facade as Activity).getString(R.string.playback_speed_dialog_x_f, newValue)
-                facade.showToast(fValue)
+                facade.showPlatformToast(fValue)
                 viewState.playbackSpeed = newValue
             }
             SHOW_TIMER -> SleepTimer(true) { mills ->
