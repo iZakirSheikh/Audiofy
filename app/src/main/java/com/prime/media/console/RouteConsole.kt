@@ -536,7 +536,7 @@ object RouteConsole : Route {
                             imageVector = Icons.Outlined.Timer10,
                             contentDescription = null
                         )
-                    val remaining by timer(state.sleepAt)
+                    val remaining by timer( state.sleepAt - System.currentTimeMillis())
                     Label(
                         text = DateUtils.formatElapsedTime(remaining / 1000L),
                         style = AppTheme.typography.caption2,

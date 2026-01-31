@@ -23,14 +23,13 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
 import com.zs.core.await
 import com.zs.core.playback.PlaybackController.Companion.INDEX_UNSET
-import com.zs.core.playback.PlaybackController.Companion.SCHEDULE_SLEEP_TIME
 import com.zs.core.playback.PlaybackController.Companion.TIME_UNSET
 import com.zs.core.util.debounceAfterFirst
 import kotlinx.coroutines.CoroutineScope
@@ -115,10 +114,16 @@ internal class PlaybackControllerImpl(
     }
 
     suspend fun getRemainingSleepTime(): Long {
+        // Get the media browser object from a deferred value
         val browser = fBrowser.await()
-        val result = browser[PlaybackController.SCHEDULE_SLEEP_TIME]
+        // Send a custom command to the media browser with an empty bundle as arguments
+        val result = browser.sendCustomCommand(
+            // Create a custom command to query the sleep timer
+            SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY),
+            Bundle.EMPTY
+        )
         // Get the scheduled time from the result or use the uninitialized value
-        return result.extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
+        return result.await().extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
     }
 
     override suspend fun getNowPlaying(): NowPlaying2? {
@@ -323,8 +328,11 @@ internal class PlaybackControllerImpl(
         // Get the media browser object from a deferred value
         val browser = fBrowser.await()
         // Send a custom command to the media browser with an empty bundle as arguments
-        browser[SCHEDULE_SLEEP_TIME] = bundleOf(
-            Playback.EXTRA_SCHEDULED_TIME_MILLS to mills
+        browser.sendCustomCommand(
+            SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle().apply {
+                putLong(Playback.EXTRA_SCHEDULED_TIME_MILLS, mills)
+            }) ,
+            Bundle.EMPTY
         )
     }
 

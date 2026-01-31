@@ -27,6 +27,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.SurfaceView
 import android.view.TextureView
@@ -60,6 +61,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -68,6 +70,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -78,11 +81,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.prime.media.BuildConfig
 import com.prime.media.R
 import com.prime.media.common.SystemFacade
 import com.prime.media.common.lottie
 import com.primex.core.ImageBrush
+import com.primex.core.foreground
 import com.primex.core.thenIf
 import com.primex.core.visualEffect
 import com.primex.material2.Label
@@ -90,6 +95,7 @@ import com.primex.material2.Text
 import com.zs.core.playback.VideoProvider
 import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Indication
+import com.zs.core_ui.coil.RsBlurTransformation
 import com.zs.core_ui.lottieAnimationPainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -275,29 +281,7 @@ fun SystemFacade.launchEqualizer(id: Int) {
 }
 
 
-@Composable
-@NonRestartableComposable
-context(_: RC)
-fun Background(
-    artwork: Uri? = null,
-    style: Int = RC.BG_STYLE_AUTO,
-    modifier: Modifier = Modifier
-) {
-    Crossfade(
-        targetState = style,
-        modifier = modifier,
-        content = { value ->
-            when (value) {
-                RC.BG_STYLE_AUTO_ACRYLIC -> /*Acrylic(artwork, Modifier.fillMaxSize())*/ {}
-                else -> Spacer(
-                    Modifier
-                        .background(Color.Black)
-                        .fillMaxSize()
-                )
-            }
-        }
-    )
-}
+
 
 @Composable
 context(_: RC)
@@ -471,4 +455,55 @@ inline fun timer(mills: Long): LongState {
         }
     }
     return state // Return the state object that holds the current time.
+}
+
+
+@Composable
+@NonRestartableComposable
+context(_: RC)
+fun Background(
+    style: Int,
+    artwork: Uri? = null,
+    modifier: Modifier = Modifier
+) {
+    val ctx = LocalContext.current
+    Crossfade(
+        targetState = style,
+        modifier = modifier,
+        content = { value ->
+            when (value) {
+                RC.BG_STYLE_AUTO_ACRYLIC if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) -> {
+                    val transformation = remember {
+                        RsBlurTransformation(ctx, 25f, 2.1f)
+                    }
+                    AsyncImage(
+                        model = ImageRequest.Builder(ctx)
+                            .data(artwork)
+                            .transformations(transformation).build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
+                            .visualEffect(ImageBrush.NoiseBrush, overlay = true),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                RC.BG_STYLE_AUTO_ACRYLIC -> AsyncImage(
+                    model = artwork,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(95.dp)
+                        .foreground(AppTheme.colors.background.copy(if (AppTheme.colors.isLight) 0.85f else 0.92f))
+                        .visualEffect(ImageBrush.NoiseBrush, overlay = true),
+                    contentScale = ContentScale.Crop
+                )
+                else -> Spacer(
+                    Modifier
+                        .background(Color.Black)
+                        .fillMaxSize()
+                )
+            }
+        }
+    )
 }

@@ -154,12 +154,6 @@ interface PlaybackController {
 
         val PLAYLIST_RECENT = Playback.PLAYLIST_RECENT
 
-        // commands
-        internal val SCHEDULE_SLEEP_TIME =
-            SessionCommand(Playback.ACTION_SCHEDULE_SLEEP_TIME, Bundle.EMPTY)
-
-
-
         // Represents all the update events that trigger state change.
         internal val STATE_UPDATE_EVENTS = intArrayOf(
             Player.EVENT_TIMELINE_CHANGED,

@@ -224,6 +224,22 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
     private var equalizer: Equalizer? = null
 
     /**
+     * Forces the player to emit a shuffle mode change event to its listeners.
+     *
+     * Temporarily toggles [shuffleModeEnabled] so that `onShuffleModeChanged`
+     * callbacks are invoked, even if the shuffle mode ultimately remains unchanged.
+     */
+    fun Player.emit(){
+        scope.launch {
+            // poke player listeners
+            val shuffle = shuffleModeEnabled
+            shuffleModeEnabled = !shuffle
+            delay(5)
+            shuffleModeEnabled = shuffle
+        }
+    }
+
+    /**
      * Init this service.
      */
     override fun onCreate() {
@@ -506,6 +522,7 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
             playbackMonitorJob?.cancel()
             // change this to uninitialized
             scheduledPauseTimeMillis = UNINITIALIZED_SLEEP_TIME_MILLIS
+            player.emit()
         }
         // Launch a new job
         else playbackMonitorJob = scope.launch {
@@ -517,11 +534,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
 
                 // Check if playback is scheduled to be paused.
                 if (scheduledPauseTimeMillis != UNINITIALIZED_SLEEP_TIME_MILLIS && scheduledPauseTimeMillis <= System.currentTimeMillis()) {
-                    // Pause the player as the scheduled pause time has been reached.
-                    player.pause()
-
                     // Once the scheduled pause has been triggered, reset the scheduled time to uninitialized.
                     scheduledPauseTimeMillis = UNINITIALIZED_SLEEP_TIME_MILLIS
+                    // Pause the player as the scheduled pause time has been reached.
+                    player.pause()
                 }
                 // Delay for the specified time
                 delay(SAVE_POSITION_DELAY_MILLS)
@@ -627,8 +643,10 @@ class Playback : MediaLibraryService(), Callback, Player.Listener {
                 // If the new time is not zero, set the new sleep timer.
                 // FixMe: Consider setting the timer only when it's not equal to the default value
                 //  and greater than the current time.
-                if (newTimeMills != 0L)
+                if (newTimeMills != 0L) {
                     scheduledPauseTimeMillis = newTimeMills
+                    player.emit()
+                }
 
                 // Regardless of whether the client wants to set or retrieve the timer,
                 // include the current or updated timer value in the response to the client.

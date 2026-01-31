@@ -95,13 +95,15 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     override fun sleepAt(mills: Long) {
        tryLaunch {
            if (!controller.isPlaying()) {
-               return@tryLaunch showPlatformToast("Timer only avaible when media is playing.")
+               return@tryLaunch showPlatformToast("Timer only available when media is playing.")
            }
-           controller.setSleepAtMs(mills)
+
            if (mills == PlaybackController.SLEEP_TIME_UNSET) {
+               controller.setSleepAtMs(PlaybackController.SLEEP_TIME_UNSET)
                showPlatformToast("Cleared sleep timer!")
            } else {
                val endTime = System.currentTimeMillis() + mills
+               controller.setSleepAtMs(endTime)
                val text = DateUtils.getRelativeTimeSpanString(
                    endTime,
                    System.currentTimeMillis(),
