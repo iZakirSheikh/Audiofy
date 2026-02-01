@@ -23,90 +23,61 @@
 
 package com.prime.media.console
 
+import android.view.Gravity
 import androidx.annotation.FloatRange
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ButtonDefaults.OutlinedBorderSize
+import androidx.compose.material.Chip
+import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FilterChip
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Slider
-import androidx.compose.material.Surface
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AudioFile
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.TimerOff
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.prime.media.R
-import com.zs.core_ui.ContentPadding as CP
-import com.primex.core.drawHorizontalDivider
-import com.primex.core.textResource
-import com.primex.material2.Dialog
-import com.primex.material2.Divider
-import com.primex.material2.IconButton
-import com.primex.material2.Label
-import com.primex.material2.OutlinedButton
-import com.primex.material2.TextButton
-import com.zs.core_ui.AppTheme
-import kotlin.math.roundToInt
-import android.view.Gravity
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.Chip
-import androidx.compose.material.ChipColors
-import androidx.compose.material.ChipDefaults
-import androidx.compose.material.ChipDefaults.OutlinedBorderOpacity
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Audiotrack
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material.icons.outlined.VideoLibrary
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.prime.media.R
+import com.prime.media.common.ellipsize
+import com.prime.media.common.emit
 import com.primex.core.fadingEdge
-import com.primex.core.textArrayResource
+import com.primex.core.textResource
+import com.primex.material2.IconButton
+import com.primex.material2.Label
+import com.zs.core.playback.PlaybackController
+import com.zs.core.playback.PlaybackController.TrackInfo
 import com.zs.core_ui.AlertDialog2
+import com.zs.core_ui.AppTheme
 import com.zs.core_ui.Header
 import com.zs.core_ui.Indication
 import com.zs.core_ui.LocalWindowSize
 import kotlin.math.roundToInt
+import com.zs.core_ui.ContentPadding as CP
 
 private const val TAG = "ConsoleDialogs"
 
@@ -224,7 +195,7 @@ fun PlaybackSpeed(
                         Chip(
                             colors = chipColors,
                             border = ChipDefaults.outlinedBorder,
-                            shape = CircleShape,
+                            shape = AppTheme.shapes.compact,
                             content = {
                                 Label(
                                     text = textResource(
@@ -359,4 +330,131 @@ fun SleepTimer(
 fun MediaConfigDialog(
     viewState: ConsoleViewState,
     onDismissRequest: () -> Unit
-) {}
+) {
+    val (width, height) = LocalWindowSize.current
+    AlertDialog2(
+        onDismissRequest = onDismissRequest,
+        properties = CustomWidthProperties,
+        gravity = if (width > height) Gravity.CENTER else Gravity.BOTTOM,
+        navigationIcon = {
+            IconButton(
+                imageVector = Icons.Outlined.Close,
+                contentDescription = null,
+                onClick = onDismissRequest
+            )
+        },
+        title = {
+            com.primex.material2.Text(
+                text = "Media Config.",
+                //fontWeight = FontWeight.Light,
+                lineHeight = 23.sp,
+            )
+        },
+        content = {
+            var checked by remember { mutableIntStateOf(PlaybackController.TRACK_TYPE_AUDIO) }
+            Header(
+                "Choose Audio, Video & Subtitles",
+                style = AppTheme.typography.titleSmall,
+                color = AppTheme.colors.accent,
+                drawDivider = true,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Audio
+                val spacer = Modifier.offset(x = -CP.xSmall)
+                RadioButton(
+                    selected = checked == PlaybackController.TRACK_TYPE_AUDIO,
+                    onClick = {
+                        checked = PlaybackController.TRACK_TYPE_AUDIO
+                    }
+                )
+
+                val style = AppTheme.typography.caption2
+                Label("Audio", modifier = spacer, style = style)
+
+                // Subtitle
+                RadioButton(
+                    selected = checked == PlaybackController.TRACK_TYPE_TEXT,
+                    onClick = {
+                        checked = PlaybackController.TRACK_TYPE_TEXT
+                    }
+                )
+
+                Label("Subtitle",  style = style)
+            }
+            val colors = ChipDefaults.filterChipColors(
+                backgroundColor = Color.Transparent,
+                contentColor = AppTheme.colors.onBackground,
+                selectedBackgroundColor = AppTheme.colors.accent,
+                selectedContentColor = AppTheme.colors.onAccent
+            )
+            // Audio Tracks
+            val tracks: List<TrackInfo>? by produceState(null, checked) {
+                value = viewState.getAvailableTracks(checked)
+            }
+            val checkedTrack: TrackInfo? by produceState(null, checked) {
+                value = viewState.getCheckedTrack(checked)
+            }
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(CP.small),
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    val data = emit(false, tracks) ?: return@LazyRow
+                    // subtitle allows selection none.
+                    if (checked == PlaybackController.TRACK_TYPE_TEXT)
+                        item(
+                            content = {
+                                val selected  = checkedTrack ==  null
+                                FilterChip(
+                                    selected,
+                                    shape = AppTheme.shapes.compact,
+                                    colors = colors,
+                                    border = if (selected) ChipDefaults.outlinedBorder else ButtonDefaults.outlinedBorder,
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Outlined.AudioFile,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    content = { Label(stringResource(R.string.none)) },
+                                    onClick = {
+                                        viewState.setCheckedTrack(
+                                            PlaybackController.TRACK_TYPE_TEXT,
+                                            null
+                                        )
+                                        onDismissRequest()
+                                    },
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        )
+
+                    items(
+                        items = data,
+                        itemContent = {
+                            val selected  = checkedTrack?.name == it.name
+                            FilterChip(
+                                selected,
+                                colors = colors,
+                                shape = AppTheme.shapes.compact,
+                                border = if (selected) ChipDefaults.outlinedBorder else ButtonDefaults.outlinedBorder,
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.AudioFile,
+                                        contentDescription = null
+                                    )
+                                },
+                                content = { Label(it.name.ellipsize(25)) },
+                                onClick = {
+                                    viewState.setCheckedTrack(checked, it)
+                                    onDismissRequest()
+                                },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    )
+}

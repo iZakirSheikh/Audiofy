@@ -38,6 +38,7 @@ import com.primex.core.OrientRed
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying2
 import com.zs.core.playback.PlaybackController
+import com.zs.core.playback.PlaybackController.TrackInfo
 import com.zs.core.playback.VideoProvider
 import com.zs.core_ui.toast.Toast
 import kotlinx.coroutines.Job
@@ -185,6 +186,17 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     override fun seekBy(mills: Long) {
         tryLaunch {
             controller.seekBy(mills)
+        }
+    }
+
+
+    override suspend fun getAvailableTracks(type: Int): List<TrackInfo> = controller.getAvailableTracks(type)
+
+    override suspend fun getCheckedTrack(type: Int): TrackInfo? = controller.getSelectedTrackFor(type)
+
+    override fun setCheckedTrack(type: Int, info: TrackInfo?) {
+        tryLaunch {
+            controller.setCheckedTrack(info, type)
         }
     }
 }

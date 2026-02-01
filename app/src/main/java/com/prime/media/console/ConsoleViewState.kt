@@ -27,6 +27,8 @@ import androidx.compose.runtime.Stable
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.NowPlaying2
+import com.zs.core.playback.PlaybackController
+import com.zs.core.playback.PlaybackController.TrackInfo
 import com.zs.core.playback.VideoProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -118,7 +120,7 @@ interface ConsoleViewState: QueueViewState {
     fun sleepAt(mills: Long)
 
     fun getVideoProvider(): VideoProvider
-    //suspend fun getAvailableTracks(type: Int): List<TrackInfo>
-    //suspend fun getCheckedTrack(type: Int): TrackInfo?
-    //fun setCheckedTrack(type: Int, info: TrackInfo?)
+    suspend fun getAvailableTracks(type: Int): List<TrackInfo>
+    suspend fun getCheckedTrack(type: Int): TrackInfo?
+    fun setCheckedTrack(type: Int, info: TrackInfo?)
 }
