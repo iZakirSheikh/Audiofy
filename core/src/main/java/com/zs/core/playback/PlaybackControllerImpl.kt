@@ -302,7 +302,7 @@ internal class PlaybackControllerImpl(
         return browser.playbackParameters.speed
     }
 
-    override suspend fun getVideoView(): VideoProvider = VideoProvider(fBrowser.await())
+    override suspend fun getVideoView(): Player = fBrowser.await()
 
     override suspend fun seekTo(pct: Float) {
         val browser = fBrowser.await()

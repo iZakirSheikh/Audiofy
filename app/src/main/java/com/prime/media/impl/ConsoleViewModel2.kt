@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Player
 import com.prime.media.R
 import com.prime.media.console.ConsoleViewState
 import com.prime.media.console.RouteConsole
@@ -53,7 +54,6 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     override val state: StateFlow<NowPlaying2?> = controller.state
     override var visibility: Int by mutableIntStateOf(RouteConsole.VISIBLE_ALWAYS)
     override val queue: Flow<List<MediaFile>?> = controller.queue
-    override val cues: Flow<String?> = emptyFlow()
 
     override var playbackSpeed: Float
         get() = runBlocking { controller.getPlaybackSpeed() }
@@ -65,7 +65,7 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
             }
         }
 
-    override fun getVideoProvider(): VideoProvider {
+    override fun getVideoProvider(): Player {
         return runBlocking { controller.getVideoView() }
     }
 

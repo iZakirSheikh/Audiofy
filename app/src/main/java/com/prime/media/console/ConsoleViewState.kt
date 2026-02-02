@@ -24,6 +24,7 @@ package com.prime.media.console
 import android.app.Activity
 import android.net.Uri
 import androidx.compose.runtime.Stable
+import androidx.media3.common.Player
 import com.zs.core.playback.MediaFile
 import com.zs.core.playback.NowPlaying
 import com.zs.core.playback.NowPlaying2
@@ -85,7 +86,6 @@ interface QueueViewState {
 @Stable
 interface ConsoleViewState: QueueViewState {
 
-    val cues: Flow<String?>
     var playbackSpeed: Float
 
     /**
@@ -119,7 +119,7 @@ interface ConsoleViewState: QueueViewState {
 
     fun sleepAt(mills: Long)
 
-    fun getVideoProvider(): VideoProvider
+    fun getVideoProvider(): Player
     suspend fun getAvailableTracks(type: Int): List<TrackInfo>
     suspend fun getCheckedTrack(type: Int): TrackInfo?
     fun setCheckedTrack(type: Int, info: TrackInfo?)

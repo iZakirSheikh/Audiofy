@@ -94,6 +94,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.prime.media.R
 import com.prime.media.common.AppConfig
 import com.prime.media.common.LocalSystemFacade
+import com.prime.media.common.PlayerView
 import com.prime.media.common.Route
 import com.prime.media.common.collectAsState
 import com.prime.media.common.resize
@@ -285,25 +286,14 @@ object RouteConsole : Route {
                         .key(ID_VIDEO_SURFACE)
                         .handlePlayerGestures(viewState),
                     content = {
-                        VideoSurface(
-                            provider = viewState.getVideoProvider(),
+                        PlayerView(
+                            player = viewState.getVideoProvider(),
                             keepScreenOn = state.playWhenReady,
                             modifier = Modifier
                                 .resize(scale, state.videoSize),
                             // typeSurfaceView = AppConfig.isSurfaceViewVideoRenderingPreferred
                         )
                     }
-                )
-
-                // Cues
-                val cues by viewState.cues.collectAsState(null)
-                /*val cManager = remember {
-                    facade.getDeviceService<CaptioningManager>(Context.CAPTIONING_SERVICE)
-                }*/
-                Cue(
-                    provider = { cues ?: "" },
-                    modifier = Modifier.layoutId(ID_CUES),
-                    color = Color.White,
                 )
 
                 // Scrim

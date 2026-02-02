@@ -117,7 +117,7 @@ interface PlaybackController {
      */
     suspend fun getPlaybackState(): Int
 
-    suspend fun getVideoView(): VideoProvider
+    suspend fun getVideoView(): Player
     suspend fun seekTo(@FloatRange(0.0, 1.0) pct: Float)
     suspend fun seekBy(increment: Long): Boolean
 

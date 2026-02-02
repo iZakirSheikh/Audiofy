@@ -130,6 +130,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.Player
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.airbnb.lottie.LottieProperty
@@ -153,7 +154,6 @@ import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimButton
 import com.prime.media.old.common.LottieAnimation
-import com.prime.media.old.common.PlayerView
 import com.prime.media.old.common.marque
 import com.prime.media.old.core.playback.artworkUri
 import com.prime.media.old.core.playback.subtitle
@@ -1222,7 +1222,7 @@ private fun MainContent(
         val isInInspectionMode = LocalInspectionMode.current
         val facade = LocalSystemFacade.current
         if (isVideo && !removePlayerView && !isInInspectionMode)
-            PlayerView(
+            com.prime.media.common.PlayerView(
                 player = state.player,
                 resizeMode = state.resizeMode,
                 modifier = Modifier
