@@ -503,8 +503,8 @@ object RouteConsole : Route {
             LottieAnimatedButton(
                 R.raw.lt_twitter_heart_filled_unfilled,
                 onClick = viewState::toggleLike,
-                //animationSpec = tween(800),
-                atEnd = state.favourite, // if fav
+                duration = 800,
+                atEnd = !state.favourite, // if fav
                 contentDescription = null,
                 progressRange = 0.13f..1.0f,
                 scale = 3.5f,

@@ -32,6 +32,8 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
 import androidx.media3.ui.DefaultTrackNameProvider
 import com.zs.core.await
+import com.zs.core.db.Playlist
+import com.zs.core.db.Playlists
 import com.zs.core.playback.PlaybackController.Companion.INDEX_UNSET
 import com.zs.core.playback.PlaybackController.Companion.TIME_UNSET
 import com.zs.core.playback.PlaybackController.TrackInfo
@@ -45,6 +47,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -78,7 +81,7 @@ internal class PlaybackControllerImpl(
             field = if (field.isCancelled) context.browser(this) else field
             return field
         }
-
+    private val playlists = Playlists(context)
 
     override suspend fun setMediaFiles(values: List<MediaFile>, index: Int , position: Long): Int {
         val browser = fBrowser.await()
@@ -150,7 +153,7 @@ internal class PlaybackControllerImpl(
             duration = if (provider.playbackState == PlaybackController.PLAYER_STATE_IDLE) PlaybackController.TIME_UNSET else provider.contentDuration,
             position = provider.contentPosition,
             // Check if the current media item is in the "favourites" playlist.
-            favourite = false,
+            favourite = playlists.exists(Playback.PLAYLIST_FAVOURITE, current.mediaUri.toString()),
             playWhenReady = provider.playWhenReady,
             mimeType = current.mimeType,
             state = provider.playbackState,
@@ -200,10 +203,13 @@ internal class PlaybackControllerImpl(
     }
     @OptIn(DelicateCoroutinesApi::class)
     private val remoteScope: CoroutineScope = GlobalScope
+
     override val state: StateFlow<NowPlaying2?> = events
         .filter { it == null || it.containsAny(*PlaybackController.STATE_UPDATE_EVENTS) }
         .debounceAfterFirst(200)
-        .map { getNowPlaying() }
+        .combine(playlists.observer(Playback.PLAYLIST_FAVOURITE, null) ){_, _ ->
+            getNowPlaying()
+        }
         .flowOn(Dispatchers.Main)
         .stateIn(remoteScope, autostopPolicy, null)
 
@@ -450,5 +456,21 @@ internal class PlaybackControllerImpl(
                     }
                 }.build()
         return true
+    }
+
+    override suspend fun toggleLike(uri: Uri?): Boolean {
+        val id = playlists[Playback.PLAYLIST_FAVOURITE]?.id
+            ?: playlists.insert(Playlist(Playback.PLAYLIST_FAVOURITE, ""))
+        val browser = fBrowser.await()
+        val item = (if(uri == null) browser.currentMediaItem else  browser.getMediaItemAt(indexOf(uri)))
+            ?: error("media item associated with uri: $uri is null")
+        val uri = item.mediaUri
+        val fav = playlists.exists(Playback.PLAYLIST_FAVOURITE, uri.toString())
+        if (fav)
+            playlists.remove(id, uri.toString())
+        else {
+            playlists.insert(Member(item , id, playlists.lastPlayOrder(id) ?: 0))
+        }
+        return playlists.exists(Playback.PLAYLIST_FAVOURITE, uri.toString())
     }
 }

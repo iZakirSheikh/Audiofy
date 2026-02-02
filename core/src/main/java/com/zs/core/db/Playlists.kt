@@ -121,6 +121,9 @@ interface Playlists {
     @Insert
     suspend fun insert(playlist: Playlist): Long
 
+    @Insert
+    suspend fun insert(track: Track): Long
+
     @Query("DELETE FROM tbl_playlists WHERE playlist_id == :id")
     suspend fun delete(id: Long): Int
 
@@ -141,4 +144,15 @@ interface Playlists {
     /** Removes item from playlist*/
     @Query("DELETE FROM tbl_playlist_members WHERE playlist_id = :playlistID AND uri IN (:keys)")
     suspend fun remove(playlistID: Long, vararg keys: String): Int
+
+    @Query("SELECT EXISTS(SELECT 1 FROM tbl_playlist_members WHERE playlist_id = :playlistId AND uri = :uri)")
+    suspend fun exists(playlistId: Long, uri: String): Boolean
+
+    suspend fun exists(playlistName: String, uri: String): Boolean{
+        val id = get(playlistName)?.id ?: return false
+        return exists(id, uri)
+    }
+
+    @Query("SELECT MAX(play_order) FROM tbl_playlist_members WHERE playlist_id = :playlistId")
+    suspend fun lastPlayOrder(playlistId: Long): Int?
 }

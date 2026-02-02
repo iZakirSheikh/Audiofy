@@ -160,6 +160,11 @@ interface PlaybackController {
      */
     suspend fun setCheckedTrack(info: TrackInfo?, type: Int): Boolean
 
+    /**
+     * Toggles the like state od [uri] and return the updated state.
+     */
+    suspend fun toggleLike(uri: Uri?): Boolean
+
     companion object {
         //
         @SuppressLint("UnsafeOptInUsageError")

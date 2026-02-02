@@ -164,7 +164,9 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
     }
 
     override fun toggleLike(uri: Uri?) {
-        TODO("Not yet implemented")
+        tryLaunch {
+            controller.toggleLike(uri)
+        }
     }
 
     override fun remove(key: Uri) {
