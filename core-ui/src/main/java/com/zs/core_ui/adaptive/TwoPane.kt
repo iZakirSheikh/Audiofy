@@ -213,7 +213,7 @@ private data class TwoPaneVerticalMeasurePolicy(
         val splitAtY = strategy.calculate(IntSize(width, height))
         val gapWidthPx = spacing.roundToPx()
         // Measure Details Pane (if present), limiting its maximum height to the space below the split point
-        val detailsMaxHeight = height - splitAtY + gapWidthPx / 2
+        val detailsMaxHeight = height - splitAtY - gapWidthPx / 2
         constraints = c.copy(minWidth = 0, minHeight = 0, maxHeight = detailsMaxHeight)
         val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
         // Measure Content, dynamically allocating space based on the size of the details pane.
@@ -250,7 +250,7 @@ private data class TwoPaneVerticalMeasurePolicy(
             // after the gap place the details at the bottom of the content
             detailsPlaceable.placeRelative(
                 width / 2 - detailsPlaceable.width / 2,
-                height - detailsPlaceable.height
+                splitAtY + gapWidthPx // after gap width
             )
             // place dialog
             dialogPlaceable?.placeRelative(0, 0)
@@ -276,14 +276,14 @@ private data class TwoPaneHorizontalMeasurePolicy(
         val gapWidthPx = spacing.roundToPx()
         // measure details first
         // Measure Details Pane (if present), limiting its maximum height to the space below the split point
-        val detailsMaxWidth = width - splitAtX + gapWidthPx / 2
+        val detailsMaxWidth = width - (splitAtX + gapWidthPx / 2)
         var constraints = c.copy(0, minHeight = 0, maxWidth = detailsMaxWidth)
         val detailsPlaceable = measurables[INDEX_DETAILS].measure(constraints)
         // measure others
         // Others are restricted to the size of the remaining space.
         val contentAllocatedWidth = splitAtX - gapWidthPx / 2
         // if details has shorter width than suggested; then content will take that space.
-        val remaining = maxOf(contentAllocatedWidth, width - detailsPlaceable.measuredWidth - gapWidthPx)
+        val remaining = maxOf(contentAllocatedWidth, width - (detailsPlaceable.measuredWidth + gapWidthPx))
         constraints = c.copy(maxWidth = remaining, minWidth = remaining)
         val contentPlaceable = measurables[INDEX_CONTENT].measure(constraints)
         val dialogPlaceable = measurables.getOrNull(INDEX_DIALOG)?.measure(constraints)
@@ -310,10 +310,10 @@ private data class TwoPaneHorizontalMeasurePolicy(
             )
             // after the gap place the details at the bottom of the content
             detailsPlaceable.placeRelative(
-                contentPlaceable.width + gapWidthPx / 2,
+                contentPlaceable.width + gapWidthPx,
                 0
             )
-            // overlay content with scrim
+            // overlay content with scrimt
             dialogPlaceable?.placeRelative(0, 0)
         }
     }

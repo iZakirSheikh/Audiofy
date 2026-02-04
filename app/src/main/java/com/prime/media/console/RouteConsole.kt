@@ -181,7 +181,7 @@ object RouteConsole : Route {
 
     /** Represents [NowPlaying] default state in [Console] */
     private val NonePlaying = NowPlaying2(null, null)
-    private val COLOR_BACKGROUND = Color(0xFF0E0E0F)
+    private val COLOR_BACKGROUND = Color.Black
 
     /** A short-hand   */
     private fun Modifier.key(value: String) = layoutId(value)
