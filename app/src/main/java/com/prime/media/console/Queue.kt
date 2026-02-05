@@ -188,6 +188,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                 backgroundColor =  Color.Transparent,
                 modifier = Modifier.drawHorizontalDivider(LocalContentColor.current.copy(
                     ContentAlpha.Divider), thickness = 1.dp),
+                elevation = 0.dp,
                 title = {
                     Label(
                         textResource(R.string.playing_queue),
@@ -225,7 +226,7 @@ fun Queue(viewState: QueueViewState, shape: Shape, insets: WindowInsets) {
                         onClick = { dispacher?.onBackPressedDispatcher?.onBackPressed() },
                         modifier = scale
                     )
-                }
+                },
             )
         },
         content = { pd ->

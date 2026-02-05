@@ -130,7 +130,8 @@ internal class PlaybackControllerImpl(
             Bundle.EMPTY
         )
         // Get the scheduled time from the result or use the uninitialized value
-        return result.await().extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
+        val res =  result.await().extras.getLong(Playback.EXTRA_SCHEDULED_TIME_MILLS)
+        return if (res == PlaybackController.SLEEP_TIME_UNSET) PlaybackController.SLEEP_TIME_UNSET else res - System.currentTimeMillis()
     }
 
     override suspend fun getNowPlaying(): NowPlaying2? {
@@ -208,6 +209,7 @@ internal class PlaybackControllerImpl(
         .filter { it == null || it.containsAny(*PlaybackController.STATE_UPDATE_EVENTS) }
         .debounceAfterFirst(200)
         .combine(playlists.observer(Playback.PLAYLIST_FAVOURITE, null) ){_, _ ->
+            Log.d(TAG, "NowPlaying: onChanged")
             getNowPlaying()
         }
         .flowOn(Dispatchers.Main)

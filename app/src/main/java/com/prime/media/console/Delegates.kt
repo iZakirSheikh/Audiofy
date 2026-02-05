@@ -389,7 +389,7 @@ fun VideoSurface(
 
 @Composable
 fun TimeBar(
-    value: Float,
+    value: () -> Float,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
     modifier: Modifier = Modifier,
@@ -398,14 +398,14 @@ fun TimeBar(
     style: Int = RC.TIME_BAR_STYLE_REGULAR
 ) {
     when {
-        value.isNaN() -> LinearProgressIndicator(
+        value().isNaN() -> LinearProgressIndicator(
             modifier = modifier,
             color = accent,
             strokeCap = StrokeCap.Round,
         )
 
         style == RC.TIME_BAR_STYLE_REGULAR -> Slider(
-            value = value,
+            value = value(),
             onValueChange = onValueChange,
             onValueChangeFinished = onValueChangeFinished,
             modifier = modifier,
@@ -414,7 +414,7 @@ fun TimeBar(
         )
 
         style == RC.TIME_BAR_STYLE_WAVY -> ir.mahozad.multiplatform.wavyslider.material.WavySlider(
-            value = value,
+            value = value(),
             onValueChange = onValueChange,
             onValueChangeFinished = onValueChangeFinished,
             modifier = modifier,
@@ -449,9 +449,11 @@ inline fun timer(mills: Long): LongState {
     // If `mills` changes, the existing coroutine is cancelled and a new one starts.
     LaunchedEffect(mills) {
         // Loop as long as there is time remaining.
+        Log.d("Timer", "init")
         while (state.longValue > 0) {
             delay(1000) // Wait for 1 second.
             state.longValue -= 1000 // Decrement the remaining time by 1000 milliseconds.
+            Log.d("Timer", "timer: ${state.longValue}")
         }
     }
     return state // Return the state object that holds the current time.

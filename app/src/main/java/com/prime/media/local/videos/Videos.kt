@@ -48,6 +48,7 @@ import com.prime.media.common.ListHeader
 import com.prime.media.common.Mapped
 import com.prime.media.common.emit
 import com.prime.media.common.menu.Action
+import com.prime.media.console.RouteConsole
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.console.Console
 import com.primex.core.drawHorizontalDivider
@@ -165,7 +166,7 @@ fun Videos(viewState: VideosViewState) {
                     VideosViewState.ACTION_SHARE -> viewState.share(context.findActivity(), video)
                     null -> {
                         viewState.play(video)
-                        navController.navigate(RouteVideos())
+                        navController.navigate(RouteConsole())
                     }
 
                     else -> TODO("$action not implemented!!")

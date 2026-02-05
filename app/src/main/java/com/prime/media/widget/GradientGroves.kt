@@ -56,6 +56,7 @@ import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
+import com.prime.media.console.RouteConsole
 import com.zs.core_ui.Anim
 import com.zs.core_ui.ContentElevation
 import com.zs.core_ui.ContentPadding
@@ -221,7 +222,7 @@ fun GradientGroves(
                     val navController = LocalNavController.current
                     IconButton(
                         imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        onClick = { navController.navigate(Console.route); onDismissRequest() },
+                        onClick = { navController.navigate(RouteConsole()); onDismissRequest() },
                         modifier = bgModifier,
                     )
 

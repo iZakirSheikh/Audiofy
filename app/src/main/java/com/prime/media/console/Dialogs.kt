@@ -385,7 +385,8 @@ fun MediaConfigDialog(
                 backgroundColor = Color.Transparent,
                 contentColor = AppTheme.colors.onBackground,
                 selectedBackgroundColor = AppTheme.colors.accent,
-                selectedContentColor = AppTheme.colors.onAccent
+                selectedContentColor = AppTheme.colors.onAccent,
+                leadingIconColor =  AppTheme.colors.onAccent,
             )
             // Audio Tracks
             val tracks: List<TrackInfo>? by produceState(null, checked) {

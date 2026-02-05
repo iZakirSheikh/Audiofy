@@ -56,6 +56,7 @@ import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.prime.media.R
+import com.prime.media.console.RouteConsole
 import com.prime.media.old.common.Artwork
 import com.prime.media.old.common.LocalNavController
 import com.prime.media.old.common.LottieAnimButton
@@ -145,7 +146,7 @@ fun SnowCone(
 
                 IconButton(
                     imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                    onClick = { navController.navigate(Console.route); onDismissRequest() },
+                    onClick = { navController.navigate(RouteConsole()); onDismissRequest() },
                     modifier = Modifier.offset(10.dp, -4.dp)
                 )
             }

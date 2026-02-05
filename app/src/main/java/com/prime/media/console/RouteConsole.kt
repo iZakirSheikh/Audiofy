@@ -392,10 +392,11 @@ object RouteConsole : Route {
                 }
             )
 
+            val progress = chronometer.progress(state.duration)
             TimeBar(
-                value = chronometer.progress(state.duration),
+                value = { progress },
                 onValueChange = {
-                    if (isVideo) viewState.emit(VISIBLE_SEEK)
+                    if (isVideo) viewState.emit(VISIBLE)
                     val mills = (it * state.duration).toLong()
                     chronometer.raw = mills
                     Log.d(TAG, "invoke: onValueChange: $it")
@@ -526,7 +527,7 @@ object RouteConsole : Route {
                             imageVector = Icons.Outlined.Timer10,
                             contentDescription = null
                         )
-                    val remaining by timer( state.sleepAt - System.currentTimeMillis())
+                    val remaining by timer( state.sleepAt)
                     Label(
                         text = DateUtils.formatElapsedTime(remaining / 1000L),
                         style = AppTheme.typography.caption2,
