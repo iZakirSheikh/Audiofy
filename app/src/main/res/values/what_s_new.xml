@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.10.1</b>
-        <font color='grey'>
-            \n - Fixed issue with splash wait delay.
-            \n - Added TV channel icon and TV banner.
-            \n - Introduced a new TV <b>app icon</b> and <b>Brand image</b>.
-            \n - Updated splash screen icon.
-            \n - Added an animated splash icon with a setting toggle that waits for the animation to finish loading.
-            \n - Modernized the Library and removed the Feedback screen.
-            \n - Improved the acrylic blur effect for a more refined look on older Android versions.
-            \n - Made the splash screen fully immersive.
-            \n - Enhanced the "Personalize" screen with a two-pane layout for an improved experience on large screens and in landscape mode.
-            \n - Introduced "One Player," our new app and the successor to Audiofy.
-            \n - Removed the "Upgrades" section from the app.
-            \n - Streamlined the UI by relocating the "Accent Color in Navigation Bar" option to Settings.
-        </font>
-    </string>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.11.0</b>
+    <font color='grey'>
+        \n - Modernized player console with fresh visuals and responsive animations.
+        \n - Intuitive video gestures: swipe to seek, double-tap skip, brightness &amp; volume controls.
+        \n - Acrylic background effect with blurred artwork for a sleek look.
+        \n - Sleep timer and playback speed fully implemented with new dialogs.
+        \n - Playing Queue screen added with shuffle, clear, and skip-to-track actions.
+        \n - Official Media3 PlayerView integration replacing custom implementation.
+        \n - "Like" button to favourite tracks, synced with playlists.
+        \n - Improved chronometer and progress handling for unknown durations.
+        \n - Refined layouts with ConstraintLayout and TwoPane support.
+        \n - Updated "What\'s New" section and changelog entries.
+    </font>
+</string>
+
 
     <string name="what_s_new_latest" translatable="false">@string/what_s_new_toast</string>
 

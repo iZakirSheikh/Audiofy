@@ -97,7 +97,7 @@ value class Chronometer private constructor(private val state: MutableLongState)
         // it's not possible to calculate meaningful progress.
         val progress = when {
             elapsed == 0L -> 0f // if nothing has elapsed; just set it to
-            duration == PlaybackController.TIME_UNSET -> 1.0f // Treat as fully progressed if duration is unknown.
+            duration == PlaybackController.TIME_UNSET -> 0f/*, 1.0f */// Treat as fully progressed if duration is unknown.
             else -> (elapsed.toFloat() / duration.toFloat()).coerceIn(
                 0.0f,
                 1.0f

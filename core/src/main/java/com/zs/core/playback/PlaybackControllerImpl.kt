@@ -99,6 +99,12 @@ internal class PlaybackControllerImpl(
         browser.play()
     }
 
+    override suspend fun pause() {
+        val browser = fBrowser.await()
+        browser.playWhenReady = false
+        browser.pause()
+    }
+
     override suspend fun clear() {
         val browser = fBrowser.await()
         browser.clearMediaItems()

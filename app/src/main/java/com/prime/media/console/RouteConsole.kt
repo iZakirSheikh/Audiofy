@@ -66,6 +66,7 @@ import androidx.compose.material.icons.outlined.Timer10
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -91,12 +92,17 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.prime.media.R
 import com.prime.media.common.AppConfig
 import com.prime.media.common.LocalSystemFacade
 import com.prime.media.common.PlayerView
+import com.prime.media.common.Registry
 import com.prime.media.common.Route
 import com.prime.media.common.collectAsState
+import com.prime.media.common.preference
 import com.prime.media.common.resize
 import com.prime.media.common.shine
 import com.prime.media.old.common.LocalNavController
@@ -234,6 +240,7 @@ object RouteConsole : Route {
         val visibility = viewState.visibility
 
         // BackHandler
+        var closing by remember { mutableStateOf(false) }
         val onNavigateBack = onBack@{
             if (showViewOf != SHOW_NONE || showQueue) {
                 showViewOf = SHOW_NONE
@@ -256,12 +263,14 @@ object RouteConsole : Route {
             // revert the system bar appearance and visibility to their default automatic states.
             facade.style =
                 facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO + WindowStyle.FLAG_SYSTEM_BARS_VISIBILITY_AUTO
+            closing = true
             navController.navigateUp()
         }
         BackHandler(onBack = onNavigateBack)
 
         // Primary
         val state by viewState.state.collectAsState(default = NonePlaying)
+
         var titleTextSize by remember { mutableIntStateOf(16) }
         // TODO - Maybe allow users to set background using pref.
         val background = if (state.isVideo) BG_STYLE_DARK else BG_STYLE_AUTO_ACRYLIC
@@ -286,6 +295,7 @@ object RouteConsole : Route {
                         .key(ID_VIDEO_SURFACE)
                         .handlePlayerGestures(viewState),
                     content = {
+                        if (!closing)
                         PlayerView(
                             player = viewState.getVideoProvider(),
                             keepScreenOn = state.playWhenReady,
@@ -609,14 +619,19 @@ object RouteConsole : Route {
                 }
             )
 
-            if (!state.isVideo)
+            if (!state.isVideo) {
+                val bordered by preference(Registry.ARTWORK_BORDERED)
+                val elevated by preference(Registry.ARTWORK_ELEVATED)
+                val shapeKey by preference(Registry.ARTWORK_SHAPE_KEY)
+                val shape = Registry.mapKeyToShape(shapeKey)
                 Artwork(
                     uri = state.artwork,
                     modifier = Modifier.key(ID_ARTWORK),
-                    border = 0.5.dp,
-                    shape = ArtworkShape,
-                    shadow = 12.dp
+                    border = if (bordered) 0.5.dp else 0.dp,
+                    shape = shape,
+                    shadow = if (elevated) 12.dp else 0.dp
                 )
+            }
         }
 
         // Layout
@@ -750,6 +765,26 @@ object RouteConsole : Route {
                 else -> facade.style + WindowStyle.FLAG_SYSTEM_BARS_APPEARANCE_AUTO
             }
         }
+
+        //
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            // Define a LifecycleEventObserver to pause playback when the screen is paused.
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_PAUSE && state.isVideo) {
+                    // Pause the playback when the screen is paused.
+                    viewState.pause()
+                }
+            }
+            // Add the observer to the owner's lifecycle.
+            lifecycleOwner.lifecycle.addObserver(observer)
+            // Define cleanup logic when the effect is disposed of.
+            onDispose {
+                // Remove the observer from the owner's lifecycle.
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+
         //
         when (showViewOf) {
             SHOW_SPEED -> PlaybackSpeed(true, viewState.playbackSpeed) { newValue ->

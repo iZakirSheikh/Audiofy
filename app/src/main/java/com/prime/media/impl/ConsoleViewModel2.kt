@@ -201,4 +201,10 @@ class ConsoleViewModel2(val controller: PlaybackController) : KoinViewModel(), C
             controller.setCheckedTrack(info, type)
         }
     }
+
+    override fun pause() {
+        tryLaunch {
+            controller.pause()
+        }
+    }
 }

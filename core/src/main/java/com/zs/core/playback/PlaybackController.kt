@@ -64,6 +64,8 @@ interface PlaybackController {
      */
     suspend fun play(playWhenReady: Boolean = true)
 
+    suspend fun pause()
+
     /**
      * Clears the queue if loaded otherwise does nothing.
      */

@@ -1,8 +1,7 @@
-- Added TV channel icon and TV banner.
-- Introduced a new TV <b>App icon</b> and <b>Brand image</b>.
-- Updated splash screen icon.
-- Added an animated splash icon with a setting toggle that waits for the animation to finish loading.
-- Modernized the Library and removed the Feedback screen.
-- Modernize Library and removed Feedback screen
-- Introducing our new app, "One Player"—the official successor to Audiofy!
-- Simplified the "Personalize" screen by removing the "Upgrades" section.
+- Modernized player console with sleek visuals & responsive animations.
+- Added intuitive video gestures: swipe to seek, double-tap skip, brightness & volume controls.
+- Introduced acrylic background effect with blurred artwork.
+- Implemented sleep timer & playback speed dialogs.
+- Added Playing Queue screen with shuffle, clear & skip-to-track actions.
+- Integrated official Media3 PlayerView.
+- Added "Like" button to favourite tracks.

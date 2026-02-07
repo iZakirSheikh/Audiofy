@@ -63,6 +63,7 @@ import com.prime.media.common.isFreemium
 import com.prime.media.common.isPurchasable
 import com.prime.media.common.onEachItem
 import com.prime.media.common.richDesc
+import com.prime.media.console.RouteConsole
 import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.primex.core.MetroGreen
@@ -602,7 +603,7 @@ class MainActivity :
             remote.play()
         }
         // If the intent is related to video content, navigate to the video player screen.
-        navController?.navigate(Console.direction())
+        navController?.navigate(RouteConsole())
     }
 
     override fun isInstalled(id: String): Boolean {
