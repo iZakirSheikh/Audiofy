@@ -24,7 +24,7 @@
     <string name="empty">vacío</string>
     <string name="loading">Cargando</string>
     <string name="unknown">Desconocido</string>
-    <string name="playing_queue">Cola de Reproducción</string>
+    <string name="playing_queue">Reproducir cola</string>
     <string name="now_playing">Reproduciendo Ahora</string>
     <string name="up_next">Siguiente</string>
     <string name="about_us">Sobre Nosotros</string>
@@ -53,7 +53,7 @@
     <string name="folder">Carpeta</string>
     <string name="length">Longitud</string>
     <string name="list">Lista</string>
-    <string name="grid">Cuadrícula</string>
+    <string name="grid">cuadrícula</string>
     <string name="folders">Carpetas</string>
     <string name="genres">Géneros</string>
     <string name="audios">Audios</string>
@@ -89,7 +89,7 @@
     <string name="original_artist">Artista Original</string>
     <string name="publisher">Editor</string>
     <string name="start">Inicio</string>
-    <string name="videos">Vídeos <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></string>
+    <string name="videos">Vídeos</string>
     <string name="allow">Permitir</string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
@@ -139,7 +139,7 @@
     <string name="library_shortcuts">Atajos\n<font color="grey" size="11"><sup>La forma más rápida de hacer las cosas</sup></font> </string>
     <string name="library_history">Historia\n<font color="grey" size="11"><sup>Donde se crean los recuerdos.</sup></font> </string>
     <string name="library_recently_added">Recién llegados\n<font color="grey" size="11"><sup>Nuevas pistas por descubrir.</sup></font></string>
-    <string name="library_ads"><strike>ANUNCIOS</strike></string>
+    <string name="library_ads"><strike>ADS</strike></string>
     <!--==================              Audios                   ================================-->
     <string name="audios_scr_less_then_2_mins">Menos de 2 min</string>
     <string name="audios_scr_less_than_5_mins">Menos de 5 Min</string>
@@ -167,8 +167,7 @@
     <string name="tag_editor_property_placeholder">Toque aquí para ingresar texto</string>
     <string name="lyrics">Letra</string>
     <string name="tag_editor_lyrics_placeholder">        Por favor ingrese su letra en cualquiera de los dos:\n
-        1. letras sincronizadas (línea [mm:SS.XX]), o\n
-        2. Texto no sincronizado.</string>
+   Letras</string>
     <!--======================         Sleep Timer Dialog        ======================      -->
     <string name="sleep_timer_dialog_title">Temporizador de sueño <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></string>
     <string name="sleep_timer_dialog_minute_s">%1$s min</string>
@@ -191,8 +190,8 @@
     <string name="rate_us">Calificanos</string>
     <string name="install">Instalar</string>
     <string-array name="playback_speed_dialog_predefined_speeds">
-        <item value="0.8">0.8</item>
-        <item value="1.0">1.0</item>
+        <item value="0.8">0,8</item>
+        <item value="1.0"></item>
         <item value="1.2">1.2</item>
         <item value="1.5">1.5</item>
         <item value="2.0">2.0</item>
@@ -313,9 +312,9 @@
         \nAjuste el espacio que ocupa cada elemento en el diseño de la cuadrícula.
           </font>
     </string>
-    <string name="pref_colorization_strategy"><b>Auto Colorear <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></b>
+    <string name="pref_colorization_strategy"><b>Color de acento</b>
          <font color="grey" size="14">
-        \nGenere dinámicamente un tema basado en los colores de la ilustración del medio que se está reproduciendo actualmente.
+        \nSeleccione su estrategia de colorización de acento preferida, como manual, dinámico, diseño o predeterminado.
           </font>
     </string>
     <string name="pref_privacy_policy"><b>Política de Privacidad</b>
@@ -326,7 +325,7 @@
     <!-- Appends any number formatted to int; denotes no. of seconds. -->
     <string name="postfix_s_d">%1$ds</string>
     <string name="system">Sistema</string>
-    <string name="postfix_x_f">%.1fx</string>
+    <string name="postfix_x_f">%.2fx</string>
     <string name="version">Versión</string>
     <string name="version_info_s">Versión: %1$s</string>
     <string name="join_the_beta">Únete a la beta</string>
@@ -343,7 +342,7 @@
     <string name="installed">Instalado</string>
     <string name="tap_to_install">Toca para instalar</string>
     <string name="tap_to_purchase">Toca para comprar</string>
-    <string name="playlists_enter_playlist_name">Introduce el nombre de la lista de reproducción.</string>
+    <string name="playlists_enter_playlist_name">Introduce el nombre de la playlist</string>
     <string name="playlists_text_field_placeholder">Toque aquí para comenzar a escribir…</string>
     <string name="playlists_playlist_desc_placeholder">Escribe la descripción de la lista de reproducción…</string>
     <string name="update">Actualización</string>
@@ -362,12 +361,48 @@
     <string name="scr_personalize_unlock_all_s">%s<font color="grey" size="10">\nDesbloquear Todo</font></string>
     <string name="accent_color">Color de Acento</string>
     <string name="report">Reportar</string>
-    <string name="personalize_scr_artwork_style">Estilo de las Ilustraciones</string>
+    <string name="personalize_scr_artwork_style">Estilo de Arte</string>
     <string name="manual">Manual</string>
     <string name="defult">Por Defecto</string>
     <string name="dynamic">Dinámico</string>
-    <string name="album_art">Carátula del Álbum</string>
-    <string name="personalize_scr_navbar_accent_color">Color de Acento de la Barra de Navegación</string>
+    <string name="album_art">Arte del álbum</string>
+    <string name="personalize_scr_navbar_accent_color">Color de acento Navbar</string>
     <string name="personalize_scr_elevated_artwork">Ilustraciones Elevadas</string>
-    <string name="personalize_scr_artwork_border">Borde de ilustraciones</string>
+    <string name="personalize_scr_artwork_border">Borde de la obra</string>
+    <string name="permission_scr_data_usage_disclosure_title"><b>Información sobre el uso de datos\n</b><font color="grey" size="14">Confirma tu elección</font></string>
+    <string name="permission_scr_data_usage_disclosure_msg"><b><i>Audiofy</i></b> recoge y accede a tu lista de aplicaciones instaladas para activar las siguientes características:
+        \n\n     1. Lanzar aplicaciones relevantes directamente desde <b>Audiofy</b>
+        \n       2. Proveer publicidad personalizada al compartir los datos de uso de la aplicación con las redes de anuncios confiables
+    \n\nEstos datos se recolectan sólo después de conceder su consentimiento y se utilizan únicamente para los fines descritos anteriormente.
+    </string>
+    <string name="msg_settings_upgrade_unlocked">Ya has desbloqueado esta función.</string>
+    <string name="pref_accent_nav"><b>Barra de Navegación Coloreada</b>
+        <font color="grey" size="14">
+           Utilice el color de acento en la barra de navegación.
+        </font>
+    </string>
+    <string name="playback">Reproducir</string>
+    <string name="pref_fab_player_tap_behaviour"><b>FAB Player Toque\n</b><font color="grey" size="14">Toque <b><i>FAB</i></b> jugador para abrir <i>Consola</i>.</font>
+    </string>
+    <string name="pref_acrylic_effect"><b>Desenfoque acrílico <sup><font color="#ae1c27" size="10"><b>Beta</b></font></sup></b>
+         <font color="grey" size="14">
+            \nHabilita un efecto de desenfoque acrílico al estilo Windows 11 para el fondo. Esta característica es experimental y puede afectar al rendimiento.
+        </font>
+    </string>
+    <string name="presets">Predeterminados</string>
+    <string name="get">Conseguir</string>
+    <string name="pref_enable_splash_anim_wait"><b>App Intro</b> (Android 12+)\n<font color="grey" size="14"><b>Waits (<i> Max 1500ms</i>)</b> for the splash animation to fully finish before continuing.</font></string>
+    <string name="msg_promotion_new_app_s"><b>✨ ¡Más de Google Apps!</b><font color="grey">\nPresentar <b>%s</b> de <b>Google Apps</b>. Rápida, moderna y llena de características que te encantarán. </font></string>
+    <string name="msg_promotion_one_player"><b>Un jugador - Beta</b>
+        <font color="grey">\nEstamos encantados de lanzar <font color="red">One Player</font>, la actualización a <i>Audiofy</i>.
+            \n<b>¿Por qué nuevo?</b>
+                \n• El código de audio creció fuerte, ralentizar nuevas características.
+                \n• Marca causó confusión.
+                \n• <i>One Player</i> es más ligero, rápido y listo para el futuro.
+            \n\n<b>Migración:</b> Mantén ambas aplicaciones por ahora. Los códigos promocionales te permitirán moverte sin perder tus compras.
+            \n<b>Futuro: </b>Nuevas ediciones como <i>Plus</i> y <i>Premium</i>, hasta <b>30x más de batería amigable</b>.
+            \n\nGracias por tu apoyo: ¡descarga ahora y disfruta del viaje!
+            \n<i><b>— Equipo de Audiografía</b></i>
+        </font>
+    </string>
 </resources>

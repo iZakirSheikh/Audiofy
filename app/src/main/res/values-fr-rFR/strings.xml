@@ -20,12 +20,99 @@
         This helps visually differentiate between app variants on a device.
     -->
     <!--Simple Strings-->
+    <string name="dismiss">Ignorer</string>
+    <string name="empty">vide</string>
+    <string name="loading">Сhargement</string>
+    <string name="unknown">Inconnu</string>
+    <string name="playing_queue">File d\'attente</string>
+    <string name="now_playing">Lecture en cours</string>
+    <string name="up_next">A venir</string>
+    <string name="about_us">À propos</string>
+    <string name="settings">Paramètres</string>
+    <string name="appearance">Apparence</string>
+    <string name="error">Erreur</string>
+    <string name="delete">Supprimer</string>
+    <string name="play">Lecture</string>
+    <string name="shuffle">Aléatoire</string>
+    <string name="share">Partager</string>
+    <string name="add_to_playlist">Ajouter à la playlist</string>
+    <string name="create">Créer</string>
+    <string name="edit">Éditer</string>
+    <string name="go_to_artist">Aller à l\'artiste</string>
+    <string name="go_to_album">Aller à l’album</string>
+    <string name="properties">Propriétés</string>
+    <string name="select_all">Tout sélectionner</string>
+    <string name="add_to_queue">Ajouter à la liste</string>
+    <string name="play_next">Suivant</string>
+    <string name="none">Aucun</string>
+    <string name="name">Nom</string>
+    <string name="date_modified">Date de modification</string>
+    <string name="date_added">Date ajoutée</string>
+    <string name="artist">Artiste</string>
+    <string name="album">Album</string>
+    <string name="folder">Dossier</string>
+    <string name="length">Longueur</string>
+    <string name="list">Liste</string>
+    <string name="grid">Grille</string>
+    <string name="folders">Dossiers</string>
+    <string name="genres">Genres</string>
+    <string name="audios">Audios</string>
+    <string name="artists">Artistes</string>
+    <string name="favourite">Favoris</string>
+    <string name="playlists">Listes de lecture</string>
+    <string name="albums">Albums</string>
+    <string name="general">Général</string>
+    <string name="feedback">Retour</string>
+    <string name="title">Titre</string>
+    <string name="file_path">Chemin du fichier</string>
+    <string name="size">Taille</string>
+    <string name="format">Format</string>
+    <string name="bitrate">Débit binaire</string>
+    <string name="sampling_rate">Taux d\'échantillonnage</string>
+    <string name="bits_per_sample">Bits par échantillon</string>
+    <string name="year">Année</string>
+    <string name="disk_number">Numéro de disque</string>
+    <string name="apply">Appliquer</string>
+    <string name="track_number">Numéro du morceau</string>
+    <string name="genre">Genre</string>
+    <string name="composer">Compositeur</string>
+    <string name="author">Auteur</string>
+    <string name="writer">Écrivain</string>
+    <string name="done">Terminé</string>
+    <string name="abbr_not_available">N/A</string>
+    <string name="duration">Durée</string>
+    <string name="album_artist">Artiste de l\'album</string>
+    <string name="comment">Commentaire</string>
+    <string name="copywriter">Rédacteur publicitaire</string>
+    <string name="total_disks">Nombre total de disques</string>
+    <string name="url">Url</string>
+    <string name="original_artist">Artiste Original</string>
+    <string name="publisher">Editeur</string>
+    <string name="start">Démarrer</string>
+    <string name="videos">Vidéos</string>
+    <string name="allow">Autoriser</string>
     <!--A plural represents how many items are there-->
     <!--A plural represents how many files are there-->
     <!--A string indicating duration hors-->
+    <plurals name="duration_hours_d">
+        <item quantity="one">%d heure</item>
+        <item quantity="other">%d heures</item>
+    </plurals>
     <!--A string resource duration minutes-->
+    <plurals name="duration_minutes_d">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
     <!--A string resource duration seconds-->
+    <plurals name="duration_seconds_d">
+        <item quantity="one">%d seconde</item>
+        <item quantity="other">%d secondes</item>
+    </plurals>
+    <string name="msg_unknown_error"><b>Erreur\n</b>Oups ! Une erreur inconnue s\'est produite.</string>
     <!--The messages to be shown when on removing a track from queue.-->
+    <string name="msg_track_will_be_removed">Le morceau sera bientôt supprimé.</string>
+    <string name="msg_track_remove_error">Oups ! Il semble qu\'une <b>erreur</b> se soit produite lors de la tentative de
+suppression du morceau    </string>
     <!--Delete files-->
     <!--Delete error-->
     <!--Delete confirm dialog-->
@@ -34,18 +121,269 @@
     <!--Block path-->
     <!--Block success message arg name-->
     <!--Equalizer-->
+    <string name="msg_3rd_party_equalizer_not_found">Aucun égaliseur tiers ou intégré n\'a été trouvé. Veuillez télécharger un égaliseur tiers depuis le
+        marché pour améliorer votre expérience audio.
+    </string>
     <!--Queue Update-->
+    <string name="msg_clearing_playing_queue">La file d\'attente sera bientôt vidée.</string>
     <!-- Message shown after added queue added/total-->
+    <string name="msg_new_update_downloaded"><b>Alerte\n</b> Une mise à jour vient d’être téléchargée.</string>
+    <string name="msg_no_new_update_available">L’application est déjà à jour avec la dernière version.</string>
+    <string name="msg_error_fav_playlist_update"><b>Erreur\n</b>Une erreur s\'est produite lors de l\'ajout/la suppression de l\'élément à la playlist favorite</string>
+    <string name="msg_upgrade_to_pro">Passez à la version Pro pour débloquer cette fonctionnalité.</string>
     <!--=====================            Media Library          =================================-->
     <!--Title to the audio library screen-->
+    <string name="library_title"><b>Médiathèque</b>\n  <font size="10"> <sup><sup>Place à la magie.</sup></sup> </font>    </string>
+    <string name="library_shortcuts">Raccourcis\n<font color="grey" size="11"><sup>Le Moyen le plus rapide de faire les choses</sup></font> </string>
+    <string name="library_history">Histoire\n<font color="grey" size="11"><sup>Là Où les souvenirs se créent.</sup></font> </string>
+    <string name="library_recently_added">Nouveautés\n<font color="grey" size="11"><sup>Nouveaux morceaux à découvrir.</sup></font></string>
+    <string name="library_ads"><strike>Publicités</strike></string>
     <!--==================              Audios                   ================================-->
+    <string name="audios_scr_less_then_2_mins">Moins de 2 minutes</string>
+    <string name="audios_scr_less_than_5_mins">Moins de 5 minutes</string>
+    <string name="audios_scr_less_than_10_mins">Moins de 10 minutes</string>
+    <string name="audios_scr_greater_than_10_mins">Plus de 10 minutes</string>
     <!--===========================  Permission Screen ==========================================-->
+    <string name="permission_screen_title">Autorisation de stockage</string>
+    <string name="permission_screen_desc">Pour profiter pleinement de <b><i>Audiofy</i></b>, nous devons accéder aux fichiers de votre appareil. Cela nous permet :
+        \n       • De lire vos fichiers multimédias en toute fluidité
+        \n       • D\'optimiser la qualité de lecture
+        \n       • De personnaliser les fonctionnalités de l\'application
+        \nLa <b>sécurité</b> et la <b>confidentialité</b> de vos données sont nos priorités absolues. Merci de votre soutien !
+    </string>
     <!--============================ Blacklist Dialog  ====================================      -->
     <!--============================          Albums     ==================================      -->
+    <string name="albums_scr_year_d">Année : %1$s</string>
     <!--============================          TagEditor     ==================================      -->
+    <string name="tag_editor_scr_pro_title">Éditeur de Balises <sup><font color="#00a300" size="11">Pro</font></sup></string>
+    <string name="tag_editor_scr_title">Éditeur de Balises</string>
+    <string name="tag_editor_scr_extra_immutable_info_ssss"><small>Canal</small> <b>\n%1s\n</b> Débit <b>\n%1s  kbps</b>\n Durée \n <b>\n%1s\n</b> Taux d\'échantillonnage <b>\n%1s Hz\n</b></string>
+    <string name="msg_tag_editor_buy_me_banner">Améliorez votre expérience en obtenant l\'
+        <b>Éditeur de Balises Pro</b>, où vous pouvez modifier les paroles et les pochettes d\'album en toute simplicité.
+    </string>
+    <string name="tag_editor_screen_buy_now_action">Obtenir l\'Éditeur de Balises Pro</string>
+    <string name="tag_editor_property_placeholder">Appuyez ici pour saisir du texte</string>
+    <string name="lyrics">Paroles</string>
+    <string name="tag_editor_lyrics_placeholder">Veuillez saisir vos paroles sous l\'une des formes suivantes :\n
+        1. Paroles synchronisées (« ligne [MM:SS.XX] »), ou\n
+        2. Texte non synchronisé.</string>
     <!--======================         Sleep Timer Dialog        ======================      -->
+    <string name="sleep_timer_dialog_title">Minuterie de Mise en Veille <sup><font color="#ae1c27" size="10"><b>Bêta</b></font></sup></string>
+    <string name="sleep_timer_dialog_minute_s">%1$s min</string>
     <!--======================         Playback speed Dialog        ======================      -->
+    <string name="playback_speed_dialog_title">Vitesse de Lecture <sup><font color="#ae1c27" size="10"><b>Bêta</b></font></sup></string>
+    <string name="playback_speed_dialog_x_f">%1$.2fx</string>
     <!--======================         AudioFx        ======================      -->
+    <string name="equalizer">Égaliseur <sup><font color="#ae1c27" size="10"><b>Bêta</b></font></sup></string>
+    <string name="audio_fx_scr_abbr_db_suffix_d">%1$s dB</string>
+    <string name="audio_fx_scr_abbr_hz_suffix_d">%1$s Hz</string>
     <!-- The names of presets supported by the equalizer class of android. 0th represents Custom.-->
+    <string name="title_codex">Extensions de codecs multimédias pour le lecteur multimédia Audiofy</string>
+    <string name="msg_library_rate_us"><b>Évaluez notre application et aidez-nous à l\'améliorer</b>
+        <!--Message Body-->
+        <font color="grey">\nSi vous appréciez notre application, n\'hésitez pas à nous laisser une note de 5 étoiles
+            sur le Play Store. Vos commentaires positifs nous aident à développer et à améliorer notre
+            application pour tous.
+        </font>
+    </string>
+    <string name="rate_us">Évaluez-nous</string>
+    <string name="install">Installer</string>
+    <string-array name="playback_speed_dialog_predefined_speeds">
+        <item value="0.8">0,8</item>
+        <item value="1.0">1,0</item>
+        <item value="1.2">1,2</item>
+        <item value="1.5">1,5</item>
+        <item value="2.0">2,0</item>
+    </string-array>
+    <string name="unlock">Déverrouiller</string>
+    <string name="msg_library_buy_me_a_coffee"><b>Vous aimez l\'application ?</b>
+        <font color="grey">
+            \nOffrez-moi un <b>café</b> pour m\'aider à la rendre encore plus intéressante ! Votre <b>soutien est essentiel au développement</b> et est grandement apprécié. ☕ Merci !
+        </font></string>
+    <string name="msg_install_dynamic_module_ss"><b>%1$s</b> <font color="grey" size="11">Une nouvelle fonctionnalité a été débloquée !\n<b>Téléchargez-la</b> maintenant et n\'oubliez pas de <b>redémarrer</b> l\'application pour l\'utiliser.</font></string>
+    <string name="msg_claim_ad_free_reward_ds"><b>Il vous reste %2$s jours sans publicité ! Prolongez dès maintenant !</b>
+        <font color="grey" size="11">
+            \nRegardez une publicité rémunérée dès maintenant pour ajouter <b>%1$d jours supplémentaires</b> et continuer à profiter de l\'expérience premium.
+        </font>    </string>
+    <string name="claim">Réclamation</string>
+    <string name="msg_ad_free_time_rewarded_dd"><b>Continuez à bénéficier de récompenses !</b>
+        <font color="grey" size="11">
+           \n<b>Félicitations !</b> Vous avez gagné %1$d jours supplémentaires sans publicité.
+            \nTotal de jours premium : %2$d. <b>Profitez-en bien !</b>
+       </font>    </string>
+    <string name="feedback_placeholder">Dites-nous comment nous pouvons améliorer notre produit.</string>
+    <string name="feedback_extra_info">Pourriez-vous décrire votre problème ou votre suggestion ?
+        <font color="grey" size="11">
+                \nVeuillez ne pas inclure d\'informations sensibles.
+        </font>
+    </string>
+    <string name="message">Message</string>
+    <string name="submit">Soumettre</string>
+    <string name="feedback_msg_success"><b>Merci pour votre avis !</b>
+        <font color="grey">\nNous utilisons les commentaires comme les vôtres pour aider à résoudre les problèmes et améliorer Audiofy.</font>
+    </string>
+    <string name="feedback_msg_failure">Une erreur s\'est produite ! Impossible d\'envoyer vos commentaires.</string>
+    <string name="bug_report">Rapport de bug</string>
+    <string name="suggestion">Suggestion</string>
+    <string name="feature_request">Demande</string>
+    <string name="scr_personalize_title_desc">Personnalisation<font color="grey" size="11">\n<sup>Modifiez-le jusqu\'à ce qu\'il soit parfait, rien que pour vous.</sup></font></string>
+    <string name="msg_promotion_gallery_app"><b>Nouvelle application disponible !</b> 
+<font color="grey">\nTéléchargez notre nouvelle application <b>Galerie</b> et découvrez une nouvelle manière de visualiser et gérer vos photos.</font>    </string>
+    <string name="dive_in">Plongez !</string>
+    <string name="home">Accueil</string>
+    <string name="msg_update_check_error"><b>Erreur</b>\nOups, une erreur inconnue est survenue lors de la vérification des mises à jour.</string>
+    <string name="scr_new_playlists_title">Playlist\n<font color="grey" size="11"><b>Créez</b> votre propre playlist ou <b>modifiez</b> une playlist existante.</font></string>
+    <string name="remove">Retirer</string>
+    <string name="play_order">Ordre de lecture</string>
+    <string name="scr_playlist_files_d"><font color="grey" size="11">%1$d\n</font>Fichiers</string>
+    <string name="scr_playlist_date_modified_s"><font color="grey" size="9">%1$s</font>\nDernière mise à jour</string>
+    <string name="scr_playlist_delete">Supprimer la playlist</string>
+    <string name="search">Recherche</string>
+    <string name="scr_personalize_accent_nav">ColorNav\n<font color="grey">Utilisez des couleurs vives pour la barre de navigation.</font></string>
+    <string name="rename">Renommer</string>
+    <string name="msg_files_deletion_confirm"><b>Supprimer</b>
+        <font color="grey">\nÊtes-vous sûr de vouloir supprimer cet élément ? Vous ne pourrez pas le récupérer.
+        </font>    </string>
+    <string name="msg_files_delete_unknown_error">Oups, une erreur est survenue lors de la suppression du (des) fichier(s). Veuillez réessayer.</string>
+    <string name="msg_error_sharing_files">Oups, une erreur est survenue lors du partage des fichiers. Veuillez réessayer.</string>
+    <string name="sponsor">Sponsor</string>
+    <string name="msg_library_join_us"><b>Vous aimez l\'application ? Rejoignez notre communauté</b>
+    <font color="grey">\nRejoignez-nous sur <b>GitHub, Reddit et Telegram</b> pour découvrir les dernières
+        actualités, astuces et discussions !
+    </font>
+    </string>
+    <string name="telegram">Telegram</string>
+    <string name="restart">Redémarrer</string>
+    <string name="msg_apply_changes_restart">Redémarrez l\'application pour que les modifications prennent effet.</string>
+    <string name="pref_app_theme_s"><b>Thème de l\'application</b><font color="grey">\n%1$s</font></string>
+    <string name="pref_translucent_system_bars"><b>Barres Système</b>
+        <font color="grey" size="14">
+            \nActivez les barres système transparentes pour une expérience complète <b><i>\n(Android 6.0+)</i></b>
+        </font>
+    </string>
+    <string name="pref_immersive_view"><b>Vue Immersive</b>
+        <font color="grey" size="14">
+            \nActivez cette option pour masquer les barres d\'état et de navigation et profiter d\'une expérience plein écran fluide.
+        </font>
+    </string>
+    <string name="pref_minimum_track_length"><b>Durée minimale des pistes</b>
+         <font color="grey" size="14">
+            \nLes pistes plus courtes que cette durée (en secondes) ne seront pas ajoutées à la bibliothèque.
+        </font>
+    </string>
+    <string name="pref_use_inbuilt_audio_effects"><b>Effets Audio</b>
+        <font color="grey" size="14">\nActivez les effets audio intégrés (par exemple, l\'égaliseur).
+            \n<i>Laissez cette option désactivée pour utiliser des effets tiers.</i>
+        </font>    </string>
+    <string name="pref_fetch_artwork_from_media_store"><b>Illustration</b>
+          <font color="grey" size="14">
+            \nActivez le chargement des illustrations en cache depuis Android MediaStore. L\'affichage d\'illustrations incorrectes peut être possible, 
+              mais consomme moins de ressources et est plus rapide.
+            \nRedémarrez l\'application pour appliquer les modifications.
+        </font>
+    </string>
+    <string name="pref_enable_trash_can"><b>Corbeille <small>(Android 11+)</small></b>
+          <font color="grey" size="14">\nActivez cette option pour déplacer les fichiers supprimés vers
+              la Corbeille au lieu de les supprimer définitivement.
+          </font>
+    </string>
+    <string name="pref_about_us_desc">Merci d\'utiliser <b>Audiofy</b>. Je suis un <b>développeur indépendant</b> qui adore créer des applications utiles et esthétiques. J\'ai besoin de votre <b><i>soutien</i></b> pour continuer à développer cette application et l\'améliorer. Vous pouvez me soutenir en <b>achetant</b> l\'application ou en lui donnant <b>5 étoiles</b> sur le store. Votre <b>avis</b> est également très précieux pour moi. N\'hésitez pas à me faire part de vos réflexions et suggestions. J\'apprécie votre aide et vos encouragements.    </string>
+    <string name="pref_get_to_know_us_subttile_s">"v%1\$s par <b><i>Zakir Sheikh</i></b>"</string>
+    <string name="pref_font_scale"><b>Échelle de Police</b>
+         <font color="grey" size="14">
+            \nAjustez la taille de police pour faciliter la lecture du texte. Choisissez une échelle adaptée à vos 
+             préférences pour une meilleure lisibilité.
+        </font>
+    </string>
+    <string name="pref_grid_item_size_multiplier"><b>Multiplicateur de Taille de Grille</b>
+          <font color="grey" size="14">
+        \nAjustez l\'espace occupé par chaque élément dans la grille.
+          </font>
+    </string>
+    <string name="pref_colorization_strategy"><b>Couleur d\'accentuation</b>
+         <font color="grey" size="14">
+        \nSélectionnez votre stratégie de colorisation d\'accentuation préférée, telle que manuelle, dynamique, illustration ou par défaut.
+          </font>
+    </string>
+    <string name="pref_privacy_policy"><b>Politique de confidentialité</b> <font color="grey" size="14">
+\nCliquez ici pour consulter la politique de confidentialité. </font>    </string>
     <!-- Appends any number formatted to int; denotes no. of seconds. -->
+    <string name="postfix_s_d">%1$ds</string>
+    <string name="system">Système</string>
+    <string name="postfix_x_f">%.2fx</string>
+    <string name="version">Version</string>
+    <string name="version_info_s">Version : %1$s</string>
+    <string name="join_the_beta">Rejoins la bêta</string>
+    <string name="update_audiofy">Mettre à jour Audiofy</string>
+    <string name="share_app_label">Faites passer le mot</string>
+    <string name="postfix_p_s">%1$sp</string>
+    <string name="search_placeholder">Tapez ici pour chercher!!</string>
+    <string name="what_s_new">Quoi de neuf</string>
+    <string name="upgrades">Mises à niveau</string>
+    <string name="fine_tuning">Réglage fin</string>
+    <string name="widgets">Widgets</string>
+    <string name="n_a">N/A</string>
+    <string name="purchased">Acheté</string>
+    <string name="installed">Installée</string>
+    <string name="tap_to_install">Appuyez pour installer</string>
+    <string name="tap_to_purchase">Appuyez pour acheter</string>
+    <string name="playlists_enter_playlist_name">Saisissez le nom de la playlist.</string>
+    <string name="playlists_text_field_placeholder">Appuyez ici pour commencer à saisir du texte…</string>
+    <string name="playlists_playlist_desc_placeholder">Saisissez la description de la playlist…</string>
+    <string name="update">Mettre à jour</string>
+    <string-array name="pref_night_mode_entries">
+        <item>Sombre</item>
+        <item>Clair</item>
+        <item>Synchroniser avec le système</item>
+    </string-array>
+    <string name="msg_library_help_translate"><b>Participez à l\'effort de traduction !</b>
+    <font color="grey">\nSi vous appréciez l\'application, essayez-la dans votre langue. <b>Aidez-nous à traduire</b> et à <i>corriger</i> les traductions manquantes.
+        Vous trouverez des informations sur la traduction sur notre page <b>GitHub</b> ou rejoignez notre communauté <b>Telegram</b> pour obtenir de l\'aide.
+        \nMerci !
+    </font>
+    </string>
+    <string name="translate">Traduire</string>
+    <string name="scr_personalize_unlock_all_s">%s<font color="grey" size="10">\nTout déverrouiller</font></string>
+    <string name="accent_color">Couleur d\'accentuation</string>
+    <string name="report">Signaler</string>
+    <string name="personalize_scr_artwork_style">Style artistique</string>
+    <string name="manual">Manuel</string>
+    <string name="defult">Par défaut</string>
+    <string name="dynamic">Dynamique</string>
+    <string name="album_art">Pochette d\'album</string>
+    <string name="personalize_scr_navbar_accent_color">Couleur d\'accentuation de la barre de navigation</string>
+    <string name="personalize_scr_elevated_artwork">Œuvre de haut vol</string>
+    <string name="personalize_scr_artwork_border">Bordure de l\'œuvre</string>
+    <string name="permission_scr_data_usage_disclosure_title"><b>Divulgation de l\'utilisation des données\n</b><font color="grey" size="14">Confirmez votre choix</font></string>
+    <string name="permission_scr_data_usage_disclosure_msg"><b><i>Audiofy</i></b> collecte et accède à votre liste d\'applications installées afin d\'activer les fonctionnalités suivantes :
+        \n\n     1.  Lancer les applications pertinentes directement depuis <b>Audiofy</b>
+        \n       2.  Fournir des publicités personnalisées en partageant les données d\'utilisation des applications avec des réseaux publicitaires de confiance
+    \n\nCes données ne sont collectées qu\'après avoir obtenu votre consentement et sont utilisées uniquement aux fins décrites ci-dessus.
+    </string>
+    <string name="msg_settings_upgrade_unlocked">Vous avez déjà débloqué cette fonctionnalité.</string>
+    <string name="pref_accent_nav"><b>Couleur de la Barre de Navigation</b>
+        <font color="grey">\nUtilisez la couleur d\'accentuation dans la barre de navigation.</font>
+    </string>
+    <string name="playback">Lecture</string>
+    <string name="pref_fab_player_tap_behaviour"><b>Appuyez sur le bouton d\'action du lecteur\n</b><font color="grey" size="14">Appuyez sur le <b><i>bouton d\'action du lecteur</i></b> pour ouvrir la <i>console</i>.</font>    </string>
+    <string name="pref_acrylic_effect"><b>Flou Acrylique <sup><font color="#ae1c27" size="10"><b>Bêta</b></font></sup></b>
+         <font color="grey" size="14">
+            \nActivez un effet de flou acrylique de style Windows 11 pour l\'arrière-plan. Cette fonctionnalité est expérimentale et peut affecter les performances.
+        </font>
+    </string>
+    <string name="presets">Préréglages</string>
+    <string name="get">Obtenir</string>
+    <string name="pref_enable_splash_anim_wait"><b>Présentation de l\'application</b> (Android 12+)\n<font color="grey" size="14"><b>Attendez (<i> Max 1500 ms</i>)</b> que l\'animation d\'accueil soit complètement terminée avant de continuer.</font></string>
+    <string name="msg_promotion_new_app_s"><b>✨ Plus de Googol Apps !</b><font color="grey">\nDécouvrez <b>%s</b> de <b>Googol Apps</b>. Rapide, moderne et doté de fonctionnalités que vous allez adorer. </font></string>
+    <string name="msg_promotion_one_player"><b>One Player - Bêta</b>
+        <font color="grey">\nNous sommes ravis de lancer <font color="red">One Player</font>, l\'évolution d\'<i>Audiofy</i>.
+            \n<b>Pourquoi ce changement ?</b>
+                \n• Le code d\'Audiofy est devenu trop lourd, ralentissant l\'arrivée de nouvelles fonctionnalités.
+                \n• L\'image de marque prêtait à confusion.
+                \n• <i>One Player</i> est plus léger, plus rapide et prêt pour l\'avenir.
+            \n\n<b>Migration :</b> Conservez les deux applications pour le moment. Des codes promotionnels vous permettront de migrer sans perdre vos achats.
+            \n<b>L\'avenir : </b>De nouvelles éditions comme <i>Plus</i> et <i>Premium</i>, jusqu\'à <b>30 fois plus économes en batterie</b>.
+            \n\nMerci pour votre soutien — téléchargez-le dès maintenant et profitez de l\'aventure !
+            \n<i><b>— L\'équipe Audiofy</b></i>
+        </font>    </string>
 </resources>
