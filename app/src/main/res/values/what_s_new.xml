@@ -3,6 +3,7 @@
 
     <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.11.0</b>
     <font color='grey'>
+        \n - Added French translation.
         \n - Modernized player console with fresh visuals and responsive animations.
         \n - Intuitive video gestures: swipe to seek, double-tap skip, brightness &amp; volume controls.
         \n - Acrylic background effect with blurred artwork for a sleek look.
