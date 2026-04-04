@@ -13,7 +13,6 @@ kotlin {
         // Add experimental/advanced compiler flags
         freeCompilerArgs.addAll(
             "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xcontext-receivers"
         )
     }
 }
