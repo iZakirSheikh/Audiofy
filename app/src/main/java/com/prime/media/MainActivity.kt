@@ -678,6 +678,8 @@ class MainActivity :
                 }
                 // Case → Featured apps promotions
                 in 1000..1999 -> {
+                    Log.d(TAG, "showPromoToast Featured apps removed: $index")
+                    return
                     val apps = Registry.featuredApps
                     // we only promote audiofy here.
                     val (name, _, pkg) = apps[/*currentIndex % apps.size*/0]

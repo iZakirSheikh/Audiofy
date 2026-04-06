@@ -26,6 +26,8 @@
         <item>@string/what_s_new_latest</item>
         <item><b>v3.3.0</b>
         <font color='grey'>
+            \n Bug fixes and performance improvements.
+            \n Removed features apps in-app ads popup.
             \n We\'ve enhanced the functionality of the app.
             \n We\'re utilizing the new, advanced NowPlaying API for real-time updates regarding playback metadata state.
             \n We\'ve added a new Dynamic Widget that automatically adjusts to size.
