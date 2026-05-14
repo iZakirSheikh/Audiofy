@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.11.0</b>
+    <string name="what_s_new_toast" translatable="false"><b>What\'s New in v3.11.4</b>
     <font color='grey'>
+        \n - Bug fixes and performance improvements
         \n - Added French translation.
         \n - Modernized player console with fresh visuals and responsive animations.
         \n - Intuitive video gestures: swipe to seek, double-tap skip, brightness &amp; volume controls.
@@ -13,7 +14,6 @@
         \n - "Like" button to favourite tracks, synced with playlists.
         \n - Improved chronometer and progress handling for unknown durations.
         \n - Refined layouts with ConstraintLayout and TwoPane support.
-        \n - Updated "What\'s New" section and changelog entries.
     </font>
 </string>
 

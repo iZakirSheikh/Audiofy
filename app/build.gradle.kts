@@ -101,8 +101,8 @@ android {
         applicationId = "com.prime.player"
         minSdk = 21
         targetSdk = 36
-        versionCode = 1058
-        versionName = "3.11.3"
+        versionCode = 1059
+        versionName = "3.11.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         // init different config fields.

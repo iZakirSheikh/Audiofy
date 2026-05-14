@@ -64,7 +64,6 @@ import com.prime.media.common.isPurchasable
 import com.prime.media.common.onEachItem
 import com.prime.media.common.richDesc
 import com.prime.media.console.RouteConsole
-import com.prime.media.old.console.Console
 import com.prime.media.old.core.playback.Remote
 import com.primex.core.MetroGreen
 import com.primex.core.MetroGreen2
@@ -97,7 +96,6 @@ import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen as initSplashScreen
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus as Flag
 import com.zs.core_ui.showPlatformToast as showAndroidToast
@@ -176,7 +174,7 @@ private val IAPs = arrayOf(
 // The number of app launches to skip between showing consecutive promotional messages.
 // After each promotional message is shown, the app will skip this many launches before
 // potentially showing another promotional message.
-private const val PROMO_SKIP_LAUNCHES = 3
+private const val PROMO_SKIP_LAUNCHES = 0
 
 class MainActivity :
     ComponentActivity(),
@@ -807,7 +805,7 @@ class MainActivity :
                     return@launch
                 val newCounter = counter - /*MIN_LAUNCHES_BEFORE_REVIEW*/ 2 /*skips*/
                 val interval = PROMO_SKIP_LAUNCHES
-                if (newCounter % interval == 0) {
+                if (interval == 0 || newCounter % interval == 0) {
                     // Determine promo category and index.
                     //
                     // Formula:
@@ -822,7 +820,7 @@ class MainActivity :
                     //   • promoInvocationCount → app launch counter, used to vary the specific item
                     //                             within a category (ensures rotation and avoids repeats).
                     val category = counter % 2
-                    val index = (category * 1000) + counter % 1000
+                    val index = (category * 1000) + (counter / 2) % 1000
                     Log.d(TAG, "onCreate: category: $category index: $index")
                     showPromoToast(index, 5_000)
                 }
